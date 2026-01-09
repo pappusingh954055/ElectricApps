@@ -1,0 +1,99 @@
+<mat-card>
+
+  <mat-card-title>Purchase Order</mat-card-title>
+
+  <!-- ✅ SINGLE ROOT FORM -->
+  <form [formGroup]="poForm">
+
+    <!-- ================= HEADER ================= -->
+    <div class="form-grid">
+
+      <mat-form-field appearance="outline">
+        <mat-label>Supplier *</mat-label>
+        <mat-select formControlName="supplierId">
+          <mat-option *ngFor="let s of suppliers" [value]="s.id">
+            {{ s.name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>PO Date</mat-label>
+        <input matInput [matDatepicker]="picker" formControlName="date">
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </mat-form-field>
+
+    </div>
+
+    <!-- ================= ADD ROW ================= -->
+    <button mat-raised-button color="primary" class="add-item-btn" type="button" (click)="addRow()">
+      + Add Item
+    </button>
+
+    <!-- ================= ITEMS ================= -->
+    <div formArrayName="items" class="items-section">
+
+      <div class="item-row" *ngFor="let row of items.controls; let i = index" [formGroupName]="i">
+
+        <mat-form-field appearance="outline">
+          <mat-label>Product</mat-label>
+          <mat-select formControlName="productId" (selectionChange)="onProductChange(i)">
+            <mat-option *ngFor="let p of products" [value]="p.id">
+              {{ p.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Qty</mat-label>
+          <input matInput type="number" formControlName="qty" (input)="updateTotal(i)"
+            (keydown.enter)="addRowFromKeyboard(i, $event)">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Unit</mat-label>
+          <input matInput formControlName="unit" readonly>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Price</mat-label>
+          <input matInput formControlName="price" readonly>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Disc %</mat-label>
+          <input matInput type="number" formControlName="discountPercent" (input)="updateTotal(i)">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>GST %</mat-label>
+          <input matInput type="number" formControlName="gstPercent" (input)="updateTotal(i)">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Total</mat-label>
+          <input matInput formControlName="total" readonly>
+        </mat-form-field>
+
+        <button mat-icon-button color="warn" type="button" class="delete-btn" (click)="removeItem(i)">
+          <mat-icon>delete</mat-icon>
+        </button>
+
+      </div>
+    </div>
+
+    <!-- ================= FOOTER ================= -->
+    <div class="po-footer" *ngIf="items.length">
+      <div class="po-grand-total">
+        Grand Total: ₹ {{ grandTotal }}
+      </div>
+
+      <button mat-raised-button color="primary" class="save-btn" type="button" (click)="savePo()">
+        Save PO
+      </button>
+    </div>
+
+  </form>
+
+</mat-card>

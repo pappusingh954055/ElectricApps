@@ -1,0 +1,128 @@
+.sidenav-container {
+  height: 100vh;
+}
+
+.sidenav {
+  width: 260px;
+}
+
+.logo {
+  font-size: 18px;
+  font-weight: 600;
+  padding: 16px;
+  text-align: center;
+  background: #eeeeee;
+}
+
+.toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.title {
+  margin-left: 12px;
+  font-weight: 500;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+.breadcrumb {
+  padding: 8px 16px;
+  background: #f1f1f1;
+  font-size: 13px;
+}
+
+.content {
+  padding: 16px;
+  min-height: calc(100vh - 128px);
+}
+
+.footer {
+  text-align: center;
+  padding: 8px;
+  background: #fafafa;
+  font-size: 12px;
+  border-top: 1px solid #ddd;
+}
+@media (max-width: 768px) {
+  .sidenav {
+    width: 240px;
+  }
+
+  .content {
+    padding: 12px;
+  }
+}
+
+.active-link {
+  background: rgba(63, 81, 181, 0.12);
+  font-weight: 500;
+}
+
+mat-list-item {
+  cursor: pointer;
+}
+
+/* 🔹 Common menu layout */
+.menu-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 🔹 Icon consistency */
+.menu-icon {
+  width: 24px;
+  height: 24px;
+  font-size: 22px;
+  line-height: 24px;
+}
+
+/* 🔹 Text alignment */
+.menu-text {
+  font-size: 14px;
+}
+
+/* 🔹 Main menu items */
+.menu-item {
+  padding-left: 16px;
+}
+
+/* 🔹 Submenu indentation */
+.submenu-item {
+  padding-left: 48px;
+}
+
+/* 🔹 Active menu highlight */
+.active-link {
+  background: rgba(63, 81, 181, 0.12);
+  border-radius: 4px;
+}
+
+/* 🔹 Expansion header cleanup */
+::ng-deep .mat-expansion-panel-header {
+  padding: 0 16px;
+}
+
+/* 🔹 Remove unwanted hover jump */
+::ng-deep .mat-expansion-panel-header:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+/* ✅ FIX dashboard icon vertical alignment */
+.menu-item .menu-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+/* Ensure consistent height for all menu rows */
+.menu-item,
+.submenu-item {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+

@@ -1,0 +1,308 @@
+/* =========================
+   GLOBAL SAFETY FIX
+   ========================= */
+:host {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden; /* 🔥 prevent page scroll */
+}
+
+/* =========================
+   MAIN LAYOUT
+   ========================= */
+.invoice-layout {
+  display: grid;
+  grid-template-columns: 60% 40%;
+  gap: 20px;
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden; /* 🔥 critical */
+}
+
+/* =========================
+   LEFT / RIGHT PANELS
+   ========================= */
+.left,
+.right {
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  min-width: 0;
+  overflow: hidden; /* 🔥 prevent bleed */
+}
+
+/* =========================
+   TOP INPUTS
+   ========================= */
+.top-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+input,
+select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+/* =========================
+   LEFT EDIT TABLE (HARD FIX)
+   ========================= */
+.edit-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.edit-table th,
+.edit-table td {
+  padding: 6px;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+/* Column widths */
+.edit-table th:nth-child(1),
+.edit-table td:nth-child(1) { width: 36px; }
+
+.edit-table th:nth-child(2),
+.edit-table td:nth-child(2) { width: 140px; }
+
+.edit-table th:nth-child(3),
+.edit-table td:nth-child(3) { width: 160px; }
+
+.edit-table th:nth-child(4),
+.edit-table td:nth-child(4) { width: 70px; }
+
+.edit-table th:nth-child(5),
+.edit-table td:nth-child(5) { width: 90px; }
+
+.edit-table th:nth-child(6),
+.edit-table td:nth-child(6) { width: 100px; }
+
+.edit-table th:nth-child(7),
+.edit-table td:nth-child(7) { width: 90px; }
+
+.edit-table th:nth-child(8),
+.edit-table td:nth-child(8) { width: 100px; }
+
+/* REMOVE BUTTON COLUMN — FINAL */
+.edit-table th:nth-child(9),
+.edit-table td:nth-child(9) {
+  width: 44px;
+  min-width: 44px;
+  max-width: 44px;
+  text-align: center;
+  padding: 0;
+}
+
+/* Inputs inside table */
+.edit-table input,
+.edit-table select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Remove button */
+.remove-btn,
+.edit-table td:nth-child(9) button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: auto;
+  border: none;
+  background: transparent;
+  color: #e53935;
+  cursor: pointer;
+}
+
+/* =========================
+   SUBTOTAL ROW
+   ========================= */
+.left-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 8px;
+}
+
+.subtotal {
+  text-align: right;
+  font-weight: 600;
+}
+
+/* =========================
+   RECEIVED ROW
+   ========================= */
+.received-row {
+  display: grid;
+  grid-template-columns: 90px auto 180px;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.received-row input {
+  max-width: 180px;
+}
+
+.balance-text {
+  font-size: 13px;
+  color: #555;
+  text-align: right;
+}
+
+/* =========================
+   TOTAL BOX
+   ========================= */
+.total-box {
+  margin-top: 12px;
+  background: #e3f2fd;
+  padding: 12px;
+  font-size: 18px;
+  display: flex;
+  justify-content: space-between;
+}
+
+/* =========================
+   RIGHT SIDE — ONLY THIS SCROLLS
+   ========================= */
+.right.invoice-preview {
+  border: 1px solid #d0d7e2;
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* =========================
+   INVOICE TABLES
+   ========================= */
+.info-table,
+.invoice-table,
+.summary-table,
+.words-table,
+.payment-table,
+.terms-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+
+.invoice-table th,
+.invoice-table td,
+.info-table td,
+.summary-table td,
+.words-table td,
+.payment-table td,
+.terms-table td {
+  border: 1px solid #cfd8dc;
+  padding: 6px;
+  font-size: 13px;
+}
+
+.invoice-table th {
+  background: #f2f4f7;
+}
+
+.right-align {
+  text-align: right;
+}
+
+/* =========================
+   ACTION BUTTONS
+   ========================= */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.save-btn {
+  background: #e91e63;
+  color: #fff;
+  padding: 10px 24px;
+  border-radius: 30px;
+  border: none;
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+@media (max-width: 1080px) {
+  .invoice-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .right {
+    margin-top: 20px;
+    max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .edit-table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+/* =========================
+   HOVER DELETE ON SERIAL #
+   ========================= */
+
+.row-index {
+  position: relative;
+  width: 36px;
+  text-align: center;
+  cursor: pointer;
+}
+
+/* Serial number */
+.index-number {
+  display: inline-block;
+  transition: opacity 0.15s ease;
+}
+
+/* Delete button (hidden by default) */
+.hover-delete {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  background: transparent;
+  color: #e53935;
+  font-size: 18px;
+  font-weight: 600;
+
+  opacity: 0;
+  cursor: pointer;
+}
+
+/* On hover: hide number, show delete */
+.row-index:hover .index-number {
+  opacity: 0;
+}
+
+.row-index:hover .hover-delete {
+  opacity: 1;
+}
+.add-row {
+  margin-top: 10px;
+  color: #1976d2;
+  background: none;
+  border: none;
+  cursor: pointer;
+}

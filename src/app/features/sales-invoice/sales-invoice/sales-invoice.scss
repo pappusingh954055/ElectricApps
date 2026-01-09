@@ -1,0 +1,55 @@
+.invoice-page {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 20px;
+}
+
+.editor, .preview {
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.edit-table, .preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.edit-table th,
+.preview-table th {
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.edit-table td,
+.preview-table td {
+  padding: 6px;
+}
+
+.total-box {
+  margin-top: 16px;
+  background: #e3f2fd;
+  padding: 12px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.preview {
+  border: 1px solid #ddd;
+}
+
+.center {
+  text-align: center;
+}
+
+.sign {
+  margin-top: 40px;
+  text-align: right;
+}

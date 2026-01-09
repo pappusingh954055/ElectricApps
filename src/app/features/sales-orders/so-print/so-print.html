@@ -1,0 +1,125 @@
+<div class="so-page">
+
+  <!-- HEADER -->
+  <div class="so-header">
+    <div class="company">
+      <h2>{{ so.company.name }}</h2>
+      <p>{{ so.company.address }}</p>
+      <p><b>GSTIN:</b> {{ so.company.gst }}</p>
+      <p><b>Phone:</b> {{ so.company.phone }}</p>
+      <p><b>Email:</b> {{ so.company.email }}</p>
+    </div>
+
+    <div class="so-title">
+      <h1>SALES ORDER</h1>
+      <p><b>SO No:</b> {{ so.soNo }}</p>
+      <p><b>Date:</b> {{ so.soDate }}</p>
+      <span class="status">{{ so.status }}</span>
+    </div>
+  </div>
+
+  <!-- CUSTOMER / SHIP TO -->
+  <div class="two-column">
+
+    <div class="box">
+      <div class="box-header">Bill To</div>
+      <p><b>{{ so.customer.name }}</b></p>
+      <p>{{ so.customer.address }}</p>
+      <p><b>GSTIN:</b> {{ so.customer.gst }}</p>
+      <p><b>Phone:</b> {{ so.customer.phone }}</p>
+      <p><b>Email:</b> {{ so.customer.email }}</p>
+    </div>
+
+    <div class="box">
+      <div class="box-header">Ship To</div>
+      <p><b>{{ so.customer.name }}</b></p>
+      <p>{{ so.customer.address }}</p>
+    </div>
+
+  </div>
+
+  <!-- INFO TABLE -->
+  <table class="info-table">
+    <tr>
+      <th>Payment Terms</th>
+      <th>Delivery Terms</th>
+      <th>Sales Person</th>
+    </tr>
+    <tr>
+      <td>{{ so.paymentTerms }}</td>
+      <td>{{ so.deliveryTerms }}</td>
+      <td>{{ so.salesperson }}</td>
+    </tr>
+  </table>
+
+  <!-- ITEMS TABLE -->
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Product Code</th>
+        <th>Description</th>
+        <th>HSN</th>
+        <th>Qty</th>
+        <th>Unit</th>
+        <th>Rate</th>
+        <th>Tax</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let item of so.items; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ item.code }}</td>
+        <td>{{ item.name }}</td>
+        <td>{{ item.hsn }}</td>
+        <td>{{ item.qty }}</td>
+        <td>{{ item.unit }}</td>
+        <td>{{ item.rate | number:'1.2-2' }}</td>
+        <td>{{ item.tax }}%</td>
+        <td>{{ item.amount | number:'1.2-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- TOTALS -->
+  <div class="totals">
+    <table>
+      <tr>
+        <td>Sub Total</td>
+        <td>{{ so.subTotal | number:'1.2-2' }}</td>
+      </tr>
+      <tr>
+        <td>Discount</td>
+        <td>{{ so.discount | number:'1.2-2' }}</td>
+      </tr>
+      <tr>
+        <td>Tax</td>
+        <td>{{ so.taxAmount | number:'1.2-2' }}</td>
+      </tr>
+      <tr class="grand">
+        <td>Grand Total</td>
+        <td>{{ so.grandTotal | number:'1.2-2' }}</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- TERMS -->
+  <div class="terms">
+    <b>Terms & Conditions:</b>
+    <ol>
+      <li>Goods once sold will not be taken back.</li>
+      <li>Payment to be made as per agreed terms.</li>
+      <li>All disputes subject to local jurisdiction.</li>
+    </ol>
+  </div>
+
+  <!-- SIGNATURE -->
+  <div class="signature">
+    <p>For {{ so.company.name }}</p>
+    <br><br>
+    <p><i>Authorized Signatory</i></p>
+  </div>
+
+</div>

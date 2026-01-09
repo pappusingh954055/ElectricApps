@@ -1,0 +1,103 @@
+.po-page {
+  width: 900px;
+  margin: auto;
+  padding: 24px;
+  background: #fff;
+  font-family: Arial, sans-serif;
+  color: #000;
+}
+
+.po-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.logo p {
+  font-size: 12px;
+  margin-top: 6px;
+}
+
+.po-title {
+  text-align: right;
+}
+
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.box {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.box-header {
+  background: #2f6fc2;
+  color: white;
+  padding: 6px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.info-table,
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.info-table th,
+.items-table th {
+  background: #2f6fc2;
+  color: white;
+  padding: 6px;
+  font-size: 13px;
+}
+
+.info-table td,
+.items-table td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  font-size: 13px;
+}
+
+.totals {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.totals table {
+  width: 300px;
+}
+
+.totals td {
+  padding: 6px;
+}
+
+.grand td {
+  font-weight: bold;
+  border-top: 2px solid #000;
+}
+
+.terms {
+  background: #f2f7ff;
+  padding: 10px;
+  font-size: 13px;
+  margin-top: 16px;
+}
+
+.signature {
+  text-align: right;
+  margin-top: 40px;
+  font-size: 13px;
+}
+
+/* PRINT */
+@media print {
+  body {
+    background: white;
+  }
+}

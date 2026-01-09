@@ -1,0 +1,55 @@
+:host {
+  display: block;
+}
+
+/* Centered card */
+mat-card {
+  padding: 20px;
+  max-width: 1000px; /* product has more fields */
+  margin: auto;
+}
+
+/* Title */
+mat-card-title {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+/* Grid layout for product form */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+/* Full-width controls (textarea, toggles section) */
+.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Inventory toggle spacing */
+.inventory-toggle {
+  margin-top: 8px;
+}
+
+/* Action buttons */
+.actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+
+  mat-card {
+    padding: 12px;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -1,0 +1,49 @@
+:host {
+  display: block;
+}
+
+/* Centered card */
+mat-card {
+  padding: 20px;
+  max-width: 800px;
+  margin: auto;
+}
+
+/* Title */
+mat-card-title {
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+/* Grid layout for form fields */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+/* Full-width elements (textarea, etc.) */
+.full-width {
+  grid-column: 1 / -1;
+}
+
+/* Action buttons */
+.actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 600px) {
+
+  mat-card {
+    padding: 12px;
+  }
+
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

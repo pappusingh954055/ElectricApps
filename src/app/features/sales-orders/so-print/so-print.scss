@@ -1,0 +1,114 @@
+.so-page {
+  width: 900px;
+  margin: auto;
+  padding: 24px;
+  background: #fff;
+  font-family: Arial, sans-serif;
+  color: #000;
+}
+
+/* Header */
+.so-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.so-title {
+  text-align: right;
+}
+
+.status {
+  display: inline-block;
+  margin-top: 6px;
+  padding: 4px 10px;
+  background: #d4edda;
+  color: #155724;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+/* Two column layout */
+.two-column {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.box {
+  border: 1px solid #ccc;
+  padding: 10px;
+}
+
+.box-header {
+  background: #2f6fc2;
+  color: #fff;
+  padding: 6px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+/* Tables */
+.info-table,
+.items-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 16px;
+}
+
+.info-table th,
+.items-table th {
+  background: #2f6fc2;
+  color: white;
+  padding: 6px;
+  font-size: 13px;
+}
+
+.info-table td,
+.items-table td {
+  border: 1px solid #ccc;
+  padding: 6px;
+  font-size: 13px;
+}
+
+/* Totals */
+.totals {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.totals table {
+  width: 320px;
+}
+
+.totals td {
+  padding: 6px;
+}
+
+.grand td {
+  font-weight: bold;
+  border-top: 2px solid #000;
+}
+
+/* Terms */
+.terms {
+  background: #f2f7ff;
+  padding: 10px;
+  font-size: 13px;
+  margin-top: 16px;
+}
+
+/* Signature */
+.signature {
+  text-align: right;
+  margin-top: 40px;
+  font-size: 13px;
+}
+
+/* Print */
+@media print {
+  body {
+    background: white;
+  }
+}

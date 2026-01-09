@@ -1,0 +1,84 @@
+<mat-card>
+
+  <mat-card-title>Product</mat-card-title>
+
+  <form [formGroup]="form" class="form-grid">
+
+    <!-- Category -->
+    <mat-form-field appearance="outline">
+      <mat-label>Category *</mat-label>
+      <mat-select formControlName="categoryId"
+                  (selectionChange)="onCategoryChange($event.value)">
+        <mat-option *ngFor="let c of categories" [value]="c.id">
+          {{ c.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Subcategory -->
+    <mat-form-field appearance="outline">
+      <mat-label>Subcategory *</mat-label>
+      <mat-select formControlName="subcategoryId">
+        <mat-option *ngFor="let s of filteredSubcategories" [value]="s.id">
+          {{ s.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- Product Name -->
+    <mat-form-field appearance="outline">
+      <mat-label>Product Name *</mat-label>
+      <input matInput formControlName="name">
+    </mat-form-field>
+
+    <!-- SKU -->
+    <mat-form-field appearance="outline">
+      <mat-label>SKU</mat-label>
+      <input matInput formControlName="sku">
+    </mat-form-field>
+
+    <!-- Unit -->
+    <mat-form-field appearance="outline">
+      <mat-label>Unit *</mat-label>
+      <mat-select formControlName="unit">
+        <mat-option value="PCS">PCS</mat-option>
+        <mat-option value="KG">KG</mat-option>
+        <mat-option value="BOX">BOX</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <!-- GST -->
+    <mat-form-field appearance="outline">
+      <mat-label>GST %</mat-label>
+      <input matInput type="number" formControlName="gstPercent">
+    </mat-form-field>
+
+    <!-- Inventory -->
+    <mat-slide-toggle formControlName="trackInventory"
+                      class="inventory-toggle">
+      Track Inventory
+    </mat-slide-toggle>
+
+    <!-- Minimum stock (conditional) -->
+    <mat-form-field appearance="outline"
+                    *ngIf="form.value.trackInventory">
+      <mat-label>Minimum Stock</mat-label>
+      <input matInput type="number" formControlName="minStock">
+    </mat-form-field>
+
+  </form>
+
+  <div class="actions">
+    <button mat-raised-button
+            color="primary"
+            (click)="save()"
+            [disabled]="form.invalid">
+      Save
+    </button>
+
+    <button mat-button routerLink="/app/master/products">
+      Cancel
+    </button>
+  </div>
+
+</mat-card>

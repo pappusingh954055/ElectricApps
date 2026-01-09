@@ -1,0 +1,75 @@
+/* Card */
+mat-card {
+  padding: 20px;
+}
+
+/* Header form */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* Add button */
+.add-item-btn {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+/* Items section */
+.items-section {
+  margin-top: 12px;
+}
+
+/* Item row */
+.item-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+  gap: 12px;
+  align-items: center;
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+/* Delete button */
+.delete-btn {
+  margin-top: 4px;
+}
+
+/* Total */
+.po-total {
+  margin-top: 16px;
+  text-align: right;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Save button */
+.save-btn {
+  width: 100%;
+  margin-top: 16px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .item-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .item-row {
+    grid-template-columns: 1fr;
+  }
+
+  .delete-btn {
+    justify-self: flex-end;
+  }
+}

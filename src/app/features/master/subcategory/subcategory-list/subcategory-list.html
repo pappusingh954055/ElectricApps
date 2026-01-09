@@ -1,0 +1,26 @@
+<mat-card>
+
+  <mat-card-title class="d-flex justify-between">
+    Subcategories
+    <button mat-raised-button color="primary" routerLink="/app/master/subcategories/add">
+      + Add Subcategory
+    </button>
+  </mat-card-title>
+
+  <!-- 🔍 Category Filter -->
+  <div class="filter-section">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Filter by Category</mat-label>
+      <mat-select panelClass="category-filter-panel" [disableOptionCentering]="true" [value]="selectedCategoryId"
+        (selectionChange)="filterByCategory()">
+        <mat-option [value]="null">All Categories</mat-option>
+        <mat-option *ngFor="let c of categories" [value]="c.id">
+          {{ c.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  <table mat-table [dataSource]="filteredSubcategories" class="mat-elevation-z1 full-width">
+    <!-- columns unchanged -->
+  </table>
+</mat-card>

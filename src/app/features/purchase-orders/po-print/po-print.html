@@ -1,0 +1,115 @@
+<div class="po-page">
+
+  <!-- HEADER -->
+  <div class="po-header">
+    <div class="logo">
+      <h2>Thendral</h2>
+      <small>Supermarket</small>
+      <p>{{ po.company.address }}</p>
+    </div>
+
+    <div class="po-title">
+      <h1>PURCHASE ORDER</h1>
+      <p><b>PO No:</b> {{ po.poNo }}</p>
+      <p><b>PO Date:</b> {{ po.poDate }}</p>
+    </div>
+  </div>
+
+  <!-- VENDOR / SHIP TO -->
+  <div class="two-column">
+
+    <div class="box">
+      <div class="box-header">Vendor</div>
+      <p><b>Supplier Name:</b> {{ po.vendor.name }}</p>
+      <p><b>Address:</b> {{ po.vendor.address }}</p>
+      <p><b>GSTIN:</b> {{ po.vendor.gst }}</p>
+      <p><b>Supplier Code:</b> {{ po.vendor.code }}</p>
+      <p><b>Contact:</b> {{ po.vendor.phone }}</p>
+      <p><b>Email:</b> {{ po.vendor.email }}</p>
+    </div>
+
+    <div class="box">
+      <div class="box-header">Ship To</div>
+      <p><b>{{ po.company.name }}</b></p>
+      <p>{{ po.company.address }}</p>
+      <p><b>GSTIN:</b> {{ po.company.gst }}</p>
+      <p><b>Contact:</b> {{ po.company.phone }}</p>
+      <p><b>Email:</b> {{ po.company.email }}</p>
+    </div>
+
+  </div>
+
+  <!-- INFO ROW -->
+  <table class="info-table">
+    <tr>
+      <th>Requisitioner</th>
+      <th>Ship via</th>
+      <th>F.O.B</th>
+      <th>Shipping terms</th>
+    </tr>
+    <tr>
+      <td>{{ po.requisitioner }}</td>
+      <td>{{ po.shipVia }}</td>
+      <td>{{ po.fob }}</td>
+      <td>{{ po.shippingTerms }}</td>
+    </tr>
+  </table>
+
+  <!-- ITEMS TABLE -->
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th>S.No</th>
+        <th>Product Code</th>
+        <th>Product Name</th>
+        <th>HSN Code</th>
+        <th>Qty</th>
+        <th>Unit</th>
+        <th>Rate</th>
+        <th>Tax</th>
+        <th>Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of po.items; let i = index">
+        <td>{{ i + 1 }}</td>
+        <td>{{ item.code }}</td>
+        <td>{{ item.name }}</td>
+        <td>{{ item.hsn }}</td>
+        <td>{{ item.qty }}</td>
+        <td>{{ item.unit }}</td>
+        <td>{{ item.rate | number:'1.2-2' }}</td>
+        <td>{{ item.tax }}%</td>
+        <td>{{ item.amount | number:'1.2-2' }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- TOTALS -->
+  <div class="totals">
+    <table>
+      <tr><td>Total</td><td>{{ po.total | number:'1.2-2' }}</td></tr>
+      <tr><td>Discount</td><td>{{ po.discount | number:'1.2-2' }}</td></tr>
+      <tr class="grand"><td>Grand Total</td><td>{{ po.grandTotal | number:'1.2-2' }}</td></tr>
+    </table>
+  </div>
+
+  <!-- TERMS -->
+  <div class="terms">
+    <b>Terms and conditions:</b>
+    <ol>
+      <li>Delivery should be strictly within 5 days from PO date.</li>
+      <li>Invoice must mention PO number.</li>
+      <li>Deviation during delivery may cancel the PO.</li>
+      <li>Packing & shipping charges borne by supplier.</li>
+    </ol>
+  </div>
+
+  <!-- SIGNATURE -->
+  <div class="signature">
+    <p>For {{ po.company.name }}</p>
+    <br><br>
+    <p><i>Authorized Signatory</i></p>
+  </div>
+
+</div>

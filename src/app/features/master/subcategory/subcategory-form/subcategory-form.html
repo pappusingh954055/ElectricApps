@@ -1,0 +1,43 @@
+<mat-card>
+
+  <mat-card-title>Subcategory</mat-card-title>
+
+  <form [formGroup]="form" class="form-grid">
+
+    <mat-form-field appearance="outline">
+      <mat-label>Category *</mat-label>
+      <mat-select formControlName="categoryId">
+        <mat-option *ngFor="let c of categories" [value]="c.id">
+          {{ c.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Subcategory Name *</mat-label>
+      <input matInput formControlName="name">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Code</mat-label>
+      <input matInput formControlName="code">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <textarea matInput rows="3"
+                formControlName="description"></textarea>
+    </mat-form-field>
+
+    <mat-slide-toggle formControlName="isActive">
+      Active
+    </mat-slide-toggle>
+
+  </form>
+
+  <div class="actions">
+    <button mat-raised-button color="primary" (click)="save()">Save</button>
+    <button mat-button routerLink="/app/master/subcategories">Cancel</button>
+  </div>
+
+</mat-card>

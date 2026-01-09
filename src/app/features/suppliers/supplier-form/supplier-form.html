@@ -1,0 +1,71 @@
+<mat-card>
+
+    <mat-card-title>
+        {{ isEdit ? 'Edit Supplier' : 'Add Supplier' }}
+    </mat-card-title>
+
+    <form [formGroup]="supplierForm">
+
+        <div class="grid">
+
+            <mat-form-field appearance="outline">
+                <mat-label>Supplier Name</mat-label>
+                <input matInput formControlName="supplierName">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Contact Person</mat-label>
+                <input matInput formControlName="contactPerson">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Phone</mat-label>
+                <input matInput formControlName="phone">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Email</mat-label>
+                <input matInput formControlName="email">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>GST Number</mat-label>
+                <input matInput formControlName="gst">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Status</mat-label>
+                <mat-select formControlName="status">
+                    <mat-option value="Active">Active</mat-option>
+                    <mat-option value="Inactive">Inactive</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Categories Supplied</mat-label>
+                <mat-select multiple formControlName="categories">
+                    <mat-option *ngFor="let c of categories" [value]="c">
+                        {{ c }}
+                    </mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="full">
+                <mat-label>Address</mat-label>
+                <textarea matInput rows="2" formControlName="address"></textarea>
+            </mat-form-field>
+
+        </div>
+
+        <div class="actions">
+            <button mat-raised-button class="rose" (click)="save()">
+                Save
+            </button>
+            <button mat-button (click)="router.navigate(['/app/suppliers'])">
+                Cancel
+            </button>
+        </div>
+
+    </form>
+
+</mat-card>

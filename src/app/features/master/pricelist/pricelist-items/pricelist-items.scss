@@ -1,0 +1,43 @@
+:host {
+  display: block;
+}
+
+mat-card {
+  padding: 16px;
+  margin-top: 16px;
+}
+
+mat-card-title {
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+/* Form grid */
+.items-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  align-items: center;
+}
+
+/* Button alignment */
+.add-btn {
+  align-self: flex-end;
+}
+
+/* Items table */
+.items-table {
+  margin-top: 20px;
+  width: 100%;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .items-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .add-btn {
+    width: 100%;
+  }
+}

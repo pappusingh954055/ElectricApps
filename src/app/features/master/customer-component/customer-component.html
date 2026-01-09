@@ -1,0 +1,71 @@
+<mat-card>
+
+  <mat-card-title>
+    {{ isEdit ? 'Edit Customer' : 'Add Customer' }}
+  </mat-card-title>
+
+  <form [formGroup]="customerForm">
+
+    <div class="grid">
+
+      <mat-form-field appearance="outline">
+        <mat-label>Customer Name</mat-label>
+        <input matInput formControlName="customerName">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Customer Type</mat-label>
+        <mat-select formControlName="customerType">
+          <mat-option value="Retail">Retail</mat-option>
+          <mat-option value="Wholesale">Wholesale</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Phone</mat-label>
+        <input matInput formControlName="phone">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Email</mat-label>
+        <input matInput formControlName="email">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>GST Number</mat-label>
+        <input matInput formControlName="gst">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Credit Limit</mat-label>
+        <input matInput type="number" formControlName="creditLimit">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Billing Address</mat-label>
+        <textarea matInput rows="2" formControlName="billingAddress"></textarea>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Shipping Address</mat-label>
+        <textarea matInput rows="2" formControlName="shippingAddress"></textarea>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select formControlName="status">
+          <mat-option value="Active">Active</mat-option>
+          <mat-option value="Inactive">Inactive</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+    </div>
+
+    <div class="actions">
+      <button mat-raised-button color="primary" (click)="save()">Save</button>
+      <button mat-button (click)="router.navigate(['/app/customers'])">Cancel</button>
+    </div>
+
+  </form>
+
+</mat-card>

@@ -1,0 +1,99 @@
+:host {
+  display: block;
+}
+
+/* ===============================
+   Card spacing (IMPORTANT FIX)
+   =============================== */
+mat-card {
+  padding: 16px;
+  overflow: visible; /* ✅ REQUIRED for mat-select overlay */
+}
+
+/* ===============================
+   Title + Add button
+   =============================== */
+mat-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+/* ===============================
+   Filter section
+   =============================== */
+.filter-section {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+/* Ensure dropdown has space */
+.filter-section mat-form-field {
+  min-width: 220px;
+  flex: 1;
+}
+
+/* ===============================
+   Table
+   =============================== */
+table {
+  width: 100%;
+}
+
+/* ===============================
+   Action icons
+   =============================== */
+mat-icon {
+  font-size: 20px;
+}
+
+/* ===============================
+   ANGULAR MATERIAL OVERLAY FIX
+   =============================== */
+
+/* Ensure overlay is not clipped */
+:host ::ng-deep .cdk-overlay-pane {
+  max-height: calc(100vh - 64px);
+  pointer-events: auto;
+}
+
+/* Limit dropdown height with scroll */
+:host ::ng-deep .mat-select-panel {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+/* Optional: if using panelClass */
+:host ::ng-deep .category-filter-panel {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+/* ===============================
+   Responsive adjustments
+   =============================== */
+@media (max-width: 768px) {
+
+  mat-card-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .filter-section {
+    flex-direction: column;
+  }
+
+  table {
+    font-size: 13px;
+  }
+
+  /* Smaller dropdown on mobile */
+  :host ::ng-deep .mat-select-panel {
+    max-height: 200px;
+  }
+}

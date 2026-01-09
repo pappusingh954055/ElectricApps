@@ -1,0 +1,98 @@
+<mat-card>
+
+  <mat-card-title>Sales Order</mat-card-title>
+
+  <!-- HEADER -->
+  <form [formGroup]="soForm" class="form-grid">
+
+    <mat-form-field appearance="outline">
+      <mat-label>Customer</mat-label>
+      <input matInput formControlName="customerId">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>SO Date</mat-label>
+      <input matInput type="date" formControlName="date">
+    </mat-form-field>
+
+  </form>
+
+  <!-- ADD ITEM -->
+  <button mat-raised-button color="primary" class="add-item-btn"
+          type="button" (click)="addRow()">
+    + Add Item
+  </button>
+
+  <!-- ITEMS -->
+  <form [formGroup]="soForm">
+
+    <div formArrayName="items">
+
+      <div class="item-row"
+           *ngFor="let row of items.controls; let i = index"
+           [formGroupName]="i">
+
+        <mat-form-field appearance="outline">
+          <mat-label>Product</mat-label>
+          <mat-select formControlName="productId"
+                      (selectionChange)="onProductChange(i)">
+            <mat-option *ngFor="let p of products" [value]="p.id">
+              {{ p.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Qty</mat-label>
+          <input matInput type="number"
+                 formControlName="qty"
+                 (input)="updateTotal(i)">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Unit</mat-label>
+          <input matInput formControlName="unit" readonly>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Price</mat-label>
+          <input matInput formControlName="price" readonly>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Disc %</mat-label>
+          <input matInput type="number"
+                 formControlName="discountPercent"
+                 (input)="updateTotal(i)">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>GST %</mat-label>
+          <input matInput type="number"
+                 formControlName="gstPercent"
+                 (input)="updateTotal(i)">
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Total</mat-label>
+          <input matInput formControlName="total" readonly>
+        </mat-form-field>
+
+        <button mat-icon-button color="warn"
+                (click)="removeItem(i)">
+          <mat-icon>delete</mat-icon>
+        </button>
+
+      </div>
+    </div>
+  </form>
+
+  <!-- FOOTER -->
+  <div class="po-footer" *ngIf="items.length">
+    <strong>Grand Total: ₹ {{ grandTotal }}</strong>
+    <button mat-raised-button color="primary" (click)="saveSo()">
+      Save SO
+    </button>
+  </div>
+
+</mat-card>

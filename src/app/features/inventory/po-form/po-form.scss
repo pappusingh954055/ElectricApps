@@ -1,0 +1,105 @@
+/* ================= CARD ================= */
+mat-card {
+  padding: 20px;
+}
+
+/* ================= HEADER ================= */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+
+/* ================= ADD ITEM BUTTON ================= */
+.add-item-btn {
+  margin: 6px 0 12px;
+  height: 36px;
+  padding: 0 16px;
+  font-weight: 600;
+  border-radius: 6px;
+}
+
+/* ================= ITEMS SECTION ================= */
+.items-section {
+  margin-top: 6px;
+}
+
+/* ================= ITEM ROW ================= */
+.item-row {
+  display: grid;
+  grid-template-columns:
+    2fr     /* Product */
+    0.8fr   /* Qty */
+    0.8fr   /* Unit */
+    1fr     /* Price */
+    0.9fr   /* Disc % */
+    0.8fr   /* GST % */
+    1.1fr   /* Total */
+    40px;   /* Delete */
+
+  gap: 12px;
+  align-items: center;
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+}
+
+/* Prevent wrapping inside fields */
+.item-row mat-form-field {
+  width: 100%;
+}
+
+/* Delete button */
+.delete-btn {
+  justify-self: center;
+}
+
+/* ================= FOOTER ================= */
+.po-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 16px;
+  margin-top: 12px;
+}
+
+.po-grand-total {
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.save-btn {
+  height: 38px;
+  padding: 0 20px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 1200px) {
+  .item-row {
+    grid-template-columns:
+      2fr 1fr 1fr 1fr
+      1fr 1fr
+      1fr
+      36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .item-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .po-footer {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}

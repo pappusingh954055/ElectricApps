@@ -1,0 +1,92 @@
+<mat-sidenav-container class="sidenav-container">
+
+  <!-- SIDE NAV -->
+  <mat-sidenav #sidenav class="sidenav" [mode]="isMobile ? 'over' : 'side'" [opened]="!isMobile">
+
+    <div class="logo">
+      📦 Electronic Inventory
+    </div>
+
+    <mat-accordion multi>
+
+      <ng-container *ngFor="let item of menuItems">
+
+        <!-- Single-level menu -->
+        <a *ngIf="!item.children" mat-list-item [routerLink]="item.route" routerLinkActive="active-link"
+          class="menu-item">
+
+          <span class="menu-content">
+            <mat-icon class="menu-icon">{{ item.icon }}</mat-icon>
+            <span class="menu-text">{{ item.label }}</span>
+          </span>
+
+        </a>
+
+
+        <!-- Multi-level menu -->
+        <mat-expansion-panel *ngIf="item.children">
+          <mat-expansion-panel-header>
+
+            <span class="menu-content">
+              <mat-icon class="menu-icon">{{ item.icon }}</mat-icon>
+              <span class="menu-text">{{ item.label }}</span>
+            </span>
+
+          </mat-expansion-panel-header>
+
+          <!-- Child menus -->
+          <a mat-list-item *ngFor="let child of item.children" [routerLink]="child.route" routerLinkActive="active-link"
+            class="submenu-item">
+
+            <span class="menu-content">
+              <mat-icon class="menu-icon">{{ child.icon }}</mat-icon>
+              <span class="menu-text">{{ child.label }}</span>
+            </span>
+
+          </a>
+
+        </mat-expansion-panel>
+
+
+      </ng-container>
+
+    </mat-accordion>
+
+  </mat-sidenav>
+
+  <!-- MAIN CONTENT -->
+  <mat-sidenav-content>
+
+    <!-- TOOLBAR -->
+    <mat-toolbar color="primary" class="toolbar">
+      <button mat-icon-button (click)="toggleSidenav()">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <span class="title">Inventory Management System</span>
+
+      <span class="spacer"></span>
+
+     <button mat-icon-button (click)="logout()" matTooltip="Logout">
+  <mat-icon>logout</mat-icon>
+</button>
+    </mat-toolbar>
+
+    <!-- BREADCRUMB PLACEHOLDER -->
+    <div class="breadcrumb">
+      <app-breadcrumb></app-breadcrumb>
+    </div>
+
+    <!-- ROUTED CONTENT -->
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      © 2026 Electronic Inventory System
+    </footer>
+
+  </mat-sidenav-content>
+
+</mat-sidenav-container>

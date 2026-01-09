@@ -1,0 +1,48 @@
+<mat-card>
+
+  <mat-card-title class="d-flex justify-between">
+    Price Lists
+    <button mat-raised-button color="primary" routerLink="/app/master/pricelists/add">
+      + Create Price List
+    </button>
+  </mat-card-title>
+
+  <table mat-table [dataSource]="priceLists" class="full-width">
+
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Name</th>
+      <td mat-cell *matCellDef="let p">{{ p.name }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="type">
+      <th mat-header-cell *matHeaderCellDef>Type</th>
+      <td mat-cell *matCellDef="let p">{{ p.type }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="effectiveFrom">
+      <th mat-header-cell *matHeaderCellDef>Effective From</th>
+      <td mat-cell *matCellDef="let p">{{ p.effectiveFrom | date }}</td>
+    </ng-container>
+
+    <ng-container matColumnDef="status">
+      <th mat-header-cell *matHeaderCellDef>Status</th>
+      <td mat-cell *matCellDef="let p">
+        <mat-slide-toggle [checked]="p.isActive"></mat-slide-toggle>
+      </td>
+    </ng-container>
+
+    <ng-container matColumnDef="actions">
+      <th mat-header-cell *matHeaderCellDef>Actions</th>
+      <td mat-cell *matCellDef="let p">
+        <button mat-icon-button [routerLink]="['/pricelists', p.id]">
+          <mat-icon>list</mat-icon>
+        </button>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+  </table>
+
+</mat-card>

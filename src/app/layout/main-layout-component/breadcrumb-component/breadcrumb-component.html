@@ -1,0 +1,6 @@
+<nav class="breadcrumb">
+  <span *ngFor="let crumb of breadcrumbs; let last = last">
+    <span class="crumb">{{ crumb | titlecase }}</span>
+    <span *ngIf="!last"> / </span>
+  </span>
+</nav>

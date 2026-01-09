@@ -1,0 +1,44 @@
+<mat-card>
+
+  <mat-card-title>Price List Items</mat-card-title>
+
+  <form [formGroup]="form" class="items-grid">
+
+    <mat-form-field appearance="outline">
+      <mat-label>Product *</mat-label>
+      <mat-select formControlName="productId">
+        <mat-option *ngFor="let p of products" [value]="p.id">
+          {{ p.name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Price *</mat-label>
+      <input matInput type="number" formControlName="price">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Min Qty</mat-label>
+      <input matInput type="number" formControlName="minQty">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Max Qty</mat-label>
+      <input matInput type="number" formControlName="maxQty">
+    </mat-form-field>
+
+    <mat-slide-toggle formControlName="isActive">
+      Active
+    </mat-slide-toggle>
+
+   <button mat-raised-button
+          color="primary"
+          class="add-btn"
+          (click)="addItem()">
+    Add
+  </button>
+
+  </form>
+
+</mat-card>

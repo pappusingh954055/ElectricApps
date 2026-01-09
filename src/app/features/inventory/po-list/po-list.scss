@@ -1,0 +1,51 @@
+:host {
+  display: block;
+}
+
+/* Card container */
+mat-card {
+  padding: 16px;
+}
+
+/* Title + Add button */
+mat-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 18px;
+  margin-bottom: 16px;
+}
+
+/* Table */
+table {
+  width: 100%;
+}
+
+/* Action column alignment */
+.mat-column-actions {
+  text-align: center;
+  width: 80px;
+}
+
+/* Icons */
+mat-icon {
+  font-size: 20px;
+}
+
+/* Responsive behavior */
+@media (max-width: 768px) {
+
+  mat-card-title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  table {
+    font-size: 13px;
+  }
+
+  .mat-column-actions {
+    width: auto;
+  }
+}

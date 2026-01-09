@@ -1,0 +1,144 @@
+<mat-card class="po-container">
+
+    <!-- HEADER -->
+    <div class="po-header">
+        <div>
+            <h2>Purchase Order</h2>
+            <span class="po-status">Draft</span>
+        </div>
+
+        <div class="actions">
+            <button mat-stroked-button color="primary">Save Draft</button>
+            <button mat-raised-button color="primary" (click)="save()">Submit</button>
+        </div>
+    </div>
+
+    <form [formGroup]="poForm">
+
+        <div class="po-grid">
+
+            <!-- LEFT PANEL -->
+            <div class="left-panel">
+
+                <h3>Supplier & Order Details</h3>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Supplier</mat-label>
+                    <mat-select formControlName="supplier">
+                        <mat-option *ngFor="let s of suppliers" [value]="s">
+                            {{ s }}
+                        </mat-option>
+                    </mat-select>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>PO Date</mat-label>
+                    <input matInput type="date" formControlName="poDate">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Expected Delivery</mat-label>
+                    <input matInput type="date">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>Notes</mat-label>
+                    <textarea matInput rows="3"></textarea>
+                </mat-form-field>
+
+            </div>
+
+            <!-- RIGHT PANEL -->
+            <div class="right-panel">
+
+                <h3>Order Items</h3>
+
+                <table class="items-table" formArrayName="items">
+
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Rate</th>
+                            <th>Amount</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        <tr *ngFor="let row of items.controls; let i = index" [formGroupName]="i"
+                            [class.active-row]="activeRow === i">
+
+                            <td>
+                                <mat-select formControlName="category">
+                                    <mat-option *ngFor="let c of (categories | keyvalue)" [value]="c.key">
+                                        {{ c.key }}
+                                    </mat-option>
+                                </mat-select>
+                            </td>
+
+                            <td>
+                                <mat-select formControlName="product">
+                                    <mat-option *ngFor="let p of categories[row.get('category')?.value] || []"
+                                        [value]="p">
+                                        {{ p }}
+                                    </mat-option>
+                                </mat-select>
+                            </td>
+
+                            <td>
+                                <input matInput type="number" formControlName="qty" (input)="updateAmount(i)">
+                            </td>
+
+                            <td>
+                                <input matInput type="number" formControlName="rate" (focus)="onRateFocus(i, $event)"
+                                    (blur)="onRateBlur(i)" (input)="updateAmount(i)">
+                            </td>
+
+                            <td>
+                                <input matInput formControlName="amount">
+                            </td>
+
+                            <td>
+                                <button mat-icon-button color="warn" (click)="removeItem(i)">
+                                    <mat-icon>delete</mat-icon>
+                                </button>
+                            </td>
+
+                        </tr>
+                    </tbody>
+
+                </table>
+
+                <button mat-button color="primary" (click)="addItem()">
+                    + Add Item
+                </button>
+
+            </div>
+
+        </div>
+
+        <!-- SUMMARY -->
+        <div class="summary-panel">
+
+            <mat-form-field appearance="outline">
+                <mat-label>Discount</mat-label>
+                <input matInput type="number" formControlName="discount" (input)="calculateTotal()">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>GST (%)</mat-label>
+                <input matInput type="number" formControlName="tax" (input)="calculateTotal()">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+                <mat-label>Net Total</mat-label>
+                <input matInput formControlName="netTotal">
+            </mat-form-field>
+
+        </div>
+
+    </form>
+
+</mat-card>

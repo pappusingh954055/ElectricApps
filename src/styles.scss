@@ -1,1 +1,66 @@
+
+@use '@angular/material' as mat;
+
+html {
+  height: 100%;
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+      red: mat.$red-palette,  
+      blue: mat.$blue-palette,  
+      green: mat.$green-palette,
+      yellow: mat.$yellow-palette,  
+      cyan: mat.$cyan-palette,  
+      orange: mat.$orange-palette,
+      rose:mat.$rose-palette, 
+      voilet: mat.$violet-palette,  
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
+}
+
+body {
+
+  color-scheme: light;
+
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+  height: 100%;
+    font-family: Roboto, "Helvetica Neue", sans-serif;
+}
+.mat-sidenav-container {
+  height: 100vh;
+}
+
+.content {
+  padding: 16px;
+}
 /* You can add global styles to this file, and also import other style files */
+
+/* ================================
+   CDK OVERLAY POSITION FIX
+   ================================ */
+
+.cdk-overlay-connected-position-bounding-box {
+  overflow: visible !important;
+}
+
+/* Keep dropdown inside viewport */
+.mat-select-panel {
+  max-height: 280px !important;
+  overflow-y: auto !important;
+}
+
+/* Mobile safety */
+@media (max-width: 768px) {
+  .mat-select-panel {
+    max-height: 200px !important;
+  }
+}
+
