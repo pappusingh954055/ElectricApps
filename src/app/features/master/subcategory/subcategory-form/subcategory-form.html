@@ -1,48 +1,45 @@
 <mat-card>
 
   <mat-card-title>Subcategory</mat-card-title>
+  <mat-card-content>
+    <form [formGroup]="subcategoryForm" class="form-grid">
 
-  <form [formGroup]="form" class="form-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Category *</mat-label>
+        <mat-select formControlName="categoryid">
+          <mat-option *ngFor="let c of categories" [value]="c.id">
+            {{ c.categoryName }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Category *</mat-label>
-      <mat-select formControlName="categoryId">
-        <mat-option>
-          
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Subcategory Name *</mat-label>
+        <input matInput formControlName="subcategoryname">
+      </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Subcategory Name *</mat-label>
-      <input matInput formControlName="name">
-    </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Code</mat-label>
+        <input matInput formControlName="subcategorycode">
+      </mat-form-field>
 
-    <mat-form-field appearance="outline">
-      <mat-label>Code</mat-label>
-      <input matInput formControlName="code">
-    </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Default GST %</mat-label>
+        <input matInput type="number" formControlName="defaultgst">
+      </mat-form-field>
 
-     <mat-form-field appearance="outline">
-      <mat-label>Default GST %</mat-label>
-      <input matInput type="number" formControlName="defaultGst">
-    </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea matInput rows="3" formControlName="description"></textarea>
+      </mat-form-field>
 
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Description</mat-label>
-      <textarea matInput rows="3"
-                formControlName="description"></textarea>
-    </mat-form-field>
+      <mat-slide-toggle formControlName="isactive">
+        Active
+      </mat-slide-toggle>
 
-    <mat-slide-toggle formControlName="isActive">
-      Active
-    </mat-slide-toggle>
-
-  </form>
-
-  <div class="actions">
-    <button mat-raised-button color="primary">Save</button>
-    <button mat-button routerLink="/app/master/subcategories">Cancel</button>
-  </div>
-
+    </form>
+  </mat-card-content>
+  <!-- ✅ FOOTER -->
+  <form-footer [isSaving]="isSaving" (save)="onSave()" (cancel)="onCancel()">
+  </form-footer>
 </mat-card>

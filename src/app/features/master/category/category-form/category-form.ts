@@ -94,11 +94,11 @@ export class CategoryForm implements OnInit {
   // 🔹 SINGLE RESPONSIBILITY: MAPPING
   private mapToCategories(formValue: any): Category {
     return {
-      CategoryName: formValue.CategoryName,
-      CategoryCode: formValue.CategoryCode,
-      DefaultGst: Number(formValue.DefaultGst),
-      Description: formValue.Description?.trim(),
-      IsActive: Boolean(formValue.IsActive)
+      categoryname: formValue.CategoryName,
+      categorycode: formValue.CategoryCode,
+      defaultgst: Number(formValue.DefaultGst),
+      description: formValue.Description?.trim(),
+      isActive: Boolean(formValue.IsActive)
     };
   }
 

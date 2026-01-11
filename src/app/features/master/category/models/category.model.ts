@@ -1,8 +1,13 @@
 export interface Category {
-  id?: string;          // optional for create
-  CategoryName: string;
-  CategoryCode: string;
-  DefaultGst: number;
-  Description?: string;
-  IsActive: boolean;
+  id?: any;          // optional for create
+  categoryname: string;
+  categorycode: string;
+  defaultgst: number;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface CategoryDropdown {
+  id: any;
+  name: any;
 }

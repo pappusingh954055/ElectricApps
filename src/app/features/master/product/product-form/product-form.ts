@@ -5,8 +5,7 @@ import { MaterialModule } from '../../../../shared/material/material/material-mo
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../service/product.service';
 
-import { SubcategoryService } from '../../../../core/services/subcategory-service/subcategory.service';
-import { Subcategory } from '../../../../core/models/subcategory-models/subcategory.model';
+
 
 
 @Component({
@@ -26,11 +25,11 @@ export class ProductForm implements OnInit {
   ) { }
   form!: FormGroup;
   // readonly categoryService = inject(CategoryService);
-  readonly subcategoryService = inject(SubcategoryService);
+  // readonly subcategoryService = inject(SubcategoryService);
 
   // categories = this.categoryService.getAll();
-  subcategories = this.subcategoryService.getAll();
-  filteredSubcategories: Subcategory[] = [];
+  // subcategories = this.subcategoryService.getAll();
+  // filteredSubcategories: Subcategory[] = [];
 
   isEditMode = false;
   productId!: number;
@@ -72,7 +71,7 @@ export class ProductForm implements OnInit {
   }
 
   onCategoryChange(categoryId: number) {
-    this.filteredSubcategories = this.subcategories.filter(s => s.categoryId === categoryId);
+    // this.filteredSubcategories = this.subcategories.filter(s => s.categoryId === categoryId);
 
     this.form.patchValue({ subcategoryId: null });
   }

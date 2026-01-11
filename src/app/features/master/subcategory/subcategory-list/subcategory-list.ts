@@ -1,60 +1,84 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnChanges, OnInit, inject } from '@angular/core';
 
 
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { SubcategoryService } from '../../../../core/services/subcategory-service/subcategory.service';
-
-import { Subcategory } from '../../../../core/models/subcategory-models/subcategory.model';
-
+import { DataGrid } from '../../../../shared/components/data-grid/data-grid';
+import { SubCategoryService } from '../services/subcategory.service';
+import { SubCategory } from '../modesls/subcategory.model';
+import { Category } from '../../category/models/category.model';
+import { CategoryService } from '../../category/services/category.service';
 
 
 
 
 @Component({
   selector: 'app-subcategory-list',
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink, DataGrid],
   templateUrl: './subcategory-list.html',
   styleUrl: './subcategory-list.scss',
 })
-export class SubcategoryList implements OnInit {
+export class SubcategoryList implements OnInit, OnChanges {
 
-  displayedColumns = ['category', 'name', 'status', 'actions'];
+  columns = [
+    { columnDef: 'categoryName', header: 'Category' },
+    { columnDef: 'subcategoryName', header: 'Subcategory' },
+    { columnDef: 'subcategoryCode', header: 'Code' },
+    { columnDef: 'defaultGst', header: 'GST %' },
+    {
+      columnDef: 'isActive',
+      header: 'Status',
+      cell: (row: any) => row.isActive ? 'Yes' : 'No'
+    }
+  ];
+
+  isLoading = false;
+
 
   constructor(
-    private service: SubcategoryService,
+    private subCatservice: SubCategoryService,
+    private categoriesService: CategoryService,
+    private cdr: ChangeDetectorRef
 
   ) { }
 
-  // readonly categoryService = inject(CategoryService);
-
-  subcategories: Subcategory[] = [];
-
-  filteredSubcategories: Subcategory[] = [];
-
-  // categories = this.categoryService.getAll();
-  selectedCategoryId: number | null = null;
 
 
-  ngOnInit() {
-    this.subcategories = this.service.getAll();
-    this.filteredSubcategories = this.subcategories;
+  subcategories: SubCategory[] = [];
+
+  loadSubCategories(): void {
+    this.isLoading = true;
+
+    this.subCatservice.getAll().subscribe({
+      next: (data) => {
+        console.log(data)
+        this.subcategories = data ?? [];
+        this.cdr.detectChanges();
+        this.isLoading = false;
+
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
-  filterByCategory() {
-    if (!this.selectedCategoryId) {
-      this.filteredSubcategories = this.subcategories;
+ 
+
+  ngOnInit(): void {
+
+    this.loadSubCategories();
+  }
+  onEdit(event: string) { }
+  onDelete(event: string) { }
+
+  ngOnChanges(): void {
+    if (!this.columns || this.columns.length === 0) {
       return;
     }
-
-    this.filteredSubcategories = this.subcategories.filter(
-      s => s.categoryId === this.selectedCategoryId
-    );
-  }
-
-  toggleStatus(sub: Subcategory) {
-    sub.isActive = !sub.isActive;
   }
 }

@@ -2,10 +2,10 @@
   display: block;
 }
 
-/* Centered card layout */
+/* Centered card */
 mat-card {
   padding: 20px;
-  max-width: 900px;
+  max-width: 1000px; /* product has more fields */
   margin: auto;
 }
 
@@ -15,7 +15,7 @@ mat-card-title {
   margin-bottom: 16px;
 }
 
-/* Grid-based form layout */
+/* Grid layout for product form */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -23,9 +23,14 @@ mat-card-title {
   align-items: start;
 }
 
-/* Full-width controls (description, etc.) */
+/* Full-width controls (textarea, toggles section) */
 .full-width {
   grid-column: 1 / -1;
+}
+
+/* Inventory toggle spacing */
+.inventory-toggle {
+  margin-top: 8px;
 }
 
 /* Action buttons */

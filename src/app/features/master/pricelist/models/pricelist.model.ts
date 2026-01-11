@@ -1,15 +1,17 @@
 export type PriceListType = 'PURCHASE' | 'SALES';
 
-export interface PriceList {
-  id: number;
-  name: string;
-  type: PriceListType;
-  effectiveFrom: Date;
+export interface PriceListModel {
+  id?: number;
+  name?: string;
+  pricetype?: PriceListType;
+  code?: string;
+  validfrom?: Date;
+  validto?: Date;
   description?: string;
-  isActive: boolean;
+  isactive?: boolean;
 }
 
-export interface PriceListItem {
+export interface PriceListItemModel {
   id?: number;
   priceListId: any;
   productId: any;

@@ -1,88 +1,164 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, NgZone, OnInit } from '@angular/core';
 import { Validators, FormBuilder, ReactiveFormsModule, FormGroup } from '@angular/forms';
 
 
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
-import { ActivatedRoute, Router } from '@angular/router';
-import { SubcategoryService } from '../../../../core/services/subcategory-service/subcategory.service';
+
+import { SubCategory } from '../modesls/subcategory.model';
+import { MatDialog } from '@angular/material/dialog';
+import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
+
+import { CategoryService } from '../../category/services/category.service';
+import { Router } from '@angular/router';
+import { SubCategoryService } from '../services/subcategory.service';
+import { FormFooter } from '../../../shared/form-footer/form-footer';
+import { Category, CategoryDropdown } from '../../category/models/category.model';
 
 
 
 @Component({
   selector: 'app-subcategory-form',
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule, FormFooter],
   templateUrl: './subcategory-form.html',
   styleUrl: './subcategory-form.scss',
 })
 export class SubcategoryForm implements OnInit {
 
-  form!: FormGroup;
+  subcategoryForm!: FormGroup;
+  isSaving = false;
 
-  constructor(
-    private fb: FormBuilder,
-    private route: ActivatedRoute,
-    private router: Router,
-   
-  ) { }
+  mapToSubCategory!: SubCategory;
 
-   readonly subcategoryService=inject(SubcategoryService);
+  constructor(private fb: FormBuilder, private dialog: MatDialog,
+    private cdr: ChangeDetectorRef, private zone: NgZone) { }
 
-  // readonly categoryService = inject(CategoryService);
+  readonly subcategorySvc = inject(SubCategoryService)
 
-  // categories = this.categoryService.getAll();
-  isEditMode = false;
-  subcategoryId!: number;
+  readonly categoryService = inject(CategoryService)
+
+  readonly router = inject(Router);
 
 
 
-  createForm() {
-    this.form = this.fb.group({
-      categoryId: [null, Validators.required],
-      name: ['', Validators.required],
-      defaultGst:[],
-      code: [''],
+  categories: any;
+  isLoadingCategories = false;
+
+  ngOnInit(): void {
+    this.loadSubCategories();
+    this.subcategoryForm = this.fb.group({
+      categoryid: ['', Validators.required],
+      subcategoryname: ['', Validators.required],
+      subcategorycode: [''],
+      defaultgst: [null],
       description: [''],
-      isActive: [true]
+      isactive: ['']
     });
   }
 
-  ngOnInit() {
-    this.createForm();
-    const id = this.route.snapshot.paramMap.get('id');
 
-    if (id) {
-      this.isEditMode = true;
-      this.subcategoryId = +id;
 
-      const sub = this.subcategoryService.getById(this.subcategoryId);
-      if (!sub) return;
+  onSave(): void {
+    if (this.subcategoryForm.invalid) return;
 
-      this.form.patchValue(sub);
+    this.isSaving = true;
 
-      // 🔒 Enterprise rule: category cannot change in edit
-      this.form.get('categoryId')?.disable();
-    }
+    this.subcategorySvc.create(this.mapToSubCategories(this.subcategoryForm.value))
+      .subscribe({
+        next: (res) => {
+          this.openDialog('success', 'Sub Category Saved', res.message);
+          this.isSaving = false;
+        },
+        error: (err) => {
+          this.openDialog(
+            'error',
+            'Save Failed',
+            err?.error?.message || 'Something went wrong'
+          );
+        }
+      });
   }
 
-  // save() {
-  //   if (this.form.invalid) return;
 
-  //   const raw = this.form.getRawValue();
+  onCancel() {
+    this.router.navigate(['/app/master/subcategories']);
+  }
 
-  //   if (this.isEditMode) {
-  //     this.subcategoryService.update({
-  //       id: this.subcategoryId,
-  //       ...raw
-  //     } as any);
-  //   } else {
-  //     const category = this.categories.find(c => c.id === raw.categoryId);
-  //     this.subcategoryService.add({
-  //       ...raw,
-  //       categoryName: category?.name
-  //     } as any);
-  //   }
+  private openDialog(
+    type: 'success' | 'error',
+    title: string,
+    message: string
+  ): void {
 
-  //   this.router.navigate(['/subcategories']);
+    const dialogRef = this.dialog.open(ApiResultDialog, {
+      disableClose: true,
+      data: { type, title, message }
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      // 🔥 THIS IS THE FIX
+      this.isSaving = false;
+      this.cdr.detectChanges();
+    });
+  }
+
+  // 🔹 SINGLE RESPONSIBILITY: MAPPING
+  private mapToSubCategories(formValue: any): SubCategory {
+    return {
+      categoryid: formValue.categoryid,
+      subcategoryname: formValue.subcategoryname,
+      subcategorycode: formValue.subcategorycode,
+      defaultgst: Number(formValue.defaultgst),
+      description: formValue.description?.trim(),
+      isactive: Boolean(formValue.isactive)
+    };
+  }
+
+  cancel() { }
+
+  loadSubCategories(): void {
+
+    this.isLoadingCategories = true;
+
+    this.categoryService.getAll().subscribe({
+      next: (data) => {
+        this.categories = data;
+      },
+      error: () => {
+        this.isLoadingCategories = false;
+        this.openErrorDialog('Failed to load categories');
+      }
+    });
+  }
+
+  // openSuccessDialog(message: string): void {
+  //   const dialogRef = this.dialog.open(ApiResultDialog, {
+  //     data: {
+  //       title: 'Subcategory Saved',
+  //       message,
+  //       type: 'success'
+  //     }
+  //   });
+
+  //   dialogRef.afterClosed().subscribe(() => {
+  //     this.isSaving = false;   // ✅ loader hidden
+  //     this.cdr.detectChanges();
+  //   });
   // }
+
+  openErrorDialog(message: string): void {
+    const dialogRef = this.dialog.open(ApiResultDialog, {
+      data: {
+        title: 'Error',
+        message,
+        type: 'error'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.isSaving = false;   // ✅ save button visible again
+      this.cdr.detectChanges();
+    });
+  }
 }
+

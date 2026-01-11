@@ -5,7 +5,8 @@ import { PriceListService } from '../service/pricelist.service';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { RouterLink } from '@angular/router';
-import { PriceListItem } from '../models/pricelist.model';
+import { PriceListModel } from '../models/pricelist.model';
+
 
 @Component({
   selector: 'app-pricelist-items',
@@ -23,7 +24,7 @@ export class PricelistItems implements OnInit {
 
   /** ✅ Explicit typing to avoid never[] */
   products = this.productService.getAll();
-  items: PriceListItem[] = [];
+  items: PriceListModel[] = [];
 
   /** ✅ Non-nullable, enterprise-safe form */
   form = this.fb.nonNullable.group({
@@ -35,7 +36,7 @@ export class PricelistItems implements OnInit {
   });
 
   ngOnInit() {
-    this.items = this.service.getItems(this.priceListId);
+   
   }
 
   addItem() {
@@ -47,15 +48,15 @@ export class PricelistItems implements OnInit {
       p => p.id === productId
     );
 
-    this.service.addItem({
-      priceListId: this.priceListId,
-      productId: productId,
-      productName: product?.name,
-      price: this.form.value.price,
-      minQty: this.form.value.minQty,
-      maxQty: this.form.value.maxQty,
-      isActive: this.form.value?.isActive
-    });
+    // this.service.addItem({
+    //   priceListId: this.priceListId,
+    //   productId: productId,
+    //   productName: product?.name,
+    //   price: this.form.value.price,
+    //   minQty: this.form.value.minQty,
+    //   maxQty: this.form.value.maxQty,
+    //   isActive: this.form.value?.isActive
+    // });
 
     // ✅ Reset safely for non-nullable form
     this.form.setValue({
@@ -66,6 +67,6 @@ export class PricelistItems implements OnInit {
       isActive: true
     });
 
-    this.items = this.service.getItems(this.priceListId);
+    
   }
 }

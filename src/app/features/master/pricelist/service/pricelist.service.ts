@@ -1,28 +1,31 @@
 import { Injectable } from '@angular/core';
-import { PriceList, PriceListItem } from '../models/pricelist.model';
+import { ApiService } from '../../../../shared/api.service';
+import { Observable } from 'rxjs';
+import { PriceListModel } from '../models/pricelist.model';
+
+
+
 
 
 @Injectable({ providedIn: 'root' })
 export class PriceListService {
 
-  priceLists: PriceList[] = [];
-  items: PriceListItem[] = [];
+    constructor(private api: ApiService) { }
 
-  getPriceLists() {
-    return this.priceLists;
-  }
+    create(payload: PriceListModel): Observable<any> {
+        console.log('payload', payload)
+        return this.api.post('pricelists', payload);
+    }
 
-  addPriceList(pl: PriceList) {
-    pl.id = Date.now();
-    this.priceLists.push(pl);
-  }
+    update(id: string, payload: PriceListModel): Observable<any> {
+        return this.api.put(`pricelists/${id}`, payload);
+    }
 
-  getItems(priceListId: number) {
-    return this.items.filter(i => i.priceListId === priceListId);
-  }
+    delete(id: string): Observable<any> {
+        return this.api.delete(`pricelists/${id}`);
+    }
 
-  addItem(item: PriceListItem) {
-    item.id = Date.now();
-    this.items.push(item);
-  }
+    getAll(): Observable<PriceListModel[]> {
+        return this.api.get('pricelists');
+    }
 }
