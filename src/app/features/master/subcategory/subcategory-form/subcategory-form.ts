@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SubcategoryService } from '../../../../core/services/subcategory-service/subcategory.service';
-import { CategoryService } from '../../../../core/services/category-service/category.service';
+
 
 
 @Component({
@@ -28,9 +28,9 @@ export class SubcategoryForm implements OnInit {
 
    readonly subcategoryService=inject(SubcategoryService);
 
-  readonly categoryService = inject(CategoryService);
+  // readonly categoryService = inject(CategoryService);
 
-  categories = this.categoryService.getAll();
+  // categories = this.categoryService.getAll();
   isEditMode = false;
   subcategoryId!: number;
 
@@ -40,6 +40,7 @@ export class SubcategoryForm implements OnInit {
     this.form = this.fb.group({
       categoryId: [null, Validators.required],
       name: ['', Validators.required],
+      defaultGst:[],
       code: [''],
       description: [''],
       isActive: [true]
@@ -64,24 +65,24 @@ export class SubcategoryForm implements OnInit {
     }
   }
 
-  save() {
-    if (this.form.invalid) return;
+  // save() {
+  //   if (this.form.invalid) return;
 
-    const raw = this.form.getRawValue();
+  //   const raw = this.form.getRawValue();
 
-    if (this.isEditMode) {
-      this.subcategoryService.update({
-        id: this.subcategoryId,
-        ...raw
-      } as any);
-    } else {
-      const category = this.categories.find(c => c.id === raw.categoryId);
-      this.subcategoryService.add({
-        ...raw,
-        categoryName: category?.name
-      } as any);
-    }
+  //   if (this.isEditMode) {
+  //     this.subcategoryService.update({
+  //       id: this.subcategoryId,
+  //       ...raw
+  //     } as any);
+  //   } else {
+  //     const category = this.categories.find(c => c.id === raw.categoryId);
+  //     this.subcategoryService.add({
+  //       ...raw,
+  //       categoryName: category?.name
+  //     } as any);
+  //   }
 
-    this.router.navigate(['/subcategories']);
-  }
+  //   this.router.navigate(['/subcategories']);
+  // }
 }

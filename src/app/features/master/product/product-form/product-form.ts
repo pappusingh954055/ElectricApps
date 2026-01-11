@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../service/product.service';
-import { CategoryService } from '../../../../core/services/category-service/category.service';
+
 import { SubcategoryService } from '../../../../core/services/subcategory-service/subcategory.service';
 import { Subcategory } from '../../../../core/models/subcategory-models/subcategory.model';
 
@@ -25,10 +25,10 @@ export class ProductForm implements OnInit {
 
   ) { }
   form!: FormGroup;
-  readonly categoryService = inject(CategoryService);
+  // readonly categoryService = inject(CategoryService);
   readonly subcategoryService = inject(SubcategoryService);
 
-  categories = this.categoryService.getAll();
+  // categories = this.categoryService.getAll();
   subcategories = this.subcategoryService.getAll();
   filteredSubcategories: Subcategory[] = [];
 
@@ -77,25 +77,25 @@ export class ProductForm implements OnInit {
     this.form.patchValue({ subcategoryId: null });
   }
 
-  save() {
-    if (this.form.invalid) return;
+  // save() {
+  //   if (this.form.invalid) return;
 
-    const raw = this.form.value;
+  //   const raw = this.form.value;
 
-    const category = this.categories.find(c => c.id === raw.categoryId);
-    const subcategory = this.subcategories.find(s => s.id === raw.subcategoryId);
+  //   const category = this.categories.find(c => c.id === raw.categoryId);
+  //   const subcategory = this.subcategories.find(s => s.id === raw.subcategoryId);
 
-    const product = {
-      ...raw,
-      id: this.productId,
-      categoryName: category?.name,
-      subcategoryName: subcategory?.name
-    } as any;
+  //   const product = {
+  //     ...raw,
+  //     id: this.productId,
+  //     categoryName: category?.name,
+  //     subcategoryName: subcategory?.name
+  //   } as any;
 
-    this.isEditMode
-      ? this.productService.update(product)
-      : this.productService.add(product);
+  //   this.isEditMode
+  //     ? this.productService.update(product)
+  //     : this.productService.add(product);
 
-    this.router.navigate(['/products']);
-  }
+  //   this.router.navigate(['/products']);
+  // }
 }

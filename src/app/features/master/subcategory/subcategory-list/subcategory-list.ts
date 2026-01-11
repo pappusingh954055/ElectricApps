@@ -6,7 +6,7 @@ import { MaterialModule } from '../../../../shared/material/material/material-mo
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { SubcategoryService } from '../../../../core/services/subcategory-service/subcategory.service';
-import { CategoryService } from '../../../../core/services/category-service/category.service';
+
 import { Subcategory } from '../../../../core/models/subcategory-models/subcategory.model';
 
 
@@ -28,13 +28,13 @@ export class SubcategoryList implements OnInit {
 
   ) { }
 
-  readonly categoryService = inject(CategoryService);
+  // readonly categoryService = inject(CategoryService);
 
   subcategories: Subcategory[] = [];
 
   filteredSubcategories: Subcategory[] = [];
 
-  categories = this.categoryService.getAll();
+  // categories = this.categoryService.getAll();
   selectedCategoryId: number | null = null;
 
 

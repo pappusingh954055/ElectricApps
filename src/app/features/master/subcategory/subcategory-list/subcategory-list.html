@@ -14,8 +14,8 @@
       <mat-select panelClass="category-filter-panel" [disableOptionCentering]="true" [value]="selectedCategoryId"
         (selectionChange)="filterByCategory()">
         <mat-option [value]="null">All Categories</mat-option>
-        <mat-option *ngFor="let c of categories" [value]="c.id">
-          {{ c.name }}
+        <mat-option>
+          
         </mat-option>
       </mat-select>
     </mat-form-field>

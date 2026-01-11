@@ -9,8 +9,8 @@
       <mat-label>Category *</mat-label>
       <mat-select formControlName="categoryId"
                   (selectionChange)="onCategoryChange($event.value)">
-        <mat-option *ngFor="let c of categories" [value]="c.id">
-          {{ c.name }}
+        <mat-option>
+          
         </mat-option>
       </mat-select>
     </mat-form-field>
@@ -71,7 +71,7 @@
   <div class="actions">
     <button mat-raised-button
             color="primary"
-            (click)="save()"
+            
             [disabled]="form.invalid">
       Save
     </button>

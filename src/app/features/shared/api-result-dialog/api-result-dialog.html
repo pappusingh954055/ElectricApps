@@ -1,0 +1,15 @@
+<div class="dialog-wrapper">
+  <mat-icon class="dialog-icon" [ngClass]="data.type">
+    {{ data.type === 'success' ? 'info' : 'cancel' }}
+  </mat-icon>
+
+  <div class="dialog-title">{{ data.title }}</div>
+
+  <div class="dialog-message">{{ data.message }}</div>
+
+  <div class="dialog-actions">
+    <button mat-raised-button color="primary" (click)="close()">
+      OK
+    </button>
+  </div>
+</div>

@@ -1,0 +1,97 @@
+/* ===============================
+   DIALOG CONTAINER
+================================ */
+
+:host {
+  display: block;
+}
+
+.mat-mdc-dialog-container {
+  padding: 0;
+}
+
+/* ===============================
+   DIALOG CONTENT
+================================ */
+
+.dialog-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 28px 20px;
+  text-align: center;
+  min-width: 320px;
+  max-width: 420px;
+}
+
+/* ===============================
+   ICON
+================================ */
+
+.dialog-icon {
+  font-size: 44px;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 12px;
+}
+
+/* Success */
+.dialog-icon.success {
+  color: #2e7d32; /* Material Green 800 */
+}
+
+/* Error */
+.dialog-icon.error {
+  color: #d32f2f; /* Material Red 700 */
+}
+
+/* ===============================
+   TITLE
+================================ */
+
+.dialog-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+/* ===============================
+   MESSAGE
+================================ */
+
+.dialog-message {
+  font-size: 14.5px;
+  color: #555;
+  margin-bottom: 20px;
+  white-space: pre-line;
+}
+
+/* ===============================
+   ACTION BUTTON
+================================ */
+
+.dialog-actions {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.dialog-actions button {
+  min-width: 96px;
+  height: 36px;
+  font-weight: 500;
+  border-radius: 18px;
+}
+
+/* ===============================
+   MOBILE RESPONSIVE
+================================ */
+
+@media (max-width: 480px) {
+  .dialog-wrapper {
+    min-width: auto;
+    width: 100%;
+    padding: 20px;
+  }
+}

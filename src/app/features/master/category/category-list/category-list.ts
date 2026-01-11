@@ -5,7 +5,8 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { RouterLink } from '@angular/router';
 import { Category } from '../../../../core/models/category-models/category.model';
-import { CategoryService } from '../../../../core/services/category-service/category.service';
+import { CategoryService } from '../services/category.service';
+
 
 @Component({
   selector: 'app-category-list',
@@ -21,7 +22,7 @@ export class CategoryList implements OnInit {
   constructor(private service: CategoryService) {}
 
   ngOnInit() {
-    this.categories = this.service.getAll();
+   // this.categories = this.service.getAll();
   }
 
   toggleStatus(category: Category) {
