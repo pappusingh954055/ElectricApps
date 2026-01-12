@@ -1,0 +1,18 @@
+export interface GridColumn {
+  /** Property name from DTO (API response) */
+  field: string;
+
+  /** Column header text */
+  header: string;
+
+  /** Allow server-side sorting */
+  sortable?: boolean;
+
+  cell?: (row: any) => string | number;
+
+  /** Optional width */
+  width?: string;
+
+  /** Optional column type (text, number, boolean, date) */
+  type?: 'text' | 'number' | 'boolean' | 'date';
+}

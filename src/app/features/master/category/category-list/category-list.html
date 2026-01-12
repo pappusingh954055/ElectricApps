@@ -1,5 +1,4 @@
 <mat-card>
-
   <mat-card-title class="d-flex justify-between">
     Categories
     <button mat-raised-button color="primary" routerLink="/app/master/categories/add">
@@ -9,7 +8,15 @@
 
   <!-- <category-gridview [categoryData]></category-gridview> -->
 
-  <app-data-grid [columns]="columns" [data]="categories" [isLoading]="isLoading && categories.length===0"
+  <!-- <app-data-grid [columns]="columns" [data]="categories" [isLoading]="isLoading && categories.length===0"
     [showActions]="true" (edit)="onEdit($event)" (delete)="onDelete($event)">
-  </app-data-grid>
-</mat-card>
+  </app-data-grid> -->
+
+
+<app-server-datagrid
+  [columns]="columns"
+  [data]="data"
+  [totalCount]="totalCount"
+  [loading]="isLoading && data.length===0"
+  (loadData)="loadCategories($event)">
+</app-server-datagrid>

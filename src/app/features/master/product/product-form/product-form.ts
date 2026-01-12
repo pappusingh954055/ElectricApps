@@ -1,16 +1,21 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../service/product.service';
+import { ProductLookUpService } from '../service/product.lookup.sercice';
+import { FormFooter } from '../../../shared/form-footer/form-footer';
+import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
+import { Product } from '../model/product.model';
+import { MatDialog } from '@angular/material/dialog';
 
 
 
 
 @Component({
   selector: 'app-product-form',
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule, FormFooter],
   templateUrl: './product-form.html',
   styleUrl: './product-form.scss',
 })
@@ -20,81 +25,129 @@ export class ProductForm implements OnInit {
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-    private productService: ProductService,
+    private cdr: ChangeDetectorRef,
+    private dialog: MatDialog,
 
   ) { }
-  form!: FormGroup;
-  // readonly categoryService = inject(CategoryService);
-  // readonly subcategoryService = inject(SubcategoryService);
+  productsForm!: FormGroup;
 
-  // categories = this.categoryService.getAll();
-  // subcategories = this.subcategoryService.getAll();
-  // filteredSubcategories: Subcategory[] = [];
+  readonly productLukupService = inject(ProductLookUpService);
+  readonly productService = inject(ProductService);
 
+  isSaving = false;
   isEditMode = false;
   productId!: number;
 
+  categories: any = [];
+  subcategories: any = [];
+
   createForm() {
-    this.form = this.fb.group({
-      categoryId: [null, Validators.required],
-      subcategoryId: [null, Validators.required],
-
-      name: ['', Validators.required],
+    this.productsForm = this.fb.group({
+      categoryid: [null, Validators.required],
+      subcategoryid: [null, Validators.required],
+      productname: ['', Validators.required],
       sku: [''],
-      unit: ['PCS', Validators.required],
-
-      hsnCode: [''],
-      gstPercent: [0, [Validators.required, Validators.min(0), Validators.max(28)]],
-
-      trackInventory: [true],
-      minStock: [null],
-
-      isActive: [true]
+      unit: ['', Validators.required],
+      hsncode: [''],
+      defaultgst: [0, [Validators.required, Validators.min(0), Validators.max(28)]],
+      tracknventory: [],
+      minstock: [],
+      description: ['']
     });
   }
 
+  onSave(): void {
+    if (this.productsForm.invalid) return;
+
+    this.isSaving = true;
+
+    this.productService.create(this.mapToProducts(this.productsForm.value))
+      .subscribe({
+        next: (res) => {
+          this.openDialog('success', 'Product Saved', res.message);
+          this.isSaving = false;
+        },
+        error: (err) => {
+          this.openDialog(
+            'error',
+            'Save Failed',
+            err?.error?.message || 'Something went wrong'
+          );
+        }
+      });
+  }
+
+
+  onCancel() {
+    this.router.navigate(['/app/master/products']);
+  }
+
+  private openDialog(
+    type: 'success' | 'error',
+    title: string,
+    message: string
+  ): void {
+
+    const dialogRef = this.dialog.open(ApiResultDialog, {
+      disableClose: true,
+      data: { type, title, message }
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      // 🔥 THIS IS THE FIX
+      this.isSaving = false;
+      this.cdr.detectChanges();
+    });
+  }
+
+  // 🔹 SINGLE RESPONSIBILITY: MAPPING
+  private mapToProducts(formValue: any): Product {
+    return {
+      categoryid: formValue.categoryid,
+      subcategoryid: formValue.subcategoryid,
+      productname: formValue.productname,
+      sku: formValue.sku,
+      unit: formValue.unit,
+      hsncode: formValue.hsncode,
+      defaultgst: Number(formValue.defaultgst),
+      minstock: Number(formValue.minstock),
+      trackinventory: Boolean(formValue.trackinventory),
+      description: formValue.description?.trim(),
+    };
+  }
 
 
   ngOnInit() {
     this.createForm();
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.isEditMode = true;
-      this.productId = +id;
+    this.fillCategorySubcategory();
 
-      const product = this.productService.getById(this.productId);
-      if (!product) return;
-
-      this.form.patchValue(product);
-      this.onCategoryChange(product.categoryId);
-    }
   }
 
-  onCategoryChange(categoryId: number) {
-    // this.filteredSubcategories = this.subcategories.filter(s => s.categoryId === categoryId);
-
-    this.form.patchValue({ subcategoryId: null });
+  fillCategorySubcategory() {
+    this.productLukupService.getLookups().subscribe({
+      next: ((res: any) => {
+        this.categories = res.categories;
+        this.subcategories = res.subcategories;
+      })
+    });
   }
 
-  // save() {
-  //   if (this.form.invalid) return;
+  onCategoryChange(categoryId: string): void {
 
-  //   const raw = this.form.value;
+    this.subcategories = [];
 
-  //   const category = this.categories.find(c => c.id === raw.categoryId);
-  //   const subcategory = this.subcategories.find(s => s.id === raw.subcategoryId);
+    if (!categoryId) return;
 
-  //   const product = {
-  //     ...raw,
-  //     id: this.productId,
-  //     categoryName: category?.name,
-  //     subcategoryName: subcategory?.name
-  //   } as any;
-
-  //   this.isEditMode
-  //     ? this.productService.update(product)
-  //     : this.productService.add(product);
-
-  //   this.router.navigate(['/products']);
-  // }
+    this.productLukupService
+      .getSubcategoriesByCategory(categoryId)
+      .subscribe({
+        next: data => {
+          this.subcategories = data;
+          console.log(this.subcategories)
+        },
+        error: err => {
+          console.log('failed to losad subcategories', err);
+        }
+      });
+  }
 }

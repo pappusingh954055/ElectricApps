@@ -40,32 +40,7 @@ export class PricelistItems implements OnInit {
   }
 
   addItem() {
-    if (this.form.invalid) return;
-
-    const productId = this.form.value.productId;
-
-    const product = this.products.find(
-      p => p.id === productId
-    );
-
-    // this.service.addItem({
-    //   priceListId: this.priceListId,
-    //   productId: productId,
-    //   productName: product?.name,
-    //   price: this.form.value.price,
-    //   minQty: this.form.value.minQty,
-    //   maxQty: this.form.value.maxQty,
-    //   isActive: this.form.value?.isActive
-    // });
-
-    // ✅ Reset safely for non-nullable form
-    this.form.setValue({
-      productId: 0,
-      price: 0,
-      minQty: 1,
-      maxQty: 0,
-      isActive: true
-    });
+   
 
     
   }

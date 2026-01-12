@@ -1,21 +1,13 @@
 export interface Product {
-  id: number;
-
-  categoryId: number;
-  categoryName?: string;
-
-  subcategoryId: number;
-  subcategoryName?: string;
-
-  name: string;
+  id?: number;
+  categoryid?: number;
+  subcategoryid?: number;
+  productname?: string;
   sku?: string;
-  unit: 'KG' | 'PCS' | 'BOX';
-
-  hsnCode?: string;
-  gstPercent: number;
-
-  trackInventory: boolean;
-  minStock?: number;
-
-  isActive: boolean;
+  unit?: 'KG' | 'PCS' | 'BOX';
+  hsncode?: string;
+  defaultgst?: number;
+  minstock?: number;
+  trackinventory?: boolean;  
+  description?: string;
 }

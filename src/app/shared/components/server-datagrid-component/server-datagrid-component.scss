@@ -1,0 +1,30 @@
+.datagrid-container {
+    width: 100%;
+}
+
+.search-box {
+    width: 280px;
+    margin-bottom: 12px;
+}
+
+
+th.sortable {
+    cursor: pointer;
+    user-select: none;
+}
+
+th.sortable mat-icon {
+    font-size: 16px;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
+.grid-loader {
+    display: flex;
+    justify-content: center;
+    padding: 24px;
+}
+
+table {
+    width: 100%;
+}
