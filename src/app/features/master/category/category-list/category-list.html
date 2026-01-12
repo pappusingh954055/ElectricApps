@@ -6,17 +6,30 @@
     </button>
   </mat-card-title>
 
-  <!-- <category-gridview [categoryData]></category-gridview> -->
+  <app-server-datagrid 
+    [columns]="columns" 
+    [data]="data" 
+    [totalCount]="totalCount" 
+    [loading]="loading"
+    (loadData)="loadCategories($event)" 
+    (selectionChange)="selectedRows = $event" 
+    (edit)="onEdit($event)"
+    (delete)="onDelete($event[0])">
+  </app-server-datagrid>
 
-  <!-- <app-data-grid [columns]="columns" [data]="categories" [isLoading]="isLoading && categories.length===0"
-    [showActions]="true" (edit)="onEdit($event)" (delete)="onDelete($event)">
-  </app-data-grid> -->
+  <!-- <app-server-datagrid
+    [columns]="columns"
+    [data]="data"
+    [totalCount]="totalCount"
+    [loading]="loading"
+    (loadloadData)="loadCategories($event)"
+    (edit)="onEdit($event)"
+    (delete)="onDelete($event[0])">
+  </app-server-datagrid> -->
 
-
-<app-server-datagrid
-  [columns]="columns"
-  [data]="data"
-  [totalCount]="totalCount"
-  [loading]="isLoading && data.length===0"
-  (loadData)="loadCategories($event)">
-</app-server-datagrid>
+  <mat-card-actions>
+    <button mat-raised-button color="warn" (click)="deleteSelected()" [disabled]="!selectedRows.length">
+      Delete Selected
+    </button>
+  </mat-card-actions>
+</mat-card>

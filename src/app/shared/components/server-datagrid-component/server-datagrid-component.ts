@@ -11,14 +11,60 @@ import { MaterialModule } from '../../material/material/material-module';
   templateUrl: './server-datagrid-component.html',
   styleUrl: './server-datagrid-component.scss',
 })
-export class ServerDatagridComponent <T> {
+export class ServerDatagridComponent<T> {
 
   @Input() columns: GridColumn[] = [];
   @Input() data: T[] = [];
   @Input() totalCount = 0;
   @Input() loading = false;
 
+
   @Output() loadData = new EventEmitter<GridRequest>();
+
+  @Output() edit = new EventEmitter<any>();
+  @Output() delete = new EventEmitter<any[]>();
+
+  @Output() selectionChange = new EventEmitter<any[]>();
+
+
+  selection = new Set<any>();
+
+  displayedColumnsWithActions(): string[] {
+    return [
+      'select',
+      ...this.columns.map(c => c.field),
+      'actions'
+    ];
+  }
+
+  toggleRow(row: any): void {
+    this.selection.has(row)
+      ? this.selection.delete(row)
+      : this.selection.add(row);
+
+    this.emitSelection();
+  }
+
+  toggleAll(event: any): void {
+    if (event.checked) {
+      this.data.forEach(r => this.selection.add(r));
+    } else {
+      this.selection.clear();
+    }
+
+    this.emitSelection();
+  }
+  private emitSelection(): void {
+    this.selectionChange.emit([...this.selection]);
+  }
+  isAllSelected(): boolean {
+    return this.selection.size === this.data.length;
+  }
+
+  deleteSelected(): void {
+    if (this.selection.size === 0) return;
+    this.delete.emit([...this.selection]);
+  }
 
   request: GridRequest = {
     pageNumber: 1,
@@ -33,7 +79,7 @@ export class ServerDatagridComponent <T> {
   onSearch(value: string): void {
     this.request.search = value;
     this.request.pageNumber = 1;
-    this.loadData.emit(this.request);
+    this.loadData.emit({ ...this.request });
   }
 
   onSort(column: GridColumn): void {
@@ -43,12 +89,19 @@ export class ServerDatagridComponent <T> {
     this.request.sortDirection =
       this.request.sortDirection === 'asc' ? 'desc' : 'asc';
 
-    this.loadData.emit(this.request);
+    this.request.pageNumber = 1; // ✅ reset page on sort
+    this.loadData.emit({ ...this.request });
   }
 
   onPageChange(event: PageEvent): void {
     this.request.pageNumber = event.pageIndex + 1;
     this.request.pageSize = event.pageSize;
-    this.loadData.emit(this.request);
+
+    this.loadData.emit({ ...this.request });
+  }
+
+  clearSelection(): void {
+    this.selection.clear();
+    this.selectionChange.emit([]);
   }
 }

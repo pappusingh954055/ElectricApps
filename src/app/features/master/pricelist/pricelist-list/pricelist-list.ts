@@ -7,11 +7,11 @@ import { materialize } from 'rxjs';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { RouterLink } from '@angular/router';
 import { PriceListModel } from '../models/pricelist.model';
-import { DataGrid } from '../../../../shared/components/data-grid/data-grid';
+
 
 @Component({
   selector: 'app-pricelist-list',
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, RouterLink, DataGrid],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule, RouterLink],
   templateUrl: './pricelist-list.html',
   styleUrl: './pricelist-list.scss',
 })

@@ -6,11 +6,11 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { Product } from '../model/product.model';
 import { ProductService } from '../service/product.service';
-import { DataGrid } from '../../../../shared/components/data-grid/data-grid';
+
 
 @Component({
   selector: 'app-product-list',
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, MaterialModule, DataGrid],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, MaterialModule],
   templateUrl: './product-list.html',
   styleUrl: './product-list.scss',
 })

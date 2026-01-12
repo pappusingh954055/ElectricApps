@@ -5,10 +5,10 @@ import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { DataGrid } from '../../../../shared/components/data-grid/data-grid';
+
 import { SubCategoryService } from '../services/subcategory.service';
 import { SubCategory } from '../modesls/subcategory.model';
-import { Category } from '../../category/models/category.model';
+
 import { CategoryService } from '../../category/services/category.service';
 
 
@@ -16,7 +16,7 @@ import { CategoryService } from '../../category/services/category.service';
 
 @Component({
   selector: 'app-subcategory-list',
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink, DataGrid],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink],
   templateUrl: './subcategory-list.html',
   styleUrl: './subcategory-list.scss',
 })

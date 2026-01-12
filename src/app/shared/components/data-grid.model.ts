@@ -1,5 +1,7 @@
 export interface GridColumn {
-    columnDef: string;
+    field: string;
     header: string;
-    cell?: (row: any) => string;
+    sortable?: boolean;
+    cell?: (row: any) => string | number;
+    isAction?: boolean; // 👈 NEW
 }

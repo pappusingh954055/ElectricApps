@@ -1,7 +1,9 @@
 <div class="datagrid-container">
+
     <!-- 🔄 LOADER -->
     <div class="grid-loader" *ngIf="loading">
-        <mat-progress-spinner diameter="40" mode="indeterminate"></mat-progress-spinner>
+        <mat-progress-spinner diameter="40" mode="indeterminate">
+        </mat-progress-spinner>
     </div>
 
     <!-- 🔍 SEARCH -->
@@ -12,24 +14,58 @@
 
     <!-- 📊 TABLE -->
     <table mat-table [dataSource]="data">
+
+        <!-- Checkbox column (bulk select) -->
+        <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef>
+                <mat-checkbox (change)="toggleAll($event)" [checked]="isAllSelected()">
+                </mat-checkbox>
+            </th>
+
+            <td mat-cell *matCellDef="let row">
+                <mat-checkbox (change)="toggleRow(row)" [checked]="selection.has(row)">
+                </mat-checkbox>
+            </td>
+        </ng-container>
+
+        <!-- Dynamic columns -->
         <ng-container *ngFor="let col of columns" [matColumnDef]="col.field">
-            <th mat-header-cell *matHeaderCellDef (click)="onSort(col)" [class.sortable]="col.sortable">
+            <!-- HEADER -->
+            <th mat-header-cell *matHeaderCellDef (click)="!loading && onSort(col)" [class.sortable]="col.sortable">
                 {{ col.header }}
                 <mat-icon *ngIf="col.sortable">swap_vert</mat-icon>
             </th>
 
+            
             <td mat-cell *matCellDef="let row">
-                {{ row[col.field] }}
+                {{ col.cell ? col.cell(row) : row[col.field] }}
+            </td>
+
+        </ng-container>
+
+        <!-- Actions -->
+        <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+
+            <td mat-cell *matCellDef="let row">
+                <button mat-icon-button color="primary" (click)="edit.emit(row)">
+                    <mat-icon>edit</mat-icon>
+                </button>
+
+                <button mat-icon-button color="warn" (click)="delete.emit([row])">
+                    <mat-icon>delete</mat-icon>
+                </button>
             </td>
         </ng-container>
 
-        <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns()"></tr>
+        <tr mat-header-row *matHeaderRowDef="displayedColumnsWithActions()"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumnsWithActions()"></tr>
+
     </table>
 
     <!-- 📄 PAGINATION -->
-    <mat-paginator [length]="totalCount" [pageSize]="request.pageSize" [pageSizeOptions]="[5,10,20,50]"
-        (page)="onPageChange($event)">
+    <mat-paginator [disabled]="loading" [length]="totalCount" [pageSize]="request.pageSize"
+        [pageSizeOptions]="[5,10,20,50]" (page)="onPageChange($event)">
     </mat-paginator>
 
 </div>
