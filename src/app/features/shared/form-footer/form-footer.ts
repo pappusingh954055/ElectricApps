@@ -10,7 +10,7 @@ import { CommonModule } from '@angular/common';
 })
 export class FormFooter {
 
-  @Input() isSaving = false;
+  @Input() loading = false;
 
   @Output() save = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
@@ -20,7 +20,7 @@ export class FormFooter {
   onEnter(event: Event) {
     const keyboardEvent = event as KeyboardEvent;
 
-    if (this.isSaving) return;
+    if (this.loading) return;
 
     keyboardEvent.preventDefault();
     this.save.emit();

@@ -12,9 +12,9 @@
     [totalCount]="totalCount" 
     [loading]="loading"
     (loadData)="loadCategories($event)" 
-    (selectionChange)="selectedRows = $event" 
+    (selectionChange)="onSelectionChange($event)"
     (edit)="onEdit($event)"
-    (delete)="onDelete($event[0])">
+    (delete)="deleteCategory($event[0])">
   </app-server-datagrid>
 
   <!-- <app-server-datagrid
@@ -28,7 +28,7 @@
   </app-server-datagrid> -->
 
   <mat-card-actions>
-    <button mat-raised-button color="warn" (click)="deleteSelected()" [disabled]="!selectedRows.length">
+    <button mat-raised-button color="warn" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
       Delete Selected
     </button>
   </mat-card-actions>

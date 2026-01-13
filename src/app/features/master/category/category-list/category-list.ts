@@ -87,22 +87,48 @@ export class CategoryList implements OnInit {
     this.router.navigate(['/app/master/categories/edit', row.id]);
   }
 
-  onDelete(category: any): void {
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
-      data: {
-        title: 'Delete Category',
-        message: `Are you sure you want to delete "${category.categoryName}"?`
-      }
-    });
+  deleteCategory(category: any): void {
+    this.dialog
+      .open(ConfirmDialogComponent, {
+        data: {
+          title: 'Confirm Delete',
+          message: 'Are you sure you want to delete this category?'
+        }
+      })
+      .afterClosed()
+      .subscribe(confirm => {
+        if (!confirm) return;
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.categoryService.delete(category.id).subscribe(() => {
-          this.loadCategories(this.lastRequest);
+        this.loading = true;
+
+        this.categoryService.delete(category.id).subscribe({
+          next: res => {
+            this.loading = false;
+
+            this.dialog.open(ApiResultDialog, {
+              data: {
+                success: true,
+                message: res.message
+              }
+            });
+
+            this.loadCategories(this.lastRequest);
+          },
+          error: err => {
+            this.loading = false;
+
+            const message =
+              err?.error?.message || 'Unable to delete category';
+
+            this.dialog.open(ApiResultDialog, {
+              data: {
+                success: false,
+                message
+              }
+            });
+          }
         });
-      }
-    });
+      });
   }
 
 
@@ -111,7 +137,7 @@ export class CategoryList implements OnInit {
     this.loadCategories(this.lastRequest);
   }
 
-  deleteSelected(): void {
+  confirmBulkDelete(): void {
     if (!this.selectedRows.length) return;
 
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
@@ -122,25 +148,50 @@ export class CategoryList implements OnInit {
       }
     });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (!result) return;
+    dialogRef.afterClosed().subscribe(confirm => {
+      if (!confirm) return;
 
-      const ids = this.selectedRows.map(r => r.id);
+      const ids = this.selectedRows.map(x => x.id);
 
       this.loading = true;
 
       this.categoryService.deleteMany(ids).subscribe({
-        next: () => {
+        next: (res) => {
+          // 🔄 Reload grid
           this.loadCategories(this.lastRequest);
 
-          // ✅ CLEAR SELECTION PROPERLY
+          // 🧹 Clear selection via grid reference
           this.grid.clearSelection();
-        },
-        error: () => {
+
           this.loading = false;
+          this.dialog.open(ApiResultDialog, {
+            data: {
+              success: true,
+              message: res.message
+            }
+          });
+
+          this.cdr.detectChanges();
+        },
+        error: err => {
+          console.error(err);
+          this.loading = false;
+          const message =
+            err?.error?.message || 'Unable to delete category';
+
+          this.dialog.open(ApiResultDialog, {
+            data: {
+              success: false,
+              message
+            }
+          });
+          this.cdr.detectChanges();
         }
       });
     });
   }
 
+  onSelectionChange(rows: any[]) {
+    this.selectedRows = rows;
+  }
 }

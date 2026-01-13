@@ -29,7 +29,7 @@ export class PricelistForm implements OnInit {
 
   pricelistsForm!: FormGroup;
 
-  isSaving = false;
+  loading = false;
 
   mapToPriceList!: PriceListModel;
 
@@ -60,13 +60,13 @@ export class PricelistForm implements OnInit {
   onSave(): void {
     if (this.pricelistsForm.invalid) return;
 
-    this.isSaving = true;
+    this.loading = true;
 
     this.pricelistService.create(this.mapToPricelists(this.pricelistsForm.value))
       .subscribe({
         next: (res) => {
           this.openDialog('success', 'Sub Category Saved', res.message);
-          this.isSaving = false;
+          this.loading = false;
         },
         error: (err) => {
           this.openDialog(
@@ -91,7 +91,7 @@ export class PricelistForm implements OnInit {
 
     dialogRef.afterClosed().subscribe(() => {
       // 🔥 THIS IS THE FIX
-      this.isSaving = false;
+      this.loading = false;
       this.cdr.detectChanges();
     });
   }

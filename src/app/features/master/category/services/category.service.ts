@@ -28,7 +28,7 @@ export class CategoryService {
 
     // 🔹 Bulk delete (THIS IS WHAT YOU ASKED)
   deleteMany(ids: string[]): Observable<any> {
-    return this.api.post(`categories/bulk-delete`, ids);
+    return this.api.post<any>(`categories/bulk-delete`, ids);
   }
 
     getAll(): Observable<Category[]> {

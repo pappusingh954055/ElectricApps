@@ -26,7 +26,8 @@ import { Category, CategoryDropdown } from '../../category/models/category.model
 export class SubcategoryForm implements OnInit {
 
   subcategoryForm!: FormGroup;
-  isSaving = false;
+
+  loading = false;
 
   mapToSubCategory!: SubCategory;
 
@@ -39,13 +40,12 @@ export class SubcategoryForm implements OnInit {
 
   readonly router = inject(Router);
 
+  categories:any=[];
 
 
-  categories: any;
-  isLoadingCategories = false;
 
   ngOnInit(): void {
-    this.loadSubCategories();
+    this.loadCategories();
     this.subcategoryForm = this.fb.group({
       categoryid: ['', Validators.required],
       subcategoryname: ['', Validators.required],
@@ -61,20 +61,32 @@ export class SubcategoryForm implements OnInit {
   onSave(): void {
     if (this.subcategoryForm.invalid) return;
 
-    this.isSaving = true;
+    this.loading = true;
 
     this.subcategorySvc.create(this.mapToSubCategories(this.subcategoryForm.value))
       .subscribe({
         next: (res) => {
-          this.openDialog('success', 'Sub Category Saved', res.message);
-          this.isSaving = false;
+          this.dialog.open(ApiResultDialog, {
+            data: {
+              success: true,
+              message: res.message
+            }
+          }).afterClosed().subscribe(() => {
+            this.loading = false;
+            this.cdr.detectChanges();
+            this.router.navigate(['/app/master/subcategories']);
+          });
         },
         error: (err) => {
-          this.openDialog(
-            'error',
-            'Save Failed',
-            err?.error?.message || 'Something went wrong'
-          );
+          this.dialog.open(ApiResultDialog, {
+            data: {
+              success: false,
+              message: err.error?.message ?? 'Something went wrong'
+            }
+          }).afterClosed().subscribe(() => {
+            this.loading = false;
+            this.cdr.detectChanges();
+          });
         }
       });
   }
@@ -84,23 +96,6 @@ export class SubcategoryForm implements OnInit {
     this.router.navigate(['/app/master/subcategories']);
   }
 
-  private openDialog(
-    type: 'success' | 'error',
-    title: string,
-    message: string
-  ): void {
-
-    const dialogRef = this.dialog.open(ApiResultDialog, {
-      disableClose: true,
-      data: { type, title, message }
-    });
-
-    dialogRef.afterClosed().subscribe(() => {
-      // 🔥 THIS IS THE FIX
-      this.isSaving = false;
-      this.cdr.detectChanges();
-    });
-  }
 
   // 🔹 SINGLE RESPONSIBILITY: MAPPING
   private mapToSubCategories(formValue: any): SubCategory {
@@ -116,48 +111,28 @@ export class SubcategoryForm implements OnInit {
 
   cancel() { }
 
-  loadSubCategories(): void {
+  loadCategories(): void {
 
-    this.isLoadingCategories = true;
+    this.loading = true;
 
     this.categoryService.getAll().subscribe({
       next: (data) => {
-        this.categories = data;
+        this.categories=data;
+        console.log(this.categories);
+        this.loading = false;
+        this.cdr.detectChanges();
       },
-      error: () => {
-        this.isLoadingCategories = false;
-        this.openErrorDialog('Failed to load categories');
+      error: (err) => {
+        this.dialog.open(ApiResultDialog, {
+          data: {
+            success: false,
+            message: err.error?.message ?? 'Something went wrong'
+          }
+        }).afterClosed().subscribe(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
       }
-    });
-  }
-
-  // openSuccessDialog(message: string): void {
-  //   const dialogRef = this.dialog.open(ApiResultDialog, {
-  //     data: {
-  //       title: 'Subcategory Saved',
-  //       message,
-  //       type: 'success'
-  //     }
-  //   });
-
-  //   dialogRef.afterClosed().subscribe(() => {
-  //     this.isSaving = false;   // ✅ loader hidden
-  //     this.cdr.detectChanges();
-  //   });
-  // }
-
-  openErrorDialog(message: string): void {
-    const dialogRef = this.dialog.open(ApiResultDialog, {
-      data: {
-        title: 'Error',
-        message,
-        type: 'error'
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(() => {
-      this.isSaving = false;   // ✅ save button visible again
-      this.cdr.detectChanges();
     });
   }
 }

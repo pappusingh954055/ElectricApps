@@ -6,12 +6,6 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { ApiResultDialogData } from '../api-result-dialog.model';
 
 
-// export interface ApiResultDialogData {
-//   success: boolean;
-//   title: string;
-//   message: string;
-//   payload?: any;
-// }
 
 
 @Component({

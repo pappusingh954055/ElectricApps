@@ -34,7 +34,7 @@ export class ProductForm implements OnInit {
   readonly productLukupService = inject(ProductLookUpService);
   readonly productService = inject(ProductService);
 
-  isSaving = false;
+  loading = false;
   isEditMode = false;
   productId!: number;
 
@@ -43,36 +43,48 @@ export class ProductForm implements OnInit {
 
   createForm() {
     this.productsForm = this.fb.group({
-      categoryid: [null, Validators.required],
-      subcategoryid: [null, Validators.required],
-      productname: ['', Validators.required],
-      sku: [''],
-      unit: ['', Validators.required],
-      hsncode: [''],
+      categoryid: [null, [Validators.required]],
+      subcategoryid: [null, [Validators.required]],
+      productname: ['', [Validators.required]],
+      sku: [null],
+      unit: ['', [Validators.required]],
+      hsncode: [null],
       defaultgst: [0, [Validators.required, Validators.min(0), Validators.max(28)]],
-      tracknventory: [],
-      minstock: [],
-      description: ['']
+      tracknventory: [null],
+      minstock: [null],
+      description: [null]
     });
   }
 
   onSave(): void {
     if (this.productsForm.invalid) return;
 
-    this.isSaving = true;
+    this.loading = true;
 
     this.productService.create(this.mapToProducts(this.productsForm.value))
       .subscribe({
         next: (res) => {
-          this.openDialog('success', 'Product Saved', res.message);
-          this.isSaving = false;
+          this.dialog.open(ApiResultDialog, {
+            data: {
+              success: true,
+              message: res.message
+            }
+          }).afterClosed().subscribe(() => {
+            this.loading = false;
+            this.cdr.detectChanges();
+            this.router.navigate(['/app/master/products']);
+          });
         },
         error: (err) => {
-          this.openDialog(
-            'error',
-            'Save Failed',
-            err?.error?.message || 'Something went wrong'
-          );
+          this.dialog.open(ApiResultDialog, {
+            data: {
+              success: false,
+              message: err.error?.message ?? 'Something went wrong'
+            }
+          }).afterClosed().subscribe(() => {
+            this.loading = false;
+            this.cdr.detectChanges();
+          });
         }
       });
   }
@@ -82,23 +94,6 @@ export class ProductForm implements OnInit {
     this.router.navigate(['/app/master/products']);
   }
 
-  private openDialog(
-    type: 'success' | 'error',
-    title: string,
-    message: string
-  ): void {
-
-    const dialogRef = this.dialog.open(ApiResultDialog, {
-      disableClose: true,
-      data: { type, title, message }
-    });
-
-    dialogRef.afterClosed().subscribe(() => {
-      // 🔥 THIS IS THE FIX
-      this.isSaving = false;
-      this.cdr.detectChanges();
-    });
-  }
 
   // 🔹 SINGLE RESPONSIBILITY: MAPPING
   private mapToProducts(formValue: any): Product {

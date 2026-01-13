@@ -21,7 +21,7 @@ import { Router } from '@angular/router';
 })
 export class CategoryForm implements OnInit {
   categoryForm!: FormGroup;
-  isSaving = false;
+  loading = false;
 
   mapToCategory!: Category;
 
@@ -47,20 +47,32 @@ export class CategoryForm implements OnInit {
   onSave(): void {
     if (this.categoryForm.invalid) return;
 
-    this.isSaving = true;
+    this.loading = true;
 
     this.categorySvc.create(this.mapToCategories(this.categoryForm.value))
       .subscribe({
         next: (res) => {
-          this.openDialog('success', 'Category Saved', res.message);
-          this.isSaving = false;
+          this.dialog.open(ApiResultDialog, {
+            data: {
+              success: true,
+              message: res.message
+            }
+          }).afterClosed().subscribe(() => {
+            this.loading = false;
+            this.cdr.detectChanges();
+            this.router.navigate(['/app/master/categories']);
+          });
         },
         error: (err) => {
-          this.openDialog(
-            'error',
-            'Save Failed',
-            err?.error?.message || 'Something went wrong'
-          );
+          this.dialog.open(ApiResultDialog, {
+            data: {
+              success: false,
+              message: err.error?.message ?? 'Something went wrong'
+            }
+          }).afterClosed().subscribe(() => {
+            this.loading = false;
+            this.cdr.detectChanges();
+          });
         }
       });
   }
@@ -69,27 +81,6 @@ export class CategoryForm implements OnInit {
   onCancel() {
     this.router.navigate(['/app/master/categories']);
   }
-
-  private openDialog(
-    type: 'success' | 'error',
-    title: string,
-    message: string
-  ): void {
-
-    const dialogRef = this.dialog.open(ApiResultDialog, {
-      disableClose: true,
-      data: { type, title, message }
-    });
-
-    dialogRef.afterClosed().subscribe(() => {
-      // 🔥 THIS IS THE FIX
-      this.isSaving = false;
-      this.cdr.detectChanges();
-    });
-  }
-
-
-
 
   // 🔹 SINGLE RESPONSIBILITY: MAPPING
   private mapToCategories(formValue: any): Category {
@@ -102,6 +93,5 @@ export class CategoryForm implements OnInit {
     };
   }
 
-  cancel() { }
 }
 

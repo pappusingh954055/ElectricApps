@@ -64,3 +64,110 @@ body {
   }
 }
 
+
+
+/* ===============================
+   GLOBAL MATERIAL DIALOG FIXES
+   =============================== */
+
+/* Dialog container */
+.mat-mdc-dialog-container {
+  padding: 0 !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+/* Dialog surface */
+.mat-mdc-dialog-surface {
+  border-radius: 14px !important;
+}
+
+/* ===============================
+   API RESULT DIALOG
+   =============================== */
+
+.api-result-dialog {
+  min-width: 360px;
+  max-width: 420px;
+  padding: 24px;
+  text-align: center;
+}
+
+/* Header */
+.api-result-dialog .dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+/* Icons */
+.api-result-dialog .dialog-header mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+}
+
+/* Success icon */
+.api-result-dialog.success mat-icon {
+  color: #1976d2; /* Material blue */
+}
+
+/* Error icon */
+.api-result-dialog.error mat-icon {
+  color: #d32f2f; /* Material red */
+}
+
+/* Title */
+.api-result-dialog h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* Message */
+.api-result-dialog .message {
+  margin: 12px 0 24px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #444;
+  word-break: break-word;
+}
+
+/* Actions */
+.api-result-dialog .actions {
+  display: flex;
+  justify-content: center;
+}
+
+/* OK Button */
+.api-result-dialog button {
+  min-width: 96px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+/* ===============================
+   REMOVE UNWANTED SCROLLBAR
+   =============================== */
+
+.mat-mdc-dialog-content {
+  overflow: visible !important;
+  max-height: unset !important;
+}
+
+/* Only show scrollbar if content is really large */
+.mat-mdc-dialog-content.long-message {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+/* ===============================
+   BACKDROP SOFTENING
+   =============================== */
+
+.cdk-overlay-backdrop {
+  background: rgba(0, 0, 0, 0.35) !important;
+}
+
