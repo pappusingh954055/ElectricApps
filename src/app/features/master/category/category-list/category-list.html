@@ -17,16 +17,6 @@
     (delete)="deleteCategory($event[0])">
   </app-server-datagrid>
 
-  <!-- <app-server-datagrid
-    [columns]="columns"
-    [data]="data"
-    [totalCount]="totalCount"
-    [loading]="loading"
-    (loadloadData)="loadCategories($event)"
-    (edit)="onEdit($event)"
-    (delete)="onDelete($event[0])">
-  </app-server-datagrid> -->
-
   <mat-card-actions>
     <button mat-raised-button color="warn" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
       Delete Selected

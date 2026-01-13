@@ -27,37 +27,17 @@ export class CategoryService {
     }
 
     // 🔹 Bulk delete (THIS IS WHAT YOU ASKED)
-  deleteMany(ids: string[]): Observable<any> {
-    return this.api.post<any>(`categories/bulk-delete`, ids);
-  }
+    deleteMany(ids: string[]): Observable<any> {
+        return this.api.post<any>(`categories/bulk-delete`, ids);
+    }
 
     getAll(): Observable<Category[]> {
         return this.api.get('categories');
-    }
+    }   
 
-    getPagedCategories(
-        request: GridRequest
-    ): Observable<GridResponse<CategoryGridDto>> {
-
-        const query: string[] = [];
-
-        query.push(`pageNumber=${request.pageNumber}`);
-        query.push(`pageSize=${request.pageSize}`);
-
-        if (request.search) {
-            query.push(`search=${encodeURIComponent(request.search)}`);
-        }
-
-        if (request.sortBy) {
-            query.push(`sortBy=${request.sortBy}`);
-            query.push(`sortDirection=${request.sortDirection ?? 'desc'}`);
-        }
-
-        const queryString = query.join('&');
-
+    getPaged(request: GridRequest): Observable<GridResponse<CategoryGridDto>> {
         return this.api.get<GridResponse<CategoryGridDto>>(
-            `categories?${queryString}`
+            `categories/paged?${this.api.toQueryString(request)}`
         );
     }
-
 }

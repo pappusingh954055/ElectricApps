@@ -7,5 +7,17 @@
     </button>
   </mat-card-title>
 
+  <app-server-datagrid [columns]="columns" [data]="data" 
+  [totalCount]="totalCount" [loading]="loading"
+    (loadData)="loadSubCategories($event)" 
+    (selectionChange)="onSelectionChange($event)" 
+    (edit)="onEdit($event)"
+    (delete)="deleteCategory($event[0])">
+  </app-server-datagrid>
 
+  <mat-card-actions>
+    <button mat-raised-button color="warn" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
+      Delete Selected
+    </button>
+  </mat-card-actions>
 </mat-card>

@@ -67,7 +67,7 @@ export class CategoryList implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
 
-    this.categoryService.getPagedCategories(request).subscribe({
+    this.categoryService.getPaged(request).subscribe({
       next: res => {
         this.data = res.items;
         this.totalCount = res.totalCount;
@@ -130,8 +130,6 @@ export class CategoryList implements OnInit {
         });
       });
   }
-
-
 
   reloadGrid(): void {
     this.loadCategories(this.lastRequest);

@@ -1,73 +1,198 @@
-import { ChangeDetectorRef, Component, OnChanges, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnChanges, OnInit, ViewChild } from '@angular/core';
 
 import { PriceListService } from '../service/pricelist.service';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { materialize } from 'rxjs';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { PriceListModel } from '../models/pricelist.model';
+import { ServerDatagridComponent } from '../../../../shared/components/server-datagrid-component/server-datagrid-component';
+import { GridRequest } from '../../../../shared/models/grid-request.model';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
+import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
 
 
 @Component({
   selector: 'app-pricelist-list',
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, 
+    MaterialModule, RouterLink, ServerDatagridComponent],
   templateUrl: './pricelist-list.html',
   styleUrl: './pricelist-list.scss',
 })
-export class PricelistList implements OnInit, OnChanges {
+export class PricelistList implements OnInit {
 
   columns = [
-    { columnDef: 'name', header: 'Price List Name' },
-    { columnDef: 'code', header: 'Code' },
-    { columnDef: 'pricetype', header: 'Price Type' },
-    { columnDef: 'validfrom', header: 'Effective From' },
-    { columnDef: 'validto', header: 'Effective To' },
-    { columnDef: 'description', header: 'Description' },
+    { field: 'name', header: 'Price Name' },
+    { field: 'code', header: 'Code' },
+    { field: 'pricetype', header: 'Price Type' },
+    { field: 'validfrom', header: 'Effective From' },
+    { field: 'validto', header: 'Effective To' },
+    { field: 'description', header: 'Description' },
+    { field: 'CreatedOn', header: 'CreatedOn' },
     {
-      columnDef: 'isactive',
+      field: 'isactive',
       header: 'Status',
       cell: (row: any) => row.isactive ? 'Yes' : 'No'
     }
   ];
 
-  isLoading = false;
+  loading = false;
+  totalCount = 0;
 
-  priceLists: PriceListModel[] = [];
+  selectedRows: any[] = [];
+  lastRequest!: GridRequest;
 
-  constructor(private service: PriceListService, private cdr: ChangeDetectorRef) { }
+  @ViewChild(ServerDatagridComponent)
+  grid!: ServerDatagridComponent<any>;
 
-  ngOnInit() {
-    this.loadPriceLists();
+  data: PriceListModel[] = [];
+
+  constructor(
+    private service: PriceListService,
+    private router: Router, private dialog: MatDialog,
+    private cdr: ChangeDetectorRef) { }
+
+
+
+  ngOnInit(): void {
+    // Initial load
+    this.loadPriceLists({
+      pageNumber: 1,
+      pageSize: 10,
+      sortDirection: 'desc'
+    });
   }
 
+  loadPriceLists(request: GridRequest): void {
+    this.lastRequest = request; // ✅ store last state
+    this.loading = true;
+    this.cdr.detectChanges();
 
-  loadPriceLists(): void {
-    this.isLoading = true;
-
-    this.service.getAll().subscribe({
-      next: (data) => {
-        console.log(data)
-        this.priceLists = data ?? [];
+    this.service.getPaged(request).subscribe({
+      next: res => {
+        this.data = res.items;
+        this.totalCount = res.totalCount;
+        this.loading = false;
         this.cdr.detectChanges();
-        this.isLoading = false;
-
       },
-      error: (err) => {
+      error: err => {
         console.error(err);
-        this.isLoading = false;
+        this.loading = false;
         this.cdr.detectChanges();
       }
     });
   }
 
 
-  onEdit(event: string) { }
-  onDelete(event: string) { }
+  onEdit(row: any): void {
+    this.router.navigate(['/app/master/pricelists/edit', row.id]);
+  }
 
-  ngOnChanges(): void {
-    if (!this.columns || this.columns.length === 0) {
-      return;
-    }
+  deleteCategory(category: any): void {
+    this.dialog
+      .open(ConfirmDialogComponent, {
+        data: {
+          title: 'Confirm Delete',
+          message: 'Are you sure you want to delete this price list?'
+        }
+      })
+      .afterClosed()
+      .subscribe(confirm => {
+        if (!confirm) return;
+
+        this.loading = true;
+
+        this.service.delete(category.id).subscribe({
+          next: res => {
+            this.loading = false;
+
+            this.dialog.open(ApiResultDialog, {
+              data: {
+                success: true,
+                message: res.message
+              }
+            });
+
+            this.loadPriceLists(this.lastRequest);
+          },
+          error: err => {
+            this.loading = false;
+
+            const message =
+              err?.error?.message || 'Unable to delete Price list';
+
+            this.dialog.open(ApiResultDialog, {
+              data: {
+                success: false,
+                message
+              }
+            });
+          }
+        });
+      });
+  }
+
+  reloadGrid(): void {
+    this.loadPriceLists(this.lastRequest);
+  }
+
+  confirmBulkDelete(): void {
+    if (!this.selectedRows.length) return;
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Delete Price List',
+        message: `Are you sure you want to delete ${this.selectedRows.length} selected price list?`
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirm => {
+      if (!confirm) return;
+
+      const ids = this.selectedRows.map(x => x.id);
+
+      this.loading = true;
+
+      this.service.deleteMany(ids).subscribe({
+        next: (res) => {
+          // 🔄 Reload grid
+          this.loadPriceLists(this.lastRequest);
+
+          // 🧹 Clear selection via grid reference
+          this.grid.clearSelection();
+
+          this.loading = false;
+          this.dialog.open(ApiResultDialog, {
+            data: {
+              success: true,
+              message: res.message
+            }
+          });
+
+          this.cdr.detectChanges();
+        },
+        error: err => {
+          console.error(err);
+          this.loading = false;
+          const message =
+            err?.error?.message || 'Unable to delete price list';
+
+          this.dialog.open(ApiResultDialog, {
+            data: {
+              success: false,
+              message
+            }
+          });
+          this.cdr.detectChanges();
+        }
+      });
+    });
+  }
+
+  onSelectionChange(rows: any[]) {
+    this.selectedRows = rows;
   }
 }

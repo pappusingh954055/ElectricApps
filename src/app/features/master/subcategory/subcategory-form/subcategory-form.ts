@@ -40,7 +40,7 @@ export class SubcategoryForm implements OnInit {
 
   readonly router = inject(Router);
 
-  categories:any=[];
+  categories: any = [];
 
 
 
@@ -117,7 +117,7 @@ export class SubcategoryForm implements OnInit {
 
     this.categoryService.getAll().subscribe({
       next: (data) => {
-        this.categories=data;
+        this.categories = data;
         console.log(this.categories);
         this.loading = false;
         this.cdr.detectChanges();

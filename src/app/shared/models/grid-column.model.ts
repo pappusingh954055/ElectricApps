@@ -8,7 +8,7 @@ export interface GridColumn {
   /** Allow server-side sorting */
   sortable?: boolean;
 
-  cell?: (row: any) => string | number;
+  cell?: (row: any) => string | number | null;
 
   /** Optional width */
   width?: string;
