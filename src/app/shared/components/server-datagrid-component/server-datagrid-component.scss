@@ -1,5 +1,5 @@
 .datagrid-container {
-    width: 100%;
+  position: relative;
 }
 
 .search-box {
@@ -19,12 +19,102 @@ th.sortable mat-icon {
     margin-left: 4px;
 }
 
-.grid-loader {
-    display: flex;
-    justify-content: center;
-    padding: 24px;
+.resizable-header {
+  position: relative;
+  user-select: none;
 }
 
+/* Resize bar */
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 5px;
+  cursor: col-resize;
+  z-index: 20;
+}
+
+/* Hover feedback */
+.resize-handle:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Prevent text selection while resizing */
+
+
+
+
+
+
+
+/* Scrollable body */
+.table-wrapper {
+  max-height: 420px; /* adjust if needed */
+  overflow-y: auto;
+}
+
+/* Sticky header */
 table {
-    width: 100%;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th.mat-header-cell {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: #fafafa; /* important */
+  font-weight: 600;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Optional: better row look */
+td.mat-cell {
+  white-space: nowrap;
+  padding: 8px 12px;
+}
+
+/* Loader overlay */
+.grid-loader {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+
+
+
+
+/* Sticky header shadow */
+.mat-header-row {
+  z-index: 10;
+  background: #fff;
+}
+
+/* Left sticky column (checkbox) */
+.sticky-left {
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 9;
+  border-right: 1px solid #e0e0e0;
+}
+
+/* Right sticky column (actions) */
+.sticky-right {
+  position: sticky;
+  right: 0;
+  background: #fff;
+  z-index: 9;
+  border-left: 1px solid #e0e0e0;
+}
+
+/* Body row hover still visible */
+tr.mat-row:hover td {
+  background-color: #fafafa;
 }

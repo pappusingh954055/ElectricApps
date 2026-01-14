@@ -18,6 +18,9 @@ export class ServerDatagridComponent<T> {
   @Input() totalCount = 0;
   @Input() loading = false;
 
+private resizingColumn?: GridColumn;
+private startX = 0;
+private startWidth = 0;
 
   @Output() loadData = new EventEmitter<GridRequest>();
 
@@ -104,4 +107,30 @@ export class ServerDatagridComponent<T> {
     this.selection.clear();
     this.selectionChange.emit([]);
   }
+
+  startResize(event: MouseEvent, column: GridColumn): void {
+  event.preventDefault();
+  event.stopPropagation();
+
+  this.resizingColumn = column;
+  this.startX = event.pageX;
+  this.startWidth = column.width ?? 150;
+
+  document.addEventListener('mousemove', this.resizeMouseMove);
+  document.addEventListener('mouseup', this.resizeMouseUp);
+}
+
+resizeMouseMove = (event: MouseEvent) => {
+  if (!this.resizingColumn) return;
+
+  const delta = event.pageX - this.startX;
+  this.resizingColumn.width = Math.max(80, this.startWidth + delta);
+};
+
+resizeMouseUp = () => {
+  this.resizingColumn = undefined;
+
+  document.removeEventListener('mousemove', this.resizeMouseMove);
+  document.removeEventListener('mouseup', this.resizeMouseUp);
+};
 }

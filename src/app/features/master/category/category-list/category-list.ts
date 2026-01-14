@@ -42,12 +42,13 @@ export class CategoryList implements OnInit {
 
 
   columns: GridColumn[] = [
-    { field: 'categoryName', header: 'Category', sortable: true },
-    { field: 'categoryCode', header: 'Code', sortable: true },
-    { field: 'defaultGst', header: 'GST %', sortable: true },
+    { field: 'categoryName', header: 'Category', sortable: true, width: 200 },
+    { field: 'categoryCode', header: 'Code', sortable: true, width: 150 },
+    { field: 'defaultGst', header: 'GST %', sortable: true,width: 100 },
     {
       field: 'isActive',
       header: 'Status',
+      width: 100,
       cell: (row: any) => row.isActive ? 'Yes' : 'No'
     }
   ];

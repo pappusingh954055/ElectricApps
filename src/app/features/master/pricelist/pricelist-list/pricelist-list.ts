@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, OnChanges, OnInit, ViewChild } from '@angular/core';
 
 import { PriceListService } from '../service/pricelist.service';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { materialize } from 'rxjs';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
@@ -18,19 +18,38 @@ import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-di
   selector: 'app-pricelist-list',
   imports: [CommonModule, ReactiveFormsModule, 
     MaterialModule, RouterLink, ServerDatagridComponent],
+    providers:[DatePipe],
   templateUrl: './pricelist-list.html',
   styleUrl: './pricelist-list.scss',
 })
 export class PricelistList implements OnInit {
 
   columns = [
-    { field: 'name', header: 'Price Name' },
-    { field: 'code', header: 'Code' },
-    { field: 'pricetype', header: 'Price Type' },
-    { field: 'validfrom', header: 'Effective From' },
-    { field: 'validto', header: 'Effective To' },
+    { field: 'name', header: 'Price Name', sortable:true },
+    { field: 'code', header: 'Code', sortable:true },
+    { field: 'pricetype', header: 'Price Type', sortable:true },
+    {
+      field: 'validfrom',
+      header: 'Valid From',sortable:true,
+      cell: (row: any) =>
+        row.createdOn ?
+          this.datePipe.transform(row.validfrom, 'dd-MMM-yyyy') : '-'
+    },
+    {
+      field: 'validto',
+      header: 'Valid To', sortable:true,
+      cell: (row: any) =>
+        row.validto ?
+          this.datePipe.transform(row.validto, 'dd-MMM-yyyy') : '-'
+    },
     { field: 'description', header: 'Description' },
-    { field: 'CreatedOn', header: 'CreatedOn' },
+    {
+      field: 'createdon',
+      header: 'CreatedOn',
+      cell: (row: any) =>
+        row.createdon ?
+          this.datePipe.transform(row.createdon, 'dd-MMM-yyyy') : '-'
+    },
     {
       field: 'isactive',
       header: 'Status',
@@ -52,6 +71,7 @@ export class PricelistList implements OnInit {
   constructor(
     private service: PriceListService,
     private router: Router, private dialog: MatDialog,
+    private datePipe: DatePipe,
     private cdr: ChangeDetectorRef) { }
 
 
