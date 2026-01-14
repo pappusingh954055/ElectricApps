@@ -196,6 +196,7 @@ export const routes: Routes = [
             children: [
               {
                 path: '',
+                 data: { breadcrumb: 'Price Details' },
                 loadComponent: () =>
                   import('./features/master/pricelist/pricelist-list/pricelist-list')
                     .then(m => m.PricelistList)
@@ -208,11 +209,11 @@ export const routes: Routes = [
                     .then(m => m.PricelistForm)
               },
               {
-                path: ':id/items',
-                data: { breadcrumb: 'Price List Items' },
+                path: 'edit/:id',
+                data: { breadcrumb: 'Edit List Items' },
                 loadComponent: () =>
-                  import('./features/master/pricelist/pricelist-items/pricelist-items')
-                    .then(m => m.PricelistItems)
+                  import('./features/master/pricelist/pricelist-form/pricelist-form')
+                    .then(m => m.PricelistForm)
               }
             ]
           },

@@ -65,36 +65,32 @@ export class PricelistForm implements OnInit {
     this.pricelistService.create(this.mapToPricelists(this.pricelistsForm.value))
       .subscribe({
         next: (res) => {
-          this.openDialog('success', 'Sub Category Saved', res.message);
-          this.loading = false;
+          this.dialog.open(ApiResultDialog, {
+            data: {
+              success: true,
+              message: res.message
+            }
+          }).afterClosed().subscribe(() => {
+            this.loading = false;
+            this.cdr.detectChanges();
+            this.router.navigate(['/app/master/pricelists']);
+          });
         },
         error: (err) => {
-          this.openDialog(
-            'error',
-            'Save Failed',
-            err?.error?.message || 'Something went wrong'
-          );
+          this.dialog.open(ApiResultDialog, {
+            data: {
+              success: false,
+              message: err.error?.message ?? 'Something went wrong'
+            }
+          }).afterClosed().subscribe(() => {
+            this.loading = false;
+            this.cdr.detectChanges();
+          });
         }
       });
   }
 
-  private openDialog(
-    type: 'success' | 'error',
-    title: string,
-    message: string
-  ): void {
 
-    const dialogRef = this.dialog.open(ApiResultDialog, {
-      disableClose: true,
-      data: { type, title, message }
-    });
-
-    dialogRef.afterClosed().subscribe(() => {
-      // 🔥 THIS IS THE FIX
-      this.loading = false;
-      this.cdr.detectChanges();
-    });
-  }
 
 
   private toDateOnly(date: Date | string): string {

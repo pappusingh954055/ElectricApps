@@ -19,6 +19,9 @@ export class ServerDatagridComponent<T> implements OnChanges {
   @Input() totalCount = 0;
   @Input() loading = false;
 
+  hoveredColumn: string | null = null;
+
+
   private resizingColumn?: GridColumn;
   private startX = 0;
   private startWidth = 0;
@@ -35,11 +38,11 @@ export class ServerDatagridComponent<T> implements OnChanges {
   selection = new Set<any>();
 
   displayedColumnsWithActions(): string[] {
-    const visibleFields = this.columns
-      .filter(c => c.visible !== false) // undefined = visible
-      .map(c => c.field);
-
-    return ['select', ...visibleFields, 'actions'];
+    return[
+      'select',
+      ...this.columns.filter(c=>c.visible).map(c=>c.field),
+      'actions'
+    ];
   }
 
 
@@ -175,5 +178,7 @@ export class ServerDatagridComponent<T> implements OnChanges {
     this.emitSelection();
 
   }
-
+get visibleColumns() {
+  return this.columns.filter(c => c.visible);
+}
 }

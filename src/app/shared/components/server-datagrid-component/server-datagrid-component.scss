@@ -143,3 +143,30 @@ tr.mat-row:hover td {
 .clickable-row:hover td {
   background-color: #f5f7fa;
 }
+
+
+
+
+.header-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sort-icon {
+  font-size: 18px;
+  opacity: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.resizable-header:hover .sort-icon {
+  opacity: 1;
+}
+
+.sort-icon.asc {
+  transform: rotate(0deg);
+}
+
+.sort-icon.desc {
+  transform: rotate(180deg);
+}
