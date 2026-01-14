@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { GridRequest } from '../../models/grid-request.model';
 import { GridColumn } from '../../../shared/models/grid-column.model';
@@ -12,7 +12,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
   templateUrl: './server-datagrid-component.html',
   styleUrl: './server-datagrid-component.scss',
 })
-export class ServerDatagridComponent<T> {
+export class ServerDatagridComponent<T> implements OnChanges {
 
   @Input() columns: GridColumn[] = [];
   @Input() data: T[] = [];
@@ -45,33 +45,45 @@ export class ServerDatagridComponent<T> {
 
 
   toggleRow(row: any): void {
-    this.selection.has(row)
-      ? this.selection.delete(row)
-      : this.selection.add(row);
-
+    if (this.selection.has(row)) {
+      this.selection.delete(row);
+    } else {
+      this.selection.add(row);
+    }
     this.emitSelection();
   }
+
 
   toggleAll(event: any): void {
     if (event.checked) {
-      this.data.forEach(r => this.selection.add(r));
+      this.data.forEach(row => this.selection.add(row));
     } else {
       this.selection.clear();
     }
-
     this.emitSelection();
   }
-  private emitSelection(): void {
-    this.selectionChange.emit([...this.selection]);
+
+
+
+  // private emitSelection(): void {
+  //   this.selectionChange.emit([...this.selection]);
+  // }
+
+   emitSelection(): void {
+    this.selectionChange.emit(Array.from(this.selection));
   }
+
   isAllSelected(): boolean {
-    return this.selection.size === this.data.length;
+    return this.data.length > 0 && this.selection.size === this.data.length;
   }
+
 
   deleteSelected(): void {
     if (this.selection.size === 0) return;
     this.delete.emit([...this.selection]);
   }
+
+
 
   request: GridRequest = {
     pageNumber: 1,
@@ -141,7 +153,7 @@ export class ServerDatagridComponent<T> {
     // Trigger Angular change detection for mat-table
     this.columns = [...this.columns];
   }
-  
+
   onRowClick(event: MouseEvent, row: any): void {
     const target = event.target as HTMLElement;
 
@@ -155,6 +167,12 @@ export class ServerDatagridComponent<T> {
     }
 
     this.rowClick.emit(row);
+  }
+  ngOnChanges(changes: SimpleChanges): void {
+    
+      this.selection.clear();
+      this.emitSelection();
+    
   }
 
 }

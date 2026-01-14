@@ -192,7 +192,7 @@ export class CategoryList implements OnInit {
     });
   }
 
-  onSelectionChange(rows: any[]) {
+  onSelectionChange(rows: any[]): void {
     this.selectedRows = rows;
   }
 }
