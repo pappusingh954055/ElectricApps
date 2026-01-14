@@ -8,7 +8,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-server-datagrid',
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, MaterialModule],
   templateUrl: './server-datagrid-component.html',
   styleUrl: './server-datagrid-component.scss',
 })
@@ -30,16 +30,17 @@ export class ServerDatagridComponent<T> {
 
   @Output() selectionChange = new EventEmitter<any[]>();
 
+  @Output() rowClick = new EventEmitter<any>();
 
   selection = new Set<any>();
 
-displayedColumnsWithActions(): string[] {
-  const visibleFields = this.columns
-    .filter(c => c.visible !== false) // undefined = visible
-    .map(c => c.field);
+  displayedColumnsWithActions(): string[] {
+    const visibleFields = this.columns
+      .filter(c => c.visible !== false) // undefined = visible
+      .map(c => c.field);
 
-  return ['select', ...visibleFields, 'actions'];
-}
+    return ['select', ...visibleFields, 'actions'];
+  }
 
 
 
@@ -136,9 +137,24 @@ displayedColumnsWithActions(): string[] {
     document.removeEventListener('mousemove', this.resizeMouseMove);
     document.removeEventListener('mouseup', this.resizeMouseUp);
   };
-updateDisplayedColumns(): void {
-  // Trigger Angular change detection for mat-table
-  this.columns = [...this.columns];
-}
+  updateDisplayedColumns(): void {
+    // Trigger Angular change detection for mat-table
+    this.columns = [...this.columns];
+  }
   
+  onRowClick(event: MouseEvent, row: any): void {
+    const target = event.target as HTMLElement;
+
+    // ❌ Ignore clicks on buttons, icons, checkboxes
+    if (
+      target.closest('button') ||
+      target.closest('mat-checkbox') ||
+      target.closest('mat-icon')
+    ) {
+      return;
+    }
+
+    this.rowClick.emit(row);
+  }
+
 }

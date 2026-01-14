@@ -22,6 +22,7 @@ th.sortable mat-icon {
 .resizable-header {
   position: relative;
   user-select: none;
+  cursor: pointer;
 }
 
 /* Resize bar */
@@ -133,4 +134,12 @@ tr.mat-row:hover td {
 .column-toggle {
   display: block;
   padding: 6px 12px;
+}
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover td {
+  background-color: #f5f7fa;
 }
