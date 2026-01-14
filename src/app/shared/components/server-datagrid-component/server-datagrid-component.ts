@@ -69,13 +69,14 @@ export class ServerDatagridComponent<T> implements OnChanges {
   //   this.selectionChange.emit([...this.selection]);
   // }
 
-   emitSelection(): void {
+  emitSelection(): void {
     this.selectionChange.emit(Array.from(this.selection));
   }
 
-  isAllSelected(): boolean {
-    return this.data.length > 0 && this.selection.size === this.data.length;
+  isHeaderChecked(): boolean {
+    return this.selection.size > 0;
   }
+
 
 
   deleteSelected(): void {
@@ -169,10 +170,10 @@ export class ServerDatagridComponent<T> implements OnChanges {
     this.rowClick.emit(row);
   }
   ngOnChanges(changes: SimpleChanges): void {
-    
-      this.selection.clear();
-      this.emitSelection();
-    
+
+    this.selection.clear();
+    this.emitSelection();
+
   }
 
 }

@@ -30,7 +30,7 @@
         <!-- Checkbox column (bulk select) -->
         <ng-container matColumnDef="select">
             <th mat-header-cell *matHeaderCellDef class="sticky-left">
-                <mat-checkbox (change)="toggleAll($event)" [checked]="isAllSelected()">
+                <mat-checkbox (change)="toggleAll($event)" [checked]="isHeaderChecked()">
                 </mat-checkbox>
             </th>
 
