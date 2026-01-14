@@ -12,6 +12,24 @@
         <input matInput (keyup)="onSearch($event.target.value)" />
     </mat-form-field>
 
+    <!-- COLUMN TOGGLE -->
+  <button
+    mat-stroked-button
+    [matMenuTriggerFor]="columnMenu">
+    Columns
+  </button>
+
+  <mat-menu #columnMenu="matMenu">
+    <mat-checkbox
+      *ngFor="let col of columns"
+      [checked]="col.visible"
+      (change)="col.visible =$event.checked; updateDisplayedColumns()"
+      class="column-toggle">
+      {{ col.header }}
+    </mat-checkbox>
+  </mat-menu>
+
+
     <!-- 📊 TABLE -->
     <table mat-table [dataSource]="data">
 

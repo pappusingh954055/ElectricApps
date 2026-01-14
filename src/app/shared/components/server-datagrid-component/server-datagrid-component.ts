@@ -4,10 +4,11 @@ import { GridRequest } from '../../models/grid-request.model';
 import { GridColumn } from '../../../shared/models/grid-column.model';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../material/material/material-module';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-server-datagrid',
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule],
   templateUrl: './server-datagrid-component.html',
   styleUrl: './server-datagrid-component.scss',
 })
@@ -18,9 +19,9 @@ export class ServerDatagridComponent<T> {
   @Input() totalCount = 0;
   @Input() loading = false;
 
-private resizingColumn?: GridColumn;
-private startX = 0;
-private startWidth = 0;
+  private resizingColumn?: GridColumn;
+  private startX = 0;
+  private startWidth = 0;
 
   @Output() loadData = new EventEmitter<GridRequest>();
 
@@ -32,13 +33,15 @@ private startWidth = 0;
 
   selection = new Set<any>();
 
-  displayedColumnsWithActions(): string[] {
-    return [
-      'select',
-      ...this.columns.map(c => c.field),
-      'actions'
-    ];
-  }
+displayedColumnsWithActions(): string[] {
+  const visibleFields = this.columns
+    .filter(c => c.visible !== false) // undefined = visible
+    .map(c => c.field);
+
+  return ['select', ...visibleFields, 'actions'];
+}
+
+
 
   toggleRow(row: any): void {
     this.selection.has(row)
@@ -109,28 +112,33 @@ private startWidth = 0;
   }
 
   startResize(event: MouseEvent, column: GridColumn): void {
-  event.preventDefault();
-  event.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
 
-  this.resizingColumn = column;
-  this.startX = event.pageX;
-  this.startWidth = column.width ?? 150;
+    this.resizingColumn = column;
+    this.startX = event.pageX;
+    this.startWidth = column.width ?? 150;
 
-  document.addEventListener('mousemove', this.resizeMouseMove);
-  document.addEventListener('mouseup', this.resizeMouseUp);
+    document.addEventListener('mousemove', this.resizeMouseMove);
+    document.addEventListener('mouseup', this.resizeMouseUp);
+  }
+
+  resizeMouseMove = (event: MouseEvent) => {
+    if (!this.resizingColumn) return;
+
+    const delta = event.pageX - this.startX;
+    this.resizingColumn.width = Math.max(80, this.startWidth + delta);
+  };
+
+  resizeMouseUp = () => {
+    this.resizingColumn = undefined;
+
+    document.removeEventListener('mousemove', this.resizeMouseMove);
+    document.removeEventListener('mouseup', this.resizeMouseUp);
+  };
+updateDisplayedColumns(): void {
+  // Trigger Angular change detection for mat-table
+  this.columns = [...this.columns];
 }
-
-resizeMouseMove = (event: MouseEvent) => {
-  if (!this.resizingColumn) return;
-
-  const delta = event.pageX - this.startX;
-  this.resizingColumn.width = Math.max(80, this.startWidth + delta);
-};
-
-resizeMouseUp = () => {
-  this.resizingColumn = undefined;
-
-  document.removeEventListener('mousemove', this.resizeMouseMove);
-  document.removeEventListener('mouseup', this.resizeMouseUp);
-};
+  
 }
