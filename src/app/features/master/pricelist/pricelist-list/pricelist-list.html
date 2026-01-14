@@ -10,6 +10,7 @@
  <app-server-datagrid 
     [columns]="columns" 
     [data]="data" 
+    (rowClick)="onEdit($event)"
     [totalCount]="totalCount" 
     [loading]="loading"
     (loadData)="loadPriceLists($event)" 

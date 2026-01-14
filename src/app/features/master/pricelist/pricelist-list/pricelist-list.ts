@@ -16,43 +16,43 @@ import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-di
 
 @Component({
   selector: 'app-pricelist-list',
-  imports: [CommonModule, ReactiveFormsModule, 
+  imports: [CommonModule, ReactiveFormsModule,
     MaterialModule, RouterLink, ServerDatagridComponent],
-    providers:[DatePipe],
+  providers: [DatePipe],
   templateUrl: './pricelist-list.html',
   styleUrl: './pricelist-list.scss',
 })
 export class PricelistList implements OnInit {
 
   columns = [
-    { field: 'name', header: 'Price Name', sortable:true },
-    { field: 'code', header: 'Code', sortable:true },
-    { field: 'pricetype', header: 'Price Type', sortable:true },
+    { field: 'name', header: 'Price Name', sortable: true, width: 200, visible: true },
+    { field: 'code', header: 'Code', sortable: true, width: 200, visible: true },
+    { field: 'pricetype', header: 'Price Type', sortable: true, width: 200, visible: true },
     {
       field: 'validfrom',
-      header: 'Valid From',sortable:true,
+      header: 'Valid From', sortable: true, width: 200, visible: true,
       cell: (row: any) =>
         row.createdOn ?
           this.datePipe.transform(row.validfrom, 'dd-MMM-yyyy') : '-'
     },
     {
       field: 'validto',
-      header: 'Valid To', sortable:true,
+      header: 'Valid To', sortable: true, width: 200, visible: true,
       cell: (row: any) =>
         row.validto ?
           this.datePipe.transform(row.validto, 'dd-MMM-yyyy') : '-'
     },
-    { field: 'description', header: 'Description' },
+    { field: 'description', header: 'Description', sortable: true, width: 200, visible: true },
     {
       field: 'createdon',
-      header: 'CreatedOn',
+      header: 'CreatedOn', sortable: true, width: 200, visible: true,
       cell: (row: any) =>
         row.createdon ?
           this.datePipe.transform(row.createdon, 'dd-MMM-yyyy') : '-'
     },
     {
       field: 'isactive',
-      header: 'Status',
+      header: 'Status', sortable: true, width: 200, visible: true,
       cell: (row: any) => row.isactive ? 'Yes' : 'No'
     }
   ];

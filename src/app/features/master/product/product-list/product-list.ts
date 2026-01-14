@@ -43,20 +43,21 @@ export class ProductList implements OnInit {
     private cdr: ChangeDetectorRef) { }
 
   columns = [
-    { field: 'categoryName', header: 'Category', sortable: true },
-    { field: 'subcategoryName', header: 'Subcategory', sortable: true },
-    { field: 'productName', header: 'Product', sortable: true },
-    { field: 'sku', header: 'SKU', sortable: true, },
-    { field: 'unit', header: 'Unit' },
+    { field: 'categoryName', header: 'Category', sortable: true, width: 200, visible: true },
+    { field: 'subcategoryName', header: 'Subcategory', sortable: true, width: 200, visible: true },
+    { field: 'productName', header: 'Product', sortable: true, width: 200, visible: true },
+    { field: 'sku', header: 'SKU', sortable: true, width: 200, visible: true },
+    { field: 'unit', header: 'Unit',sortable: true, width: 200, visible: true },
 
-    { field: 'defaultGst', header: 'GST %' },
-    { field: 'hsnCode', header: 'HSN Code', sortable: true },
-    { field: 'minStock', header: 'Min Stock' },
+    { field: 'defaultGst', header: 'GST %',sortable: true, width: 200, visible: true },
+    { field: 'hsnCode', header: 'HSN Code', sortable: true, width: 200, visible: true },
+    { field: 'minStock', header: 'Min Stock',sortable: true, width: 200, visible: true },
 
-    { field: 'trackinventory', header: 'Status', cell: (row: any) => row.trackinventory ? 'Yes' : 'No' },
+    { field: 'trackinventory',sortable: true, width: 200, visible: true, header: 'Status', cell: (row: any) => row.trackinventory ? 'Yes' : 'No' },
     {
       field: 'createdOn',
       header: 'Created On',
+      sortable: true, width: 200, visible: true,
       cell: (row: any) =>
         row.createdOn ?
           this.datePipe.transform(row.createdOn, 'dd-MMM-yyyy') : '-'
