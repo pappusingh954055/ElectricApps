@@ -1,82 +1,30 @@
+/* =========================
+   LAYOUT & CONTAINER
+========================= */
+
 .datagrid-container {
   position: relative;
 }
 
-.search-box {
-    width: 280px;
-    margin-bottom: 12px;
-}
-
-
-th.sortable {
-    cursor: pointer;
-    user-select: none;
-}
-
-th.sortable mat-icon {
-    font-size: 16px;
-    vertical-align: middle;
-    margin-left: 4px;
-}
-
-.resizable-header {
-  position: relative;
-  user-select: none;
-  cursor: pointer;
-}
-
-/* Resize bar */
-.resize-handle {
-  position: absolute;
-  right: 0;
-  top: 0;
-  height: 100%;
-  width: 5px;
-  cursor: col-resize;
-  z-index: 20;
-}
-
-/* Hover feedback */
-.resize-handle:hover {
-  background: rgba(0, 0, 0, 0.1);
-}
-
-/* Prevent text selection while resizing */
-
-
-
-
-
-
-
-/* Scrollable body */
-.table-wrapper {
-  max-height: 420px; /* adjust if needed */
-  overflow-y: auto;
-}
-
-/* Sticky header */
-table {
+.server-datagrid {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
 }
 
-th.mat-header-cell {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background: #fafafa; /* important */
-  font-weight: 600;
-  border-bottom: 1px solid #ddd;
+/* =========================
+   SEARCH
+========================= */
+
+.search-box {
+  width: 280px;
+  margin-bottom: 12px;
 }
 
-/* Optional: better row look */
-td.mat-cell {
-  white-space: nowrap;
-  padding: 8px 12px;
-}
+/* =========================
+   LOADER
+========================= */
 
-/* Loader overlay */
 .grid-loader {
   position: absolute;
   inset: 0;
@@ -87,76 +35,62 @@ td.mat-cell {
   z-index: 20;
 }
 
+/* =========================
+   HEADER ROW
+========================= */
 
-
-
-
-/* Sticky header shadow */
-.mat-header-row {
+.header-row {
+  position: sticky;
+  top: 0;
   z-index: 10;
   background: #fff;
+  overflow: hidden;
 }
 
-/* Left sticky column (checkbox) */
-.sticky-left {
-  position: sticky;
-  left: 0;
-  background: #fff;
-  z-index: 9;
-  border-right: 1px solid #e0e0e0;
+th.mat-header-cell {
+  background: #fafafa;
+  font-weight: 600;
+  border-bottom: 1px solid #ddd;
+  white-space: nowrap;
 }
 
-/* Right sticky column (actions) */
-.sticky-right {
-  position: sticky;
-  right: 0;
-  background: #fff;
-  z-index: 9;
-  border-left: 1px solid #e0e0e0;
+/* =========================
+   RESIZABLE HEADER
+========================= */
+
+.resizable-header {
+  position: relative;
+  overflow: hidden;
+  user-select: none;
 }
 
-/* Body row hover still visible */
-tr.mat-row:hover td {
-  background-color: #fafafa;
-}
-
-
-
-
-.grid-toolbar {
+.header-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
+  width: 100%;
 }
 
-.column-toggle {
-  display: block;
-  padding: 6px 12px;
-}
-
-.clickable-row {
-  cursor: pointer;
-}
-
-.clickable-row:hover td {
-  background-color: #f5f7fa;
-}
-
-
-
-
-.header-cell {
+.header-content {
   display: flex;
   align-items: center;
   gap: 4px;
+  overflow: hidden;
 }
 
+.header-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================
+   SORT ICON (HOVER ONLY)
+========================= */
+
 .sort-icon {
-  font-size: 18px;
+  font-size: 16px;
   opacity: 0;
-  transition: transform 0.2s ease, opacity 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .resizable-header:hover .sort-icon {
@@ -169,4 +103,126 @@ tr.mat-row:hover td {
 
 .sort-icon.desc {
   transform: rotate(180deg);
+}
+
+/* =========================
+   FILTER ICON
+========================= */
+
+.filter-icon {
+  width: 26px;
+  height: 26px;
+}
+
+.filter-icon mat-icon {
+  font-size: 16px;
+}
+
+/* =========================
+   RESIZE HANDLE
+========================= */
+
+.resize-handle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 15;
+}
+
+.resize-handle:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* =========================
+   TABLE BODY
+========================= */
+
+td.mat-cell {
+  white-space: nowrap;
+  padding: 8px 12px;
+}
+
+/* =========================
+   STICKY COLUMNS
+========================= */
+
+.sticky-left {
+  position: sticky;
+  left: 0;
+  background: #fff;
+  z-index: 9;
+  border-right: 1px solid #e0e0e0;
+}
+
+.sticky-right {
+  position: sticky;
+  right: 0;
+  background: #fff;
+  z-index: 9;
+  border-left: 1px solid #e0e0e0;
+}
+
+/* =========================
+   ROW INTERACTION
+========================= */
+
+.clickable-row {
+  cursor: pointer;
+}
+
+.clickable-row:hover td {
+  background-color: #f5f7fa;
+}
+
+/* =========================
+   COLUMN TOGGLE
+========================= */
+
+.column-toggle {
+  display: block;
+  padding: 6px 12px;
+}
+
+/* =========================
+   DRAG & DROP
+========================= */
+
+.drag-preview {
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+  pointer-events: none;
+}
+
+.drag-placeholder {
+  background: rgba(0, 0, 0, 0.05);
+  min-height: 48px;
+}
+
+
+.filter-icon {
+  width: 32px !important;   /* Button size */
+  height: 32px !important;
+  line-height: 32px !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important; /* Default shadow/background hatane ke liye */
+  box-shadow: none !important;
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: rgba(0, 0, 0, 0.54);
+  }
+
+  /* Hover par ganda shadow hatane ke liye */
+  &:hover {
+    background: rgba(0, 0, 0, 0.04) !important; /* Bahut halka asar */
+  }
 }

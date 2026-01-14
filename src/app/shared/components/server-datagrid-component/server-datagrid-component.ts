@@ -4,11 +4,13 @@ import { GridRequest } from '../../models/grid-request.model';
 import { GridColumn } from '../../../shared/models/grid-column.model';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../material/material/material-module';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+
 
 @Component({
   selector: 'app-server-datagrid',
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, MaterialModule, DragDropModule],
   templateUrl: './server-datagrid-component.html',
   styleUrl: './server-datagrid-component.scss',
 })
@@ -38,9 +40,9 @@ export class ServerDatagridComponent<T> implements OnChanges {
   selection = new Set<any>();
 
   displayedColumnsWithActions(): string[] {
-    return[
+    return [
       'select',
-      ...this.columns.filter(c=>c.visible).map(c=>c.field),
+      ...this.columns.filter(c => c.visible).map(c => c.field),
       'actions'
     ];
   }
@@ -178,7 +180,38 @@ export class ServerDatagridComponent<T> implements OnChanges {
     this.emitSelection();
 
   }
-get visibleColumns() {
-  return this.columns.filter(c => c.visible);
-}
+  get visibleColumns() {
+    return this.columns.filter(c => c.visible);
+  }
+  onColumnDrop(event: CdkDragDrop<string[]>): void {
+
+    const visibleColumns = this.columns.filter(c => c.visible);
+
+    moveItemInArray(
+      visibleColumns,
+      event.previousIndex,
+      event.currentIndex
+    );
+
+    // rebuild original columns array
+    const reordered: GridColumn[] = [];
+
+    visibleColumns.forEach(vc => {
+      const original = this.columns.find(c => c.field === vc.field);
+      if (original) reordered.push(original);
+    });
+
+    this.columns
+      .filter(c => !c.visible)
+      .forEach(c => reordered.push(c));
+
+    this.columns = reordered;
+
+    this.updateDisplayedColumns();
+  }
+  dropColumn(event: CdkDragDrop<any[]>) {
+    moveItemInArray(this.visibleColumns, event.previousIndex, event.currentIndex);
+    this.updateDisplayedColumns();
+  }
+
 }
