@@ -4,13 +4,19 @@
     </div>
 
     <div class="grid-header-actions">
-        <mat-form-field appearance="outline" class="search-box">
-            <mat-label>Search</mat-label>
-            <input matInput (input)="onSearch($any($event.target).value)" placeholder="Type to search..." />
-            <mat-icon matSuffix>search</mat-icon>
-        </mat-form-field>
+        <div class="left-actions">
+            <mat-form-field appearance="outline" class="search-box">
+                <mat-label>Global Search</mat-label>
+                <input matInput (input)="onSearch($any($event.target).value)" placeholder="Search all fields..." />
+                <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
 
-        <button mat-stroked-button color="warn" *ngIf="selection.size > 0" (click)="clearSelection()" class="clear-selection-btn">
+            <button mat-flat-button color="accent" (click)="exportToExcel()" [disabled]="loading || data.length === 0">
+                <mat-icon>download</mat-icon> Export Excel
+            </button>
+        </div>
+
+        <button mat-stroked-button color="warn" *ngIf="selection.size > 0" (click)="clearSelection()">
             <mat-icon>clear_all</mat-icon> Clear ({{selection.size}})
         </button>
     </div>
@@ -35,18 +41,25 @@
                     class="resizable-header">
                     
                     <div class="header-container-inner">
-                        <div class="header-main-content" (click)="onSort($event, col)">
-                            <span class="header-text">{{ col.header }}</span>
-                            <mat-icon *ngIf="col.sortable && request.sortBy === col.field" 
-                                      class="sort-icon" 
-                                      [class.desc]="request.sortDirection === 'desc'">
-                                arrow_upward
-                            </mat-icon>
+                        <div class="header-top-row">
+                            <div class="header-main-content" (click)="onSort($event, col)">
+                                <span class="header-text">{{ col.header }}</span>
+                                <mat-icon *ngIf="col.sortable && request.sortBy === col.field" 
+                                          class="sort-icon" 
+                                          [class.desc]="request.sortDirection === 'desc'">
+                                    arrow_upward
+                                </mat-icon>
+                            </div>
+                            <button mat-icon-button [matMenuTriggerFor]="columnMenu" class="menu-btn" (click)="$event.stopPropagation()">
+                                <mat-icon>more_vert</mat-icon>
+                            </button>
                         </div>
-                        
-                        <button mat-icon-button [matMenuTriggerFor]="columnMenu" class="menu-btn" (click)="$event.stopPropagation()">
-                            <mat-icon>more_vert</mat-icon>
-                        </button>
+
+                        <div class="filter-row" (click)="$event.stopPropagation()">
+                            <input class="column-filter-input" 
+                                   [placeholder]="'Filter ' + col.header"
+                                   (input)="onColumnFilter(col.field, $any($event.target).value)">
+                        </div>
                     </div>
 
                     <span class="resize-handle" (mousedown)="startResize($event, col)"></span>
@@ -72,20 +85,21 @@
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumnsWithActions(); sticky: true" class="header-row"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumnsWithActions()" class="clickable-row"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumnsWithActions()" class="clickable-row" (click)="onRowClick($event, row)"></tr>
         </table>
     </div>
 
-    <mat-menu #columnMenu="matMenu">
-        <div class="menu-header">Show/Hide Columns</div>
-        <mat-checkbox *ngFor="let col of columns" 
-                      [checked]="col.visible" 
-                      (change)="col.visible = $event.checked; updateDisplayedColumns()" 
-                      class="column-toggle" 
-                      (click)="$event.stopPropagation()">
-            {{ col.header }}
-        </mat-checkbox>
-    </mat-menu>
-
-    <mat-paginator [disabled]="loading" [length]="totalCount" [pageSize]="request.pageSize" [pageSizeOptions]="[5,10,20,50]" (page)="onPageChange($event)"></mat-paginator>
+    <mat-paginator [disabled]="loading" [length]="totalCount" [pageSize]="request.pageSize" [pageSizeOptions]="[5,10,20,50,100]" (page)="onPageChange($event)"></mat-paginator>
 </div>
+
+<mat-menu #columnMenu="matMenu">
+    <div class="menu-header" style="padding: 10px; font-weight: bold; border-bottom: 1px solid #eee;">Columns Visibility</div>
+    <mat-checkbox *ngFor="let col of columns" 
+                  [checked]="col.visible" 
+                  (change)="col.visible = $event.checked; updateDisplayedColumns()" 
+                  class="column-toggle" 
+                  style="display: block; padding: 5px 15px;"
+                  (click)="$event.stopPropagation()">
+        {{ col.header }}
+    </mat-checkbox>
+</mat-menu>

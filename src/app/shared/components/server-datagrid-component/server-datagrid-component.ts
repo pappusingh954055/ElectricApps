@@ -6,6 +6,7 @@ import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../material/material/material-module';
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-server-datagrid',
@@ -28,30 +29,79 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
 
   selection = new Set<any>();
   private readonly STORAGE_KEY = 'grid-settings-state';
-  private searchSubject = new Subject<string>();
 
-  request: GridRequest = { pageNumber: 1, pageSize: 10, sortDirection: 'desc' };
+  private searchSubject = new Subject<string>();
+  private filterSubject = new Subject<void>();
+  private columnFilters: { [key: string]: string } = {};
+
+  // Interface update handle karne ke liye request model
+  request: GridRequest = {
+    pageNumber: 1,
+    pageSize: 10,
+    sortDirection: 'desc',
+    search: '',
+    filters: {}
+  };
 
   private resizingColumn?: GridColumn;
   private startX = 0;
   private startWidth = 0;
 
   constructor() {
+    // Global Search Debounce
     this.searchSubject.pipe(debounceTime(400), distinctUntilChanged()).subscribe(val => {
       this.request.search = val;
+      this.request.pageNumber = 1;
+      this.emitRequest();
+    });
+
+    // Column Filters Debounce logic fix
+    this.filterSubject.pipe(debounceTime(600)).subscribe(() => {
+      this.request.filters = { ...this.columnFilters };
       this.request.pageNumber = 1;
       this.emitRequest();
     });
   }
 
   ngOnInit(): void { this.restoreColumnState(); }
-  ngOnDestroy(): void { this.searchSubject.complete(); }
+  ngOnDestroy(): void {
+    this.searchSubject.complete();
+    this.filterSubject.complete();
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['data']) { this.selection.clear(); this.emitSelection(); }
   }
 
-  emitRequest() { this.loadData.emit({ ...this.request }); }
+  emitRequest() {
+    // Sending deep copy to avoid reference issues
+    this.loadData.emit(JSON.parse(JSON.stringify(this.request)));
+  }
+
   onSearch(value: string): void { this.searchSubject.next(value); }
+
+  onColumnFilter(field: string, value: string): void {
+    if (value && value.trim() !== '') {
+      this.columnFilters[field] = value;
+    } else {
+      delete this.columnFilters[field];
+    }
+    this.filterSubject.next();
+  }
+
+  exportToExcel(): void {
+    const exportData = this.data.map((row: any) => {
+      const obj: any = {};
+      this.visibleColumns.forEach(col => {
+        obj[col.header] = row[col.field];
+      });
+      return obj;
+    });
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Data_Export');
+    XLSX.writeFile(workbook, `Grid_Export_${new Date().getTime()}.xlsx`);
+  }
 
   onSort(event: MouseEvent, column: GridColumn): void {
     if (!column.sortable || this.loading) return;
@@ -68,32 +118,18 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   }
 
   clearSelection(): void { this.selection.clear(); this.emitSelection(); }
-
   get visibleColumns() { return this.columns.filter(c => c.visible); }
-
-  displayedColumnsWithActions(): string[] {
-    return ['select', ...this.visibleColumns.map(c => c.field), 'actions'];
-  }
-
-  toggleRow(row: any): void {
-    this.selection.has(row) ? this.selection.delete(row) : this.selection.add(row);
-    this.emitSelection();
-  }
-
-  toggleAll(event: any): void {
-    event.checked ? this.data.forEach(row => this.selection.add(row)) : this.selection.clear();
-    this.emitSelection();
-  }
-
+  displayedColumnsWithActions(): string[] { return ['select', ...this.visibleColumns.map(c => c.field), 'actions']; }
+  toggleRow(row: any): void { this.selection.has(row) ? this.selection.delete(row) : this.selection.add(row); this.emitSelection(); }
+  toggleAll(event: any): void { event.checked ? this.data.forEach(row => this.selection.add(row)) : this.selection.clear(); this.emitSelection(); }
   emitSelection(): void { this.selectionChange.emit(Array.from(this.selection)); }
   isHeaderChecked(): boolean { return this.data.length > 0 && this.selection.size === this.data.length; }
 
   onRowClick(event: MouseEvent, row: any): void {
-    if ((event.target as HTMLElement).closest('button, mat-checkbox, mat-icon')) return;
+    if ((event.target as HTMLElement).closest('button, mat-checkbox, mat-icon, input')) return;
     this.rowClick.emit(row);
   }
 
-  // --- Smooth Resize ---
   startResize(event: MouseEvent, column: GridColumn): void {
     event.preventDefault();
     this.resizingColumn = column;
@@ -120,7 +156,6 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
     document.removeEventListener('mouseup', this.resizeMouseUp);
   }
 
-  // --- Drag Drop ---
   dropColumn(event: CdkDragDrop<any[]>) {
     if (event.previousIndex === event.currentIndex) return;
     const visibleArr = this.visibleColumns;
