@@ -35,8 +35,8 @@ export class SubCategoryService {
     }
 
     getPaged(request: GridRequest): Observable<GridResponse<SubCategory>> {
-        return this.api.get<GridResponse<SubCategory>>(
-            `subcategories/paged?${this.api.toQueryString(request)}`
+        return this.api.post<GridResponse<SubCategory>>(
+            `subcategories/paged`, request
         );
     }
 }

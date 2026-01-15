@@ -31,7 +31,8 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   private readonly STORAGE_KEY = 'grid-settings-state';
 
   private searchSubject = new Subject<string>();
-  private filterSubject = new Subject<void>();
+  private filterSubject = new Subject<{ field: string; value: string }>();
+
   private columnFilters: { [key: string]: string } = {};
 
   request: GridRequest = {
@@ -55,12 +56,20 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
     });
 
     // Column Filter Logic
-    this.filterSubject.pipe(debounceTime(600)).subscribe(() => {
-      // Direct assignment to ensure the latest object is sent
-      this.request.filters = { ...this.columnFilters };
-      this.request.pageNumber = 1;
-      this.emitRequest();
-    });
+    this.filterSubject
+      .pipe(debounceTime(500))
+      .subscribe(({ field, value }) => {
+        if (value) {
+          this.columnFilters[field] = value;
+        } else {
+          delete this.columnFilters[field];
+        }
+
+        this.request.filters = { ...this.columnFilters };
+        this.request.pageNumber = 1;
+        this.emitRequest();
+      });
+
   }
 
   ngOnInit(): void { this.restoreColumnState(); }
@@ -82,14 +91,12 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   onSearch(value: string): void { this.searchSubject.next(value); }
 
   onColumnFilter(field: string, value: string): void {
-    const trimmedValue = value ? value.trim() : '';
-    if (trimmedValue !== '') {
-      this.columnFilters[field] = trimmedValue;
-    } else {
-      delete this.columnFilters[field];
-    }
-    this.filterSubject.next();
+    this.filterSubject.next({
+      field,
+      value: value?.trim() ?? ''
+    });
   }
+
 
   exportToExcel(): void {
     const exportData = this.data.map((row: any) => {

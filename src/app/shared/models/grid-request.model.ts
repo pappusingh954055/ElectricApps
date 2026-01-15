@@ -4,5 +4,5 @@ export interface GridRequest {
   search?: string;
   sortBy?: string;
   sortDirection?: 'asc' | 'desc';
-  filters?: { [key: string]: string };
+  filters?: Record<string, string>;
 }
