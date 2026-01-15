@@ -29,6 +29,8 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
 
   selection = new Set<any>();
   private readonly STORAGE_KEY = 'grid-settings-state';
+  @Input({ required: true }) gridKey!: string;
+
 
   private searchSubject = new Subject<string>();
   private filterSubject = new Subject<{ field: string; value: string }>();
@@ -179,15 +181,38 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
   }
 
-  private restoreColumnState(): void {
-    const saved = localStorage.getItem(this.STORAGE_KEY);
+  restoreColumnState(): void {
+    const saved = localStorage.getItem(this.storageKey);
     if (!saved) return;
-    const savedState = JSON.parse(saved);
-    this.columns = this.columns.map(col => {
-      const savedCol = savedState.find((s: any) => s.field === col.field);
-      return savedCol ? { ...col, visible: savedCol.visible, width: savedCol.width } : col;
-    });
+
+    const savedState: Array<{
+      field: string;
+      visible?: boolean;
+      width?: number;
+    }> = JSON.parse(saved);
+
+    const restoredColumns: GridColumn[] = [];
+
+    for (const col of this.columns) {
+      const savedCol = savedState.find(s => s.field === col.field);
+
+      if (!savedCol) {
+        restoredColumns.push(col);
+        continue;
+      }
+
+      restoredColumns.push({
+        ...col,
+        ...(savedCol.visible !== undefined && { visible: savedCol.visible }),
+        ...(savedCol.width !== undefined && { width: savedCol.width })
+      });
+    }
+
+    this.columns = restoredColumns;
   }
+
+
+
 
   updateDisplayedColumns() { this.columns = [...this.columns]; this.saveColumnState(); }
 
@@ -201,6 +226,31 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
 
     localStorage.removeItem(this.STORAGE_KEY);
     this.updateDisplayedColumns();
+  }
+
+  private get storageKey(): string {
+    return `grid-state-${this.gridKey}`;
+  }
+
+  showAllColumns(): void {
+    this.columns.forEach(c => (c.visible = true));
+    this.updateDisplayedColumns();
+  }
+
+  hideAllColumns(): void {
+    this.columns.forEach(c => (c.visible = false));
+    this.updateDisplayedColumns();
+  }
+
+  columnSearch = '';
+
+  get filteredColumns(): GridColumn[] {
+    if (!this.columnSearch) return this.columns;
+
+    const value = this.columnSearch.toLowerCase();
+    return this.columns.filter(c =>
+      c.header.toLowerCase().includes(value)
+    );
   }
 
 }

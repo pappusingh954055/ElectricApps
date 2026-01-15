@@ -296,3 +296,22 @@
 .reset-columns-btn:hover {
   background-color: #fdecea;
 }
+.menu-actions {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 12px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.menu-actions button {
+  font-size: 12px;
+  padding: 4px 8px;
+}
+.column-search {
+  width: 100%;
+  padding: 8px 12px 4px;
+}
+
+.column-toggle {
+  padding: 6px 16px;
+}

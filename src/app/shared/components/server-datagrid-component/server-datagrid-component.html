@@ -126,37 +126,36 @@
 </div>
 
 <!-- COLUMN MENU -->
-<mat-menu
-  #columnMenu="matMenu"
-  yPosition="below"
-  xPosition="before"
-  class="column-menu">
+<mat-menu #columnMenu="matMenu" yPosition="below" xPosition="before" class="column-menu">
 
-  <!-- Header -->
-  <div class="menu-header">
-    Columns [Hide / Show]
-  </div>
+    <!-- Header -->
+    <div class="menu-header">
+        Columns [Hide / Show]
+    </div>
+    <mat-form-field appearance="outline" class="column-search">
+        <mat-label>Search columns</mat-label>
+        <input matInput [value]="columnSearch" />
+    </mat-form-field>
 
-  <!-- Column checkboxes -->
-  <mat-checkbox
-    *ngFor="let col of columns"
-    [checked]="col.visible"
-    class="column-toggle"
-    (change)="col.visible = $event.checked; updateDisplayedColumns()"
-    (click)="$event.stopPropagation()">
-    {{ col.header }}
-  </mat-checkbox>
+    <div class="menu-actions">
+        <button mat-button (click)="showAllColumns()">Select All</button>
+        <button mat-button (click)="hideAllColumns()">None</button>
+    </div>
 
-  <!-- Divider -->
-  <mat-divider></mat-divider>
+    <!-- Column checkboxes -->
+    <mat-checkbox *ngFor="let col of filteredColumns" [checked]="col.visible" class="column-toggle"
+        (change)="col.visible = $event.checked; updateDisplayedColumns()" (click)="$event.stopPropagation()">
+        {{ col.header }}
+    </mat-checkbox>
 
-  <!-- Reset Action -->
-  <button
-    mat-menu-item
-    class="reset-columns-btn"
-    (click)="resetColumns(); columnMenu.closed">
-    <mat-icon>restart_alt</mat-icon>
-    Reset Columns
-  </button>
+
+    <!-- Divider -->
+    <mat-divider></mat-divider>
+
+    <!-- Reset Action -->
+    <button mat-menu-item class="reset-columns-btn" (click)="resetColumns(); columnMenu.closed">
+        <mat-icon>restart_alt</mat-icon>
+        Reset Columns
+    </button>
 
 </mat-menu>
