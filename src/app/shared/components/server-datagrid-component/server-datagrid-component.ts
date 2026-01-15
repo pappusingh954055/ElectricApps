@@ -64,7 +64,7 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   }
 
   ngOnInit(): void { this.restoreColumnState(); }
-  
+
   ngOnDestroy(): void {
     this.searchSubject.complete();
     this.filterSubject.complete();
@@ -125,7 +125,7 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   toggleRow(row: any): void { this.selection.has(row) ? this.selection.delete(row) : this.selection.add(row); this.emitSelection(); }
   toggleAll(event: any): void { event.checked ? this.data.forEach(row => this.selection.add(row)) : this.selection.clear(); this.emitSelection(); }
   emitSelection(): void { this.selectionChange.emit(Array.from(this.selection)); }
-  isHeaderChecked(): boolean { return this.data.length > 0 && this.selection.size === this.data.length; }
+  isHeaderChecked(): boolean { return this.selection.size > 0; }
 
   onRowClick(event: MouseEvent, row: any): void {
     if ((event.target as HTMLElement).closest('button, mat-checkbox, mat-icon, input')) return;
