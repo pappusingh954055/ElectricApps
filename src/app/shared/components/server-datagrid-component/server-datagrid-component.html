@@ -28,47 +28,35 @@
         </ng-container>
 
         <!-- ================= DYNAMIC COLUMNS ================= -->
-        <ng-container *ngFor="let col of visibleColumns" [matColumnDef]="col.field">
+        <ng-container *ngFor="let col of visibleColumns; let i = index" [matColumnDef]="col.field">
 
-            <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragBoundary=".server-datagrid"
-                [cdkDragDisabled]="!col.visible" class="resizable-header" [style.width.px]="col.width"
-                (mouseenter)="hoveredColumn = col.field" (mouseleave)="hoveredColumn = null">
+            <th mat-header-cell *matHeaderCellDef cdkDrag [cdkDragDisabled]="loading" class="resizable-header"
+                [style.width.px]="col.width">
 
-                <!-- HEADER CONTENT (FIXED WIDTH) -->
-                <div class="header-wrapper">
+                <div class="header-wrapper" (mouseenter)="hoveredColumn = col.field"
+                    (mouseleave)="hoveredColumn = null">
 
                     <div class="header-content" (click)="!loading && onSort(col)">
-
                         <span class="header-text">{{ col.header }}</span>
 
-                        <!-- SORT ICON -->
+                        <!-- SORT ICON (HOVER ONLY) -->
                         <mat-icon *ngIf="col.sortable && hoveredColumn === col.field" class="sort-icon"
                             [class.asc]="request.sortBy === col.field && request.sortDirection === 'asc'"
                             [class.desc]="request.sortBy === col.field && request.sortDirection === 'desc'">
                             keyboard_arrow_up
                         </mat-icon>
-
-                        <!-- FILTER / COLUMN TOGGLE -->
-                        <button mat-icon-button class="filter-icon" [matMenuTriggerFor]="columnMenu"
-                            (click)="$event.stopPropagation()">
-                            <mat-icon>filter_alt</mat-icon>
-                        </button>
-
                     </div>
 
-                    <!-- RESIZE HANDLE -->
-                    <span class="resize-handle" (mousedown)="startResize($event, col)">
-                    </span>
+                    <!-- FILTER / COLUMN TOGGLE ICON -->
+                    <button mat-icon-button class="filter-icon" [matMenuTriggerFor]="columnMenu"
+                        (click)="$event.stopPropagation()">
+                        <mat-icon>filter_list</mat-icon>
+                    </button>
 
                 </div>
 
-                <!-- DRAG PREVIEW -->
-                <div *cdkDragPreview class="drag-preview">
-                    {{ col.header }}
-                </div>
-
-                <!-- DRAG PLACEHOLDER -->
-                <div *cdkDragPlaceholder class="drag-placeholder"></div>
+                <!-- RESIZE HANDLE -->
+                <span class="resize-handle" (mousedown)="startResize($event, col)"></span>
 
             </th>
 
@@ -77,6 +65,7 @@
             </td>
 
         </ng-container>
+
 
         <!-- ================= ACTIONS ================= -->
         <ng-container matColumnDef="actions">
@@ -111,7 +100,7 @@
     <!-- ================= COLUMN TOGGLE MENU ================= -->
     <mat-menu #columnMenu="matMenu">
         <mat-checkbox *ngFor="let col of columns" [checked]="col.visible"
-            (change)="col.visible = $event.checked; updateDisplayedColumns()" class="column-toggle">
+            (change)="col.visible = $event.checked; updateDisplayedColumns(); saveColumnState()" class="column-toggle">
             {{ col.header }}
         </mat-checkbox>
     </mat-menu>

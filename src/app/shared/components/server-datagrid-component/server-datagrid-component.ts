@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { GridRequest } from '../../models/grid-request.model';
 import { GridColumn } from '../../../shared/models/grid-column.model';
@@ -14,7 +14,7 @@ import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-
   templateUrl: './server-datagrid-component.html',
   styleUrl: './server-datagrid-component.scss',
 })
-export class ServerDatagridComponent<T> implements OnChanges {
+export class ServerDatagridComponent<T> implements OnChanges, OnInit {
 
   @Input() columns: GridColumn[] = [];
   @Input() data: T[] = [];
@@ -22,6 +22,7 @@ export class ServerDatagridComponent<T> implements OnChanges {
   @Input() loading = false;
 
   hoveredColumn: string | null = null;
+  private readonly STORAGE_KEY = 'server-datagrid-columns';
 
 
   private resizingColumn?: GridColumn;
@@ -180,6 +181,12 @@ export class ServerDatagridComponent<T> implements OnChanges {
     this.emitSelection();
 
   }
+
+  ngOnInit(): void {
+    this.restoreColumnState();
+    this.updateDisplayedColumns();
+  }
+
   get visibleColumns() {
     return this.columns.filter(c => c.visible);
   }
@@ -212,6 +219,43 @@ export class ServerDatagridComponent<T> implements OnChanges {
   dropColumn(event: CdkDragDrop<any[]>) {
     moveItemInArray(this.visibleColumns, event.previousIndex, event.currentIndex);
     this.updateDisplayedColumns();
+    this.saveColumnState();
   }
+  public saveColumnState(): void {
+    const state = this.columns.map(col => ({
+      field: col.field,
+      visible: col.visible,
+      width: col.width
+    }));
+
+    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
+  }
+
+  private restoreColumnState(): void {
+    const saved = localStorage.getItem(this.STORAGE_KEY);
+    if (!saved) return;
+
+    const savedState: {
+      field: string;
+      visible?: boolean;
+      width?: number;
+    }[] = JSON.parse(saved);
+
+    const restoredColumns: GridColumn[] = [];
+
+    for (const savedCol of savedState) {
+      const col = this.columns.find(c => c.field === savedCol.field);
+      if (!col) continue;
+
+      restoredColumns.push({
+        ...col,
+        visible: savedCol.visible ?? col.visible,
+        width: savedCol.width ?? col.width
+      });
+    }
+
+    this.columns = restoredColumns;
+  }
+
 
 }
