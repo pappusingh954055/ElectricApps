@@ -112,6 +112,7 @@ export const routes: Routes = [
             children: [
               {
                 path: '',
+                 data: { breadcrumb: 'Details Page' },
                 loadComponent: () =>
                   import('./features/master/category/category-list/category-list')
                     .then(m => m.CategoryList)
@@ -140,6 +141,7 @@ export const routes: Routes = [
             children: [
               {
                 path: '',
+                 data: { breadcrumb: 'Details Page' },
                 loadComponent: () =>
                   import('./features/master/subcategory/subcategory-list/subcategory-list')
                     .then(m => m.SubcategoryList)
@@ -168,6 +170,7 @@ export const routes: Routes = [
             children: [
               {
                 path: '',
+                 data: { breadcrumb: 'Product Details' },
                 loadComponent: () =>
                   import('./features/master/product/product-list/product-list')
                     .then(m => m.ProductList)
@@ -210,7 +213,7 @@ export const routes: Routes = [
               },
               {
                 path: 'edit/:id',
-                data: { breadcrumb: 'Edit List Items' },
+                data: { breadcrumb: 'Edit Price' },
                 loadComponent: () =>
                   import('./features/master/pricelist/pricelist-form/pricelist-form')
                     .then(m => m.PricelistForm)
@@ -230,7 +233,7 @@ export const routes: Routes = [
           // 🟦 PO
           {
             path: 'polist',
-            data: { breadcrumb: 'Create PO' },
+            data: { breadcrumb: 'PO List' },
             children: [
               {
                 path: '',

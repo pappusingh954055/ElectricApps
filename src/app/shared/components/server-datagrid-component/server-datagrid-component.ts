@@ -190,4 +190,17 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   }
 
   updateDisplayedColumns() { this.columns = [...this.columns]; this.saveColumnState(); }
+
+
+  resetColumns(): void {
+    this.columns = this.columns.map(col => ({
+      ...col,
+      visible: true,
+      width: undefined
+    }));
+
+    localStorage.removeItem(this.STORAGE_KEY);
+    this.updateDisplayedColumns();
+  }
+
 }

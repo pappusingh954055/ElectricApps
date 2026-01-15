@@ -41,6 +41,19 @@ export class ApiService {
             query.push(`sortDirection=${request.sortDirection ?? 'desc'}`);
         }
 
+        // ✅ ADD COLUMN FILTERS
+        if (request.filters) {
+            Object.keys(request.filters).forEach(key => {
+                const value = request.filters![key];
+                if (value !== undefined && value !== null && value !== '') {
+                    query.push(
+                        `filters[${encodeURIComponent(key)}]=${encodeURIComponent(value)}`
+                    );
+                }
+            });
+        }
+
         return query.join('&');
     }
+
 }

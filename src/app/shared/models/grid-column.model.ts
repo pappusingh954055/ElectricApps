@@ -16,6 +16,8 @@ export interface GridColumn {
 
   visible?: boolean;
 
+  close?: string;
+
   /** Optional column type (text, number, boolean, date) */
   type?: 'text' | 'number' | 'boolean' | 'date';
 }
