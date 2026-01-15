@@ -34,7 +34,6 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   private filterSubject = new Subject<void>();
   private columnFilters: { [key: string]: string } = {};
 
-  // Interface update handle karne ke liye request model
   request: GridRequest = {
     pageNumber: 1,
     pageSize: 10,
@@ -48,15 +47,16 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   private startWidth = 0;
 
   constructor() {
-    // Global Search Debounce
+    // Global Search Logic
     this.searchSubject.pipe(debounceTime(400), distinctUntilChanged()).subscribe(val => {
       this.request.search = val;
       this.request.pageNumber = 1;
       this.emitRequest();
     });
 
-    // Column Filters Debounce logic fix
+    // Column Filter Logic
     this.filterSubject.pipe(debounceTime(600)).subscribe(() => {
+      // Direct assignment to ensure the latest object is sent
       this.request.filters = { ...this.columnFilters };
       this.request.pageNumber = 1;
       this.emitRequest();
@@ -64,6 +64,7 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   }
 
   ngOnInit(): void { this.restoreColumnState(); }
+  
   ngOnDestroy(): void {
     this.searchSubject.complete();
     this.filterSubject.complete();
@@ -74,15 +75,16 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   }
 
   emitRequest() {
-    // Sending deep copy to avoid reference issues
-    this.loadData.emit(JSON.parse(JSON.stringify(this.request)));
+    // Parent component ko batane ke liye ki data reload karna hai
+    this.loadData.emit({ ...this.request });
   }
 
   onSearch(value: string): void { this.searchSubject.next(value); }
 
   onColumnFilter(field: string, value: string): void {
-    if (value && value.trim() !== '') {
-      this.columnFilters[field] = value;
+    const trimmedValue = value ? value.trim() : '';
+    if (trimmedValue !== '') {
+      this.columnFilters[field] = trimmedValue;
     } else {
       delete this.columnFilters[field];
     }
