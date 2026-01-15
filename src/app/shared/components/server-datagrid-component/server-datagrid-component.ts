@@ -1,261 +1,149 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, OnDestroy } from '@angular/core';
 import { PageEvent } from '@angular/material/paginator';
 import { GridRequest } from '../../models/grid-request.model';
 import { GridColumn } from '../../../shared/models/grid-column.model';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../material/material/material-module';
-
 import { CdkDragDrop, DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
-
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-server-datagrid',
+  standalone: true,
   imports: [CommonModule, MaterialModule, DragDropModule],
   templateUrl: './server-datagrid-component.html',
   styleUrl: './server-datagrid-component.scss',
 })
-export class ServerDatagridComponent<T> implements OnChanges, OnInit {
-
+export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy {
   @Input() columns: GridColumn[] = [];
   @Input() data: T[] = [];
   @Input() totalCount = 0;
   @Input() loading = false;
 
-  hoveredColumn: string | null = null;
-  private readonly STORAGE_KEY = 'server-datagrid-columns';
+  @Output() loadData = new EventEmitter<GridRequest>();
+  @Output() edit = new EventEmitter<any>();
+  @Output() delete = new EventEmitter<any[]>();
+  @Output() selectionChange = new EventEmitter<any[]>();
+  @Output() rowClick = new EventEmitter<any>();
 
+  selection = new Set<any>();
+  private readonly STORAGE_KEY = 'grid-settings-state';
+  private searchSubject = new Subject<string>();
+
+  request: GridRequest = { pageNumber: 1, pageSize: 10, sortDirection: 'desc' };
 
   private resizingColumn?: GridColumn;
   private startX = 0;
   private startWidth = 0;
 
-  @Output() loadData = new EventEmitter<GridRequest>();
-
-  @Output() edit = new EventEmitter<any>();
-  @Output() delete = new EventEmitter<any[]>();
-
-  @Output() selectionChange = new EventEmitter<any[]>();
-
-  @Output() rowClick = new EventEmitter<any>();
-
-  selection = new Set<any>();
-
-  displayedColumnsWithActions(): string[] {
-    return [
-      'select',
-      ...this.columns.filter(c => c.visible).map(c => c.field),
-      'actions'
-    ];
+  constructor() {
+    this.searchSubject.pipe(debounceTime(400), distinctUntilChanged()).subscribe(val => {
+      this.request.search = val;
+      this.request.pageNumber = 1;
+      this.emitRequest();
+    });
   }
 
-
-
-  toggleRow(row: any): void {
-    if (this.selection.has(row)) {
-      this.selection.delete(row);
-    } else {
-      this.selection.add(row);
-    }
-    this.emitSelection();
+  ngOnInit(): void { this.restoreColumnState(); }
+  ngOnDestroy(): void { this.searchSubject.complete(); }
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['data']) { this.selection.clear(); this.emitSelection(); }
   }
 
+  emitRequest() { this.loadData.emit({ ...this.request }); }
+  onSearch(value: string): void { this.searchSubject.next(value); }
 
-  toggleAll(event: any): void {
-    if (event.checked) {
-      this.data.forEach(row => this.selection.add(row));
-    } else {
-      this.selection.clear();
-    }
-    this.emitSelection();
-  }
-
-
-
-  // private emitSelection(): void {
-  //   this.selectionChange.emit([...this.selection]);
-  // }
-
-  emitSelection(): void {
-    this.selectionChange.emit(Array.from(this.selection));
-  }
-
-  isHeaderChecked(): boolean {
-    return this.selection.size > 0;
-  }
-
-
-
-  deleteSelected(): void {
-    if (this.selection.size === 0) return;
-    this.delete.emit([...this.selection]);
-  }
-
-
-
-  request: GridRequest = {
-    pageNumber: 1,
-    pageSize: 10,
-    sortDirection: 'desc'
-  };
-
-  displayedColumns(): string[] {
-    return this.columns.map(c => c.field);
-  }
-
-  onSearch(value: string): void {
-    this.request.search = value;
-    this.request.pageNumber = 1;
-    this.loadData.emit({ ...this.request });
-  }
-
-  onSort(column: GridColumn): void {
-    if (!column.sortable) return;
-
+  onSort(event: MouseEvent, column: GridColumn): void {
+    if (!column.sortable || this.loading) return;
+    this.request.sortDirection = (this.request.sortBy === column.field && this.request.sortDirection === 'asc') ? 'desc' : 'asc';
     this.request.sortBy = column.field;
-    this.request.sortDirection =
-      this.request.sortDirection === 'asc' ? 'desc' : 'asc';
-
-    this.request.pageNumber = 1; // ✅ reset page on sort
-    this.loadData.emit({ ...this.request });
+    this.request.pageNumber = 1;
+    this.emitRequest();
   }
 
   onPageChange(event: PageEvent): void {
     this.request.pageNumber = event.pageIndex + 1;
     this.request.pageSize = event.pageSize;
-
-    this.loadData.emit({ ...this.request });
+    this.emitRequest();
   }
 
-  clearSelection(): void {
-    this.selection.clear();
-    this.selectionChange.emit([]);
+  clearSelection(): void { this.selection.clear(); this.emitSelection(); }
+
+  get visibleColumns() { return this.columns.filter(c => c.visible); }
+
+  displayedColumnsWithActions(): string[] {
+    return ['select', ...this.visibleColumns.map(c => c.field), 'actions'];
   }
 
+  toggleRow(row: any): void {
+    this.selection.has(row) ? this.selection.delete(row) : this.selection.add(row);
+    this.emitSelection();
+  }
+
+  toggleAll(event: any): void {
+    event.checked ? this.data.forEach(row => this.selection.add(row)) : this.selection.clear();
+    this.emitSelection();
+  }
+
+  emitSelection(): void { this.selectionChange.emit(Array.from(this.selection)); }
+  isHeaderChecked(): boolean { return this.data.length > 0 && this.selection.size === this.data.length; }
+
+  onRowClick(event: MouseEvent, row: any): void {
+    if ((event.target as HTMLElement).closest('button, mat-checkbox, mat-icon')) return;
+    this.rowClick.emit(row);
+  }
+
+  // --- Smooth Resize ---
   startResize(event: MouseEvent, column: GridColumn): void {
     event.preventDefault();
-    event.stopPropagation();
-
     this.resizingColumn = column;
     this.startX = event.pageX;
     this.startWidth = column.width ?? 150;
-
     document.addEventListener('mousemove', this.resizeMouseMove);
     document.addEventListener('mouseup', this.resizeMouseUp);
   }
 
   resizeMouseMove = (event: MouseEvent) => {
     if (!this.resizingColumn) return;
-
-    const delta = event.pageX - this.startX;
-    this.resizingColumn.width = Math.max(80, this.startWidth + delta);
-  };
+    window.requestAnimationFrame(() => {
+      if (this.resizingColumn) {
+        const delta = event.pageX - this.startX;
+        this.resizingColumn.width = Math.max(80, this.startWidth + delta);
+      }
+    });
+  }
 
   resizeMouseUp = () => {
+    this.saveColumnState();
     this.resizingColumn = undefined;
-
     document.removeEventListener('mousemove', this.resizeMouseMove);
     document.removeEventListener('mouseup', this.resizeMouseUp);
-  };
-  updateDisplayedColumns(): void {
-    // Trigger Angular change detection for mat-table
-    this.columns = [...this.columns];
   }
 
-  onRowClick(event: MouseEvent, row: any): void {
-    const target = event.target as HTMLElement;
-
-    // ❌ Ignore clicks on buttons, icons, checkboxes
-    if (
-      target.closest('button') ||
-      target.closest('mat-checkbox') ||
-      target.closest('mat-icon')
-    ) {
-      return;
-    }
-
-    this.rowClick.emit(row);
-  }
-  ngOnChanges(changes: SimpleChanges): void {
-
-    this.selection.clear();
-    this.emitSelection();
-
-  }
-
-  ngOnInit(): void {
-    this.restoreColumnState();
-    this.updateDisplayedColumns();
-  }
-
-  get visibleColumns() {
-    return this.columns.filter(c => c.visible);
-  }
-  onColumnDrop(event: CdkDragDrop<string[]>): void {
-
-    const visibleColumns = this.columns.filter(c => c.visible);
-
-    moveItemInArray(
-      visibleColumns,
-      event.previousIndex,
-      event.currentIndex
-    );
-
-    // rebuild original columns array
-    const reordered: GridColumn[] = [];
-
-    visibleColumns.forEach(vc => {
-      const original = this.columns.find(c => c.field === vc.field);
-      if (original) reordered.push(original);
-    });
-
-    this.columns
-      .filter(c => !c.visible)
-      .forEach(c => reordered.push(c));
-
-    this.columns = reordered;
-
-    this.updateDisplayedColumns();
-  }
+  // --- Drag Drop ---
   dropColumn(event: CdkDragDrop<any[]>) {
-    moveItemInArray(this.visibleColumns, event.previousIndex, event.currentIndex);
-    this.updateDisplayedColumns();
+    if (event.previousIndex === event.currentIndex) return;
+    const visibleArr = this.visibleColumns;
+    const fromIdx = this.columns.indexOf(visibleArr[event.previousIndex]);
+    const toIdx = this.columns.indexOf(visibleArr[event.currentIndex]);
+    moveItemInArray(this.columns, fromIdx, toIdx);
     this.saveColumnState();
   }
-  public saveColumnState(): void {
-    const state = this.columns.map(col => ({
-      field: col.field,
-      visible: col.visible,
-      width: col.width
-    }));
 
+  saveColumnState(): void {
+    const state = this.columns.map(col => ({ field: col.field, visible: col.visible, width: col.width }));
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(state));
   }
 
   private restoreColumnState(): void {
     const saved = localStorage.getItem(this.STORAGE_KEY);
     if (!saved) return;
-
-    const savedState: {
-      field: string;
-      visible?: boolean;
-      width?: number;
-    }[] = JSON.parse(saved);
-
-    const restoredColumns: GridColumn[] = [];
-
-    for (const savedCol of savedState) {
-      const col = this.columns.find(c => c.field === savedCol.field);
-      if (!col) continue;
-
-      restoredColumns.push({
-        ...col,
-        visible: savedCol.visible ?? col.visible,
-        width: savedCol.width ?? col.width
-      });
-    }
-
-    this.columns = restoredColumns;
+    const savedState = JSON.parse(saved);
+    this.columns = this.columns.map(col => {
+      const savedCol = savedState.find((s: any) => s.field === col.field);
+      return savedCol ? { ...col, visible: savedCol.visible, width: savedCol.width } : col;
+    });
   }
 
-
+  updateDisplayedColumns() { this.columns = [...this.columns]; this.saveColumnState(); }
 }
