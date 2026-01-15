@@ -8,8 +8,9 @@
   </mat-card-title>
 
   <app-server-datagrid [columns]="columns" [data]="data" 
-  [totalCount]="totalCount" [loading]="loading"
-  (rowClick)="onEdit($event)"
+    gridKey="subcategory-grid"
+    [totalCount]="totalCount" [loading]="loading"
+    (rowClick)="onEdit($event)"
     (loadData)="loadSubCategories($event)" 
     (selectionChange)="onSelectionChange($event)" 
     (edit)="onEdit($event)"

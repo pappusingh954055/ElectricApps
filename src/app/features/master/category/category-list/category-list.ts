@@ -30,7 +30,7 @@ export class CategoryList implements OnInit {
   readonly categoryService = inject(CategoryService)
 
   loading = false;
-
+  filteredColumns: GridColumn[] = [];
   data: CategoryGridDto[] = [];
   totalCount = 0;
 
@@ -63,6 +63,7 @@ export class CategoryList implements OnInit {
       pageSize: 10,
       sortDirection: 'desc'
     });
+    // this.filteredColumns = [...this.columns];
   }
 
   loadCategories(request: GridRequest): void {

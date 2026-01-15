@@ -31,6 +31,7 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   private readonly STORAGE_KEY = 'grid-settings-state';
   @Input({ required: true }) gridKey!: string;
 
+  filteredColumns: GridColumn[] = [];
 
   private searchSubject = new Subject<string>();
   private filterSubject = new Subject<{ field: string; value: string }>();
@@ -74,7 +75,11 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
 
   }
 
-  ngOnInit(): void { this.restoreColumnState(); }
+  ngOnInit(): void {
+    this.restoreColumnState();
+    this.filteredColumns = [...this.columns];
+  }
+
 
   ngOnDestroy(): void {
     this.searchSubject.complete();
@@ -214,7 +219,12 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
 
 
 
-  updateDisplayedColumns() { this.columns = [...this.columns]; this.saveColumnState(); }
+  updateDisplayedColumns(): void {
+    this.columns = [...this.columns];
+    this.filteredColumns = [...this.columns]; // ✅ keep menu in sync
+    this.saveColumnState();
+  }
+
 
 
   resetColumns(): void {
@@ -242,15 +252,34 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
     this.updateDisplayedColumns();
   }
 
-  columnSearch = '';
 
-  get filteredColumns(): GridColumn[] {
-    if (!this.columnSearch) return this.columns;
 
-    const value = this.columnSearch.toLowerCase();
-    return this.columns.filter(c =>
-      c.header.toLowerCase().includes(value)
-    );
+  onColumnSearch(value: string): void {
+    const v = value.toLowerCase().trim();
+
+    this.filteredColumns = v
+      ? this.columns.filter(c => c.header.toLowerCase().includes(v))
+      : [...this.columns]; // ✅ reset properly
+  }
+
+
+ toggleColumn(col: GridColumn, visible: boolean): void {
+  col.visible = visible;
+  this.updateDisplayedColumns(); // ✅ persists + refreshes menu
+}
+
+
+  selectAllColumns(): void {
+    this.columns.forEach(c => (c.visible = true));
+    this.filteredColumns = [...this.columns]; // ✅ reflect immediately
+    this.updateDisplayedColumns();
+  }
+
+
+  clearAllColumns(): void {
+    this.columns.forEach(c => (c.visible = false));
+    this.filteredColumns = [...this.columns]; // ✅ reflect immediately
+    this.updateDisplayedColumns();
   }
 
 }

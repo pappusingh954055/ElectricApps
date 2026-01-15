@@ -81,9 +81,11 @@
             </ng-container>
 
             <!-- ACTIONS -->
+            <!-- ACTIONS HEADER -->
             <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef class="sticky-right actions-col">
                     <div class="header-container-inner">
+
                         <div class="header-top-row">
                             <span class="header-text">Actions</span>
 
@@ -93,22 +95,20 @@
                             </button>
                         </div>
 
-                        <!-- Empty filter row to align height -->
                         <div class="filter-row placeholder"></div>
                     </div>
                 </th>
 
-
                 <td mat-cell *matCellDef="let row" class="sticky-right actions-col">
-                    <button mat-icon-button color="primary" [disabled]="loading" (click)="edit.emit(row)">
+                    <button mat-icon-button color="primary" (click)="edit.emit(row)">
                         <mat-icon>edit</mat-icon>
                     </button>
-
-                    <button mat-icon-button color="warn" [disabled]="loading" (click)="delete.emit([row])">
+                    <button mat-icon-button color="warn" (click)="delete.emit([row])">
                         <mat-icon>delete</mat-icon>
                     </button>
                 </td>
             </ng-container>
+
 
             <tr mat-header-row *matHeaderRowDef="displayedColumnsWithActions(); sticky: true" class="header-row">
             </tr>
@@ -126,36 +126,56 @@
 </div>
 
 <!-- COLUMN MENU -->
-<mat-menu #columnMenu="matMenu" yPosition="below" xPosition="before" class="column-menu">
+<mat-menu #columnMenu="matMenu"
+          class="column-menu"
+          xPosition="before"
+          yPosition="below">
 
-    <!-- Header -->
-    <div class="menu-header">
+  <ng-template matMenuContent>
+    <div class="column-menu-wrapper"
+         (click)="$event.stopPropagation()">
+
+      <!-- HEADER -->
+      <div class="column-menu-header">
         Columns [Hide / Show]
+      </div>
+
+      <!-- SEARCH -->
+      <mat-form-field appearance="outline"
+                      class="column-search"
+                      (click)="$event.stopPropagation()">
+        <input matInput
+               placeholder="Search columns"
+               (click)="$event.stopPropagation()"
+               (keydown)="$event.stopPropagation()"
+               (input)="onColumnSearch($any($event.target).value)" />
+      </mat-form-field>
+
+      <!-- ACTIONS -->
+      <div class="column-menu-actions">
+        <button mat-button (click)="selectAllColumns()">Select All</button>
+        <button mat-button (click)="clearAllColumns()">None</button>
+      </div>
+
+      <!-- COLUMN LIST (NO SCROLL) -->
+      <div class="column-menu-list">
+        <mat-checkbox
+          *ngFor="let col of filteredColumns"
+          [checked]="col.visible"
+          (change)="toggleColumn(col, $event.checked)"
+          (click)="$event.stopPropagation()">
+          {{ col.header }}
+        </mat-checkbox>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="column-menu-footer">
+        <button mat-button color="warn" (click)="resetColumns()">
+          <mat-icon>restart_alt</mat-icon>
+          Reset Columns
+        </button>
+      </div>
+
     </div>
-    <mat-form-field appearance="outline" class="column-search">
-        <mat-label>Search columns</mat-label>
-        <input matInput [value]="columnSearch" />
-    </mat-form-field>
-
-    <div class="menu-actions">
-        <button mat-button (click)="showAllColumns()">Select All</button>
-        <button mat-button (click)="hideAllColumns()">None</button>
-    </div>
-
-    <!-- Column checkboxes -->
-    <mat-checkbox *ngFor="let col of filteredColumns" [checked]="col.visible" class="column-toggle"
-        (change)="col.visible = $event.checked; updateDisplayedColumns()" (click)="$event.stopPropagation()">
-        {{ col.header }}
-    </mat-checkbox>
-
-
-    <!-- Divider -->
-    <mat-divider></mat-divider>
-
-    <!-- Reset Action -->
-    <button mat-menu-item class="reset-columns-btn" (click)="resetColumns(); columnMenu.closed">
-        <mat-icon>restart_alt</mat-icon>
-        Reset Columns
-    </button>
-
+  </ng-template>
 </mat-menu>

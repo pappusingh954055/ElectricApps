@@ -1,3 +1,6 @@
+/* ==============================
+   DATAGRID CONTAINER
+================================ */
 .datagrid-container {
   position: relative;
   background: #fff;
@@ -5,6 +8,9 @@
   border-radius: 4px;
 }
 
+/* ==============================
+   HEADER ACTION BAR
+================================ */
 .grid-header-actions {
   display: flex;
   align-items: center;
@@ -12,15 +18,17 @@
   padding: 10px 16px;
   background: #f9f9f9;
   border-bottom: 1px solid #eee;
-  
-  .left-actions { display: flex; gap: 15px; align-items: center; }
+
+  .left-actions {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
 }
 
-.search-box {
-  width: 280px;
-  ::ng-deep .mat-mdc-text-field-wrapper { height: 48px; background: white; }
-}
-
+/* ==============================
+   TABLE WRAPPER
+================================ */
 .table-wrapper {
   overflow: auto;
   max-height: calc(100vh - 280px);
@@ -32,7 +40,9 @@
   border-collapse: collapse;
 }
 
-/* Header Container Fix */
+/* ==============================
+   HEADER STRUCTURE
+================================ */
 .header-container-inner {
   display: flex;
   flex-direction: column;
@@ -44,7 +54,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: 100%;
+  min-height: 32px;
   margin-bottom: 6px;
 }
 
@@ -63,65 +73,111 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 20px;
 }
 
-/* Filter Input Styling */
+/* ==============================
+   FILTER ROW
+================================ */
 .filter-row {
   width: calc(100% - 10px);
-  
+  margin-top: 6px;
+  min-height: 36px;
+
   .column-filter-input {
     width: 100%;
     padding: 6px 8px;
     font-size: 11px;
     border: 1px solid #d1d1d1;
     border-radius: 4px;
-    outline: none;
     background: #fff;
+    outline: none;
     transition: border-color 0.2s;
 
     &:focus {
       border-color: #1976d2;
-      box-shadow: 0 0 3px rgba(25,118,210,0.2);
+      box-shadow: 0 0 3px rgba(25, 118, 210, 0.2);
     }
   }
 }
 
-.sort-icon {
-  font-size: 16px; width: 16px; height: 16px;
-  &.desc { transform: rotate(180deg); }
+.filter-row.placeholder {
+  visibility: hidden;
 }
 
-.resizable-header {
-  position: relative;
-  border-right: 1px solid #eee;
-  background: #f5f5f5;
-  
-  .resize-handle {
-    position: absolute; right: 0; top: 0; bottom: 0;
-    width: 4px; cursor: col-resize; z-index: 5;
-    &:hover { background: #1976d2; }
+/* ==============================
+   SORT ICON
+================================ */
+.sort-icon {
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+
+  &.desc {
+    transform: rotate(180deg);
   }
 }
 
-.sticky-left { position: sticky; left: 0; z-index: 10; background: #fff !important; box-shadow: 2px 0 5px rgba(0,0,0,0.05); }
-.sticky-right { position: sticky; right: 0; z-index: 10; background: #fff !important; box-shadow: -2px 0 5px rgba(0,0,0,0.05); }
+/* ==============================
+   RESIZABLE HEADER
+================================ */
+.resizable-header {
+  position: relative;
+  background: #f5f5f5;
+  border-right: 1px solid #eee;
 
-.grid-loader {
-  position: absolute; inset: 0; background: rgba(255,255,255,0.7);
-  z-index: 100; display: flex; align-items: center; justify-content: center;
+  .resize-handle {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    cursor: col-resize;
+    z-index: 5;
+
+    &:hover {
+      background: #1976d2;
+    }
+  }
 }
 
-.action-buttons { display: flex; gap: 4px; }
+/* ==============================
+   STICKY COLUMNS
+================================ */
+.sticky-left {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  background: #fff !important;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+}
 
+.sticky-right {
+  position: sticky;
+  right: 0;
+  z-index: 10;
+  background: #fff !important;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+}
 
-/////////////////////////////////////////////////////////////////////
-
-/* ===== ACTION HEADER ALIGNMENT ===== */
-.actions-header {
+/* ==============================
+   LOADER
+================================ */
+.grid-loader {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 100;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 4px;
+  justify-content: center;
+}
+
+/* ==============================
+   ACTIONS COLUMN
+================================ */
+.actions-col {
+  vertical-align: top;
 }
 
 .column-menu-trigger {
@@ -129,189 +185,49 @@
   height: 32px;
 }
 
-/* ===== COLUMN VISIBILITY MENU ===== */
-.column-visibility-menu {
-  min-width: 220px;
-  padding: 0;
-}
-
-.column-visibility-menu .menu-title {
-  padding: 10px 14px;
-  font-weight: 600;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.column-toggle-item {
-  display: flex !important;
-  align-items: center;
-  padding: 8px 14px;
-  white-space: nowrap;
-}
-
-/* Prevent horizontal layout */
-.column-visibility-menu .mat-mdc-menu-content {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Checkbox spacing fix */
-.column-toggle-item .mdc-checkbox {
-  margin-right: 8px;
-}
-
-/* Ensure header content starts from top */
-.actions-col {
-  vertical-align: top;
-}
-
-/* Match structure with other headers */
-.actions-col .header-container-inner {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
-
-/* Align text + icon on same top row */
-.actions-col .header-top-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-/* Placeholder filter row (keeps height consistent) */
-.actions-col .filter-row.placeholder {
-  height: 36px; /* same as filter input height */
-}
-
-
-/* === Force identical vertical rhythm for all headers === */
-.mat-header-cell {
-  vertical-align: top;
-}
-
-/* Common header container */
-.header-container-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-}
-
-/* Top row (title + icons) */
-.header-top-row {
-  display: flex;
-  align-items: center;   /* 🔑 baseline fix */
-  justify-content: space-between;
-  min-height: 32px;      /* 🔑 SAME for all columns */
-  padding-top: 4px;      /* 🔑 same offset as Status */
-}
-
-/* Header text */
-.header-text {
-  line-height: 20px;
-  font-weight: 600;
-}
-
-/* Filter row */
-.filter-row {
-  margin-top: 6px;
-  min-height: 36px;      /* 🔑 EXACT height of filter input */
-}
-
-/* Placeholder filter row for Actions */
-.filter-row.placeholder {
-  visibility: hidden;    /* occupies space but invisible */
-}
-
-/* ===== Column Visibility Menu ===== */
-
+/* ==============================
+   COLUMN MENU
+================================ */
 .column-menu {
-  min-width: 220px;
-  padding: 0;
+  min-width: 260px;
 }
 
-.column-menu .mat-mdc-menu-content {
-  padding: 8px 0;
+.column-menu-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
 }
 
-/* Menu title */
-.column-menu .menu-header {
-  padding: 10px 16px;
+.column-menu-header {
   font-weight: 600;
   font-size: 14px;
-  border-bottom: 1px solid #e5e7eb;
-  margin-bottom: 4px;
-}
-
-/* Checkbox rows */
-.column-menu .column-toggle {
-  display: flex;
-  align-items: center;
-  padding: 8px 16px;
-  margin: 0;
-}
-
-/* Fix checkbox vertical alignment */
-.column-menu .mat-mdc-checkbox {
-  margin-right: 10px;
-}
-
-/* Hover polish */
-.column-menu .column-toggle:hover {
-  background-color: #f5f7fa;
-}
-
-/* Remove default weird spacing */
-.column-menu .mat-mdc-menu-item {
-  height: auto;
-}
-/* ===== Column Menu Animation ===== */
-
-.column-menu {
-  animation: columnMenuFadeIn 160ms ease-out;
-  transform-origin: top right;
-}
-
-@keyframes columnMenuFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-6px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-/* ===== Reset Columns Button ===== */
-
-.reset-columns-btn {
-  font-weight: 500;
-  color: #d32f2f;
-}
-
-.reset-columns-btn mat-icon {
-  margin-right: 8px;
-  font-size: 18px;
-}
-
-.reset-columns-btn:hover {
-  background-color: #fdecea;
-}
-.menu-actions {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 12px;
+  padding-bottom: 6px;
   border-bottom: 1px solid #e0e0e0;
 }
 
-.menu-actions button {
-  font-size: 12px;
-  padding: 4px 8px;
-}
 .column-search {
   width: 100%;
-  padding: 8px 12px 4px;
 }
 
-.column-toggle {
-  padding: 6px 16px;
+.column-menu-actions {
+  display: flex;
+  justify-content: space-between;
+}
+
+.column-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.column-menu-list mat-checkbox {
+  font-size: 13px;
+}
+
+.column-menu-footer {
+  border-top: 1px solid #e0e0e0;
+  padding-top: 6px;
+  display: flex;
+  justify-content: flex-start;
 }

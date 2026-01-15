@@ -7,7 +7,7 @@
     </button>
   </mat-card-title>
 
-  <app-server-datagrid [columns]="columns" [data]="data" [totalCount]="totalCount" [loading]="loading"
+  <app-server-datagrid [columns]="columns" [data]="data" [totalCount]="totalCount" [loading]="loading" gridKey="subcategory-grid"
     (loadData)="loadPriceLists($event)"(rowClick)="onEdit($event)" (selectionChange)="onSelectionChange($event)" (edit)="onEdit($event)"
     (delete)="deleteProduct($event[0])">
   </app-server-datagrid>
