@@ -4,30 +4,26 @@
     </div>
 
     <div class="grid-header-actions">
-        <div class="left-actions">
-            <mat-form-field appearance="outline" class="example-full-width">
+        <div class="search-container">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Global Search</mat-label>
                 <input matInput placeholder="Search all fields..." (input)="onSearch($any($event.target).value)" />
                 <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
-
-            <!-- <button mat-flat-button class="btn-right" (click)="exportToExcel()" [disabled]="loading || data.length === 0">
-                <mat-icon>download</mat-icon>
-                Export Excel
-            </button> -->
         </div>
 
-        <button mat-stroked-button color="warn" *ngIf="selection.size > 0" (click)="clearSelection()">
-            <mat-icon>clear_all</mat-icon>
-            Clear ({{ selection.size }})
-        </button>
+        <div class="button-container">
+            <button mat-stroked-button color="warn" *ngIf="selection.size > 0" (click)="clearSelection()">
+                <mat-icon>clear_all</mat-icon>
+                <span class="btn-text">Clear ({{ selection.size }})</span>
+            </button>
+        </div>
     </div>
 
     <div class="table-wrapper">
         <table mat-table [dataSource]="data" class="server-datagrid" cdkDropList cdkDropListOrientation="horizontal"
             (cdkDropListDropped)="dropColumn($event)">
 
-            <!-- SELECT -->
             <ng-container matColumnDef="select">
                 <th mat-header-cell *matHeaderCellDef class="sticky-left select-col">
                     <mat-checkbox [checked]="isHeaderChecked()" [disabled]="loading" (change)="toggleAll($event)">
@@ -39,84 +35,60 @@
                 </td>
             </ng-container>
 
-            <!-- DYNAMIC COLUMNS -->
             <ng-container *ngFor="let col of visibleColumns" [matColumnDef]="col.field">
                 <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragBoundary=".mat-header-row"
                     [style.width.px]="col.width" class="resizable-header">
-
                     <div class="header-container-inner">
-
-                        <!-- HEADER TOP -->
                         <div class="header-top-row">
                             <div class="header-main-content" (click)="onSort($event, col)">
-                                <span class="header-text">{{ col.header }}</span>
-
+                                <span class="header-text" [matTooltip]="col.header">{{ col.header }}</span>
                                 <mat-icon *ngIf="col.sortable && request.sortBy === col.field" class="sort-icon"
                                     [class.desc]="request.sortDirection === 'desc'">
                                     arrow_upward
                                 </mat-icon>
                             </div>
-
-
                         </div>
-
-                        <!-- ✅ FILTER ROW (FIXED) -->
                         <div class="filter-row" (click)="$event.stopPropagation()">
-                            <input class="column-filter-input" type="text" [placeholder]="'Filter ' + col.header"
+                            <input class="column-filter-input" type="text" [placeholder]="'Filter...'"
                                 (keyup)="$event.stopPropagation()"
                                 (input)="onColumnFilter(col.field, $any($event.target).value)">
                         </div>
-
                     </div>
-
-                    <span class="resize-handle" (mousedown)="startResize($event, col)">
-                    </span>
-
+                    <span class="resize-handle" (mousedown)="startResize($event, col)"></span>
                     <div class="drag-placeholder" *cdkDragPlaceholder></div>
                 </th>
-
                 <td mat-cell *matCellDef="let row" [style.width.px]="col.width">
-                    {{ col.cell ? col.cell(row) : row[col.field] }}
+                    <span class="cell-data">{{ col.cell ? col.cell(row) : row[col.field] }}</span>
                 </td>
             </ng-container>
 
-            <!-- ACTIONS -->
-            <!-- ACTIONS HEADER -->
             <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef class="sticky-right actions-col">
                     <div class="header-container-inner">
-
                         <div class="header-top-row">
                             <span class="header-text">Actions</span>
-
-                            <button mat-icon-button class="column-menu-trigger" [matMenuTriggerFor]="columnMenu"
-                                (click)="$event.stopPropagation()">
+                            <button mat-icon-button [matMenuTriggerFor]="columnMenu" (click)="$event.stopPropagation()">
                                 <mat-icon>more_vert</mat-icon>
                             </button>
                         </div>
-
                         <div class="filter-row placeholder"></div>
                     </div>
                 </th>
-
                 <td mat-cell *matCellDef="let row" class="sticky-right actions-col">
-                    <button mat-icon-button color="primary" (click)="edit.emit(row)">
-                        <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" (click)="delete.emit([row])">
-                        <mat-icon>delete</mat-icon>
-                    </button>
+                    <div class="action-btn-group">
+                        <button mat-icon-button color="primary" (click)="edit.emit(row)" matTooltip="Edit">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="delete.emit([row])" matTooltip="Delete">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
                 </td>
             </ng-container>
 
-
-            <tr mat-header-row *matHeaderRowDef="displayedColumnsWithActions(); sticky: true" class="header-row">
-            </tr>
-
+            <tr mat-header-row *matHeaderRowDef="displayedColumnsWithActions(); sticky: true" class="header-row"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumnsWithActions()" class="clickable-row"
-                (click)="onRowClick($event, row)">
-            </tr>
-
+                (click)="onRowClick($event, row)"></tr>
         </table>
     </div>
 
@@ -125,57 +97,36 @@
     </mat-paginator>
 </div>
 
-<!-- COLUMN MENU -->
-<mat-menu #columnMenu="matMenu"
-          class="column-menu"
-          xPosition="before"
-          yPosition="below">
+<mat-menu #columnMenu="matMenu" class="column-menu" xPosition="before" yPosition="below">
+    <ng-template matMenuContent>
+        <div class="column-menu-wrapper" (click)="$event.stopPropagation()">
+            <div class="column-menu-header">Columns [Hide / Show]</div>
+            
+            <mat-form-field appearance="outline" class="column-search">
+                <input matInput placeholder="Search columns" 
+                    (input)="onColumnSearch($any($event.target).value)" 
+                    (click)="$event.stopPropagation()" 
+                    (keydown)="$event.stopPropagation()"/>
+            </mat-form-field>
 
-  <ng-template matMenuContent>
-    <div class="column-menu-wrapper"
-         (click)="$event.stopPropagation()">
+            <div class="column-menu-actions">
+                <button mat-button (click)="selectAllColumns()">Select All</button>
+                <button mat-button (click)="clearAllColumns()">None</button>
+            </div>
 
-      <!-- HEADER -->
-      <div class="column-menu-header">
-        Columns [Hide / Show]
-      </div>
+            <div class="column-menu-list">
+                <mat-checkbox *ngFor="let col of filteredColumns" [checked]="col.visible" 
+                    (change)="toggleColumn(col, $event.checked)" 
+                    (click)="$event.stopPropagation()">
+                    {{ col.header }}
+                </mat-checkbox>
+            </div>
 
-      <!-- SEARCH -->
-      <mat-form-field appearance="outline"
-                      class="column-search"
-                      (click)="$event.stopPropagation()">
-        <input matInput
-               placeholder="Search columns"
-               (click)="$event.stopPropagation()"
-               (keydown)="$event.stopPropagation()"
-               (input)="onColumnSearch($any($event.target).value)" />
-      </mat-form-field>
-
-      <!-- ACTIONS -->
-      <div class="column-menu-actions">
-        <button mat-button (click)="selectAllColumns()">Select All</button>
-        <button mat-button (click)="clearAllColumns()">None</button>
-      </div>
-
-      <!-- COLUMN LIST (NO SCROLL) -->
-      <div class="column-menu-list">
-        <mat-checkbox
-          *ngFor="let col of filteredColumns"
-          [checked]="col.visible"
-          (change)="toggleColumn(col, $event.checked)"
-          (click)="$event.stopPropagation()">
-          {{ col.header }}
-        </mat-checkbox>
-      </div>
-
-      <!-- FOOTER -->
-      <div class="column-menu-footer">
-        <button mat-button color="warn" (click)="resetColumns()">
-          <mat-icon>restart_alt</mat-icon>
-          Reset Columns
-        </button>
-      </div>
-
-    </div>
-  </ng-template>
+            <div class="column-menu-footer">
+                <button mat-button color="warn" (click)="resetColumns()">
+                    <mat-icon>restart_alt</mat-icon> Reset
+                </button>
+            </div>
+        </div>
+    </ng-template>
 </mat-menu>

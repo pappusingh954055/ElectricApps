@@ -59,35 +59,34 @@
 
     <!-- TOOLBAR -->
     <mat-toolbar color="primary" class="toolbar">
-      <button mat-icon-button (click)="toggleSidenav()">
+      <button mat-icon-button (click)="toggleSidenav()" aria-label="Menu">
         <mat-icon>menu</mat-icon>
       </button>
 
-      <span class="title">Inventory Management System</span>
+      <span class="toolbar-title">Inventory Management System</span>
 
       <span class="spacer"></span>
 
-      <button mat-icon-button matTooltip="Notifications" class="nav-icon">
-        <mat-icon matBadge="5" matBadgeColor="warn">notifications</mat-icon>
-      </button>
+      <div class="nav-actions">
+        <button mat-icon-button matTooltip="Notifications" class="nav-icon">
+          <mat-icon matBadge="5" matBadgeColor="warn">notifications</mat-icon>
+        </button>
 
-      <button mat-icon-button [matMenuTriggerFor]="userMenu" matTooltip="User Options" class="nav-icon">
-        <mat-icon>account_circle</mat-icon>
-      </button>
+        <button mat-icon-button [matMenuTriggerFor]="userMenu" matTooltip="User Options" class="nav-icon">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+      </div>
 
       <mat-menu #userMenu="matMenu" xPosition="before">
         <button mat-menu-item (click)="openProfile()">
           <mat-icon>person</mat-icon>
           <span>Profile</span>
         </button>
-
         <button mat-menu-item (click)="openSettings()">
           <mat-icon>settings</mat-icon>
           <span>Settings</span>
         </button>
-
         <mat-divider></mat-divider>
-
         <button mat-menu-item (click)="logout()">
           <mat-icon>logout</mat-icon>
           <span>Logout</span>

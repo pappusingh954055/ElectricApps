@@ -1,273 +1,130 @@
 /* ==============================
-   DATAGRID CONTAINER
+    DATAGRID GLOBAL STYLES
 ================================ */
 .datagrid-container {
   position: relative;
   background: #fff;
-  border: 1px solid hsl(0, 0%, 87%);
-  border-radius: 4px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-/* ==============================
-   HEADER ACTION BAR
-================================ */
+/* RESPONSIVE HEADER */
 .grid-header-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
-  background: #f9f9f9;
+  padding: 12px 16px;
+  background: #fcfcfc;
+  gap: 12px;
   border-bottom: 1px solid #eee;
 
-  .left-actions {
-    display: flex;
-    gap: 15px;
-    align-items: center;
-    width: 100%;
+  .search-container {
+    flex: 1;
+    min-width: 200px;
+    mat-form-field { width: 100%; }
   }
+
+  .button-container { display: flex; gap: 8px; }
 }
 
-/* ==============================
-   TABLE WRAPPER
-================================ */
+/* TABLE WRAPPER WITH POPUP FIX */
 .table-wrapper {
-  overflow-y: auto;
-  overflow-x: auto;
-  max-height: 420px;
-
-  /* Hide scrollbar by default */
-  scrollbar-width: none;          /* Firefox */
-  -ms-overflow-style: none;       /* IE / Edge */
+  overflow: auto;
+  max-height: 500px;
+  width: 100%;
+  position: relative; /* Required for sticky */
+  
+  /* Scrollbar Styling */
+  &::-webkit-scrollbar { width: 6px; height: 6px; }
+  &::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
 }
 
-/* Chrome / Edge / Safari */
-.table-wrapper::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-/* 👇 SHOW SCROLLBAR ON HOVER */
-.table-wrapper:hover {
-  scrollbar-width: thin;          /* Firefox */
-}
-
-/* Chrome / Edge / Safari */
-.table-wrapper:hover::-webkit-scrollbar {
-  width: 8px;
-}
-
-.table-wrapper:hover::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.table-wrapper:hover::-webkit-scrollbar-thumb {
-  background-color: rgba(0, 0, 0, 0.35);
-  border-radius: 6px;
-}
-
-.table-wrapper:hover::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(0, 0, 0, 0.55);
-}
 .server-datagrid {
   width: 100%;
-  table-layout: fixed;
+  min-width: 800px;
   border-collapse: collapse;
 }
 
-/* ==============================
-   HEADER STRUCTURE
-================================ */
-.header-container-inner {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  padding: 8px 0;
-}
+/* STICKY COLUMNS & Z-INDEX */
+.header-row { z-index: 10; }
 
-.header-top-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 32px;
-  margin-bottom: 6px;
-}
-
-.header-main-content {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  flex: 1;
-}
-
-.header-text {
-  font-weight: 600;
-  font-size: 13px;
-  color: #333;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 20px;
-}
-
-/* ==============================
-   FILTER ROW
-================================ */
-.filter-row {
-  width: calc(100% - 10px);
-  margin-top: 6px;
-  min-height: 36px;
-
-  .column-filter-input {
-    width: 100%;
-    padding: 6px 8px;
-    font-size: 11px;
-    border: 1px solid #d1d1d1;
-    border-radius: 4px;
-    background: #fff;
-    outline: none;
-    transition: border-color 0.2s;
-
-    &:focus {
-      border-color: #1976d2;
-      box-shadow: 0 0 3px rgba(25, 118, 210, 0.2);
-    }
-  }
-}
-
-.filter-row.placeholder {
-  visibility: hidden;
-}
-
-/* ==============================
-   SORT ICON
-================================ */
-.sort-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
-
-  &.desc {
-    transform: rotate(180deg);
-  }
-}
-
-/* ==============================
-   RESIZABLE HEADER
-================================ */
-.resizable-header {
-  position: relative;
-  background: #f5f5f5;
-  border-right: 1px solid #eee;
-
-  .resize-handle {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 4px;
-    cursor: col-resize;
-    z-index: 5;
-
-    &:hover {
-      background: #1976d2;
-    }
-  }
-}
-
-/* ==============================
-   STICKY COLUMNS
-================================ */
 .sticky-left {
   position: sticky;
   left: 0;
-  z-index: 10;
-  background: #fff !important;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
-  width: 75px;
+  z-index: 20; /* Fixed columns should be above normal cells */
+  background: white !important;
+  border-right: 1px solid #eee;
 }
 
 .sticky-right {
   position: sticky;
   right: 0;
-  z-index: 10;
-  background: #fff !important;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+  z-index: 20; 
+  background: white !important;
+  border-left: 1px solid #eee;
+  box-shadow: -2px 0 5px rgba(0,0,0,0.05);
 }
 
-/* ==============================
-   LOADER
-================================ */
-.grid-loader {
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.7);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ==============================
-   ACTIONS COLUMN
-================================ */
-.actions-col {
-  vertical-align: top;
-}
-
-.column-menu-trigger {
-  width: 32px;
-  height: 32px;
-}
-
-/* ==============================
-   COLUMN MENU
-================================ */
-.column-menu {
-  min-width: 260px;
+/* POPUP MENU STYLING (The Fix) */
+::ng-deep .column-menu {
+  z-index: 9999 !important; /* Ensure it stays above everything */
 }
 
 .column-menu-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
   padding: 12px;
-}
-
-.column-menu-header {
-  font-weight: 600;
-  font-size: 14px;
-  padding-bottom: 6px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.column-search {
-  width: 100%;
-}
-
-.column-menu-actions {
-  display: flex;
-  justify-content: space-between;
-}
-
-.column-menu-list {
+  min-width: 250px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+
+  .column-menu-header {
+    font-weight: bold;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 4px;
+  }
+
+  .column-menu-list {
+    max-height: 250px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
 }
 
-.column-menu-list mat-checkbox {
-  font-size: 13px;
+/* ROW & FILTER STYLES */
+.header-container-inner { display: flex; flex-direction: column; padding: 8px; }
+.header-text { font-weight: 700; font-size: 13px; color: #444; }
+
+.filter-row {
+  margin-top: 6px;
+  .column-filter-input {
+    width: 100%;
+    padding: 5px 8px;
+    font-size: 11px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    &:focus { border-color: #00796b; outline: none; }
+  }
 }
 
-.column-menu-footer {
-  border-top: 1px solid #e0e0e0;
-  padding-top: 6px;
-  display: flex;
-  justify-content: flex-start;
+/* ==============================
+    MEDIA QUERIES
+================================ */
+@media screen and (max-width: 768px) {
+  .grid-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    .button-container { justify-content: flex-end; }
+  }
+  .btn-text { display: none; }
 }
 
-.example-full-width {
-  width: 100%;
+@media screen and (max-width: 480px) {
+  .mat-paginator-container { flex-wrap: wrap !important; justify-content: center !important; }
 }
