@@ -6,9 +6,10 @@ mat-card {
 /* ================= HEADER ================= */
 .form-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 8px;
+  align-items: start;
 }
 
 /* ================= ADD ITEM BUTTON ================= */
@@ -25,35 +26,44 @@ mat-card {
   margin-top: 6px;
 }
 
-/* ================= ITEM ROW ================= */
+/* ================= ITEM ROW (FIXED) ================= */
 .item-row {
   display: grid;
-  grid-template-columns:
-    2fr     /* Product */
-    0.8fr   /* Qty */
-    0.8fr   /* Unit */
-    1fr     /* Price */
-    0.9fr   /* Disc % */
-    0.8fr   /* GST % */
-    1.1fr   /* Total */
-    40px;   /* Delete */
-
+  grid-template-columns: 2fr 0.8fr 0.8fr 1fr 0.9fr 0.8fr 1.1fr 40px;
   gap: 12px;
-  align-items: center;
+
+  /* Fields ko top se align karein taaki button ko handle karna aasaan ho */
+  align-items: flex-start;
+
   background: #fafafa;
-  padding: 12px;
+  padding: 16px 12px 0px 12px;
+  /* Bottom padding 0 taaki niche gap na dikhe */
   border-radius: 10px;
   margin-bottom: 10px;
-}
 
-/* Prevent wrapping inside fields */
-.item-row mat-form-field {
-  width: 100%;
-}
+  /* Form field ki extra bottom space ko khatam karne ke liye */
+  mat-form-field {
+    width: 100%;
+    /* Isse label ke niche ki khali jagah manage hogi */
+    margin-bottom: 0px;
+  }
 
-/* Delete button */
-.delete-btn {
-  justify-self: center;
+  /* DELETE BUTTON SPECIFIC FIX */
+  button.bg-rose {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    justify-self: center;
+
+    /* Screenshot ke hisaab se ise itna upar hona chahiye */
+    margin-top: 8px !important;
+
+    /* Size consistency */
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    border-radius: 50% !important;
+  }
 }
 
 /* ================= FOOTER ================= */
@@ -81,11 +91,13 @@ mat-card {
 /* ================= RESPONSIVE ================= */
 @media (max-width: 1200px) {
   .item-row {
-    grid-template-columns:
-      2fr 1fr 1fr 1fr
-      1fr 1fr
-      1fr
-      36px;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr 36px;
+    align-items: start;
+
+    button[mat-icon-button] {
+      margin-top: 15px;
+      /* Mobile/Tablets pe alignment adjust */
+    }
   }
 }
 
@@ -96,6 +108,7 @@ mat-card {
 
   .item-row {
     grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
 
   .po-footer {

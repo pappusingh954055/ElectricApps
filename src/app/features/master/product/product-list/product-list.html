@@ -1,8 +1,7 @@
 <mat-card>
 
   <mat-card-title class="d-flex justify-between">
-    Products
-    <button mat-raised-button color="primary" routerLink="/app/master/products/add">
+    <button mat-flat-button class="bg-cyan" routerLink="/app/master/products/add">
       + Add Product
     </button>
   </mat-card-title>
@@ -13,7 +12,7 @@
   </app-server-datagrid>
 
   <mat-card-actions>
-    <button mat-raised-button color="warn" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
+    <button mat-flat-button class="bg-cyan" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
       Delete Selected
     </button>
   </mat-card-actions>

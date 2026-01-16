@@ -16,9 +16,10 @@ mat-card {
 mat-card-title {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: space-between; // Dono ko door rakhega
   font-size: 18px;
   margin-bottom: 16px;
+  width: 100%; // Ensure karein ki title poori width le raha ho
 }
 
 /* ===============================

@@ -1,0 +1,129 @@
+.dashboard-container {
+  height: 100vh;      /* Poori screen ki height */
+  width: 100%;
+  overflow-y: auto;   /* Mouse wheel scrolling yahan enable hogi */
+  overflow-x: hidden; /* Side scroll band */
+  padding: 24px;
+  box-sizing: border-box;
+  background-color: #f4f7fe;
+  
+  // Iske andar ke content (KPIs, Charts, Table) ki purani classes yahan rahegi
+}
+
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 15px;
+
+  h1 { margin: 0; font-size: 24px; font-weight: 600; color: #1b1b1b; }
+}
+
+.export-actions { display: flex; gap: 12px; }
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.hover-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
+  border: none;
+  background: #fff;
+  overflow: hidden;
+
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1) !important;
+  }
+}
+
+.card-content {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+
+  .icon-box {
+    width: 54px; height: 54px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: white; margin-right: 16px;
+  }
+
+  .card-label { color: #6c757d; font-size: 14px; margin: 0; }
+  .card-value { font-size: 24px; font-weight: 700; margin-top: 4px; color: #343a40; }
+}
+
+/* Red Pulse Alert */
+.pulse-container {
+  display: flex; align-items: center; gap: 8px;
+  .red-dot {
+    width: 10px; height: 10px;
+    background-color: #f44336;
+    border-radius: 50%;
+    animation: pulse-red 1.5s infinite;
+  }
+}
+
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); }
+  70% { box-shadow: 0 0 0 10px rgba(244, 67, 54, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); }
+}
+
+/* Charts Grid Fix */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+
+  .chart-container {
+    padding: 16px;
+    min-height: 400px; // Standard height for both
+    display: flex;
+    flex-direction: column;
+
+    .chart-body {
+      flex: 1;
+      position: relative;
+      height: 300px; // Chart ko fixed space milegi
+      width: 100%;
+    }
+  }
+}
+
+/* Table Section */
+.activity-card {
+  margin-top: 24px;
+  .table-container { overflow-x: auto; }
+}
+
+.full-width-table { width: 100%; background: transparent; }
+
+.type-label {
+  padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600;
+  &.sale { background: #e8f5e9; color: #2e7d32; }
+  &.purchase { background: #e3f2fd; color: #1565c0; }
+}
+
+.status-chip { font-size: 11px !important; color: white !important; }
+
+[data-status="Completed"] { background-color: #4caf50 !important; }
+[data-status="Pending"] { background-color: #ff9800 !important; }
+[data-status="Shipped"] { background-color: #2196f3 !important; }
+
+/* Responsive Adjustments */
+@media (max-width: 1024px) {
+  .charts-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 600px) {
+  .header-section { flex-direction: column; align-items: flex-start; }
+  .export-actions { width: 100%; justify-content: space-between; }
+}

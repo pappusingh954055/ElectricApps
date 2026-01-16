@@ -1,33 +1,35 @@
 <mat-card>
-
-  <mat-card-title>Purchase Order</mat-card-title>
-
   <!-- ✅ SINGLE ROOT FORM -->
   <form [formGroup]="poForm">
 
     <!-- ================= HEADER ================= -->
     <div class="form-grid">
+      
+        <mat-form-field  appearance="outline">
+          <mat-label>Supplier *</mat-label>
+          <mat-select formControlName="supplierId">
+            <mat-option *ngFor="let s of suppliers" [value]="s.id">
+              {{ s.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Supplier *</mat-label>
-        <mat-select formControlName="supplierId">
-          <mat-option *ngFor="let s of suppliers" [value]="s.id">
-            {{ s.name }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>PO Number</mat-label>
+          <input matInput formControlName="PoNumber" name="PoNumber">
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>PO Date</mat-label>
-        <input matInput [matDatepicker]="picker" formControlName="date">
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
-      </mat-form-field>
+        <mat-form-field  appearance="outline">
+          <mat-label>PO Date</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="date">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+      </div>
 
-    </div>
 
     <!-- ================= ADD ROW ================= -->
-    <button mat-raised-button color="primary" class="add-item-btn" type="button" (click)="addRow()">
+    <button mat-flat-button class="bg-cyan" type="button" (click)="addRow()">
       + Add Item
     </button>
 
@@ -76,7 +78,7 @@
           <input matInput formControlName="total" readonly>
         </mat-form-field>
 
-        <button mat-icon-button color="warn" type="button" class="delete-btn" (click)="removeItem(i)">
+        <button mat-icon-button type="button" class="bg-rose" (click)="removeItem(i)">
           <mat-icon>delete</mat-icon>
         </button>
 
@@ -89,7 +91,12 @@
         Grand Total: ₹ {{ grandTotal }}
       </div>
 
-      <button mat-raised-button color="primary" class="save-btn" type="button" (click)="savePo()">
+      <button mat-flat-button class="bg-spring-green" type="button" (click)="savePo()">
+        <mat-icon>save</mat-icon>
+          Save Draft
+      </button>
+      <button mat-flat-button class="bg-cyan" type="button" (click)="savePo()">
+         <mat-icon>check_circle</mat-icon>
         Save PO
       </button>
     </div>

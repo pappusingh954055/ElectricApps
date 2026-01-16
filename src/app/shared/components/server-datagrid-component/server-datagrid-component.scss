@@ -4,8 +4,9 @@
 .datagrid-container {
   position: relative;
   background: #fff;
-  border: 1px solid #ddd;
+  border: 1px solid hsl(0, 0%, 87%);
   border-radius: 4px;
+  overflow: hidden;
 }
 
 /* ==============================
@@ -23,6 +24,7 @@
     display: flex;
     gap: 15px;
     align-items: center;
+    width: 100%;
   }
 }
 
@@ -30,10 +32,43 @@
    TABLE WRAPPER
 ================================ */
 .table-wrapper {
-  overflow: auto;
-  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+  overflow-x: auto;
+  max-height: 420px;
+
+  /* Hide scrollbar by default */
+  scrollbar-width: none;          /* Firefox */
+  -ms-overflow-style: none;       /* IE / Edge */
 }
 
+/* Chrome / Edge / Safari */
+.table-wrapper::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* 👇 SHOW SCROLLBAR ON HOVER */
+.table-wrapper:hover {
+  scrollbar-width: thin;          /* Firefox */
+}
+
+/* Chrome / Edge / Safari */
+.table-wrapper:hover::-webkit-scrollbar {
+  width: 8px;
+}
+
+.table-wrapper:hover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.table-wrapper:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.35);
+  border-radius: 6px;
+}
+
+.table-wrapper:hover::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(0, 0, 0, 0.55);
+}
 .server-datagrid {
   width: 100%;
   table-layout: fixed;
@@ -150,6 +185,7 @@
   z-index: 10;
   background: #fff !important;
   box-shadow: 2px 0 5px rgba(0, 0, 0, 0.05);
+  width: 75px;
 }
 
 .sticky-right {
@@ -230,4 +266,8 @@
   padding-top: 6px;
   display: flex;
   justify-content: flex-start;
+}
+
+.example-full-width {
+  width: 100%;
 }

@@ -126,3 +126,16 @@ mat-list-item {
   align-items: center;
 }
 
+.spacer {
+  flex: 1 1 auto;
+}
+
+.nav-icon {
+  margin-left: 8px; /* Icons ke beech saaf gap ke liye */
+}
+
+/* Badge ki position sahi karne ke liye (Optional) */
+::ng-deep .mat-badge-content {
+  font-size: 10px;
+  font-weight: bold;
+}

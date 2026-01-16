@@ -35,6 +35,7 @@ export class PoForm implements OnInit {
     this.poForm = this.fb.nonNullable.group({
       supplierId: [0, Validators.required],
       date: [new Date(), Validators.required],
+      PoNumber:['',[Validators.required]],
       items: this.fb.nonNullable.array([])
     });
 

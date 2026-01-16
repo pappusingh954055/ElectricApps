@@ -67,9 +67,32 @@
 
       <span class="spacer"></span>
 
-     <button mat-icon-button (click)="logout()" matTooltip="Logout">
-  <mat-icon>logout</mat-icon>
-</button>
+      <button mat-icon-button matTooltip="Notifications" class="nav-icon">
+        <mat-icon matBadge="5" matBadgeColor="warn">notifications</mat-icon>
+      </button>
+
+      <button mat-icon-button [matMenuTriggerFor]="userMenu" matTooltip="User Options" class="nav-icon">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+
+      <mat-menu #userMenu="matMenu" xPosition="before">
+        <button mat-menu-item (click)="openProfile()">
+          <mat-icon>person</mat-icon>
+          <span>Profile</span>
+        </button>
+
+        <button mat-menu-item (click)="openSettings()">
+          <mat-icon>settings</mat-icon>
+          <span>Settings</span>
+        </button>
+
+        <mat-divider></mat-divider>
+
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>Logout</span>
+        </button>
+      </mat-menu>
     </mat-toolbar>
 
     <!-- BREADCRUMB PLACEHOLDER -->

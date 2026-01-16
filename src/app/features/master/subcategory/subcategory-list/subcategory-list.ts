@@ -49,14 +49,14 @@ export class SubcategoryList implements OnInit, OnChanges {
 
 
   columns: GridColumn[] = [
-    { field: 'categoryName', header: 'Category', sortable: true, width: 200, visible: true },
-    { field: 'subcategoryName', header: 'Subcategory', sortable: true, width: 200, visible: true },
-    { field: 'subcategoryCode', header: 'Code', sortable: true, width: 200, visible: true },
-    { field: 'defaultGst', header: 'GST %', sortable: true, width: 200, visible: true },
+    { field: 'categoryName', header: 'Category', sortable: true, width: 300, visible: true },
+    { field: 'subcategoryName', header: 'Subcategory', sortable: true, width: 300, visible: true },
+    { field: 'subcategoryCode', header: 'Code', sortable: true, width: 150, visible: true },
+    { field: 'defaultGst', header: 'GST %', sortable: true, width: 150, visible: true },
     {
       field: 'isActive',
       header: 'Status',
-      sortable: true, width: 200, visible: true,
+      sortable: true, width: 100, visible: true,
       cell: (row: any) => row.isActive ? 'Yes' : 'No'
     }
   ];

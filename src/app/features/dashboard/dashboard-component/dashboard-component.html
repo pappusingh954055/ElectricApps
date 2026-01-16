@@ -1,1 +1,89 @@
-<p>dashboard-component works!</p>
+<div class="dashboard-container">
+  <div class="header-section">
+    <h1>Inventory Dashboard</h1>
+    <div class="export-actions">
+      <button mat-stroked-button class="export-btn excel" (click)="exportExcel()">
+        <mat-icon>table_view</mat-icon> Export Excel
+      </button>
+      <button mat-flat-button color="warn" class="export-btn pdf" (click)="exportPDF()">
+        <mat-icon>picture_as_pdf</mat-icon> Download PDF
+      </button>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <mat-card *ngFor="let item of stats" class="kpi-card hover-card">
+      <div class="card-content">
+        <div class="icon-box" [style.background-color]="item.color">
+          <mat-icon>{{item.icon}}</mat-icon>
+        </div>
+        <div class="text-box">
+          <div class="pulse-container">
+            <p class="card-label">{{item.title}}</p>
+            <div *ngIf="item.title === 'Low Stock'" class="red-dot"></div>
+          </div>
+          <h2 class="card-value">{{item.value}}</h2>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+
+  <div class="charts-grid">
+    <mat-card class="chart-container hover-card">
+      <mat-card-header><mat-card-title>Sales vs Purchase Trends</mat-card-title></mat-card-header>
+      <mat-card-content class="chart-body">
+        <canvas baseChart [data]="lineChartData" [options]="chartOptions" [type]="'line'"></canvas>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="chart-container hover-card">
+      <mat-card-header><mat-card-title>Stock Status</mat-card-title></mat-card-header>
+      <mat-card-content class="chart-body">
+        <canvas baseChart [data]="donutChartData" [options]="chartOptions" [type]="'doughnut'"></canvas>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <mat-card class="activity-card hover-card">
+    <mat-card-header><mat-card-title>Recent Stock Movements</mat-card-title></mat-card-header>
+    <mat-card-content class="table-container">
+      <table mat-table [dataSource]="recentActivities" class="full-width-table">
+        <ng-container matColumnDef="product">
+          <th mat-header-cell *matHeaderCellDef> Product </th>
+          <td mat-cell *matCellDef="let element"> <b>{{element.product}}</b> </td>
+        </ng-container>
+
+        <ng-container matColumnDef="type">
+          <th mat-header-cell *matHeaderCellDef> Type </th>
+          <td mat-cell *matCellDef="let element"> 
+            <span [class]="'type-label ' + element.type.toLowerCase()">{{element.type}}</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="quantity">
+          <th mat-header-cell *matHeaderCellDef> Qty </th>
+          <td mat-cell *matCellDef="let element"> {{element.qty}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="date">
+          <th mat-header-cell *matHeaderCellDef> Date </th>
+          <td mat-cell *matCellDef="let element"> {{element.date}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef> Status </th>
+          <td mat-cell *matCellDef="let element">
+            <mat-chip-set>
+              <mat-chip class="status-chip" [attr.data-status]="element.status">
+                {{element.status}}
+              </mat-chip>
+            </mat-chip-set>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" style="cursor: pointer;"></tr>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>

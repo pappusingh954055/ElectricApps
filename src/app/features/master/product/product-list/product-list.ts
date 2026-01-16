@@ -43,21 +43,21 @@ export class ProductList implements OnInit {
     private cdr: ChangeDetectorRef) { }
 
   columns = [
-    { field: 'categoryName', header: 'Category', sortable: true, width: 200, visible: true },
-    { field: 'subcategoryName', header: 'Subcategory', sortable: true, width: 200, visible: true },
-    { field: 'productName', header: 'Product', sortable: true, width: 200, visible: true },
-    { field: 'sku', header: 'SKU', sortable: true, width: 200, visible: true },
-    { field: 'unit', header: 'Unit',sortable: true, width: 200, visible: true },
+    { field: 'categoryName', header: 'Category', sortable: true, width: 150, visible: true },
+    { field: 'subcategoryName', header: 'Subcategory', sortable: true, width: 140, visible: true },
+    { field: 'productName', header: 'Product', sortable: true, width: 150, visible: true },
+    { field: 'sku', header: 'SKU', sortable: true, width: 75, visible: true },
+    { field: 'unit', header: 'Unit',sortable: true, width: 75, visible: true },
 
-    { field: 'defaultGst', header: 'GST %',sortable: true, width: 200, visible: true },
-    { field: 'hsnCode', header: 'HSN Code', sortable: true, width: 200, visible: true },
-    { field: 'minStock', header: 'Min Stock',sortable: true, width: 200, visible: true },
+    { field: 'defaultGst', header: 'GST %',sortable: true, width: 75, visible: true },
+    { field: 'hsnCode', header: 'HSN Code', sortable: true, width: 80, visible: true },
+    { field: 'minStock', header: 'Min Stock',sortable: true, width: 80, visible: true },
 
-    { field: 'trackinventory',sortable: true, width: 200, visible: true, header: 'Status', cell: (row: any) => row.trackinventory ? 'Yes' : 'No' },
+    { field: 'trackinventory',sortable: true, width: 75, visible: true, header: 'Status', cell: (row: any) => row.trackinventory ? 'Yes' : 'No' },
     {
       field: 'createdOn',
       header: 'Created On',
-      sortable: true, width: 200, visible: true,
+      sortable: true, width: 120, visible: true,
       cell: (row: any) =>
         row.createdOn ?
           this.datePipe.transform(row.createdOn, 'dd-MMM-yyyy') : '-'

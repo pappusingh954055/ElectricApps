@@ -5,12 +5,11 @@
     </mat-progress-spinner>
 
     <!-- Save button -->
-    <button mat-raised-button color="primary" *ngIf="!loading" (click)="save.emit()">
+    <button mat-flat-button class="bg-cyan" *ngIf="!loading" (click)="save.emit()">
         Save
     </button>
-
     <!-- Cancel button -->
-    <button mat-button [disabled]="loading" (click)="cancel.emit()">
+    <button matButton=""  [disabled]="loading" (click)="cancel.emit()">
         Cancel
     </button>
 

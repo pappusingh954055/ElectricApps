@@ -44,6 +44,8 @@ export class MainLayoutComponent implements OnInit {
     this.sidenav.toggle();
   }
   logout(): void {
-  this.authService.logout();
-}
+    this.authService.logout();
+  }
+
+  openProfile() { } openSettings() { }
 }

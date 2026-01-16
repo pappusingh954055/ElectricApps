@@ -5,16 +5,16 @@
 
     <div class="grid-header-actions">
         <div class="left-actions">
-            <!-- <mat-form-field appearance="outline" class="search-box">
+            <mat-form-field appearance="outline" class="example-full-width">
                 <mat-label>Global Search</mat-label>
                 <input matInput placeholder="Search all fields..." (input)="onSearch($any($event.target).value)" />
                 <mat-icon matSuffix>search</mat-icon>
-            </mat-form-field> -->
+            </mat-form-field>
 
-            <button mat-flat-button color="accent" (click)="exportToExcel()" [disabled]="loading || data.length === 0">
+            <!-- <button mat-flat-button class="btn-right" (click)="exportToExcel()" [disabled]="loading || data.length === 0">
                 <mat-icon>download</mat-icon>
                 Export Excel
-            </button>
+            </button> -->
         </div>
 
         <button mat-stroked-button color="warn" *ngIf="selection.size > 0" (click)="clearSelection()">

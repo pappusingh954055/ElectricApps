@@ -1,39 +1,82 @@
-
 @use '@angular/material' as mat;
 
+// 1. MATERIAL THEME SETUP
 html {
-  height: 100%;
-  @include mat.theme((
-    color: (
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
-      red: mat.$red-palette,  
-      blue: mat.$blue-palette,  
-      green: mat.$green-palette,
-      yellow: mat.$yellow-palette,  
-      cyan: mat.$cyan-palette,  
-      orange: mat.$orange-palette,
-      rose:mat.$rose-palette, 
-      voilet: mat.$violet-palette,  
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
+  @include mat.theme((color: (primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    ));
 }
 
+// 2. GLOBAL RESET & BASE
+html,
 body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  overflow-x: hidden; // Horizontal scroll block karne ke liye
+  background-color: #f5f7f9; // Default light background for app
+}
 
-  color-scheme: light;
+// 3. COLOR PALETTE LOOP
+$my-palettes: (
+  "red": mat.$red-palette,
+  "green": mat.$green-palette,
+  "blue": mat.$blue-palette,
+  "yellow": mat.$yellow-palette,
+  "cyan": mat.$cyan-palette,
+  "magenta": mat.$magenta-palette,
+  "orange": mat.$orange-palette,
+  "chartreuse": mat.$chartreuse-palette,
+  "spring-green": mat.$spring-green-palette,
+  "azure": mat.$azure-palette,
+  "violet": mat.$violet-palette,
+  "rose": mat.$rose-palette
+);
 
+@each $name, $palette in $my-palettes {
+  .bg-#{$name} {
+    background-color: mat.get-theme-color(mat.define-theme((color: (primary: $palette))), primary) !important;
+    color: white !important;
+  }
+
+  .text-#{$name} {
+    color: mat.get-theme-color(mat.define-theme((color: (primary: $palette))), primary) !important;
+  }
+
+  .border-#{$name} {
+    border: 1px solid mat.get-theme-color(mat.define-theme((color: (primary: $palette))), primary) !important;
+  }
+}
+
+// 2. Global Body Styling
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden; // Browser ka vertical scroll puri tarah band
+  font-family: Roboto, "Helvetica Neue", sans-serif;
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
-  margin: 0;
-  height: 100%;
-    font-family: Roboto, "Helvetica Neue", sans-serif;
 }
+
+/* Mouse wheel se scroll hoga par dandi (scrollbar) nahi dikhegi */
+*::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+
 .mat-sidenav-container {
   height: 100vh;
 }
@@ -41,6 +84,7 @@ body {
 .content {
   padding: 16px;
 }
+
 /* You can add global styles to this file, and also import other style files */
 
 /* ================================
@@ -111,12 +155,14 @@ body {
 
 /* Success icon */
 .api-result-dialog.success mat-icon {
-  color: #1976d2; /* Material blue */
+  color: #1976d2;
+  /* Material blue */
 }
 
 /* Error icon */
 .api-result-dialog.error mat-icon {
-  color: #d32f2f; /* Material red */
+  color: #d32f2f;
+  /* Material red */
 }
 
 /* Title */
@@ -170,4 +216,3 @@ body {
 .cdk-overlay-backdrop {
   background: rgba(0, 0, 0, 0.35) !important;
 }
-

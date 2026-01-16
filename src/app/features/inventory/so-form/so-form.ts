@@ -18,7 +18,7 @@ export class SoForm implements OnInit {
     { id: 2, name: 'Mouse', unit: 'PCS', price: 500 }
   ];
 
-  constructor(private fb: FormBuilder) {}
+  constructor(private fb: FormBuilder) { }
 
   ngOnInit(): void {
     this.soForm = this.fb.group({
@@ -99,7 +99,7 @@ export class SoForm implements OnInit {
     );
   }
 
-  saveSo(): void {
+  SaveDraft(): void {
     if (this.soForm.invalid || this.items.length === 0) {
       alert('Customer and at least one item required');
       return;
@@ -107,5 +107,5 @@ export class SoForm implements OnInit {
 
     console.log('FINAL SO PAYLOAD', this.soForm.value);
   }
-
+  SaveSo() { }
 }
