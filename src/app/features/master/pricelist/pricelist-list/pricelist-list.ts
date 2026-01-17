@@ -25,7 +25,7 @@ import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-di
 export class PricelistList implements OnInit {
 
   columns = [
-    { field: 'name', header: 'Price Name', sortable: true, width: 100, visible: true },
+    { field: 'name', header: 'Price', sortable: true, width: 100, visible: true },
     { field: 'code', header: 'Code', sortable: true, width: 100, visible: true },
     { field: 'pricetype', header: 'Price Type', sortable: true, width: 110, visible: true },
     {
@@ -42,7 +42,7 @@ export class PricelistList implements OnInit {
         row.validto ?
           this.datePipe.transform(row.validto, 'dd-MMM-yyyy') : '-'
     },
-    { field: 'description', header: 'Description', sortable: true, width: 250, visible: true },
+    { field: 'description', header: 'Description', sortable: true, width: 200, visible: true },
     {
       field: 'createdon',
       header: 'CreatedOn', sortable: true, width: 120, visible: true,

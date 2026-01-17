@@ -28,7 +28,7 @@ export class LoginComponent {
 
     if (username === 'admin' && password === 'admin123') {
       this.authService.login();
-      this.router.navigate(['/app']);
+      this.router.navigate(['/app/dashboard']);
     } else {
       alert('Invalid username or password');
     }

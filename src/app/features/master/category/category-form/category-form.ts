@@ -52,13 +52,13 @@ export class CategoryForm implements OnInit {
     this.categorySvc.create(this.mapToCategories(this.categoryForm.value))
       .subscribe({
         next: (res) => {
+          this.loading = false;
           this.dialog.open(ApiResultDialog, {
             data: {
               success: true,
               message: res.message
             }
-          }).afterClosed().subscribe(() => {
-            this.loading = false;
+          }).afterClosed().subscribe(() => {            
             this.cdr.detectChanges();
             this.router.navigate(['/app/master/categories']);
           });
