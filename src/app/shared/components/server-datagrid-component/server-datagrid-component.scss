@@ -1,5 +1,5 @@
 /* ==============================
-    DATAGRID GLOBAL STYLES
+    DATAGRID STYLES (FINAL VERSION)
 ================================ */
 .datagrid-container {
   position: relative;
@@ -11,41 +11,36 @@
   flex-direction: column;
 }
 
-/* RESPONSIVE HEADER */
+/* SEARCH & ACTION BAR - RESPONSIVE FIX */
 .grid-header-actions {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  background: #fcfcfc;
+  flex-wrap: wrap;
+  /* Added for mobile responsiveness */
   gap: 12px;
+  padding: 10px 16px;
+  background: #fcfcfc;
   border-bottom: 1px solid #eee;
+  min-height: 64px;
 
   .search-container {
-    flex: 1;
-    min-width: 200px;
+    flex: 1 1 300px;
+    max-width: 400px;
 
     mat-form-field {
       width: 100%;
     }
   }
-
-  .button-container {
-    display: flex;
-    gap: 8px;
-  }
 }
 
-/* TABLE WRAPPER WITH POPUP FIX */
+/* TABLE WRAPPER */
 .table-wrapper {
   overflow: auto;
   max-height: 500px;
   width: 100%;
   position: relative;
-  /* Required for sticky */
 
-  /* Scrollbar Styling */
   &::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -59,81 +54,124 @@
 
 .server-datagrid {
   width: 100%;
-  min-width: 800px;
   border-collapse: collapse;
+
+  .sticky-left {
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    background: white !important;
+    border-right: 1px solid #eee;
+  }
+
+  .sticky-right {
+    position: sticky;
+    right: 0;
+    z-index: 20;
+    background: white !important;
+    border-left: 1px solid #eee;
+  }
 }
 
-/* STICKY COLUMNS & Z-INDEX */
-.header-row {
-  z-index: 10;
+/* ALIGNMENT SYSTEM */
+.mat-mdc-header-cell,
+.mat-mdc-cell {
+  padding: 0 16px !important; // Standard side padding
+  text-align: left; // Ensure default left alignment
+  vertical-align: middle;
 }
 
-.sticky-left {
-  position: sticky;
-  left: 0;
-  z-index: 20;
-  /* Fixed columns should be above normal cells */
-  background: white !important;
-  border-right: 1px solid #eee;
-}
-
-.sticky-right {
-  position: sticky;
-  right: 0;
-  z-index: 20;
-  background: white !important;
-  border-left: 1px solid #eee;
-  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
-}
-
-/* POPUP MENU STYLING (The Fix) */
-::ng-deep .column-menu {
-  z-index: 9999 !important;
-  /* Ensure it stays above everything */
-}
-
-.column-menu-wrapper {
-  padding: 12px;
-  min-width: 250px;
+.header-top-row {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  height: 32px;
   gap: 8px;
+  cursor: pointer;
 
-  .column-menu-header {
-    font-weight: bold;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 8px;
-    margin-bottom: 4px;
+  .header-text {
+    font-weight: 700;
+    font-size: 13px;
+    color: #444;
+    white-space: nowrap;
   }
 
-  .column-menu-list {
-    max-height: 250px;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  .sort-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s;
+
+    &.desc {
+      transform: rotate(180deg);
+    }
   }
 }
 
-/* ROW & FILTER STYLES */
-.header-container-inner {
-  display: flex;
-  flex-direction: column;
-  padding: 8px;
+/* CHECKBOX & ACTIONS SPECIFIC FIX */
+
+/* ✅ HEADER CHECKBOX ALIGNMENT FIX */
+.select-col {
+  width: 50px;
+  text-align: center !important;
+
+  .header-container-inner {
+    align-items: center; // Checkbox ko center mein rakhne ke liye
+  }
+
+  .header-top-row {
+    justify-content: center;
+  }
 }
 
-.header-text {
-  font-weight: 700;
-  font-size: 13px;
-  color: #444;
+/* Material header cell ki default padding hatayein checkbox ke liye */
+
+
+th.mat-mdc-header-cell.select-col {
+  padding: 0 !important;
 }
 
+.select-col .header-top-row {
+  justify-content: center;
+  padding-top: 2px;
+}
+
+.actions-col {
+  text-align: center !important;
+
+  .header-top-row {
+    justify-content: center;
+  }
+}
+
+.actions-col .header-top-row {
+  justify-content: space-between;
+  width: 100%;
+}
+
+.mini-trigger {
+  width: 32px !important;
+  height: 32px !important;
+  line-height: 32px !important;
+  padding: 0 !important;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* FILTERS */
 .filter-row {
   margin-top: 6px;
 
+  &.placeholder {
+    height: 28px;
+  }
+
   .column-filter-input {
     width: 100%;
-    padding: 5px 8px;
+    padding: 4px 8px;
     font-size: 11px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -145,126 +183,231 @@
   }
 }
 
-/* ==============================
-    LOADER CENTER FIX
-================================ */
-.grid-loader {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  /* Pure container ko cover karega */
-  background: rgba(255, 255, 255, 0.7);
-  /* Light overlay */
-  z-index: 1000;
-  /* Table aur menu ke upar dikhega */
-
-  // Flexbox se spinner ko bilkul beech mein lane ke liye
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  // Smooth transition (Optional)
-  backdrop-filter: blur(2px);
-}
-
-/* Spinner ka size agar adjust karna ho */
-.grid-loader mat-spinner {
-  margin: 0 auto;
-}
-
-/* 2. TABLE ROW HOVER EFFECT (Light Color) */
+/* ROW HOVER */
 .clickable-row {
-  transition: background-color 0.2s ease; /* Smooth transition */
+  transition: background-color 0.2s;
   cursor: pointer;
 
   &:hover {
-    background-color: #f1f8e9 !important; /* Very light green (Aap #f5f5f5 bhi use kar sakte hain) */
+    background-color: #f1f8e9 !important;
+  }
+
+  &:hover .sticky-left,
+  &:hover .sticky-right {
+    background-color: #f1f8e9 !important;
   }
 }
 
-/* Optional: Agar aap selection use kar rahe hain toh selected row ka color alag rakhne ke liye */
-.clickable-row.selected-row {
-  background-color: #e0f2f1 !important;
-}
-
-/* Sticky column hover handle */
-.clickable-row:hover .sticky-left,
-.clickable-row:hover .sticky-right {
-  background-color: #f1f8e9 !important; /* Hover par sticky cells ka color bhi change hona chahiye */
-}
-
-/* 1. Global Header Row Fix */
-.header-top-row {
-  display: flex;
-  align-items: center;    /* Vertically center (icon aur text line mein rahenge) */
-  justify-content: flex-start; 
-  min-height: 32px;       /* Ek fix height taaki sab barabar dikhen */
-  gap: 8px;               /* Text aur icon ke beech gap */
-}
-
-/* 2. Checkbox Alignment Fix (Sticky Left) */
-.select-col .header-container-inner {
+/* LOADER */
+.grid-loader {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  padding-top: 8px; /* Baaki text ke line mein laane ke liye */
+  backdrop-filter: blur(2px);
 }
 
-/* 3. Actions Alignment Fix (Sticky Right) */
-.actions-col .header-top-row {
-  justify-content: space-between; /* Text left, Three dots right */
-  width: 100%;
-}
+/* ✅ UPDATED COLUMN MENU (REFINED ICONS & BUTTONS) */
 
-.actions-col .header-text {
-  margin: 0;
-  display: flex;
-  align-items: center;
-}
+/* ✅ CUSTOM COLUMN MENU STYLES */
+::ng-deep .custom-column-menu {
+  background: #fff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+  max-width: none !important;
 
-/* 4. Three dots button ka size aur margin adjust karein */
-.column-menu-trigger {
-  width: 32px !important;
-  height: 32px !important;
-  line-height: 32px !important;
-  margin: -4px 0; /* Isse button row ki height nahi badhayega */
-  
-  mat-icon {
-    font-size: 20px;
-    width: 20px;
-    height: 20px;
-  }
-}
-
-/* 5. Placeholder height alignment */
-.filter-row.placeholder {
-  height: 30px; /* Isse ensure hoga ki niche ki filter line bhi align rahe */
-}
-
-/* ==============================
-    MEDIA QUERIES
-================================ */
-@media screen and (max-width: 768px) {
-  .grid-header-actions {
+  .menu-container {
+    padding: 16px;
+    min-width: 240px;
+    /* Thoda width adjust kiya vertical look ke liye */
+    display: flex;
     flex-direction: column;
-    align-items: stretch;
+    gap: 12px;
+  }
 
-    .button-container {
-      justify-content: flex-end;
+  .menu-header {
+    font-weight: 700;
+    font-size: 14px;
+    color: #333;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+  }
+
+  /* Search Box Styling */
+  .search-wrapper {
+    display: flex;
+    align-items: center;
+    background: #f5f5f5;
+    padding: 4px 10px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+
+    .search-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #666;
+      margin-right: 8px;
+    }
+
+    .menu-search-input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-size: 13px;
+      width: 100%;
+      height: 24px;
     }
   }
 
-  .btn-text {
-    display: none;
+  /* ✅ VERTICAL ALIGNMENT FIX */
+  .column-grid-vertical {
+    display: flex;
+    flex-direction: column;
+    /* Isse items ek ke niche ek aayenge */
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding: 4px 0;
+
+    mat-checkbox {
+      font-size: 13px;
+
+      /* Checkbox label alignment */
+      .mdc-label {
+        padding-left: 8px !important;
+        color: #444;
+      }
+    }
+  }
+
+  /* ✅ RESET BUTTON ALIGNMENT */
+  .menu-footer {
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+    margin-top: 4px;
+  }
+
+  .menu-reset-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 8px;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #00796b;
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.2s;
+
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      margin-right: 6px;
+    }
+
+    &:hover {
+      background: #e0f2f1;
+      border-color: #00796b;
+
+      mat-icon {
+        transform: rotate(-45deg);
+        /* Thoda visual effect refresh ke liye */
+      }
+    }
   }
 }
 
-@media screen and (max-width: 480px) {
-  .mat-paginator-container {
-    flex-wrap: wrap !important;
-    justify-content: center !important;
+::ng-deep .column-menu {
+  /* Menu Background & Shadow */
+  background: #fff !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15) !important;
+
+  .column-menu-wrapper {
+    padding: 16px;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .column-menu-header {
+    font-weight: bold;
+    font-size: 14px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    color: #333;
+  }
+
+  /* Fixed Search with Icon alignment */
+  .column-search {
+    width: 100%;
+
+    .mat-mdc-form-field-subscript-wrapper {
+      display: none;
+    }
+
+    /* Extra space remover */
+    mat-icon {
+      color: #666;
+      font-size: 20px;
+      margin-top: 2px;
+    }
+  }
+
+  .column-menu-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding: 4px;
+
+    mat-checkbox {
+      font-size: 13px;
+
+      .mdc-label {
+        padding-left: 4px !important;
+      }
+    }
+  }
+
+  /* ✅ RESET & REFRESH ICON FIX */
+  .reset-btn {
+    margin-top: 8px;
+    border-top: 1px solid #eee !important;
+    padding-top: 12px !important;
+    padding-bottom: 4px !important;
+    width: 100%;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    color: #00796b !important;
+    background: transparent !important;
+    border: none !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+
+    mat-icon {
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
+      margin-right: 8px !important;
+      line-height: 18px !important;
+      /* Refresh rotation effect */
+      transition: transform 0.3s ease;
+    }
+
+    &:hover mat-icon {
+      transform: rotate(-45deg);
+    }
   }
 }
