@@ -73,14 +73,16 @@
         </th>
         <td mat-cell *matCellDef="let row" class="sticky-right actions-col">
           <div class="action-btn-group">
-            <button mat-icon-button color="primary" (click)="edit.emit(row)"><mat-icon>edit</mat-icon></button>
-            <button mat-icon-button color="warn" (click)="delete.emit([row])"><mat-icon>delete</mat-icon></button>
+            <button mat-icon-button (click)="edit.emit(row)"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button (click)="delete.emit([row])"><mat-icon>delete</mat-icon></button>
           </div>
         </td>
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumnsWithActions(); sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumnsWithActions()" class="clickable-row"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumnsWithActions()" class="clickable-row"
+        [class.selected-row]="selection.has(row)">
+      </tr>
     </table>
   </div>
 

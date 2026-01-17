@@ -52,24 +52,108 @@
   }
 }
 
+/* ✅ ENTERPRISE COMPACT + STICKY COLUMNS FIX */
+/* ✅ ENTERPRISE COMPACT + STICKY COLUMNS FIX */
+/* ✅ FINAL ENTERPRISE COMPACT TABLE STYLES */
 .server-datagrid {
   width: 100%;
   border-collapse: collapse;
 
-  .sticky-left {
+  // 1. Table Row Height Control
+  tr.mat-mdc-header-row {
+    height: auto !important; // Header filters ke hisaab se adjust hoga
+  }
+
+  tr.mat-mdc-row {
+    height: 38px !important; // 38px-40px is perfect for Enterprise look
+
+    // Hover effect for both normal and sticky cells
+    &:hover td {
+      background-color: #f5f7f9 !important;
+    }
+  }
+
+  // 2. Data Cells Alignment & Spacing
+  .mat-mdc-cell {
+    font-size: 13px !important;
+    padding: 0 12px !important;
+    color: #2c3e50;
+    border-bottom: 1px solid #edf2f7;
+    white-space: nowrap;
+  }
+
+  // 3. Optimized Sticky Columns (Left & Right)
+  .sticky-left,
+  .sticky-right {
     position: sticky;
-    left: 0;
     z-index: 20;
-    background: white !important;
-    border-right: 1px solid #eee;
+    background: white !important; // Solid color scrolling hide karne ke liye
+    padding: 0 8px !important;
+
+    // Ensure sticky cell height matches the row
+    height: 38px !important;
+  }
+
+  .sticky-left {
+    left: 0;
+    border-right: 1px solid #e2e8f0;
   }
 
   .sticky-right {
-    position: sticky;
     right: 0;
-    z-index: 20;
-    background: white !important;
-    border-left: 1px solid #eee;
+    border-left: 1px solid #e2e8f0;
+    box-shadow: -2px 0 5px rgba(0, 0, 0, 0.02); // Halki shadow for separation
+  }
+
+  // 4. Compact Action Buttons
+  .action-btn-group {
+    display: flex;
+    justify-content: center;
+    gap: 2px;
+
+    button.mat-mdc-icon-button {
+      width: 28px !important;
+      height: 28px !important;
+      line-height: 28px !important;
+
+      mat-icon {
+        font-size: 16px !important;
+        width: 16px !important;
+        height: 16px !important;
+        color: #546e7a;
+      }
+
+      &:hover mat-icon {
+        color: #00796b; // Edit color
+      }
+
+      &.color-warn:hover mat-icon {
+        color: #d32f2f; // Delete color
+      }
+    }
+  }
+}
+
+/* 5. Header Content (Compact Filters) */
+.header-container-inner {
+  padding: 8px 0 !important;
+
+  .header-top-row {
+    height: 24px;
+    margin-bottom: 4px;
+
+    .header-text {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+  }
+
+  .column-filter-input {
+    height: 26px !important;
+    font-size: 11px !important;
+    padding: 2px 6px !important;
   }
 }
 
@@ -135,11 +219,69 @@ th.mat-mdc-header-cell.select-col {
   padding-top: 2px;
 }
 
+/* ✅ ACTIONS COLUMN PERFECT VERTICAL & HORIZONTAL CENTER */
 .actions-col {
-  text-align: center !important;
 
-  .header-top-row {
-    justify-content: center;
+  /* Cell level: Padding remove karke height force karein */
+  &.mat-mdc-cell,
+  &.mat-mdc-header-cell {
+    padding: 0 !important;
+    vertical-align: middle !important; // Legacy support
+    height: 38px !important; // Row height ke barabar
+  }
+
+  /* Icons group container */
+  .action-btn-group {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    height: 38px !important;
+    /* Row height match karein */
+    width: 100%;
+    gap: 12px;
+    margin: 0 !important;
+    /* Extra margin hatayein */
+
+    // Buttons ke default margins ko neutralize karein
+    button.mat-mdc-icon-button {
+      margin: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+  }
+}
+
+/* Hover effect on selected row (thoda dark blue) */
+.selected-row:hover td {
+  background-color: #e3f0ff !important;
+}
+
+/* ✅ 3. STICKY COLUMN FIX (FOR TABLE ROWS) */
+/* Ensure sticky columns don't have default white background on selected rows */
+.server-datagrid tr.selected-row td.mat-mdc-cell {
+  background-color: inherit !important;
+}
+
+/* ✅ SELECTED ROW - STICKY COLORS (Edge-to-Edge Blue) */
+.selected-row {
+  background-color: #f0f7ff !important;
+
+  /* Sticky columns ka background override karein taaki gaps na dikhein */
+  .sticky-left,
+  .sticky-right,
+  &.mat-mdc-row td.mat-mdc-cell.sticky-right,
+  &.mat-mdc-row td.mat-mdc-cell.sticky-left {
+    background-color: #f0f7ff !important;
+  }
+}
+
+/* Row hover effect selection ke bina */
+.clickable-row:hover:not(.selected-row) {
+  background-color: #f5f7f9 !important;
+
+  td {
+    background-color: inherit !important;
   }
 }
 
