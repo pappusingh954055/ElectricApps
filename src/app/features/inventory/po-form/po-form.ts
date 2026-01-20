@@ -36,8 +36,8 @@ export class PoForm implements OnInit, OnDestroy {
   grandTotal: number = 0;
   totalTaxAmount: number = 0; // NEW: Summary calculation
   poForm!: FormGroup;
-  loading: boolean = false; 
-  
+  loading: boolean = false;
+
   // Mock products (In real app, fetch from inventoryService)
   products = [
     { id: 1, name: 'Laptop', unit: 'PCS', price: 50000, sku: 'L-001' },
@@ -72,12 +72,67 @@ export class PoForm implements OnInit, OnDestroy {
   }
 
   // UPDATED: Logic to fetch price list when supplier is selected
+  // onSupplierChange(supplierId: number): void {
+  //   this.supplierService.getSupplierById(supplierId).subscribe(supplier => {
+  //     if (supplier && supplier.defaultPriceListId) 
+  //       {
+  //       this.poForm.patchValue({ priceListId: supplier.defaultPriceListId });
+  //       // Refresh existing rows if any
+  //       this.refreshAllPrices();
+  //     }
+  //   });
+  // }
+
   onSupplierChange(supplierId: number): void {
-    this.supplierService.getSupplierById(supplierId).subscribe(supplier => {
-      if (supplier && supplier.defaultPriceListId) {
-        this.poForm.patchValue({ priceListId: supplier.defaultPriceListId });
-        // Refresh existing rows if any
-        this.refreshAllPrices();
+    if (!supplierId) return;
+
+    // API Call jo humne banayi hai
+    this.supplierService.getSupplierById(supplierId).subscribe({
+      next: (data) => {
+        // YAHAN CONSOLE KAREIN:
+        console.log("Full Supplier Data from Backend:", data);
+
+        if (data && data.defaultPriceListId) {
+          console.log("Found Default Price List ID:", data.defaultPriceListId);
+
+          // Form mein value set karein
+          this.poForm.patchValue({
+            priceListId: data.defaultPriceListId
+          });
+
+          // UI hint dikhane ke liye toggle karein
+          this.isPriceListAutoSelected = true;
+
+          // Step 2: Niche ke items ke rates refresh karein
+          this.refreshAllItemRates(data.defaultPriceListId);
+        } else {
+          console.warn("Is supplier ke liye koi defaultPriceListId nahi mili.");
+          this.isPriceListAutoSelected = false;
+        }
+      },
+      error: (err) => {
+        console.error("API Error while fetching supplier:", err);
+      }
+    });
+  }
+
+  refreshAllItemRates(priceListId: number): void {
+    // PO Items ke FormArray par loop chalayein
+    this.items.controls.forEach((control, index) => {
+      const productId = control.get('productId')?.value;
+
+      if (productId) {
+        // Service se naya rate fetch karein
+        this.inventoryService.getProductRate(productId, priceListId).subscribe(res => {
+          if (res) {
+            control.patchValue({
+              price: res.rate // Naya rate set ho raha hai
+            });
+
+            // Rate change hote hi Total recalculate karein
+            this.updateTotal(index);
+          }
+        });
       }
     });
   }
@@ -202,7 +257,7 @@ export class PoForm implements OnInit, OnDestroy {
     this.items.controls.forEach((_, i) => {
       const productId = this.items.at(i).get('productId')?.value;
       if (productId) {
-         // Trigger individual row update logic here if needed
+        // Trigger individual row update logic here if needed
       }
     });
   }
@@ -219,8 +274,8 @@ export class PoForm implements OnInit, OnDestroy {
 
   private focusInput(index: number, controlName: string) {
     setTimeout(() => {
-        const inputs = document.querySelectorAll(`input[formControlName="${controlName}"]`);
-        (inputs[index] as HTMLElement)?.focus();
+      const inputs = document.querySelectorAll(`input[formControlName="${controlName}"]`);
+      (inputs[index] as HTMLElement)?.focus();
     }, 10);
   }
 

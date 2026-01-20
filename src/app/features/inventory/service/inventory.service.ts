@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../enviornments/environment';
 import { ApiService } from '../../../shared/api.service';
@@ -19,7 +19,7 @@ export class InventoryService {
 
     getNextPoNumber(): Observable<{ poNumber: string }> {
 
-        return this.http.get<{ poNumber: string }>(`${this.apiUrl}/next-number`);
+        return this.http.get<{ poNumber: string }>(`${this.apiUrl}/purchaseorders/next-number`);
     }
 
     // PO Save karne ke liye
@@ -35,5 +35,20 @@ export class InventoryService {
     getPriceListRate(priceListId: string, productId: number): Observable<any> {
         // Query parameters ke saath request bhejenge
         return this.http.get<any>(`${this.apiUrl}/pricelists/${priceListId}/product-rate/${productId}`);
+    }
+
+    /**
+   * Price List ke basis par product ka rate fetch karne ke liye
+   * @param productId - Selected Product ki ID
+   * @param priceListId - Selected Price List ki ID
+   */
+    getProductRate(productId: number, priceListId: number): Observable<any> {
+        // Parameters pass karne ke liye HttpParams ka use karein
+        const params = new HttpParams()
+            .set('productId', productId.toString())
+            .set('priceListId', priceListId.toString());
+
+        // GET request: /api/products/get-rate?productId=1&priceListId=101
+        return this.http.get(`${this.apiUrl}/get-rate`, { params });
     }
 }

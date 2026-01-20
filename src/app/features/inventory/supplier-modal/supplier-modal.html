@@ -8,28 +8,40 @@
 
   <mat-dialog-content class="modal-body">
     <form [formGroup]="supplierForm">
-      <div class="row pt-2">
-        <div class="col-12 mb-3">
+      <div class="row pt-1">
+        <div class="col-12 mb-2">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Supplier Name</mat-label>
             <mat-icon matPrefix>business</mat-icon>
-            <input matInput formControlName="Name" placeholder="Enter company name">
+            <input matInput formControlName="name" placeholder="Enter company name">
           </mat-form-field>
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-2">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Phone Number</mat-label>
             <mat-icon matPrefix>phone</mat-icon>
-            <input matInput formControlName="Phone" placeholder="9876543210">
+            <input matInput formControlName="phone" placeholder="9876543210">
           </mat-form-field>
         </div>
 
-        <div class="col-md-6 mb-3">
+        <div class="col-md-6 mb-2">
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>GST Number</mat-label>
             <mat-icon matPrefix>receipt_long</mat-icon>
-            <input matInput formControlName="GstIn" placeholder="Optional">
+            <input matInput formControlName="gstIn" placeholder="Optional">
+          </mat-form-field>
+        </div>
+
+        <div class="col-md-6 mb-2">
+          <mat-form-field appearance="outline" class="w-100">
+            <mat-label>Default Price List</mat-label>
+            <mat-icon matPrefix>list_alt</mat-icon>
+            <mat-select formControlName="defaultpricelistId">
+              <mat-option *ngFor="let list of priceLists" [value]="list.id">
+                {{list.name}}
+              </mat-option>
+            </mat-select>
           </mat-form-field>
         </div>
 
@@ -37,16 +49,24 @@
           <mat-form-field appearance="outline" class="w-100">
             <mat-label>Address</mat-label>
             <mat-icon matPrefix>location_on</mat-icon>
-            <textarea matInput formControlName="Address" rows="2" placeholder="Full address"></textarea>
+            <textarea matInput formControlName="address" rows="2" placeholder="Full address"></textarea>
           </mat-form-field>
         </div>
+
+        <div class="col-12 mt-2">
+          <mat-slide-toggle formControlName="isActive">
+            Active
+          </mat-slide-toggle>
+        </div>
+
       </div>
     </form>
   </mat-dialog-content>
 
   <mat-dialog-actions align="end" class="modal-footer">
     <button mat-stroked-button color="warn" (click)="onCancel()" type="button">Cancel</button>
-    <button mat-flat-button color="primary" [disabled]="supplierForm.invalid" (click)="onSave()" class="ms-2 px-4">
+    <button mat-flat-button color="primary" [disabled]="supplierForm.invalid" (click)="onSave()"
+      class="ms-2 px-4 save-btn">
       Save Supplier
     </button>
   </mat-dialog-actions>

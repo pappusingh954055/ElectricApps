@@ -34,7 +34,8 @@ mat-card {
   /* Columns: Product(Large), Qty, Unit, Rate, Disc, GST, TaxAmt, Total, Delete */
   grid-template-columns: 2.5fr 0.6fr 0.6fr 1fr 0.7fr 0.7fr 1fr 1.2fr 45px;
   gap: 12px;
-  align-items: center; /* Fields ko barabar line mein lane ke liye */
+  align-items: center;
+  /* Fields ko barabar line mein lane ke liye */
   background: #fcfcfc;
   padding: 12px;
   border: 1px solid #f0f0f0;
@@ -54,7 +55,8 @@ mat-form-field {
 }
 
 ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-  display: none !important; /* Extra bottom space hatane ke liye */
+  display: none !important;
+  /* Extra bottom space hatane ke liye */
 }
 
 /* ================= SPECIFIC FIELD LOOKS ================= */
@@ -75,7 +77,8 @@ input.bg-light {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #fff1f2; /* Light red background */
+  background-color: #fff1f2;
+  /* Light red background */
   border-radius: 8px;
   margin-left: 5px;
 }
@@ -85,23 +88,81 @@ input.bg-light {
 }
 
 /* ================= FOOTER SECTION ================= */
+/* ================= FOOTER RESPONSIVE LAYOUT ================= */
 .po-footer {
-  margin-top: 30px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 10px;
-  border: 1px solid #dee2e6;
+  .footer-layout {
+    display: flex;
+    flex-wrap: wrap; /* Tablet/Mobile par wrap hone ke liye */
+    gap: 20px;
+    align-items: flex-start;
+  }
+
+  .remarks-box {
+    flex: 1;
+    min-width: 300px; /* Textarea ko ek minimum width dega */
+  }
+
+  .summary-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Desktop par Right Align */
+    min-width: 250px;
+    text-align: right;
+
+    .total-info {
+      margin-bottom: 15px;
+      
+      .tax-row { font-size: 14px; margin-bottom: 4px; }
+      
+      .grand-total-row {
+        font-size: 22px;
+        font-weight: 700;
+        color: #3f51b5;
+        .amount { margin-left: 5px; }
+      }
+    }
+  }
+
+  /* Responsive Fix for Mobile/Tab */
+  @media (max-width: 768px) {
+    .footer-layout {
+      flex-direction: column; /* Niche ek ke niche ek aa jayenge */
+    }
+    
+    .remarks-box, .summary-box {
+      width: 100%;
+      min-width: 100%;
+    }
+
+    .summary-box {
+      align-items: center; /* Mobile par center ya left align kar sakte hain */
+      text-align: center;
+      border-top: 1px solid #ddd;
+      padding-top: 15px;
+      
+      .button-row, .button-row button {
+        width: 100%; /* Mobile par full width button */
+      }
+    }
+  }
 }
 
-.po-grand-total {
-  text-align: right;
+/* Material Field Fixes */
+::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none !important;
 }
 
-.total-label {
-  font-size: 14px;
-  color: #6c757d;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+.save-btn {
+  height: 48px !important;
+  padding: 0 35px !important;
+  font-weight: 600 !important;
+}
+
+/* Save Button Styling */
+.save-btn {
+  height: 40px;
+  padding: 0 25px !important;
+  font-weight: 600 !important;
 }
 
 .total-value {
@@ -123,7 +184,7 @@ input.bg-light {
     grid-template-columns: repeat(3, 1fr);
     gap: 15px;
   }
-  
+
   .item-row button[color="warn"] {
     grid-column: span 3;
     width: 100% !important;

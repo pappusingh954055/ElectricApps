@@ -13,6 +13,8 @@ export interface Supplier {
     gstIn?: string;
     address?: string;
     createdBy?: string;
+    defaultpricelistId?: string;
+    isActive?: boolean;
 }
 
 @Injectable({
@@ -43,6 +45,7 @@ export class SupplierService {
 
         return this.http.post<Supplier>(this.apiUrl, dataWithUser);
     }
+    
     getSupplierById(id: number): Observable<any> {
         return this.http.get<any>(`${this.apiUrl}/${id}`);
     }

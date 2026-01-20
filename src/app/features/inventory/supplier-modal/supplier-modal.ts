@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatDialogRef } from '@angular/material/dialog';
 import { SupplierComponent } from '../../master/supplier-component/supplier-component';
 import { Supplier, SupplierService } from '../service/supplier.service';
+import { PriceListService } from '../../master/pricelist/service/pricelist.service';
 
 @Component({
   selector: 'app-supplier-modal',
@@ -17,58 +18,70 @@ export class SupplierModalComponent implements OnInit {
   private fb = inject(FormBuilder);
   private dialogRef = inject(MatDialogRef<SupplierComponent>);
   private supplierService = inject(SupplierService);
+  private pricelistService = inject(PriceListService);
 
   supplierForm!: FormGroup;
 
-  ngOnInit(): void {
+  priceLists: any[] = [];
+
+  createForm() {
     this.supplierForm = this.fb.group({
-      Name: ['', Validators.required],
-      Phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
-      GstIn: [''],
-      Address: ['']
+      name: ['', Validators.required],
+      phone: ['', [Validators.required, Validators.pattern('^[0-9]{10}$')]],
+      gstIn: [''],
+      address: [''],
+      defaultpricelistId: [null, Validators.required],
+      isActive: [true]
     });
   }
 
-  // supplier-modal.component.ts
-  // onSave() {
-  //   if (this.supplierForm.valid) {
-  //     const idFromStorage = localStorage.getItem('userId');
 
-  //     // Agar null hai toh check karein (Safety check)
-  //     if (!idFromStorage) {
-  //       console.error("User session not found. Please re-login.");
-  //       return;
-  //     }
+  ngOnInit(): void {
+    this.createForm();
+    this.loadPriceLists();
+  }
 
-  //     const supplierData: Supplier = {
-  //       ...this.supplierForm.value,
-  //       CreatedBy: idFromStorage 
-  //     }
-
-  //     this.supplierService.addSupplier(supplierData).subscribe({
-  //       next: (res) => this.dialogRef.close(res),
-  //       error: (err) => console.error("Error saving supplier", err)
-  //     });
-  //   }
-  // }
+  loadPriceLists(): void {
+    this.pricelistService.getPriceLists().subscribe({
+      next: (res) => {
+        this.priceLists = res;
+        console.log("Price Lists loaded in modal:", res);
+      },
+      error: (err) => console.error("Error loading price lists", err)
+    });
+  }
 
 
   onSave() {
     if (this.supplierForm.valid) {
       const currentUserId = localStorage.getItem('userId') || '';
-      const supplierData = { ...this.supplierForm.value, createdBy: currentUserId };
+
+      // 1. Form values ke saath defaultPriceListId aur createdBy merge karein
+      const supplierData = {
+        ...this.supplierForm.value,
+        createdBy: currentUserId
+      };
 
       this.supplierService.addSupplier(supplierData).subscribe({
         next: (newId) => {
-          // Modal band karte waqt naya object pass karein
+          // 2. Modal band karte waqt defaultPriceListId bhi bhejein 
+          // taaki PO Form use bina API call kiye auto-select kar sake
           const newlyCreatedSupplier = {
             id: newId,
-            name: this.supplierForm.value.Name,
-            phone: this.supplierForm.value.Phone
+            name: this.supplierForm.value.name,
+            phone: this.supplierForm.value.phone,
+            gstIn: this.supplierForm.value.gstIn,
+            address: this.supplierForm.value.address,
+            defaultpricelistId: this.supplierForm.value.defaultpricelistId ? Number(this.supplierForm.value.defaultpricelistId) : null, // <-- Ye zaroori hai
+            isActive: this.supplierForm.value.isActive
           };
+
           this.dialogRef.close(newlyCreatedSupplier);
         },
-        error: (err) => console.error(err)
+        error: (err) => {
+          console.error("Supplier save failed:", err);
+          // Yahan aap Toastr ya alert dikha sakte hain
+        }
       });
     }
   }
