@@ -27,9 +27,18 @@ export class PriceListService {
         return this.api.delete(`pricelists/${id}`);
     }
 
+    deletePriceList(id: string): Observable<any> {
+        return this.api.delete<any>(`pricelists/${id}`);
+    }
+
     getAll(): Observable<PriceListModel[]> {
         return this.api.get('pricelists');
     }
+
+    getPriceLists(): Observable<any[]> {
+        return this.api.get<any[]>(`pricelists`);
+    }
+
     getPaged(request: GridRequest): Observable<GridResponse<PriceListModel>> {
         return this.api.get<GridResponse<PriceListModel>>(
             `pricelists/paged?${this.api.toQueryString(request)}`
@@ -41,4 +50,18 @@ export class PriceListService {
         return this.api.post<any>(`pricelists/bulk-delete`, ids);
     }
 
+    createPriceList(payload: any): Observable<any> {
+        console.log('Creating Price List with payload:', payload);
+        // Dhan rakhein ki URL aapke backend controller se match kare
+        return this.api.post('pricelists', payload);
+    }
+
+    // 4. Existing Price List ko update karne ke liye
+    updatePriceList(id: string, payload: any): Observable<any> {
+        return this.api.put<any>(`pricelists/${id}`, payload);
+    }
+
+    getPriceListById(id: string): Observable<any> {
+        return this.api.get<any>(`pricelists/${id}`);
+    }
 }

@@ -1,84 +1,115 @@
-<mat-card>
+<mat-card class="product-card shadow-sm">
+  <mat-card-header class="bg-light p-3 border-bottom">
+    <mat-card-title class="m-0 text-primary">Product Master</mat-card-title>
+  </mat-card-header>
 
-  <mat-card-title>Product</mat-card-title>
-  <mat-card-content>
-
+  <mat-card-content class="pt-4">
     <form [formGroup]="productsForm" class="form-grid">
 
-      <!-- Category -->
       <mat-form-field appearance="outline">
         <mat-label>Category *</mat-label>
-        <mat-select formControlName="categoryid" (selectionChange)="onCategoryChange($event.value)">
+        <mat-select formControlName="categoryId" (selectionChange)="onCategoryChange($event.value)">
           <mat-option *ngFor="let c of categories" [value]="c.id">
-            {{ c.name }}
+            <span class="fw-bold">[{{ c.categoryCode }}]</span> - {{ c.name }}
           </mat-option>
         </mat-select>
+        <mat-error *ngIf="productsForm.get('categoryId')?.hasError('required')">Required</mat-error>
       </mat-form-field>
 
-      <!-- Subcategory -->
       <mat-form-field appearance="outline">
         <mat-label>Subcategory *</mat-label>
-        <mat-select formControlName="subcategoryid">
+        <mat-select formControlName="subcategoryId">
           <mat-option *ngFor="let s of subcategories" [value]="s.id">
             {{ s.subcategoryName }}
           </mat-option>
         </mat-select>
       </mat-form-field>
 
-      <!-- Product Name -->
       <mat-form-field appearance="outline">
         <mat-label>Product Name *</mat-label>
-        <input matInput formControlName="productname">
+        <input matInput formControlName="productName" placeholder="e.g. Dell Latitude 5420">
       </mat-form-field>
 
-      <!-- SKU -->
       <mat-form-field appearance="outline">
-        <mat-label>SKU</mat-label>
-        <input matInput formControlName="sku">
+        <mat-label>SKU (Product Code)</mat-label>
+        <input matInput formControlName="sku" placeholder="e.g. PROD-001">
       </mat-form-field>
 
-      <!-- Unit -->
       <mat-form-field appearance="outline">
-        <mat-label>Unit *</mat-label>
+        <mat-label>Brand</mat-label>
+        <input matInput formControlName="brand" placeholder="e.g. Dell / HP">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Unit(UOM) *</mat-label>
         <mat-select formControlName="unit">
           <mat-option value="PCS">PCS</mat-option>
           <mat-option value="KG">KG</mat-option>
           <mat-option value="BOX">BOX</mat-option>
+          <mat-option value="NOS">NOS</mat-option>
+          <mat-option value="COIL">Coil</mat-option>
+          <mat-option value="NOS">NOS</mat-option>
+          <mat-option value="PACK">Pack</mat-option>
+          <mat-option value="LTR">LTR</mat-option>
+          <mat-option value="LENGTH">Length</mat-option>
+          <mat-option value="METER">Meter</mat-option>
         </mat-select>
       </mat-form-field>
 
-      <!-- GST -->
       <mat-form-field appearance="outline">
-        <mat-label>GST %</mat-label>
-        <input matInput type="number" formControlName="defaultgst">
+        <mat-label>Base Purchase Price *</mat-label>
+        <input matInput type="number" formControlName="basePurchasePrice" placeholder="0.00">
+        <span matPrefix>&nbsp;₹&nbsp;</span>
       </mat-form-field>
 
-      <!-- HSN -->
+      <mat-form-field appearance="outline">
+        <mat-label>MRP / Sales Price</mat-label>
+        <input matInput type="number" formControlName="mrp" placeholder="0.00">
+        <span matPrefix>&nbsp;₹&nbsp;</span>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>GST % *</mat-label>
+        <mat-select formControlName="defaultGst">
+          <mat-option [value]="0">0% (Exempted)</mat-option>
+          <mat-option [value]="5">5%</mat-option>
+          <mat-option [value]="12">12%</mat-option>
+          <mat-option [value]="18">18%</mat-option>
+          <mat-option [value]="28">28%</mat-option>
+        </mat-select>
+      </mat-form-field>
+
       <mat-form-field appearance="outline">
         <mat-label>HSN Code</mat-label>
-        <input matInput formControlName="hsncode">
+        <input matInput formControlName="hsnCode" placeholder="8-digit code">
       </mat-form-field>
 
-      <!-- Minimum stock (conditional) -->
       <mat-form-field appearance="outline">
-        <mat-label>Minimum Stock</mat-label>
-        <input matInput type="number" formControlName="minstock">
+        <mat-label>Minimum Stock (Re-order Level)</mat-label>
+        <input matInput type="number" formControlName="minStock" placeholder="Alert level">
       </mat-form-field>
 
-      <!-- Inventory -->
-      <mat-slide-toggle formControlName="tracknventory" class="inventory-toggle">
-        Track Inventory
-      </mat-slide-toggle>
+      <div class="toggle-group d-flex gap-3 align-items-center">
+        <mat-slide-toggle formControlName="trackInventory" color="primary">
+          Track Inventory
+        </mat-slide-toggle>
+        
+        <mat-slide-toggle formControlName="isActive" color="primary">
+          Active
+        </mat-slide-toggle>
+      </div>
 
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Description</mat-label>
-        <textarea matInput rows="3" formControlName="description"></textarea>
+        <textarea matInput rows="2" formControlName="description" placeholder="Technical specifications..."></textarea>
       </mat-form-field>
 
     </form>
   </mat-card-content>
-  <!-- ✅ FOOTER -->
-  <form-footer [loading]="loading" (save)="onSave()" (cancel)="onCancel()">
-  </form-footer>
+
+  <div class="card-footer border-top bg-light p-3">
+    <form-footer [loading]="loading" (save)="onSave()" (cancel)="onCancel()">
+    </form-footer>
+  </div>
 
 </mat-card>

@@ -8,7 +8,7 @@
         <mat-label>Category *</mat-label>
         <mat-select formControlName="categoryid">
           <mat-option *ngFor="let c of categories" [value]="c.id">
-            {{ c.categoryName }}
+           <span class="fw-bold">[{{ c.categoryCode }}]</span> - {{ c.categoryName }}
           </mat-option>
         </mat-select>
       </mat-form-field>

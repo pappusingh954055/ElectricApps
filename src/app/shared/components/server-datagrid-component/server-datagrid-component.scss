@@ -25,11 +25,65 @@
   min-height: 64px;
 
   .search-container {
-    flex: 1 1 300px;
-    max-width: 400px;
+    max-width: 300px !important; // Width ko professional range mein rakhein
 
-    mat-form-field {
-      width: 100%;
+    ::ng-deep {
+
+      /* 1. Main container height override */
+      .mat-mdc-text-field-wrapper {
+        height: 32px !important; // Default height se kaafi compact
+        padding: 0 8px 0 12px !important; // Side spacing adjust karein
+        background-color: #ffffff !important;
+        display: flex;
+        align-items: center;
+      }
+
+      /* 2. Input box aur Text alignment */
+      .mat-mdc-form-field-infix {
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        min-height: 32px !important; // Wrapper height ke barabar
+        display: flex;
+        align-items: center;
+      }
+
+      /* 3. Placeholder aur Input font */
+      .mat-mdc-input-element {
+        font-size: 13px !important; // Professional readability
+        height: 20px !important;
+        margin-top: 0 !important;
+      }
+
+      /* 4. Search Icon ko compact box mein fit karein */
+      .mat-icon {
+        font-size: 18px !important;
+        width: 18px !important;
+        height: 18px !important;
+        color: #64748b !important; // Modern grey color
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* 5. Outline Border styling */
+      .mdc-notched-outline__leading,
+      .mdc-notched-outline__notch,
+      .mdc-notched-outline__trailing {
+        border-color: #cbd5e1 !important; // Subtle border
+      }
+
+      /* Focus state color */
+      .mat-mdc-form-field.mat-focused .mdc-notched-outline__leading,
+      .mat-mdc-form-field.mat-focused .mdc-notched-outline__notch,
+      .mat-mdc-form-field.mat-focused .mdc-notched-outline__trailing {
+        border-color: #00796b !important; // Aapka primary theme color
+        border-width: 1.5px !important;
+      }
+
+      /* Extra space (subscript) hatayein */
+      .mat-mdc-form-field-subscript-wrapper {
+        display: none !important; // Taaki niche koi extra margin na aaye
+      }
     }
   }
 }

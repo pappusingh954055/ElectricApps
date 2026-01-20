@@ -1,13 +1,26 @@
 export interface Product {
   id?: number;
-  categoryid?: number;
-  subcategoryid?: number;
-  productname?: string;
+  categoryId: number; // Mandatory for Business logic
+  subcategoryId: number; // Mandatory for Business logic
+  productName: string;
   sku?: string;
-  unit?: 'KG' | 'PCS' | 'BOX';
-  hsncode?: string;
-  defaultgst?: number;
-  minstock?: number;
-  trackinventory?: boolean;  
+  brand?: string; // 🆕 Added for reporting
+  unit: 'KG' | 'PCS' | 'BOX' | 'NOS'; // 🆕 NOS added (Industry standard)
+  
+  // 💰 Pricing Logic Fields
+  basePurchasePrice: number; // 🆕 Default PO price fetch karne ke liye
+  mrp?: number; // 🆕 Sales/Margin calculation ke liye
+  
+  // 📈 Inventory & Tax
+  defaultGst: number;
+  hsnCode?: string;
+  minStock: number;
+  trackInventory: boolean; 
+  isActive: boolean; // 🆕 Status control (Active/Inactive)
+  
   description?: string;
+
+  createdAt?: Date;
+  updatedAt?: Date;
+  createdBy?: string;
 }

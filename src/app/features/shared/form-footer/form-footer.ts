@@ -15,6 +15,8 @@ export class FormFooter {
   @Output() save = new EventEmitter<void>();
   @Output() cancel = new EventEmitter<void>();
 
+  @Input() saveLabel: string = 'Save';
+
   // 🔹 ENTER = SAVE
   @HostListener('document:keydown.enter', ['$event'])
   onEnter(event: Event) {

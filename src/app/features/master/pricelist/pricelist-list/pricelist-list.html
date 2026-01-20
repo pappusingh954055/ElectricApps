@@ -1,13 +1,12 @@
 <mat-card>
-
   <mat-card-title class="d-flex justify-between">
     <button mat-flat-button class="bg-cyan" routerLink="/app/master/pricelists/add">
       + Create Price List
     </button>
   </mat-card-title>
 
- <app-server-datagrid 
- gridKey="subcategory-grid"
+  <app-server-datagrid 
+    gridKey="pricelist-grid"
     [columns]="columns" 
     [data]="data" 
     (rowClick)="onEdit($event)"
@@ -16,7 +15,7 @@
     (loadData)="loadPriceLists($event)" 
     (selectionChange)="onSelectionChange($event)"
     (edit)="onEdit($event)"
-    (delete)="deleteCategory($event[0])">
+    (delete)="deletePriceList($event[0])">
   </app-server-datagrid>
 
   <mat-card-actions>

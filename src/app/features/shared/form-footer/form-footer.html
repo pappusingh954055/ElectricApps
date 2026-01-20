@@ -4,13 +4,13 @@
     <mat-progress-spinner *ngIf="loading" diameter="28" mode="indeterminate">
     </mat-progress-spinner>
 
-    <!-- Save button -->
-    <button mat-flat-button class="bg-cyan" *ngIf="!loading" (click)="save.emit()">
-        Save
-    </button>
-    <!-- Cancel button -->
+       <!-- Cancel button -->
     <button matButton=""  [disabled]="loading" (click)="cancel.emit()">
         Cancel
+    </button>
+    <!-- Save button -->
+    <button mat-flat-button class="bg-azure" *ngIf="!loading" (click)="save.emit()">
+        {{ saveLabel }}
     </button>
 
 </div>

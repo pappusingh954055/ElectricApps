@@ -6,8 +6,7 @@
   <div class="grid-header-actions">
     <div class="search-container">
       <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Global Search</mat-label>
-        <input matInput placeholder="Search all fields..." (input)="onSearch($any($event.target).value)" />
+        <input matInput placeholder="Global Search" (input)="onSearch($any($event.target).value)" />
         <mat-icon matSuffix>search</mat-icon>
       </mat-form-field>
     </div>
@@ -73,8 +72,18 @@
         </th>
         <td mat-cell *matCellDef="let row" class="sticky-right actions-col">
           <div class="action-btn-group">
-            <button mat-icon-button (click)="edit.emit(row)"><mat-icon>edit</mat-icon></button>
-            <button mat-icon-button (click)="delete.emit([row])"><mat-icon>delete</mat-icon></button>
+            <!-- <button matIconButton aria-label="Example icon button with a vertical three dot icon">
+              <mat-icon>more_vert</mat-icon>
+            </button> -->
+
+            <button matIconButton (click)="edit.emit(row)">
+              <mat-icon>edit</mat-icon>
+            </button>
+
+
+            <button matIconButton (click)="delete.emit([row])">
+              <mat-icon>delete</mat-icon>
+            </button>
           </div>
         </td>
       </ng-container>

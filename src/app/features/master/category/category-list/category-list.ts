@@ -63,7 +63,7 @@ export class CategoryList implements OnInit {
       pageSize: 10,
       sortDirection: 'desc'
     });
-    // this.filteredColumns = [...this.columns];
+
   }
 
   loadCategories(request: GridRequest): void {

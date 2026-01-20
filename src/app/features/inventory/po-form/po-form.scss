@@ -1,118 +1,132 @@
-/* ================= CARD ================= */
+/* ================= CARD & GLOBAL ================= */
 mat-card {
-  padding: 20px;
+  padding: 24px;
+  border-radius: 12px;
+  background: #ffffff;
 }
 
-/* ================= HEADER ================= */
-.form-grid {
+/* ================= HEADER SECTION ================= */
+.po-header-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 16px;
-  margin-bottom: 8px;
-  align-items: start;
+  margin-bottom: 24px;
 }
 
-/* ================= ADD ITEM BUTTON ================= */
-.add-item-btn {
-  margin: 6px 0 12px;
-  height: 36px;
-  padding: 0 16px;
-  font-weight: 600;
-  border-radius: 6px;
+.field-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-/* ================= ITEMS SECTION ================= */
+/* Supplier button alignment */
+.field-item button[mat-icon-button] {
+  margin-top: -4px;
+}
+
+/* ================= ITEMS TABLE SECTION ================= */
 .items-section {
-  margin-top: 6px;
+  margin-top: 15px;
 }
 
-/* ================= ITEM ROW (FIXED) ================= */
 .item-row {
   display: grid;
-  grid-template-columns: 2fr 0.8fr 0.8fr 1fr 0.9fr 0.8fr 1.1fr 40px;
+  /* Columns: Product(Large), Qty, Unit, Rate, Disc, GST, TaxAmt, Total, Delete */
+  grid-template-columns: 2.5fr 0.6fr 0.6fr 1fr 0.7fr 0.7fr 1fr 1.2fr 45px;
   gap: 12px;
-
-  /* Fields ko top se align karein taaki button ko handle karna aasaan ho */
-  align-items: flex-start;
-
-  background: #fafafa;
-  padding: 16px 12px 0px 12px;
-  /* Bottom padding 0 taaki niche gap na dikhe */
-  border-radius: 10px;
-  margin-bottom: 10px;
-
-  /* Form field ki extra bottom space ko khatam karne ke liye */
-  mat-form-field {
-    width: 100%;
-    /* Isse label ke niche ki khali jagah manage hogi */
-    margin-bottom: 0px;
-  }
-
-  /* DELETE BUTTON SPECIFIC FIX */
-  button.bg-rose {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    justify-self: center;
-
-    /* Screenshot ke hisaab se ise itna upar hona chahiye */
-    margin-top: 8px !important;
-
-    /* Size consistency */
-    width: 40px !important;
-    height: 40px !important;
-    min-width: 40px !important;
-    border-radius: 50% !important;
-  }
+  align-items: center; /* Fields ko barabar line mein lane ke liye */
+  background: #fcfcfc;
+  padding: 12px;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  transition: all 0.2s ease;
 }
 
-/* ================= FOOTER ================= */
-.po-footer {
+.item-row:hover {
+  background: #f8f9fa;
+  border-color: #e0e0e0;
+}
+
+/* Material Form Field Overrides */
+mat-form-field {
+  width: 100%;
+}
+
+::ng-deep .mat-mdc-form-field-subscript-wrapper {
+  display: none !important; /* Extra bottom space hatane ke liye */
+}
+
+/* ================= SPECIFIC FIELD LOOKS ================= */
+input.bg-light {
+  background-color: #f1f3f5 !important;
+  font-weight: 500;
+}
+
+.fw-bold.text-primary {
+  color: #3f51b5 !important;
+  font-size: 15px;
+}
+
+/* ================= DELETE BUTTON FIX ================= */
+.item-row button[color="warn"] {
+  width: 40px !important;
+  height: 40px !important;
   display: flex;
-  justify-content: flex-end;
   align-items: center;
-  gap: 16px;
-  margin-top: 12px;
+  justify-content: center;
+  background-color: #fff1f2; /* Light red background */
+  border-radius: 8px;
+  margin-left: 5px;
+}
+
+.item-row button[color="warn"]:hover {
+  background-color: #fecaca;
+}
+
+/* ================= FOOTER SECTION ================= */
+.po-footer {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
 }
 
 .po-grand-total {
-  font-size: 16px;
-  font-weight: 600;
-  white-space: nowrap;
+  text-align: right;
 }
 
-.save-btn {
-  height: 38px;
-  padding: 0 20px;
-  border-radius: 6px;
-  font-weight: 600;
+.total-label {
+  font-size: 14px;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.total-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1a237e;
+  margin-top: 4px;
 }
 
 /* ================= RESPONSIVE ================= */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
   .item-row {
-    grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr 36px;
-    align-items: start;
-
-    button[mat-icon-button] {
-      margin-top: 15px;
-      /* Mobile/Tablets pe alignment adjust */
-    }
+    grid-template-columns: 2fr 0.8fr 0.8fr 1fr 0.8fr 0.8fr 1fr 1fr 45px;
   }
 }
 
-@media (max-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-
+@media (max-width: 992px) {
   .item-row {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
   }
-
-  .po-footer {
-    flex-direction: column;
-    align-items: flex-end;
+  
+  .item-row button[color="warn"] {
+    grid-column: span 3;
+    width: 100% !important;
+    margin-left: 0;
   }
 }

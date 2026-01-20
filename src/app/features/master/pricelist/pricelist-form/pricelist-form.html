@@ -1,56 +1,171 @@
-<mat-card>
+<div class="master-container">
+  <form [formGroup]="priceListForm">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h4 class="fw-bold m-0 text-primary">Price List Master</h4>
+      <div class="actions ms-auto">
+        <form-footer [loading]="loading" (save)="onSave()" [saveLabel]="isEditMode ? 'Update' : 'Save'" (cancel)="onCancel()"></form-footer>
+      </div>
+    </div>
 
-  <mat-card-title>Price List</mat-card-title>
+    <div class="header-form-card shadow-sm border-top border-primary border-3">
+      <div class="header-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Price List Name</mat-label>
+          <input matInput formControlName="name" placeholder="E.g. Wholesale Electricals 2026">
+          <mat-error *ngIf="showNameError">
+            Price list name is required
+          </mat-error>
+        </mat-form-field>
 
-  <mat-card-content>
+        <mat-form-field appearance="outline">
+          <mat-label>Price Type</mat-label>
+          <mat-select formControlName="priceType">
+            <mat-option value="SALES">Sales Price (Customer)</mat-option>
+            <mat-option value="PURCHASE">Purchase Price (Supplier)</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-    <form [formGroup]="pricelistsForm" class="form-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Apply to Group</mat-label>
+          <mat-select formControlName="applicableGroup">
+            <mat-option value="ALL">All Categories</mat-option>
+            <mat-option value="RETAIL">Retailers</mat-option>
+            <mat-option value="WHOLESALE">Wholesalers</mat-option>
+            <mat-option value="DEALERS">Dealers</mat-option>
+            <mat-option value="DISTRIBUTORS">Distributors</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Price List Name *</mat-label>
-        <input matInput formControlName="name">
-      </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Price List Code</mat-label>
+          <input matInput formControlName="code" placeholder="PRC-ELE-001">
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Type *</mat-label>
-        <mat-select formControlName="pricetype">
-          <mat-option value="PURCHASE">Purchase</mat-option>
-          <mat-option value="SALES">Sales</mat-option>
-        </mat-select>
-      </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Valid From</mat-label>
+          <input matInput [matDatepicker]="picker1" formControlName="validFrom">
+          <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
+          <mat-datepicker #picker1></mat-datepicker>
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Effective From *</mat-label>
-        <input matInput [matDatepicker]="picker" formControlName="validfrom">
-        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
-      </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Valid To</mat-label>
+          <input matInput [matDatepicker]="picker2" formControlName="validTo">
+          <mat-datepicker-toggle matSuffix [for]="picker2"></mat-datepicker-toggle>
+          <mat-datepicker #picker2></mat-datepicker>
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Effective To *</mat-label>
-        <input matInput [matDatepicker]="picker1" formControlName="validto">
-        <mat-datepicker-toggle matSuffix [for]="picker1"></mat-datepicker-toggle>
-        <mat-datepicker #picker1></mat-datepicker>
-      </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Currency</mat-label>
+          <mat-select formControlName="currency">
+            <mat-option value="INR">INR - Indian Rupee</mat-option>
+            <mat-option value="USD">USD - US Dollar</mat-option>
+          </mat-select>
+        </mat-form-field>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Code *</mat-label>
-        <input matInput formControlName="code">
-      </mat-form-field>
+        <div class="toggle-box d-flex align-items-center" style="height: 56px;">
+          <mat-slide-toggle color="primary" formControlName="isActive">Active Status</mat-slide-toggle>
+        </div>
+      </div>
 
-      <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Description</mat-label>
-        <textarea matInput rows="2" formControlName="description"></textarea>
-      </mat-form-field>
+      <div class="full-width-field mt-2">
+        <mat-form-field appearance="outline" class="w-100">
+          <mat-label>Price List Description / Remarks</mat-label>
+          <textarea matInput formControlName="remarks" rows="2"
+            placeholder="Describe the purpose of this price list..."></textarea>
+        </mat-form-field>
+      </div>
+    </div>
 
-      <mat-slide-toggle formControlName="isactive">
-        Active
-      </mat-slide-toggle>
+    <div class="table-section-card mt-4 shadow-sm">
+      <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light">
+        <h6 class="m-0 fw-bold d-flex align-items-center">
+          &nbsp;<mat-icon class="me-2 text-primary">inventory_2</mat-icon> Linked Products & Tiered Pricing
+        </h6>
+        &nbsp;<button type="button" mat-raised-button color="primary" (click)="addItemRow()">
+          <mat-icon>add</mat-icon> Add Product
+        </button>
+      </div>
 
-    </form>
-  </mat-card-content>
-  <!-- ✅ FOOTER -->
-  <form-footer [loading]="loading" (save)="onSave()" (cancel)="onCancel()">
-  </form-footer>
+      <div class="table-responsive-box">
+        <div formArrayName="priceListItems">
+          <table class="enterprise-table">
+            <thead>
+              <tr>
+                <th class="col-search">Product Details</th>
+                <th class="col-uom">Unit</th>
+                <th class="col-min">Min Qty</th>
+                <th class="col-max">Max Qty</th>
+                
+                <th class="col-price">
+                  {{ priceListForm.get('priceType')?.value === 'SALES' ? 'Rate (MRP)' : 'Rate (Purchase)' }} (₹)
+                </th>
 
-</mat-card>
+                <th class="col-disc">Disc (%)</th>
+                <th class="col-action">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
+                <td class="col-search">
+                  <mat-form-field appearance="outline" class="w-100 no-subscript">
+                    <input type="text" matInput placeholder="Search Polycab, Havells..." formControlName="productSearch"
+                      [matAutocomplete]="auto">
+                    <div matSuffix class="d-flex align-items-center px-2" *ngIf="loadingRowIndex === i">
+                      <mat-spinner diameter="18"></mat-spinner>
+                    </div>
+                    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn"
+                      (optionSelected)="onProductSelect($event, i)">
+                      <mat-option *ngFor="let prod of filteredProducts[i]" [value]="prod">
+                        <div class="d-flex justify-content-between align-items-center">
+                          <div>
+                            <span class="fw-500">{{prod.name}}</span><br>
+                            <small class="text-muted">{{prod.brand}} | {{prod.sku}}</small>
+                          </div>
+                          <span class="badge bg-secondary-subtle text-dark" *ngIf="prod.hsncode">HSN:
+                            {{prod.hsncode}}</span>
+                        </div>
+                      </mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                </td>
+
+                <td class="col-uom">
+                  <input type="text" class="table-control text-center" formControlName="unit" readonly placeholder="-">
+                </td>
+
+                <td class="col-min">
+                  <input type="number" class="table-control text-center" formControlName="minQty">
+                </td>
+
+                <td class="col-max">
+                  <input type="number" class="table-control text-center" formControlName="maxQty">
+                </td>
+
+                <td class="col-price">
+                  <input type="number" class="table-control text-end fw-bold text-success"
+                    (focus)="handleFocus(i, 'price')" (focusout)="handleBlur(i, 'price')" formControlName="price">
+                </td>
+
+                <td class="col-disc">
+                  <input type="number" class="table-control text-center" (focus)="onFieldFocus($event, 'discount')"
+                    (focus)="handleFocus(i, 'discountPercent')" (focusout)="handleBlur(i, 'discountPercent')"
+                    formControlName="discountPercent">
+                </td>
+
+                <td class="col-action">
+                  <div class="d-flex justify-content-center">
+                    <button type="button" mat-icon-button color="warn" (click)="removeItem(i)"
+                      [disabled]="items.length === 1">
+                      <mat-icon>delete_outline</mat-icon>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>

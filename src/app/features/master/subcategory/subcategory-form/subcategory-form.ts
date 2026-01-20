@@ -50,9 +50,9 @@ export class SubcategoryForm implements OnInit {
       categoryid: ['', Validators.required],
       subcategoryname: ['', Validators.required],
       subcategorycode: [''],
-      defaultgst: [null],
+      defaultgst: [0, [Validators.min(0), Validators.max(100)]],
       description: [''],
-      isactive: ['']
+      isactive: [true]
     });
   }
 
@@ -118,6 +118,7 @@ export class SubcategoryForm implements OnInit {
     this.categoryService.getAll().subscribe({
       next: (data) => {
         this.categories = data;
+        console.log('Categories loaded:',this.categories);
         console.log(this.categories);
         this.loading = false;
         this.cdr.detectChanges();

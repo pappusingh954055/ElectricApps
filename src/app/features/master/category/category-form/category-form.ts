@@ -33,23 +33,34 @@ export class CategoryForm implements OnInit {
   readonly router = inject(Router);
 
   ngOnInit(): void {
-    this.categoryForm = this.fb.group({
-      CategoryName: ['', Validators.required],
-      CategoryCode: [''],
-      DefaultGst: [null],
-      Description: [''],
-      IsActive: [true]
-    });
+    this.createForm();
   }
 
-
+  createForm() {
+    this.categoryForm = this.fb.group({
+      categoryName: ['', Validators.required],
+      categoryCode: [''],
+      defaultGst: [0, [Validators.min(0), Validators.max(100)]],
+      description: [''],
+      isActive: [true]
+    });
+    this.cdr.detectChanges();
+  }
 
   onSave(): void {
     if (this.categoryForm.invalid) return;
 
     this.loading = true;
 
-    this.categorySvc.create(this.mapToCategories(this.categoryForm.value))
+    this.mapToCategory = {
+      categoryName: this.categoryForm.value.categoryName,
+      categoryCode: this.categoryForm.value.categoryCode,
+      defaultGst: this.categoryForm.value.defaultGst,
+      description: this.categoryForm.value.description,
+      isActive: this.categoryForm.value.isActive
+    };
+
+    this.categorySvc.create(this.mapToCategory)
       .subscribe({
         next: (res) => {
           this.loading = false;
@@ -58,7 +69,7 @@ export class CategoryForm implements OnInit {
               success: true,
               message: res.message
             }
-          }).afterClosed().subscribe(() => {            
+          }).afterClosed().subscribe(() => {
             this.cdr.detectChanges();
             this.router.navigate(['/app/master/categories']);
           });
@@ -85,9 +96,9 @@ export class CategoryForm implements OnInit {
   // 🔹 SINGLE RESPONSIBILITY: MAPPING
   private mapToCategories(formValue: any): Category {
     return {
-      categoryname: formValue.CategoryName,
-      categorycode: formValue.CategoryCode,
-      defaultgst: Number(formValue.DefaultGst),
+      categoryName: formValue.CategoryName,
+      categoryCode: formValue.CategoryCode,
+      defaultGst: Number(formValue.DefaultGst),
       description: formValue.Description?.trim(),
       isActive: Boolean(formValue.IsActive)
     };
