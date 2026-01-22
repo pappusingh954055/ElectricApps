@@ -27,6 +27,20 @@ export class InventoryService {
     savePoDraft(payload: PurchaseOrderPayload): Observable<any> {
         return this.http.post(`${this.apiUrl}/PurchaseOrders/save-po`, payload);
     }
+
+    // Paged aur Sorted Data fetch karne ke liye
+ getOrders(state: any): Observable<any> {
+    // Backend record ke parameters Case-Sensitive ho sakte hain
+    const params = new HttpParams()
+        .set('PageIndex', state.pageIndex.toString())
+        .set('PageSize', state.pageSize.toString())
+        .set('SortField', state.sortField || 'PoDate')
+        .set('SortOrder', state.sortOrder || 'desc')
+        .set('Filter', state.filter || ''); // Ensure empty string, null nahi
+
+    return this.http.get<any>(`${this.apiUrl}/purchaseorders`, { params });
+}
+
     // 1. Saari active Price Lists load karne ke liye
     getPriceLists(): Observable<any[]> {
         return this.http.get<any[]>(`${this.apiUrl}/pricelists`);

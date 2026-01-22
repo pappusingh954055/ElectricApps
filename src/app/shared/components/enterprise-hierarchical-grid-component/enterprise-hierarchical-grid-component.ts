@@ -4,7 +4,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, PageEvent, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, Sort, MatSortModule } from '@angular/material/sort';
 import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-drop';
-import { GridColumn } from '../../../shared/models/grid-column.model'
+import { GridColumn } from '../../../shared/models/grid-column.model';
 import { MaterialModule } from '../../material/material/material-module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
@@ -21,49 +21,48 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   @Input() childColumns: GridColumn[] = [];
   @Input() childDataField: string = 'items';
   
-  // Server-side inputs
   @Input() totalRecords: number = 0;
-  @Input() pageSize: number = 25;
+  @Input() pageSize: number = 10;
   
-  // Events to notify parent to fetch data
   @Output() onGridStateChange = new EventEmitter<any>();
+
+  @ViewChild(MatSort) sort!: MatSort;
 
   expandedElement: any | null = null;
   currentPage: number = 0;
   sortField: string = '';
-  sortDirection: string = '';
+  sortDirection: 'asc' | 'desc' | '' = '';
 
   constructor(private cdr: ChangeDetectorRef) { }
 
   ngOnInit() {
-    // Note: No filterPredicate needed for server-side logic
+    // Disable client-side sorting
+    this.dataSource.sort = null;
   }
 
   get displayedColumns(): string[] {
     return this.columns.filter(c => c.visible !== false).map(c => c.field);
   }
 
-  // Master Sorting logic (Server-side trigger)
+  // Sorting logic fix
   onSortChange(sort: Sort) {
     this.sortField = sort.active;
-    this.sortDirection = sort.direction;
+    this.sortDirection = sort.direction as 'asc' | 'desc' | '';
+    this.currentPage = 0; // Reset to first page on sort change
     this.triggerDataLoad();
   }
 
-  // Pagination logic (Server-side trigger)
   onPageChange(event: PageEvent) {
     this.currentPage = event.pageIndex;
     this.pageSize = event.pageSize;
     this.triggerDataLoad();
   }
 
-  // Filter trigger
   applyFilter() {
-    this.currentPage = 0; // Reset to page 1 on search
+    this.currentPage = 0;
     this.triggerDataLoad();
   }
 
-  // Central function to emit current state to parent component
   triggerDataLoad() {
     const state = {
       pageIndex: this.currentPage,
@@ -77,6 +76,7 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     this.onGridStateChange.emit(state);
   }
 
+  // --- UI Handlers ---
   clearAllFilters() {
     this.columns.forEach(col => col.filterValue = '');
     this.applyFilter();
@@ -86,8 +86,6 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     return this.columns.some(col => col.filterValue && col.filterValue.trim().length > 0);
   }
 
-  // --- UI Interactions (Local only) ---
-  
   drop(event: CdkDragDrop<string[]>) {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
@@ -122,8 +120,7 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // --- Child Table Logic (Local filtering for child data) ---
-
+  // Child table logic
   applyChildFilter(element: any, col: GridColumn) {
     if (!element._originalItems) {
       element._originalItems = [...element[this.childDataField]];
@@ -153,4 +150,23 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     moveItemInArray(this.childColumns, event.previousIndex, event.currentIndex);
     this.cdr.detectChanges();
   }
+
+  // Child Table Sorting Logic (Local)
+onChildSortChange(sort: Sort, element: any) {
+  const data = [...element[this.childDataField]];
+  if (!sort.active || sort.direction === '') {
+    element[this.childDataField] = data;
+    return;
+  }
+
+  element[this.childDataField] = data.sort((a, b) => {
+    const isAsc = sort.direction === 'asc';
+    return this.compare(a[sort.active], b[sort.active], isAsc);
+  });
+}
+
+// Helper compare function
+compare(a: number | string, b: number | string, isAsc: boolean) {
+  return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+}
 }

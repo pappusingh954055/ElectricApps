@@ -1,21 +1,24 @@
 <mat-card>
   <mat-card-title>
     Purchase Orders
-    <button 
-    mat-flat-button class="bg-azure"
-            routerLink="/app/inventory/polist/add">
+    <button mat-flat-button class="bg-azure" routerLink="/app/inventory/polist/add">
       + Create New PO
     </button>
   </mat-card-title>
 
-<div class="page-container">
-  <div class="grid-card">
-    <app-enterprise-hierarchical-grid
-      [columns]="poColumns"
-      [childColumns]="itemColumns"
-      [dataSource]="dataSource"
-      [childDataField]="'purchaseOrderItems'">
-    </app-enterprise-hierarchical-grid>
+ <div class="page-container">
+  <div class="loading-shade" *ngIf="isLoading">
+    <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
   </div>
+
+  <app-enterprise-hierarchical-grid
+    [columns]="poColumns"
+    [childColumns]="itemColumns"
+    [dataSource]="dataSource"
+    [totalRecords]="totalRecords"
+    [pageSize]="pageSize"
+    [childDataField]="'items'"
+    (onGridStateChange)="onGridStateChange($event)">
+  </app-enterprise-hierarchical-grid>
 </div>
 </mat-card>

@@ -201,7 +201,17 @@
     gap: 8px;
   }
 }
-
+::ng-deep {
+  .mat-sort-header-container {
+    display: flex;
+    justify-content: inherit; // Aligns with your column align property
+  }
+  
+  // Sorting arrow color
+  .mat-sort-header-arrow {
+    color: #3b82f6 !important; 
+  }
+}
 .grid-paginator {
   border-top: 1px solid #e5e7eb;
   background: #f9fafb;
@@ -215,5 +225,72 @@
       flex-wrap: wrap;
       justify-content: center;
     }
+  }
+}
+
+/* Header Main Container Fix for Resizing */
+.header-main-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  position: relative; /* Imporant for Resizer */
+}
+
+.header-right-side {
+  display: flex;
+  align-items: center;
+  padding-right: 4px;
+}
+
+/* Resizer Bar Styling */
+.resizer-bar {
+  width: 5px;
+  height: 20px;
+  cursor: col-resize;
+  border-right: 2px solid #e0e0e0;
+  margin-left: 8px;
+  transition: border-color 0.3s;
+
+  &:hover {
+    border-right: 2px solid #3b82f6; /* Blue hover color */
+  }
+}
+
+/* Inner Table Specific Fixes */
+.inner-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* Keep column widths stable during resize */
+
+  th {
+    position: relative;
+    padding: 12px 8px;
+    background-color: #f8fafc;
+    border-bottom: 1px solid #edf2f7;
+    // Overwriting Material defaults if needed
+    .mat-sort-header-container {
+      display: flex;
+      justify-content: inherit;
+    }
+  }
+
+  .child-row td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+/* Responsiveness for small screens */
+@media (max-width: 768px) {
+  .enterprise-grid-container {
+    padding: 8px;
+  }
+  
+  .resizer-bar {
+    display: none; /* Hide resizer on mobile to prevent accidental drags */
   }
 }

@@ -1,35 +1,67 @@
-:host {
+
+/* Parent Layout Wrapper */
+.page-container {
+  position: relative;
+  padding: 20px;
+  /* Table ko screen height ke hisab se fit karne ke liye */
+  height: calc(100vh - 80px); 
+  background-color: #f5f5f5;
   display: block;
 }
 
-/* Card container */
-mat-card {
-  padding: 16px;
-}
-
-/* Title + Add button */
-mat-card-title {
+/* API Load hote waqt jo screen dhundli (Shade) dikhti hai */
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.7); // Transparent white
+  z-index: 10; // Ye grid ke upar dikhega
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 18px;
-  margin-bottom: 16px;
+  justify-content: center;
 }
 
-/* Table */
-table {
-  width: 100%;
+
+/* po-list.scss */
+
+::ng-deep .enterprise-hierarchical-grid {
+  /* Table layout ko strict karein */
+  .mat-table {
+    width: 100% !important;
+    table-layout: fixed !important; 
+    border-collapse: collapse !important;
+  }
+
+  /* Header aur Cell ki alignment aur padding match karein */
+  th.mat-header-cell, td.mat-cell {
+    padding: 0 10px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-sizing: border-box !important;
+    vertical-align: middle !important;
+  }
+
+  /* Right alignment force karein numbers ke liye */
+  .text-right {
+    text-align: right !important;
+    justify-content: flex-end !important;
+    display: flex !important;
+    padding-right: 15px !important;
+  }
 }
 
-/* Action column alignment */
-.mat-column-actions {
-  text-align: center;
-  width: 80px;
-}
-
-/* Icons */
-mat-icon {
-  font-size: 20px;
+/* Loader fixed position (Responsive) */
+.loading-shade {
+  position: absolute;
+  top: 0; left: 0; bottom: 0; right: 0;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Responsive behavior */

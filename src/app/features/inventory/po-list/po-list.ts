@@ -1,11 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { EnterpriseHierarchicalGridComponent } from '../../../shared/components/enterprise-hierarchical-grid-component/enterprise-hierarchical-grid-component';
 import { MatTableDataSource } from '@angular/material/table';
-import { GridColumn } from '../../../shared/models/grid-column.model'; // Apna path check karein
+import { GridColumn } from '../../../shared/models/grid-column.model';
+import { InventoryService } from '../service/inventory.service';
 
 @Component({
   selector: 'app-po-list',
@@ -16,53 +17,90 @@ import { GridColumn } from '../../../shared/models/grid-column.model'; // Apna p
   styleUrl: './po-list.scss',
 })
 export class PoList implements OnInit {
-  
-  // PO Master Columns Configuration
-  poColumns: GridColumn[] = [
-    { field: 'poNumber', header: 'PO No.', width: 150, visible: true, isResizable: true, align: 'left', isFilterable: true },
-    { field: 'vendorName', header: 'Vendor', width: 250, visible: true, isResizable: true, align: 'left' , isFilterable: true},
-    { field: 'poDate', header: 'Date', width: 150, visible: true, align: 'center', isFilterable: true, cell: (row) => new Date(row.poDate).toLocaleDateString() },
-    { field: 'totalAmount', header: 'Total Amount', width: 180, visible: true, align: 'right', isResizable: true, type: 'currency', isFilterable: true },
-    { field: 'status', header: 'Status', width: 120, visible: true, align: 'center', isFilterable: true }
-  ];
 
-  // PO Items (Child) Columns Configuration
-  itemColumns: GridColumn[] = [
-    { field: 'itemCode', header: 'Item Code', width: 150, align: 'left', isFilterable: true },
-    { field: 'description', header: 'Description', width: 300, align: 'left' , isFilterable: true},
-    { field: 'quantity', header: 'Qty', width: 100, align: 'right', isFilterable: true },
-    { field: 'unitPrice', header: 'Price', width: 120, align: 'right', isFilterable: true, type: 'currency' },
-    { field: 'lineTotal', header: 'Line Total', width: 150, isFilterable: true, align: 'right', cell: (row) => (row.quantity * row.unitPrice).toFixed(2) }
-  ];
+  // Initialization with empty arrays to prevent 'undefined' errors in template
+  public dataSource = new MatTableDataSource<any>([]);
+  public totalRecords: number = 0;
+  public pageSize: number = 10;
+  public isLoading: boolean = false;
 
-  dataSource = new MatTableDataSource<any>();
+  public poColumns: GridColumn[] = [];
+  public itemColumns: GridColumn[] = [];
+
+  constructor(
+    private poService: InventoryService,
+    private cdr: ChangeDetectorRef, // Inject karein
+    private datePipe: DatePipe // Date formatting ke liye behtar approach
+  ) { }
 
   ngOnInit() {
-    // Dummy Data for Testing
-    this.dataSource.data = [
+    this.initColumns();
+    // Default load mein parameters ko backend se match karein
+    this.loadData({
+      pageIndex: 0,
+      pageSize: this.pageSize,
+      sortField: 'PoDate', // Backend naming convention check karein
+      sortOrder: 'desc',
+      filter: '' // Default empty string bhejein taaki 400 error na aaye
+    });
+  }
+
+  private initColumns() {
+    // Master Columns (As per dbo.PurchaseOrders screenshot)
+    this.poColumns = [
+      { field: 'poNumber', header: 'PO No.', sortable: true, isFilterable: true, isResizable: true, width: 150 },
       {
-        id: 101,
-        poNumber: 'PO-2026-001',
-        vendorName: 'Electric Solutions Ltd',
-        poDate: '2026-01-20',
-        totalAmount: 4500.00,
-        status: 'Open',
-        purchaseOrderItems: [ // childDataField name
-          { itemCode: 'CABLE-01', description: 'Copper Wire 10m', quantity: 10, unitPrice: 200 },
-          { itemCode: 'SWITCH-05', description: 'Industrial Switch', quantity: 5, unitPrice: 500 }
-        ]
+        field: 'poDate',
+        header: 'Date',
+        sortable: true,
+        isResizable: true,
+        width: 120,
+        cell: (row: any) => this.datePipe.transform(row.poDate, 'MM/dd/yyyy')
       },
-      {
-        id: 102,
-        poNumber: 'PO-2026-002',
-        vendorName: 'Tata Power Spares',
-        poDate: '2026-01-22',
-        totalAmount: 1200.00,
-        status: 'Pending',
-        purchaseOrderItems: [
-          { itemCode: 'FUSE-10', description: 'Ceramic Fuse 10A', quantity: 100, unitPrice: 12 }
-        ]
-      }
+      { field: 'supplierId', header: 'Supplier ID', sortable: true, isResizable: true, width: 100, isFilterable: true },
+      { field: 'grandTotal', header: 'Grand Total', sortable: true, isResizable: true, align: 'right', width: 130, isFilterable: true },
+      { field: 'status', header: 'Status', sortable: true, isResizable: true, width: 100, isFilterable: true }
     ];
+
+    // Child Columns (As per dbo.PurchaseOrderItems screenshot)
+    this.itemColumns = [
+      { field: 'productId', header: 'Product ID', isResizable: true, width: 250, isFilterable: true },
+      { field: 'qty', header: 'Qty', isResizable: true, align: 'left', width: 80, isFilterable: true },
+      { field: 'unit', header: 'Unit', isResizable: true, width: 80, isFilterable: true },
+      { field: 'rate', header: 'Rate', isResizable: true, align: 'left', width: 100, isFilterable: true },
+      { field: 'total', header: 'Line Total', isResizable: true, align: 'left', width: 120, isFilterable: true }, // 'total' camelCase mein hai
+      { field: 'taxAmount', header: 'Tax', isResizable: true, align: 'left', width: 100, isFilterable: true }
+    ];
+  }
+
+  onGridStateChange(state: any) {
+    this.loadData(state);
+  }
+
+  loadData(state: any) {
+    this.isLoading = true;
+    this.cdr.detectChanges(); // View check se pehle state update notify karein
+
+    const queryParams = {
+      pageIndex: state.pageIndex ?? 0,
+      pageSize: state.pageSize ?? 10,
+      sortField: state.sortField ?? 'PoDate',
+      sortOrder: state.sortOrder ?? 'desc',
+      filter: state.filter ?? '' // Empty string bhejein taaki 400 error na aaye
+    };
+
+    this.poService.getOrders(queryParams).subscribe({
+      next: (res) => {
+        console.log('PO Data Loaded:', res);
+        this.dataSource.data = res.data || [];
+        this.totalRecords = res.totalRecords || 0;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 }
