@@ -26,16 +26,18 @@
 
   <div class="responsive-table-wrapper">
     <table mat-table [dataSource]="dataSource" multiTemplateDataRows 
+           matSort (matSortChange)="onSortChange($event)"
            cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)">
 
       <ng-container *ngFor="let col of columns" [matColumnDef]="col.field">
-        <th mat-header-cell *matHeaderCellDef cdkDrag [style.width.px]="col.width">
+        <th mat-header-cell *matHeaderCellDef cdkDrag [style.width.px]="col.width"
+            [mat-sort-header]="col.field" [disabled]="!col.sortable">
           
           <div class="header-main-container">
             <span class="header-label">{{ col.header }}</span>
             <div class="header-right-side">
               <button *ngIf="col.isFilterable" mat-icon-button [matMenuTriggerFor]="filterMenu" 
-                      (click)="$event.stopPropagation()" class="header-icon-btn">
+                      disableRipple (click)="$event.stopPropagation()" class="header-icon-btn no-ripple">
                 <mat-icon [class.active-filter]="col.filterValue">filter_list</mat-icon>
               </button>
               <div *ngIf="col.isResizable" class="resizer-bar" (mousedown)="onResize(col, $event); $event.stopPropagation()"></div>
@@ -63,18 +65,46 @@
         <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length" class="detail-cell">
           <div class="detail-panel" [class.is-expanded]="element === expandedElement">
             <div class="child-grid-wrapper" *ngIf="element === expandedElement">
-              <div class="child-header">Detailed Line Items</div>
-              <table class="inner-table">
+              
+              <div class="child-header">
+                <span class="child-title">Detailed Line Items</span>
+                <button mat-button color="warn" class="clear-child-btn" 
+                        *ngIf="hasActiveChildFilters()" (click)="clearChildFilters(element)">
+                  <mat-icon>filter_alt_off</mat-icon>
+                  Clear Child Filters
+                </button>
+              </div>
+              
+              <table class="inner-table" cdkDropList cdkDropListOrientation="horizontal" 
+                     (cdkDropListDropped)="dropChild($event)">
                 <thead>
                   <tr>
-                    <th *ngFor="let cCol of childColumns">{{ cCol.header }}</th>
+                    <th *ngFor="let cCol of childColumns" cdkDrag [style.width.px]="cCol.width">
+                      <div class="header-main-container">
+                        <span class="header-label">{{ cCol.header }}</span>
+                        <div class="header-right-side">
+                          <button *ngIf="cCol.isFilterable" mat-icon-button [matMenuTriggerFor]="childFilterMenu" 
+                                  disableRipple class="header-icon-btn no-ripple">
+                            <mat-icon [class.active-filter]="cCol.filterValue">filter_list</mat-icon>
+                          </button>
+                          <div *ngIf="cCol.isResizable" class="resizer-bar" 
+                               (mousedown)="onResize(cCol, $event); $event.stopPropagation()"></div>
+                        </div>
+                      </div>
+
+                      <mat-menu #childFilterMenu="matMenu" class="filter-menu-panel">
+                        <div class="filter-content-area" (click)="$event.stopPropagation()">
+                          <mat-form-field appearance="outline" class="filter-input-field">
+                            <input matInput [(ngModel)]="cCol.filterValue" (keyup)="applyChildFilter(element, cCol)" placeholder="Search...">
+                          </mat-form-field>
+                        </div>
+                      </mat-menu>
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr *ngFor="let childRow of element[childDataField]" class="child-row">
-                    <td *ngFor="let cCol of childColumns">
-                      {{ cCol.cell ? cCol.cell(childRow) : childRow[cCol.field] }}
-                    </td>
+                    <td *ngFor="let cCol of childColumns">{{ childRow[cCol.field] }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -88,4 +118,11 @@
       <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
     </table>
   </div>
+
+  <mat-paginator [length]="totalRecords"
+                 [pageSize]="pageSize"
+                 [pageSizeOptions]="[10, 25, 50, 100]"
+                 (page)="onPageChange($event)"
+                 showFirstLastButtons>
+  </mat-paginator>
 </div>
