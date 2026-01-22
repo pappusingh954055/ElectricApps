@@ -31,8 +31,10 @@
               }
             ],
             "styles": [
-              "src/styles.scss"
-            ]
+              "src/styles.scss",
+              "@angular/material/prebuilt-themes/indigo-pink.css" 
+            ],
+            "scripts": []
           },
           "configurations": {
             "production": {

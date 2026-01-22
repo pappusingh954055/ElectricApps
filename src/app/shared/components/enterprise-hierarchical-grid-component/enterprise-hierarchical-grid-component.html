@@ -1,0 +1,91 @@
+<div class="enterprise-grid-container">
+  <div class="grid-toolbar">
+    <div class="left-actions">
+      <span class="toolbar-title">Purchase Orders</span>
+      <button mat-raised-button color="warn" class="clear-btn-animated" 
+              *ngIf="hasActiveFilters()" (click)="clearAllFilters()">
+        <mat-icon>filter_alt_off</mat-icon>
+        Clear Filters
+      </button>
+    </div>
+
+    <div class="right-actions">
+      <button mat-icon-button [matMenuTriggerFor]="colMenu" title="Hide/Show Columns">
+        <mat-icon>view_column</mat-icon>
+      </button>
+      <mat-menu #colMenu="matMenu" class="column-toggle-menu">
+        <div class="menu-header">Select Columns</div>
+        <div mat-menu-item *ngFor="let col of columns" (click)="$event.stopPropagation()">
+          <mat-checkbox [checked]="col.visible !== false" (change)="toggleColumn(col)">
+            {{ col.header }}
+          </mat-checkbox>
+        </div>
+      </mat-menu>
+    </div>
+  </div>
+
+  <div class="responsive-table-wrapper">
+    <table mat-table [dataSource]="dataSource" multiTemplateDataRows 
+           cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)">
+
+      <ng-container *ngFor="let col of columns" [matColumnDef]="col.field">
+        <th mat-header-cell *matHeaderCellDef cdkDrag [style.width.px]="col.width">
+          
+          <div class="header-main-container">
+            <span class="header-label">{{ col.header }}</span>
+            <div class="header-right-side">
+              <button *ngIf="col.isFilterable" mat-icon-button [matMenuTriggerFor]="filterMenu" 
+                      (click)="$event.stopPropagation()" class="header-icon-btn">
+                <mat-icon [class.active-filter]="col.filterValue">filter_list</mat-icon>
+              </button>
+              <div *ngIf="col.isResizable" class="resizer-bar" (mousedown)="onResize(col, $event); $event.stopPropagation()"></div>
+            </div>
+          </div>
+
+          <mat-menu #filterMenu="matMenu" class="filter-menu-panel">
+            <div class="filter-content-area" (click)="$event.stopPropagation()">
+              <mat-form-field appearance="outline" class="filter-input-field">
+                <mat-label>Search {{col.header}}</mat-label>
+                <input matInput [(ngModel)]="col.filterValue" (keyup)="applyFilter()" placeholder="Search...">
+                <button *ngIf="col.filterValue" matSuffix mat-icon-button (click)="col.filterValue=''; applyFilter()">
+                  <mat-icon>close</mat-icon>
+                </button>
+              </mat-form-field>
+            </div>
+          </mat-menu>
+        </th>
+        <td mat-cell *matCellDef="let row" [style.text-align]="col.align">
+          {{ col.cell ? col.cell(row) : row[col.field] }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="expandedDetail">
+        <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length" class="detail-cell">
+          <div class="detail-panel" [class.is-expanded]="element === expandedElement">
+            <div class="child-grid-wrapper" *ngIf="element === expandedElement">
+              <div class="child-header">Detailed Line Items</div>
+              <table class="inner-table">
+                <thead>
+                  <tr>
+                    <th *ngFor="let cCol of childColumns">{{ cCol.header }}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let childRow of element[childDataField]" class="child-row">
+                    <td *ngFor="let cCol of childColumns">
+                      {{ cCol.cell ? cCol.cell(childRow) : childRow[cCol.field] }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="master-row" (click)="toggleRow(row)"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+    </table>
+  </div>
+</div>

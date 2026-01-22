@@ -1,23 +1,29 @@
 export interface GridColumn {
-  /** Property name from DTO (API response) */
   field: string;
-
-  /** Column header text */
   header: string;
-
-  /** Allow server-side sorting */
   sortable?: boolean;
-
-
+  
+  // Custom cell rendering ke liye
   cell?: (row: any) => string | number | null;
 
-  /** Optional width */
+  // Pixel mein width handle karne ke liye (Aapne number manga tha)
   width?: number;
 
+  // Column show/hide logic
   visible?: boolean;
 
-  close?: string;
+  // Filter functionality (Range filter ke liye zaroori hai)
+  isFilterable?: boolean;
 
-  /** Optional column type (text, number, boolean, date) */
-  type?: 'text' | 'number' | 'boolean' | 'date';
+  // Resizing allow karne ke liye
+  isResizable?: boolean;
+  
+
+  type?: 'text' | 'number' | 'boolean' | 'date' | 'currency';
+  
+  // Alignment: text left, numbers right
+  align?: 'left' | 'right' | 'center';
+
+  close?: string; // Aapka existing field
+  filterValue?: string;
 }

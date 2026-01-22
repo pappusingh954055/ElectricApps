@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../enviornments/environment';
 import { ApiService } from '../../../shared/api.service';
+import { PurchaseOrderPayload } from '../models/purchaseorder.model';
 
 
 
@@ -23,8 +24,8 @@ export class InventoryService {
     }
 
     // PO Save karne ke liye
-    createPurchaseOrder(payload: any): Observable<any> {
-        return this.http.post(`${this.apiUrl}/purchaseorders`, payload);
+    savePoDraft(payload: PurchaseOrderPayload): Observable<any> {
+        return this.http.post(`${this.apiUrl}/PurchaseOrders/save-po`, payload);
     }
     // 1. Saari active Price Lists load karne ke liye
     getPriceLists(): Observable<any[]> {
@@ -42,13 +43,14 @@ export class InventoryService {
    * @param productId - Selected Product ki ID
    * @param priceListId - Selected Price List ki ID
    */
-    getProductRate(productId: number, priceListId: number): Observable<any> {
-        // Parameters pass karne ke liye HttpParams ka use karein
+    // inventory.service.ts
+    // inventory.service.ts
+    getProductRate(productId: string, priceListId: string): Observable<any> {
+        // Params ensure karte hain ki data URL ke piche ?productId=... bankar jaye
         const params = new HttpParams()
-            .set('productId', productId.toString())
-            .set('priceListId', priceListId.toString());
+            .set('productId', productId)
+            .set('priceListId', priceListId);
 
-        // GET request: /api/products/get-rate?productId=1&priceListId=101
-        return this.http.get(`${this.apiUrl}/get-rate`, { params });
+        return this.http.get(`${this.apiUrl}/products/rate`, { params });
     }
 }

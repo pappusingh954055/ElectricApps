@@ -79,7 +79,7 @@ export class PricelistForm implements OnInit {
       const product = control.get('productSearch')?.value;
       if (product && typeof product === 'object') {
         const newRate = type === 'SALES' ? (product.mrp || 0) : (product.basePurchasePrice || 0);
-        control.get('price')?.setValue(newRate);
+        control.get('rate')?.setValue(newRate);
       }
     });
     this.cdr.detectChanges();
@@ -92,7 +92,7 @@ export class PricelistForm implements OnInit {
       productSearch: ['', Validators.required],
       unit: [''],
       discountPercent: [0, [Validators.min(0), Validators.max(100)]],
-      price: [0, [Validators.required, Validators.min(0)]],
+      rate: [0, [Validators.required, Validators.min(0)]],
       minQty: [1, [Validators.required, Validators.min(1)]],
       maxQty: [999999, Validators.required]
     });
@@ -111,7 +111,7 @@ export class PricelistForm implements OnInit {
         // Agar value khali hai toh Rate aur Unit ko reset karein
         if (!value || (typeof value === 'string' && value.trim() === '')) {
           row.patchValue({
-            price: 0,
+            rate: 0,
             unit: '-',
             productId: null
           }, { emitEvent: false });
@@ -157,7 +157,7 @@ export class PricelistForm implements OnInit {
         productId: null,
         productSearch: '',
         unit: '-',
-        price: 0
+        rate: 0
       });
       return;
     }
@@ -171,7 +171,7 @@ export class PricelistForm implements OnInit {
         productId: selectedProduct.id,
         productSearch: selectedProduct.name,
         unit: selectedProduct.unit || '-',
-        price: defaultRate
+        rate: defaultRate
       });
 
       this.cdr.markForCheck();
@@ -243,7 +243,7 @@ export class PricelistForm implements OnInit {
       }
     });
   }
-  
+
   onCancel() { this.router.navigate(['/app/master/pricelist']); }
 
   onFieldFocus(event: FocusEvent, fieldType: string) {
@@ -297,7 +297,7 @@ export class PricelistForm implements OnInit {
           productSearch: [item.productName || '', Validators.required],
           unit: [{ value: item.unit || '-', disabled: true }],
           discountPercent: [item.discountPercent || 0],
-          price: [item.price, [Validators.required, Validators.min(0.01)]],
+          rate: [item.rate, [Validators.required, Validators.min(0.01)]],
           minQty: [item.minQty || 1],
           maxQty: [item.maxQty || 999999]
         });

@@ -1,0 +1,117 @@
+.enterprise-grid-container {
+  width: 100%;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+
+  .grid-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    background: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    z-index: 12;
+
+    .left-actions {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      .toolbar-title { font-weight: 600; color: #374151; font-size: 16px; }
+
+      // Clear Filter Highlight
+      .clear-btn-animated {
+        background: #ef4444 !important; color: white !important;
+        height: 32px; font-size: 12px;
+        animation: pulse-red 2s infinite;
+        mat-icon { font-size: 16px; width: 16px; height: 16px; margin-right: 4px; }
+      }
+    }
+  }
+
+  @keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+  }
+
+  .responsive-table-wrapper {
+    overflow: auto;
+    width: 100%;
+    max-height: 600px;
+  }
+
+  table { width: 100%; border-collapse: separate; min-width: 800px; }
+
+  // Sticky Header Alignment
+  .mat-mdc-header-row { top: 0; position: sticky; z-index: 10; background: #f9fafb; }
+  .mat-mdc-header-cell { background: #f9fafb; border-bottom: 2px solid #e5e7eb; padding: 0 12px; }
+
+  // FIXED HEADER LAYOUT
+  .header-main-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    width: 100%;
+
+    .header-label { 
+      font-weight: 600; 
+      color: #374151; 
+      flex: 1; 
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .header-right-side {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+
+      .header-icon-btn {
+        width: 32px; height: 32px; 
+        background: transparent !important; // Fix circle glitch
+        mat-icon { font-size: 18px; color: #9ca3af; &.active-filter { color: #3b82f6; } }
+      }
+      .resizer-bar { width: 4px; height: 18px; cursor: col-resize; border-right: 2px solid #d1d5db; margin-left: 4px; }
+    }
+  }
+
+  .master-row {
+    cursor: pointer;
+    &:hover { background: #f1f5f9 !important; }
+    td { padding: 14px 12px; border-bottom: 1px solid #f3f4f6; }
+  }
+
+  .detail-panel {
+    overflow: hidden; height: 0; background: #fdfdfd;
+    transition: all 0.3s ease;
+    &.is-expanded { height: auto; padding: 20px; border-bottom: 2px solid #3b82f6; }
+  }
+
+  // Child table alignment
+  .inner-table {
+    width: 100%; border: 1px solid #e5e7eb;
+    th { background: #f3f4f6; padding: 10px; font-size: 12px; }
+    .child-row {
+      cursor: pointer; // Hand icon for child items
+      &:hover { background-color: #f1f7ff !important; color: #2563eb; }
+      td { border-top: 1px solid #f3f4f6; padding: 10px; font-size: 13px; }
+    }
+  }
+}
+
+// Search field overflow fix
+.filter-menu-panel {
+  min-width: 220px !important;
+  .filter-content-area {
+    padding: 12px;
+    .filter-input-field { 
+      width: 100%; 
+      ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; } 
+    }
+  }
+}
