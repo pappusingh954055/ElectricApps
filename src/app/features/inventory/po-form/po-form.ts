@@ -248,6 +248,7 @@ export class PoForm implements OnInit, OnDestroy {
 
   const payload: PurchaseOrderPayload = {
     supplierId: formValue.supplierId,
+    supplierName: this.suppliers.find(s => s.id === formValue.supplierId)?.name || '',
     priceListId: formValue.priceListId,
     poDate: formValue.poDate,
     expectedDeliveryDate: formValue.expectedDeliveryDate,

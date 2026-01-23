@@ -29,17 +29,17 @@ export class InventoryService {
     }
 
     // Paged aur Sorted Data fetch karne ke liye
- getOrders(state: any): Observable<any> {
-    // Backend record ke parameters Case-Sensitive ho sakte hain
-    const params = new HttpParams()
-        .set('PageIndex', state.pageIndex.toString())
-        .set('PageSize', state.pageSize.toString())
-        .set('SortField', state.sortField || 'PoDate')
-        .set('SortOrder', state.sortOrder || 'desc')
-        .set('Filter', state.filter || ''); // Ensure empty string, null nahi
+    // getOrders(state: any): Observable<any> {
+    //     // Backend record ke parameters Case-Sensitive ho sakte hain
+    //     const params = new HttpParams()
+    //         .set('PageIndex', state.pageIndex.toString())
+    //         .set('PageSize', state.pageSize.toString())
+    //         .set('SortField', state.sortField || 'PoDate')
+    //         .set('SortOrder', state.sortOrder || 'desc')
+    //         .set('Filter', state.filter || ''); // Ensure empty string, null nahi
 
-    return this.http.get<any>(`${this.apiUrl}/purchaseorders`, { params });
-}
+    //     return this.http.get<any>(`${this.apiUrl}/purchaseorders`, { params });
+    // }
 
     // 1. Saari active Price Lists load karne ke liye
     getPriceLists(): Observable<any[]> {
@@ -66,5 +66,11 @@ export class InventoryService {
             .set('priceListId', priceListId);
 
         return this.http.get(`${this.apiUrl}/products/rate`, { params });
+    }
+
+    // purchase-order.service.ts
+    getPagedOrders(request: any): Observable<any> {
+        // Ye POST call aapke naye [HttpPost("get-paged-orders")] endpoint ko hit karega
+        return this.http.post<any>(`${this.apiUrl}/PurchaseOrders/get-paged-orders`, request);
     }
 }

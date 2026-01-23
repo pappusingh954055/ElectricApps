@@ -20,10 +20,11 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   @Input() dataSource = new MatTableDataSource<any>();
   @Input() childColumns: GridColumn[] = [];
   @Input() childDataField: string = 'items';
-  
+  @Input() isLoading: boolean = false;
+
   @Input() totalRecords: number = 0;
   @Input() pageSize: number = 10;
-  
+
   @Output() onGridStateChange = new EventEmitter<any>();
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -33,10 +34,13 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   sortField: string = '';
   sortDirection: 'asc' | 'desc' | '' = '';
 
+  // --- NEW: Date Range Properties ---
+  fromDate: string = '';
+  toDate: string = '';
+
   constructor(private cdr: ChangeDetectorRef) { }
 
   ngOnInit() {
-    // Disable client-side sorting
     this.dataSource.sort = null;
   }
 
@@ -44,11 +48,16 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     return this.columns.filter(c => c.visible !== false).map(c => c.field);
   }
 
-  // Sorting logic fix
+  // --- NEW: Date Filter Logic ---
+  applyDateFilter() {
+    this.currentPage = 0; // Reset pagination on filter change
+    this.triggerDataLoad();
+  }
+
   onSortChange(sort: Sort) {
     this.sortField = sort.active;
     this.sortDirection = sort.direction as 'asc' | 'desc' | '';
-    this.currentPage = 0; // Reset to first page on sort change
+    this.currentPage = 0;
     this.triggerDataLoad();
   }
 
@@ -69,6 +78,9 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
       pageSize: this.pageSize,
       sortField: this.sortField,
       sortOrder: this.sortDirection,
+      // --- UPDATED: Passing Dates to Backend ---
+      fromDate: this.fromDate,
+      toDate: this.toDate,
       filters: this.columns
         .filter(c => c.filterValue && c.filterValue.trim() !== '')
         .map(c => ({ field: c.field, value: c.filterValue }))
@@ -78,13 +90,21 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
 
   // --- UI Handlers ---
   clearAllFilters() {
+    // Clear both column filters AND date range
     this.columns.forEach(col => col.filterValue = '');
+    this.fromDate = '';
+    this.toDate = '';
     this.applyFilter();
   }
 
   hasActiveFilters(): boolean {
-    return this.columns.some(col => col.filterValue && col.filterValue.trim().length > 0);
+    // UPDATED: Clear button tab dikhega jab column filter ho YA date selected ho
+    const hasColumnFilters = this.columns.some(col => col.filterValue && col.filterValue.trim().length > 0);
+    const hasDateFilters = !!(this.fromDate || this.toDate);
+    return hasColumnFilters || hasDateFilters;
   }
+
+  // ... (Baki saara logic same rahega: drop, toggleRow, onResize, etc.) ...
 
   drop(event: CdkDragDrop<string[]>) {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
@@ -120,7 +140,6 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // Child table logic
   applyChildFilter(element: any, col: GridColumn) {
     if (!element._originalItems) {
       element._originalItems = [...element[this.childDataField]];
@@ -151,22 +170,22 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // Child Table Sorting Logic (Local)
-onChildSortChange(sort: Sort, element: any) {
-  const data = [...element[this.childDataField]];
-  if (!sort.active || sort.direction === '') {
-    element[this.childDataField] = data;
-    return;
+  onChildSortChange(sort: Sort, element: any) {
+    const data = [...element[this.childDataField]];
+    if (!sort.active || sort.direction === '') {
+      element[this.childDataField] = data;
+      return;
+    }
+
+    element[this.childDataField] = data.sort((a, b) => {
+      const isAsc = sort.direction === 'asc';
+      return this.compare(a[sort.active], b[sort.active], isAsc);
+    });
   }
 
-  element[this.childDataField] = data.sort((a, b) => {
-    const isAsc = sort.direction === 'asc';
-    return this.compare(a[sort.active], b[sort.active], isAsc);
-  });
-}
+  compare(a: number | string, b: number | string, isAsc: boolean) {
+    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
+  }
 
-// Helper compare function
-compare(a: number | string, b: number | string, isAsc: boolean) {
-  return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
-}
+  createNewPo(){}
 }

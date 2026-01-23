@@ -1,35 +1,37 @@
-<mat-card>
-  <!-- <mat-card-title>
-    Purchase Orders
-    <button mat-flat-button class="bg-azure" routerLink="/app/inventory/polist/add">
-      + Create New PO
-    </button>
-  </mat-card-title> -->
+<mat-card class="list-card">
   <div class="header-container">
-  <mat-form-field appearance="outline" class="search-box">
-    <mat-label>Search PO, Status or Supplier...</mat-label>
-    <input matInput (keyup)="onSearch($event)" placeholder="Ex. PO/26-27/0001">
-    <mat-icon matSuffix>search</mat-icon>
-  </mat-form-field>
-  
-  <button mat-raised-button routerLink="/app/inventory/polist/add" (click)="createNewPo()">
-    + Create New PO
-  </button>
-</div>
+    <div class="filters-wrapper">
+      <app-search-input 
+        class="search-bar"
+        [label]="'Search PO, Status or Supplier...'" 
+        [placeholder]="'Ex. PO/26-27/0001'"
+        [value]="globalFilter"
+        (onSearch)="handleSearch($event)">
+      </app-search-input>
 
- <div class="page-container">
-  <div class="loading-shade" *ngIf="isLoading">
-    <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
+      <button mat-icon-button color="warn" matTooltip="Clear All Filters"
+              *ngIf="globalFilter || fromDate || toDate" 
+              (click)="clearAllFilters()">
+        <mat-icon>filter_alt_off</mat-icon>
+      </button>
+    </div>
+
   </div>
 
-  <app-enterprise-hierarchical-grid
-    [columns]="poColumns"
-    [childColumns]="itemColumns"
-    [dataSource]="dataSource"
-    [totalRecords]="totalRecords"
-    [pageSize]="pageSize"
-    [childDataField]="'items'"
-    (onGridStateChange)="onGridStateChange($event)">
-  </app-enterprise-hierarchical-grid>
-</div>
+  <div class="page-container">
+    <div class="loading-shade" *ngIf="isLoading">
+      <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
+    </div>
+
+    <app-enterprise-hierarchical-grid 
+      [columns]="poColumns" 
+      [childColumns]="itemColumns" 
+      [dataSource]="dataSource"
+      [totalRecords]="totalRecords" 
+      [pageSize]="pageSize" 
+      [isLoading]="isLoading"
+      [childDataField]="'items'"
+      (onGridStateChange)="onGridStateChange($event)">
+    </app-enterprise-hierarchical-grid>
+  </div>
 </mat-card>

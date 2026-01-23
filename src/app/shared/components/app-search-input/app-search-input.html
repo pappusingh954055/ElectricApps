@@ -1,0 +1,13 @@
+<mat-form-field appearance="outline" class="search-full-width">
+  <mat-label>{{ label }}</mat-label>
+  <input matInput 
+         [(ngModel)]="value" 
+         (keyup)="onKeyUp()" 
+         [placeholder]="placeholder">
+  
+  <mat-icon matSuffix *ngIf="!value">search</mat-icon>
+  
+  <button mat-icon-button matSuffix *ngIf="value" (click)="clear()" aria-label="Clear">
+    <mat-icon>close</mat-icon>
+  </button>
+</mat-form-field>
