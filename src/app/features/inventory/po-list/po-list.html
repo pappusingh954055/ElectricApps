@@ -1,10 +1,21 @@
 <mat-card>
-  <mat-card-title>
+  <!-- <mat-card-title>
     Purchase Orders
     <button mat-flat-button class="bg-azure" routerLink="/app/inventory/polist/add">
       + Create New PO
     </button>
-  </mat-card-title>
+  </mat-card-title> -->
+  <div class="header-container">
+  <mat-form-field appearance="outline" class="search-box">
+    <mat-label>Search PO, Status or Supplier...</mat-label>
+    <input matInput (keyup)="onSearch($event)" placeholder="Ex. PO/26-27/0001">
+    <mat-icon matSuffix>search</mat-icon>
+  </mat-form-field>
+  
+  <button mat-raised-button routerLink="/app/inventory/polist/add" (click)="createNewPo()">
+    + Create New PO
+  </button>
+</div>
 
  <div class="page-container">
   <div class="loading-shade" *ngIf="isLoading">

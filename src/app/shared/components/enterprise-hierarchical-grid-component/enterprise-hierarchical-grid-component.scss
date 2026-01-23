@@ -284,6 +284,30 @@
   }
 }
 
+.child-table-footer {
+  background-color: #f9fafb;
+  border-top: 2px solid #e5e7eb;
+
+  .footer-row {
+    .footer-label {
+      text-align: right;
+      padding: 10px 15px;
+      font-weight: 600;
+      color: #4b5563;
+      font-size: 13px;
+    }
+    .footer-value {
+      padding: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      text-align: right;
+      border-left: 1px solid #f3f4f6;
+    }
+    .tax-highlight { color: #ef4444; } // Tax Amount in Red
+    .grand-total-highlight { color: #1e40af; font-size: 15px; } // Grand Total in Blue
+  }
+}
+
 /* Responsiveness for small screens */
 @media (max-width: 768px) {
   .enterprise-grid-container {

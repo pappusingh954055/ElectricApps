@@ -116,7 +116,18 @@
                     </td>
                   </tr>
                 </tbody>
-              </table>
+
+                <tfoot class="child-table-footer">
+                  <tr class="footer-row">
+                    <td [attr.colspan]="childColumns.length - 1" class="footer-label">Total Tax Amount:</td>
+                    <td class="footer-value tax-highlight">{{ element.totalTax | number:'1.2-2' }}</td>
+                  </tr>
+                  <tr class="footer-row">
+                    <td [attr.colspan]="childColumns.length - 1" class="footer-label">Grand Total:</td>
+                    <td class="footer-value grand-total-highlight">{{ element.grandTotal | number:'1.2-2' }}</td>
+                  </tr>
+                </tfoot>
+                </table>
             </div>
           </div>
         </td>

@@ -7,6 +7,7 @@ import { EnterpriseHierarchicalGridComponent } from '../../../shared/components/
 import { MatTableDataSource } from '@angular/material/table';
 import { GridColumn } from '../../../shared/models/grid-column.model';
 import { InventoryService } from '../service/inventory.service';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-po-list',
@@ -27,6 +28,8 @@ export class PoList implements OnInit {
   public poColumns: GridColumn[] = [];
   public itemColumns: GridColumn[] = [];
 
+  private searchSubject = new Subject<string>();
+
   constructor(
     private poService: InventoryService,
     private cdr: ChangeDetectorRef, // Inject karein
@@ -35,16 +38,30 @@ export class PoList implements OnInit {
 
   ngOnInit() {
     this.initColumns();
-    // Default load mein parameters ko backend se match karein
+    // 1. Initial Load: Pehli baar page load hone par data layein
     this.loadData({
       pageIndex: 0,
       pageSize: this.pageSize,
-      sortField: 'PoDate', // Backend naming convention check karein
+      sortField: 'PoDate', // Default sorting
       sortOrder: 'desc',
-      filter: '' // Default empty string bhejein taaki 400 error na aaye
+      filter: ''
+    });
+
+    // 2. Search Subscription: Search bar mein type karne par calls handle karein
+    this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged()
+    ).subscribe(filterValue => {
+      this.loadData({
+        pageIndex: 0,
+        pageSize: this.pageSize,
+        filter: filterValue,
+        // Yahan sort parameters pass karna zaroori hai
+        sortField: 'PoDate',
+        sortOrder: 'desc'
+      });
     });
   }
-
   private initColumns() {
     // Master Columns (As per dbo.PurchaseOrders screenshot)
     this.poColumns = [
@@ -55,21 +72,26 @@ export class PoList implements OnInit {
         sortable: true,
         isResizable: true,
         width: 120,
+        align: 'left',
         cell: (row: any) => this.datePipe.transform(row.poDate, 'MM/dd/yyyy')
       },
-      { field: 'supplierId', header: 'Supplier ID', sortable: true, isResizable: true, width: 100, isFilterable: true },
-      { field: 'grandTotal', header: 'Grand Total', sortable: true, isResizable: true, align: 'right', width: 130, isFilterable: true },
-      { field: 'status', header: 'Status', sortable: true, isResizable: true, width: 100, isFilterable: true }
+      { field: 'supplierId', header: 'Supplier ID', sortable: true, isResizable: true, width: 100, isFilterable: true, visible: false },
+      { field: 'supplierName', header: 'Supplier Name', sortable: true, isResizable: true, width: 200, isFilterable: true },
+      { field: 'grandTotal', header: 'Grand Total', sortable: true, isResizable: true, align: 'left', width: 130, isFilterable: true },
+      { field: 'status', header: 'Status', sortable: true, isResizable: true, width: 100, isFilterable: true, align: 'left' },
+      { field: 'createdBy', header: 'Created By', sortable: true, isResizable: true, width: 100, isFilterable: true, align: 'left', visible: false }
     ];
 
     // Child Columns (As per dbo.PurchaseOrderItems screenshot)
     this.itemColumns = [
-      { field: 'productId', header: 'Product ID', isResizable: true, width: 250, isFilterable: true },
+      { field: 'productName', header: 'Product Name', isResizable: true, width: 250, isFilterable: true },
       { field: 'qty', header: 'Qty', isResizable: true, align: 'left', width: 80, isFilterable: true },
       { field: 'unit', header: 'Unit', isResizable: true, width: 80, isFilterable: true },
       { field: 'rate', header: 'Rate', isResizable: true, align: 'left', width: 100, isFilterable: true },
+      { field: 'discountPercent', header: 'Discount %', isResizable: true, align: 'left', width: 100, isFilterable: true },
+      { field: 'gstPercent', header: 'GST %', isResizable: true, align: 'left', width: 100, isFilterable: true },
       { field: 'total', header: 'Line Total', isResizable: true, align: 'left', width: 120, isFilterable: true }, // 'total' camelCase mein hai
-      { field: 'taxAmount', header: 'Tax', isResizable: true, align: 'left', width: 100, isFilterable: true }
+      { field: 'taxAmount', header: 'Tax Amount', isResizable: true, align: 'left', width: 100, isFilterable: true }
     ];
   }
 
@@ -102,5 +124,10 @@ export class PoList implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+  createNewPo() { }
+  onSearch(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.searchSubject.next(filterValue);
   }
 }
