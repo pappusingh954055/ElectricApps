@@ -43,14 +43,16 @@
   .mat-mdc-header-cell { 
     background: #f9fafb; 
     border-bottom: 2px solid #e5e7eb; 
-    padding: 0 12px !important; // Standard padding
+    padding: 0 12px !important; 
+    position: relative; // Zaroori hai resizer ki absolute positioning ke liye
   }
 
-  // --- ICON ALIGNMENT FIX (MASTER & CHILD) ---
+  // --- ICON ALIGNMENT & RESIZER FIX ---
   .header-main-container {
     display: flex;
     align-items: center;
     width: 100%;
+    height: 100%;
     
     .header-label { 
       font-weight: 600; color: #374151; flex: 1; 
@@ -60,12 +62,15 @@
     .header-right-side {
       display: flex;
       align-items: center;
-      gap: 0; // Removing gap for tight alignment
+      gap: 0;
+      height: 100%;
 
       .header-icon-btn {
         width: 28px !important;
         height: 28px !important;
         display: flex; align-items: center; justify-content: center;
+        position: relative;
+        z-index: 2; // Icons ko resizer ke niche dabne se rokta hai
         
         mat-icon { 
           font-size: 16px !important; 
@@ -74,17 +79,37 @@
           &.active-filter { color: #3b82f6; } 
         }
       }
+
+      // --- RESIZER BAR FIX ---
+      .resizer-bar {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 6px; // Hit area thoda badhaya hai taaki pakadne me aasani ho
+        cursor: col-resize;
+        border-right: 2px solid #d1d5db;
+        transition: border-color 0.2s;
+        z-index: 20; // Sabse upar taaki drag ho sake
+        pointer-events: auto !important; // Mouse events capture karne ke liye
+        
+        &:hover { 
+          border-right: 3px solid #3b82f6; 
+        }
+        
+        @media (max-width: 768px) { display: none; }
+      }
     }
   }
 
-  // --- EXPANSION FIX: NO MORE HIDDEN CONTENT ---
+  // --- EXPANSION FIX ---
   .detail-row {
-    height: 0; // Default state
+    height: 0;
     overflow: hidden;
 
     &.expanded-row-visible {
       height: auto !important;
-      display: table-row !important; // Explicitly forcing table-row on expand
+      display: table-row !important;
     }
 
     .detail-cell {
@@ -96,7 +121,7 @@
   .detail-panel {
     background: #fdfdfd;
     overflow: hidden;
-    height: 0; // Collapsed by default
+    height: 0;
     
     &.is-expanded { 
       height: auto; 
@@ -115,10 +140,22 @@
   .inner-table {
     width: 100%; border: 1px solid #e5e7eb; border-radius: 4px;
     th { background: #f3f4f6; padding: 10px; font-size: 12px; }
-    .child-row td { border-top: 1px solid #f3f4f6; padding: 10px; font-size: 13px; }
+    
+    .child-row {
+      &:hover { 
+        background-color: #f1f7ff !important; 
+        td { color: #2563eb; } 
+      }
+      td { 
+        border-top: 1px solid #f3f4f6; 
+        padding: 10px; 
+        font-size: 13px;
+        transition: all 0.2s;
+      }
+    }
   }
 
-  // --- FOOTER STYLING (Total Tax & Grand Total) ---
+  // --- FOOTER STYLING ---
   .child-table-footer {
     background-color: #f9fafb;
     border-top: 2px solid #e5e7eb;
@@ -127,7 +164,7 @@
       .footer-value { 
         padding: 10px; font-weight: 700; text-align: right; border-left: 1px solid #f3f4f6; 
       }
-      .tax-highlight { color: #ef4444; } //
+      .tax-highlight { color: #ef4444; } 
       .grand-total-highlight { color: #1e40af; font-size: 15px; } 
     }
   }
@@ -135,21 +172,29 @@
 
 // --- GLOBAL MATERIAL OVERRIDES ---
 ::ng-deep {
-  // Sort Header alignment fix
   .mat-sort-header-container {
     display: flex;
     align-items: center;
     flex-direction: row !important;
+    pointer-events: auto;
   }
   
   .mat-sort-header-arrow { 
     margin-left: 2px !important; 
     color: #3b82f6 !important; 
+    z-index: 1;
   }
 
-  // Remove Material Button default padding that ruins the icon alignment
   .mat-mdc-icon-button.mat-mdc-button-base {
     padding: 0 !important;
+  }
+
+  // Column resizing ke waqt text selection rokne ke liye (Optional but recommended)
+  .resizing {
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    cursor: col-resize !important;
   }
 }
 
