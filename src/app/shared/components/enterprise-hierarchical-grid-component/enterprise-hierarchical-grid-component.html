@@ -14,11 +14,9 @@
         </mat-date-range-input>
         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-date-range-picker #picker></mat-date-range-picker>
-        <button *ngIf="fromDate || toDate" matSuffix mat-icon-button
-          (click)="clearAllFilters(); $event.stopPropagation()">
+        <button *ngIf="fromDate || toDate" matSuffix mat-icon-button (click)="clearAllFilters(); $event.stopPropagation()">
           <mat-icon>close</mat-icon>
         </button>
-        
       </mat-form-field>
     </div>
 
@@ -30,8 +28,7 @@
         <mat-icon>view_column</mat-icon>
       </button>
       <mat-menu #colMenu="matMenu">
-        <div class="menu-header" style="padding: 10px; font-weight: bold; border-bottom: 1px solid #eee;">Select Columns
-        </div>
+        <div class="menu-header">Select Columns</div>
         <div mat-menu-item *ngFor="let col of columns" (click)="$event.stopPropagation()">
           <mat-checkbox [checked]="col.visible !== false" (change)="toggleColumn(col)">
             {{ col.header }}
@@ -49,19 +46,15 @@
       <ng-container *ngFor="let col of columns" [matColumnDef]="col.field">
         <th mat-header-cell *matHeaderCellDef cdkDrag [style.width.px]="col.width" [mat-sort-header]="col.field"
           [disabled]="col.sortable === false" [style.display]="col.visible === false ? 'none' : 'table-cell'">
-
           <div class="header-main-container">
             <span class="header-label">{{ col.header }}</span>
             <div class="header-right-side">
-              <button *ngIf="col.isFilterable" mat-icon-button [matMenuTriggerFor]="filterMenu"
-                (click)="$event.stopPropagation()" class="header-icon-btn">
+              <button *ngIf="col.isFilterable" mat-icon-button [matMenuTriggerFor]="filterMenu" (click)="$event.stopPropagation()" class="header-icon-btn">
                 <mat-icon [class.active-filter]="col.filterValue">filter_list</mat-icon>
               </button>
-              <div *ngIf="col.isResizable" class="resizer-bar"
-                (mousedown)="onResize(col, $event); $event.stopPropagation()"></div>
+              <div *ngIf="col.isResizable" class="resizer-bar" (mousedown)="onResize(col, $event); $event.stopPropagation()"></div>
             </div>
           </div>
-
           <mat-menu #filterMenu="matMenu" class="filter-menu-panel">
             <div class="filter-content-area" (click)="$event.stopPropagation()" style="padding: 10px;">
               <mat-form-field appearance="outline" class="filter-input-field" style="width: 100%;">
@@ -74,9 +67,7 @@
             </div>
           </mat-menu>
         </th>
-
-        <td mat-cell *matCellDef="let row" [style.text-align]="col.align"
-          [style.display]="col.visible === false ? 'none' : 'table-cell'">
+        <td mat-cell *matCellDef="let row" [style.text-align]="col.align" [style.display]="col.visible === false ? 'none' : 'table-cell'">
           {{ col.cell ? col.cell(row) : row[col.field] }}
         </td>
       </ng-container>
@@ -90,28 +81,44 @@
               </div>
 
               <div class="child-table-scroll">
-                <table class="inner-table">
+                <table class="inner-table" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="dropChild($event)">
                   <thead>
-                    <tr>
-                      <th *ngFor="let cCol of childColumns" [style.width.px]="cCol.width">{{ cCol.header }}</th>
+                    <tr class="child-header-row">
+                      <th *ngFor="let cCol of childColumns" cdkDrag [style.width.px]="cCol.width" class="child-th">
+                        <div class="header-main-container">
+                          <div class="header-label-group" (click)="sortChild(cCol.field, element)">
+                            <span class="header-label">{{ cCol.header }}</span>
+                            <mat-icon class="sort-indicator" *ngIf="currentChildSortField === cCol.field">
+                              {{ sortChildDir ? 'arrow_upward' : 'arrow_downward' }}
+                            </mat-icon>
+                          </div>
+                          
+                          <div class="header-right-side">
+                            <button mat-icon-button [matMenuTriggerFor]="childFilterMenu" (click)="$event.stopPropagation()" class="header-icon-btn">
+                              <mat-icon style="font-size: 16px;">filter_list</mat-icon>
+                            </button>
+                            <div class="resizer-bar" (mousedown)="onResizeChild(cCol, $event); $event.stopPropagation()"></div>
+                          </div>
+                        </div>
+
+                        <mat-menu #childFilterMenu="matMenu">
+                          <div style="padding: 12px;" (click)="$event.stopPropagation()">
+                            <mat-form-field appearance="outline" style="width: 100%;">
+                              <mat-label>Search {{cCol.header}}</mat-label>
+                              <input matInput [(ngModel)]="cCol.filterValue" (keyup)="applyChildFilter(element, cCol)" placeholder="Type to search...">
+                            </mat-form-field>
+                          </div>
+                        </mat-menu>
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr *ngFor="let childRow of element[childDataField]" class="child-row">
-                      <td *ngFor="let cCol of childColumns" [style.text-align]="cCol.align">{{ childRow[cCol.field] }}
+                      <td *ngFor="let cCol of childColumns" [style.text-align]="cCol.align" [style.width.px]="cCol.width">
+                        {{ childRow[cCol.field] }}
                       </td>
                     </tr>
                   </tbody>
-                  <tfoot class="child-footer">
-                    <tr>
-                      <td [attr.colspan]="childColumns.length - 1" class="footer-label">Total Tax:</td>
-                      <td class="footer-value tax-color">{{ element.totalTax | number:'1.2-2' }}</td>
-                    </tr>
-                    <tr>
-                      <td [attr.colspan]="childColumns.length - 1" class="footer-label">Grand Total:</td>
-                      <td class="footer-value grand-total-color">{{ element.grandTotal | number:'1.2-2' }}</td>
-                    </tr>
-                  </tfoot>
                 </table>
               </div>
             </div>
@@ -120,22 +127,10 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="master-row"
-        [class.expanded-active]="expandedElement === row" (click)="toggleRow(row)">
-      </tr>
-      <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="master-row" [class.expanded-active]="expandedElement === row" (click)="toggleRow(row)"></tr>
+      <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row" [class.expanded-row-visible]="expandedElement === row"></tr>
     </table>
-
-    <div class="no-data-wrapper" *ngIf="totalRecords === 0 && !isLoading">
-      <div class="no-data-content">
-        <mat-icon class="no-data-icon">search_off</mat-icon>
-        <h3>No Purchase Orders found</h3>
-        <p>We couldn't find any results matching your filters.</p>
-      </div>
-    </div>
   </div>
 
-  <mat-paginator [length]="totalRecords" [pageSize]="pageSize" [pageSizeOptions]="[10, 25, 50, 100]"
-    (page)="onPageChange($event)" showFirstLastButtons>
-  </mat-paginator>
+  <mat-paginator [length]="totalRecords" [pageSize]="pageSize" [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPageChange($event)" showFirstLastButtons></mat-paginator>
 </div>

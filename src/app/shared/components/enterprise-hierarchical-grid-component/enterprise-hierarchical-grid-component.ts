@@ -140,17 +140,28 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  applyChildFilter(element: any, col: GridColumn) {
-    if (!element._originalItems) {
-      element._originalItems = [...element[this.childDataField]];
+  // Aapki component class ke andar ye method hona chahiye:
+
+  applyChildFilter(element: any, column: any) {
+    // 1. Pehle pure data ka reference lein
+    const originalData = element.originalChildData || [...element[this.childDataField]];
+
+    // 2. Original data ko save karke rakhein agar pehli baar filter ho raha hai
+    if (!element.originalChildData) {
+      element.originalChildData = originalData;
     }
-    const filterValue = col.filterValue?.toLowerCase();
+
+    const filterValue = column.filterValue?.toLowerCase().trim();
+
     if (!filterValue) {
-      element[this.childDataField] = [...element._originalItems];
+      // Agar filter empty hai toh original data wapas le aayein
+      element[this.childDataField] = element.originalChildData;
     } else {
-      element[this.childDataField] = element._originalItems.filter((item: any) =>
-        item[col.field]?.toString().toLowerCase().includes(filterValue)
-      );
+      // Filter logic: sirf wahi rows dikhayein jo match karti hain
+      element[this.childDataField] = element.originalChildData.filter((row: any) => {
+        const cellValue = String(row[column.field]).toLowerCase();
+        return cellValue.includes(filterValue);
+      });
     }
   }
 
@@ -187,5 +198,35 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
   }
 
-  createNewPo(){}
+  createNewPo() { }
+
+  onResizeChild(col: any, event: MouseEvent) {
+    event.preventDefault();
+    const startX = event.pageX;
+    const startWidth = col.width || 120;
+    const onMouseMove = (e: MouseEvent) => {
+      const movement = e.pageX - startX;
+      col.width = Math.max(60, startWidth + movement);
+    };
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }
+  sortChildDir: boolean = true;
+  currentChildSortField: string = '';
+
+  sortChild(field: string, element: any) {
+    this.currentChildSortField = field;
+    this.sortChildDir = !this.sortChildDir;
+    const data = element[this.childDataField];
+    data.sort((a: any, b: any) => {
+      const valA = a[field];
+      const valB = b[field];
+      return this.sortChildDir ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
+    });
+  }
+
 }
