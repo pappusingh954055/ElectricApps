@@ -29,15 +29,16 @@
     overflow: auto; width: 100%; max-height: 600px;
     table {
       width: 100%; border-collapse: collapse; min-width: 900px;
-      table-layout: fixed; // Critical for smooth resizing
+      table-layout: fixed; 
     }
   }
 
   .mat-mdc-header-row {
     top: 0; position: sticky; z-index: 100; background: #f9fafb;
-    height: 44px; // Compact header
+    height: 44px; 
   }
 
+  // --- HEADER & RESIZE LOGIC ---
   .header-main-container {
     display: flex; align-items: center; width: 100%; position: relative;
     padding-right: 4px;
@@ -59,7 +60,7 @@
       .resizer-bar {
         position: absolute;
         right: -8px; 
-        top: 0; bottom: 0; width: 5px;
+        top: 0; bottom: 0; width: 6px;
         cursor: col-resize; z-index: 101;
         background: transparent;
         transition: background 0.2s;
@@ -68,36 +69,46 @@
     }
   }
 
-  // --- CHILD TABLE STYLING ---
+  // --- CHILD TABLE (HOVER FIXED) ---
   .child-table-scroll {
     width: 100%; overflow-x: auto; padding: 0 5px 10px 5px;
     
     .inner-table {
       width: 100%; border: 1px solid #e5e7eb; table-layout: fixed;
       background: #fff; border-radius: 4px;
+      border-spacing: 0;
 
       th.child-th {
         background: #f3f4f6; 
-        padding: 4px 8px; // Slimmer header
+        padding: 6px 10px; 
         position: relative;
         border-bottom: 2px solid #e2e8f0;
+        text-align: left;
         overflow: visible !important;
       }
 
+      // --- HOVER EFFECT FOR CHILD ROWS ---
       .child-row {
-        background: #fff;
-        transition: background-color 0.15s ease-in-out;
+        background: transparent;
+        transition: background-color 0.2s ease;
         
-        // --- HOVER EFFECT FIXED ---
         &:hover {
-          background-color: #f1f5f9 !important;
-          cursor: default;
+          background-color: #f8fafc !important; // Light Blue/Gray Hover
+          cursor: pointer;
         }
 
         td {
-          padding: 8px 12px; border-bottom: 1px solid #f1f5f9;
-          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-          color: #475569; font-size: 12.5px;
+          padding: 10px 12px; 
+          border-bottom: 1px solid #edf2f7;
+          white-space: nowrap; 
+          overflow: hidden; 
+          text-overflow: ellipsis;
+          color: #4a5568; 
+          font-size: 12.5px;
+        }
+
+        &:last-child td {
+          border-bottom: none;
         }
       }
     }
@@ -110,16 +121,29 @@
 
   .detail-panel {
     background: #fbfcfe;
-    &.is-expanded { border-left: 4px solid #3b82f6; padding: 12px; }
+    &.is-expanded { 
+      border-left: 4px solid #3b82f6; 
+      padding: 12px;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+    }
+  }
+
+  .child-title {
+    font-size: 14px; font-weight: 600; color: #1e293b;
+    display: block; margin-bottom: 10px; padding-left: 5px;
   }
 }
 
-// Menu Styling
+// Menu & UI Adjustments
 .menu-header {
-  padding: 10px 16px; font-weight: 600; border-bottom: 1px solid #eee; font-size: 13px;
+  padding: 10px 16px; font-weight: 600; border-bottom: 1px solid #eee; font-size: 13px; color: #64748b;
 }
-// --- MOBILE ADJUSTMENTS ---
+
+.active-filter { color: #3b82f6 !important; }
+
+// --- RESPONSIVENESS ---
 @media (max-width: 768px) {
-  .grid-toolbar { flex-direction: column; gap: 12px; padding: 12px; }
+  .grid-toolbar { flex-direction: column; gap: 12px; padding: 12px; align-items: stretch; }
   .detail-panel.is-expanded { padding: 8px; }
+  .responsive-table-wrapper { max-height: 500px; }
 }
