@@ -92,7 +92,6 @@
                               {{ sortChildDir ? 'arrow_upward' : 'arrow_downward' }}
                             </mat-icon>
                           </div>
-                          
                           <div class="header-right-side">
                             <button mat-icon-button [matMenuTriggerFor]="childFilterMenu" (click)="$event.stopPropagation()" class="header-icon-btn">
                               <mat-icon [class.active-filter]="cCol.filterValue" style="font-size: 16px;">filter_list</mat-icon>
@@ -100,7 +99,6 @@
                             <div class="resizer-bar" (mousedown)="onResizeChild(cCol, $event); $event.stopPropagation()"></div>
                           </div>
                         </div>
-
                         <mat-menu #childFilterMenu="matMenu">
                           <div style="padding: 12px;" (click)="$event.stopPropagation()">
                             <mat-form-field appearance="outline" style="width: 100%;">
@@ -122,6 +120,21 @@
                       </td>
                     </tr>
                   </tbody>
+                  <tfoot>
+                    <tr class="child-footer-row">
+                      <td [attr.colspan]="childColumns.length - 2" class="footer-label-cell"></td>
+                      <td colspan="2" class="footer-summary-cell">
+                        <div class="summary-item">
+                          <span class="label">Total Tax:</span>
+                          <span class="value">{{ element.totalTaxAmount | currency:'INR' }}</span>
+                        </div>
+                        <div class="summary-item grand-total">
+                          <span class="label">Grand Total:</span>
+                          <span class="value">{{ element.grandTotal | currency:'INR' }}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tfoot>
                 </table>
               </div>
             </div>
