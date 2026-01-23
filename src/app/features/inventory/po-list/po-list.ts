@@ -86,7 +86,19 @@ export class PoList implements OnInit {
         cell: (row: any) => this.currencyPipe.transform(row.rate, 'INR', 'symbol', '1.2-2')
       },
       {
-        field: 'total', header: 'Line Total', width: 120, align: 'left',
+        field: 'discountPercent', header: 'Dis(%)', width: 100, align: 'left',
+        cell: (row: any) => this.currencyPipe.transform(row.discount, 'INR', 'symbol', '1.2-2')
+      },
+      {
+        field: 'gstPercent', header: 'GST(%)', width: 100, align: 'left',
+        cell: (row: any) => this.currencyPipe.transform(row.gstPercent, 'INR', 'symbol', '1.2-2')
+      },
+      {
+        field: 'taxAmount', header: 'Tax Amount', width: 120, align: 'left',
+        cell: (row: any) => this.currencyPipe.transform(row.taxAmount, 'INR', 'symbol', '1.2-2')
+      },
+      {
+        field: 'total', header: 'Total', width: 120, align: 'left',
         cell: (row: any) => this.currencyPipe.transform(row.total, 'INR', 'symbol', '1.2-2')
       }
     ];
@@ -139,6 +151,7 @@ export class PoList implements OnInit {
 
     this.poService.getPagedOrders(requestPayload).subscribe({
       next: (res) => {
+        console.log('API Response:', res);
         this.dataSource.data = res.data || [];
         this.totalRecords = res.totalRecords || 0;
         this.isLoading = false;
