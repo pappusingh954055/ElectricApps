@@ -5,7 +5,10 @@
   background: #fff;
   border: 1px solid #e5e7eb;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 
+  // --- TOOLBAR STYLES ---
   .grid-toolbar {
     display: flex;
     justify-content: space-between;
@@ -13,308 +16,145 @@
     padding: 10px 16px;
     background: #f9fafb;
     border-bottom: 1px solid #e5e7eb;
-    z-index: 12;
 
-    // Mobile Responsive Toolbar
-    @media (max-width: 600px) {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 10px;
-      padding: 12px;
-    }
+    @media (max-width: 600px) { flex-direction: column; align-items: stretch; gap: 10px; }
 
     .left-actions {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      flex-wrap: wrap; // Responsive wrap
-      .toolbar-title { font-weight: 600; color: #374151; font-size: 16px; }
-
+      display: flex; align-items: center; gap: 15px;
+      .toolbar-title { font-weight: 700; color: #1f2937; font-size: 18px; }
       .clear-btn-animated {
         background: #ef4444 !important; color: white !important;
         height: 32px; font-size: 12px;
         animation: pulse-red 2s infinite;
-        mat-icon { font-size: 16px; width: 16px; height: 16px; margin-right: 4px; }
       }
     }
   }
 
-  @keyframes pulse-red {
-    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
-  }
-
+  // --- TABLE WRAPPER & HEADER ---
   .responsive-table-wrapper {
     overflow: auto;
     width: 100%;
     max-height: 600px;
-    -webkit-overflow-scrolling: touch; // Smooth scroll for mobile
+    table { width: 100%; border-collapse: separate; min-width: 800px; }
   }
 
-  table { width: 100%; border-collapse: separate; min-width: 800px; }
-
   .mat-mdc-header-row { top: 0; position: sticky; z-index: 10; background: #f9fafb; }
-  .mat-mdc-header-cell { background: #f9fafb; border-bottom: 2px solid #e5e7eb; padding: 0 12px; }
+  
+  .mat-mdc-header-cell { 
+    background: #f9fafb; 
+    border-bottom: 2px solid #e5e7eb; 
+    padding: 0 12px !important; // Standard padding
+  }
 
-  // FIXED HEADER LAYOUT & SHADOW GLITCH
+  // --- ICON ALIGNMENT FIX (MASTER & CHILD) ---
   .header-main-container {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    height: 52px;
     width: 100%;
-
+    
     .header-label { 
-      font-weight: 600; 
-      color: #374151; 
-      flex: 1; 
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-weight: 600; color: #374151; flex: 1; 
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
     .header-right-side {
       display: flex;
       align-items: center;
-      flex-shrink: 0;
+      gap: 0; // Removing gap for tight alignment
 
       .header-icon-btn {
-        width: 32px; height: 32px; 
-        background: transparent !important;
-        box-shadow: none !important;
-
-        // Removing circle glitch shadow
-        ::ng-deep {
-          .mat-mdc-button-persistent-ripple,
-          .mat-mdc-focus-indicator,
-          .mat-mdc-button-touch-target {
-            display: none !important;
-          }
-        }
-
-        mat-icon { font-size: 18px; color: #9ca3af; &.active-filter { color: #3b82f6; } }
-
-        &:hover {
-          background-color: rgba(0, 0, 0, 0.04) !important;
-          border-radius: 4px;
+        width: 28px !important;
+        height: 28px !important;
+        display: flex; align-items: center; justify-content: center;
+        
+        mat-icon { 
+          font-size: 16px !important; 
+          width: 16px; height: 16px; 
+          color: #9ca3af; 
+          &.active-filter { color: #3b82f6; } 
         }
       }
-      .resizer-bar { width: 4px; height: 18px; cursor: col-resize; border-right: 2px solid #d1d5db; margin-left: 4px; }
+    }
+  }
+
+  // --- EXPANSION FIX: NO MORE HIDDEN CONTENT ---
+  .detail-row {
+    height: 0; // Default state
+    overflow: hidden;
+
+    &.expanded-row-visible {
+      height: auto !important;
+      display: table-row !important; // Explicitly forcing table-row on expand
+    }
+
+    .detail-cell {
+      padding: 0 !important;
+      border-bottom-width: 0;
+    }
+  }
+
+  .detail-panel {
+    background: #fdfdfd;
+    overflow: hidden;
+    height: 0; // Collapsed by default
+    
+    &.is-expanded { 
+      height: auto; 
+      padding: 20px 30px; 
+      border-bottom: 3px solid #3b82f6;
     }
   }
 
   .master-row {
     cursor: pointer;
-    &:hover { background: #f1f5f9 !important; }
-    td { 
-      padding: 14px 12px; 
-      border-bottom: 1px solid #f3f4f6; 
-      // Mobile padding adjustment
-      @media (max-width: 600px) { padding: 10px 8px; font-size: 13px; }
-    }
+    &:hover { background: #f8fafc !important; }
+    td { padding: 14px 12px; border-bottom: 1px solid #f3f4f6; }
   }
 
-  .detail-panel {
-    overflow: hidden; height: 0; background: #fdfdfd;
-    transition: all 0.3s ease;
-    &.is-expanded { 
-      height: auto; 
-      padding: 20px; 
-      border-bottom: 2px solid #3b82f6;
-      @media (max-width: 600px) { padding: 10px; }
-    }
-  }
-
+  // --- INNER TABLE STYLING ---
   .inner-table {
-    width: 100%; border: 1px solid #e5e7eb;
-    th { background: #f3f4f6; padding: 10px; font-size: 12px; text-align: left; }
-    .child-row {
-      cursor: pointer; //
-      &:hover { background-color: #f1f7ff !important; color: #2563eb; }
-      td { border-top: 1px solid #f3f4f6; padding: 10px; font-size: 13px; }
-    }
-    // Child table horizontal scroll for mobile
-    @media (max-width: 600px) {
-      display: block;
-      overflow-x: auto;
-    }
+    width: 100%; border: 1px solid #e5e7eb; border-radius: 4px;
+    th { background: #f3f4f6; padding: 10px; font-size: 12px; }
+    .child-row td { border-top: 1px solid #f3f4f6; padding: 10px; font-size: 13px; }
   }
-}
 
-.filter-menu-panel {
-  min-width: 220px !important;
-  @media (max-width: 400px) { min-width: 180px !important; }
-  .filter-content-area {
-    padding: 12px;
-    .filter-input-field { 
-      width: 100%; 
-      ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; } 
+  // --- FOOTER STYLING (Total Tax & Grand Total) ---
+  .child-table-footer {
+    background-color: #f9fafb;
+    border-top: 2px solid #e5e7eb;
+    .footer-row {
+      .footer-label { text-align: right; padding: 10px 15px; font-weight: 600; color: #4b5563; }
+      .footer-value { 
+        padding: 10px; font-weight: 700; text-align: right; border-left: 1px solid #f3f4f6; 
+      }
+      .tax-highlight { color: #ef4444; } //
+      .grand-total-highlight { color: #1e40af; font-size: 15px; } 
     }
   }
 }
 
-.inner-table {
-  width: 100%; 
-  border: 1px solid #e5e7eb;
-  
-  th { 
-    background: #f3f4f6; 
-    padding: 4px 10px; // Padding adjusted for icons
-    font-size: 12px; 
-    height: 48px; // Header height fixed
-    
-    // Reuse the same flex layout from master header
-    .header-main-container {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      
-      .header-label { font-weight: 700; color: #4b5563; }
-    }
-  }
-
-  .child-row {
-    &:hover { background-color: #f1f7ff !important; }
-    td { border-top: 1px solid #f3f4f6; padding: 10px; font-size: 13px; }
-  }
-}
-
-.child-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 10px;
-  font-weight: 600;
-  color: #1f2937;
-
-  .clear-child-btn {
-    font-size: 11px;
-    height: 28px;
-    line-height: 28px;
-    mat-icon { font-size: 16px; width: 16px; height: 16px; margin-right: 4px; }
-  }
-
-  @media (max-width: 600px) {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-}
+// --- GLOBAL MATERIAL OVERRIDES ---
 ::ng-deep {
+  // Sort Header alignment fix
   .mat-sort-header-container {
     display: flex;
-    justify-content: inherit; // Aligns with your column align property
+    align-items: center;
+    flex-direction: row !important;
   }
   
-  // Sorting arrow color
-  .mat-sort-header-arrow {
+  .mat-sort-header-arrow { 
+    margin-left: 2px !important; 
     color: #3b82f6 !important; 
   }
-}
-.grid-paginator {
-  border-top: 1px solid #e5e7eb;
-  background: #f9fafb;
-  position: sticky;
-  bottom: 0;
-  z-index: 11;
-  
-  // Responsive check
-  @media (max-width: 600px) {
-    ::ng-deep .mat-mdc-paginator-container {
-      flex-wrap: wrap;
-      justify-content: center;
-    }
+
+  // Remove Material Button default padding that ruins the icon alignment
+  .mat-mdc-icon-button.mat-mdc-button-base {
+    padding: 0 !important;
   }
 }
 
-/* Header Main Container Fix for Resizing */
-.header-main-container {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  position: relative; /* Imporant for Resizer */
-}
-
-.header-right-side {
-  display: flex;
-  align-items: center;
-  padding-right: 4px;
-}
-
-/* Resizer Bar Styling */
-.resizer-bar {
-  width: 5px;
-  height: 20px;
-  cursor: col-resize;
-  border-right: 2px solid #e0e0e0;
-  margin-left: 8px;
-  transition: border-color 0.3s;
-
-  &:hover {
-    border-right: 2px solid #3b82f6; /* Blue hover color */
-  }
-}
-
-/* Inner Table Specific Fixes */
-.inner-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed; /* Keep column widths stable during resize */
-
-  th {
-    position: relative;
-    padding: 12px 8px;
-    background-color: #f8fafc;
-    border-bottom: 1px solid #edf2f7;
-    // Overwriting Material defaults if needed
-    .mat-sort-header-container {
-      display: flex;
-      justify-content: inherit;
-    }
-  }
-
-  .child-row td {
-    padding: 10px 8px;
-    border-bottom: 1px solid #f1f5f9;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-}
-
-.child-table-footer {
-  background-color: #f9fafb;
-  border-top: 2px solid #e5e7eb;
-
-  .footer-row {
-    .footer-label {
-      text-align: right;
-      padding: 10px 15px;
-      font-weight: 600;
-      color: #4b5563;
-      font-size: 13px;
-    }
-    .footer-value {
-      padding: 10px;
-      font-weight: 700;
-      font-size: 14px;
-      text-align: right;
-      border-left: 1px solid #f3f4f6;
-    }
-    .tax-highlight { color: #ef4444; } // Tax Amount in Red
-    .grand-total-highlight { color: #1e40af; font-size: 15px; } // Grand Total in Blue
-  }
-}
-
-/* Responsiveness for small screens */
-@media (max-width: 768px) {
-  .enterprise-grid-container {
-    padding: 8px;
-  }
-  
-  .resizer-bar {
-    display: none; /* Hide resizer on mobile to prevent accidental drags */
-  }
+@keyframes pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
 }
