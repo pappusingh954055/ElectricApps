@@ -30,11 +30,22 @@
   border-bottom: 1px solid #e5e7eb;
 }
 
+/* Added container for Search and Date Picker alignment with space */
+.date-range-container {
+  display: flex;
+  align-items: center;
+  gap: 12px; /* Dono ke beech ka space */
+}
+
 @media (max-width: 600px) {
   .grid-toolbar {
     flex-direction: column;
     align-items: stretch;
     gap: 12px;
+  }
+  .date-range-container {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
@@ -156,7 +167,6 @@ th.child-th {
   max-height: 0; 
   opacity: 0;    
   border-left: 0 solid #3b82f6;
-  /* 0.6s for a more elegant, slower feel */
   transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
               opacity 0.4s ease-in-out,
               padding 0.6s ease;
@@ -238,6 +248,7 @@ th.child-th {
 /* --- RESPONSIVENESS --- */
 @media (max-width: 768px) {
   .grid-toolbar { flex-direction: column; gap: 12px; padding: 12px; align-items: stretch; }
+  .date-range-container { flex-direction: column; gap: 8px; }
   .detail-panel.is-expanded { 
     padding: 8px; 
     max-height: 2500px; 

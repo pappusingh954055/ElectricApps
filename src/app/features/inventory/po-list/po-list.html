@@ -1,13 +1,13 @@
 <mat-card class="list-card">
   <div class="header-container">
     <div class="filters-wrapper">
-      <app-search-input 
+      <!-- <app-search-input 
         class="search-bar"
         [label]="'Search PO, Status or Supplier...'" 
         [placeholder]="'Ex. PO/26-27/0001'"
         [value]="globalFilter"
         (onSearch)="handleSearch($event)">
-      </app-search-input>
+      </app-search-input> -->
 
       <button mat-icon-button color="warn" matTooltip="Clear All Filters"
               *ngIf="globalFilter || fromDate || toDate" 

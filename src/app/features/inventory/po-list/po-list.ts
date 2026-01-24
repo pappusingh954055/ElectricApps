@@ -17,7 +17,6 @@ import { AppSearchInput } from '../../../shared/components/app-search-input/app-
     FormsModule,
     CommonModule,
     EnterpriseHierarchicalGridComponent,
-    AppSearchInput
   ],
   providers: [CurrencyPipe, DatePipe],
   templateUrl: './po-list.html',
@@ -172,4 +171,6 @@ export class PoList implements OnInit {
     this.pageIndex = 0;
     this.initialLoad();
   }
+
+
 }

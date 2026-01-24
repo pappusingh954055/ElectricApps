@@ -7,11 +7,22 @@ import { CdkDragDrop, moveItemInArray, DragDropModule } from '@angular/cdk/drag-
 import { GridColumn } from '../../../shared/models/grid-column.model';
 import { MaterialModule } from '../../material/material/material-module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AppSearchInput } from '../app-search-input/app-search-input';
 
 @Component({
   selector: 'app-enterprise-hierarchical-grid',
   standalone: true,
-  imports: [CommonModule, MaterialModule, DragDropModule, MatTableModule, MatSortModule, MatPaginatorModule, ReactiveFormsModule, FormsModule],
+  imports: [
+    CommonModule, 
+    MaterialModule, 
+    DragDropModule, 
+    MatTableModule, 
+    AppSearchInput,
+    MatSortModule, 
+    MatPaginatorModule, 
+    ReactiveFormsModule, 
+    FormsModule
+  ],
   templateUrl: './enterprise-hierarchical-grid-component.html',
   styleUrl: './enterprise-hierarchical-grid-component.scss'
 })
@@ -21,20 +32,20 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   @Input() childColumns: GridColumn[] = [];
   @Input() childDataField: string = 'items';
   @Input() isLoading: boolean = false;
-
   @Input() totalRecords: number = 0;
   @Input() pageSize: number = 10;
 
   @Output() onGridStateChange = new EventEmitter<any>();
 
   @ViewChild(MatSort) sort!: MatSort;
-
+  
+  globalSearchQuery: string = '';
   expandedElement: any | null = null;
   currentPage: number = 0;
   sortField: string = '';
   sortDirection: 'asc' | 'desc' | '' = '';
 
-  // --- NEW: Date Range Properties ---
+  // --- Date Range Properties ---
   fromDate: string = '';
   toDate: string = '';
 
@@ -48,9 +59,17 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     return this.columns.filter(c => c.visible !== false).map(c => c.field);
   }
 
-  // --- NEW: Date Filter Logic ---
+  // --- Global Search Handler ---
+  onGlobalSearch(event: any) {
+    this.globalSearchQuery = event;
+    console.log('Global Search Value:', this.globalSearchQuery);
+    this.currentPage = 0; 
+    this.triggerDataLoad();
+  }
+
+  // --- Date Filter Logic ---
   applyDateFilter() {
-    this.currentPage = 0; // Reset pagination on filter change
+    this.currentPage = 0; 
     this.triggerDataLoad();
   }
 
@@ -78,9 +97,9 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
       pageSize: this.pageSize,
       sortField: this.sortField,
       sortOrder: this.sortDirection,
-      // --- UPDATED: Passing Dates to Backend ---
       fromDate: this.fromDate,
       toDate: this.toDate,
+      globalSearch: this.globalSearchQuery, // <-- UPDATED: Added this to pass search to backend
       filters: this.columns
         .filter(c => c.filterValue && c.filterValue.trim() !== '')
         .map(c => ({ field: c.field, value: c.filterValue }))
@@ -90,22 +109,21 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
 
   // --- UI Handlers ---
   clearAllFilters() {
-    // Clear both column filters AND date range
     this.columns.forEach(col => col.filterValue = '');
     this.fromDate = '';
     this.toDate = '';
+    this.globalSearchQuery = ''; // <-- Added to clear search state
     this.applyFilter();
   }
 
   hasActiveFilters(): boolean {
-    // UPDATED: Clear button tab dikhega jab column filter ho YA date selected ho
     const hasColumnFilters = this.columns.some(col => col.filterValue && col.filterValue.trim().length > 0);
     const hasDateFilters = !!(this.fromDate || this.toDate);
-    return hasColumnFilters || hasDateFilters;
+    const hasGlobalSearch = !!(this.globalSearchQuery && this.globalSearchQuery.trim().length > 0);
+    return hasColumnFilters || hasDateFilters || hasGlobalSearch;
   }
 
-  // ... (Baki saara logic same rahega: drop, toggleRow, onResize, etc.) ...
-
+  // --- Grid Logic Methods ---
   drop(event: CdkDragDrop<string[]>) {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
@@ -119,18 +137,15 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     if (!column.isResizable) return;
     const startX = event.pageX;
     const startWidth = column.width || 150;
-
     const mouseMoveHandler = (moveEvent: MouseEvent) => {
       const newWidth = startWidth + (moveEvent.pageX - startX);
       column.width = newWidth > 80 ? newWidth : 80;
       this.cdr.detectChanges();
     };
-
     const mouseUpHandler = () => {
       document.removeEventListener('mousemove', mouseMoveHandler);
       document.removeEventListener('mouseup', mouseUpHandler);
     };
-
     document.addEventListener('mousemove', mouseMoveHandler);
     document.addEventListener('mouseup', mouseUpHandler);
   }
@@ -140,24 +155,15 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     this.cdr.detectChanges();
   }
 
-  // Aapki component class ke andar ye method hona chahiye:
-
   applyChildFilter(element: any, column: any) {
-    // 1. Pehle pure data ka reference lein
     const originalData = element.originalChildData || [...element[this.childDataField]];
-
-    // 2. Original data ko save karke rakhein agar pehli baar filter ho raha hai
     if (!element.originalChildData) {
       element.originalChildData = originalData;
     }
-
     const filterValue = column.filterValue?.toLowerCase().trim();
-
     if (!filterValue) {
-      // Agar filter empty hai toh original data wapas le aayein
       element[this.childDataField] = element.originalChildData;
     } else {
-      // Filter logic: sirf wahi rows dikhayein jo match karti hain
       element[this.childDataField] = element.originalChildData.filter((row: any) => {
         const cellValue = String(row[column.field]).toLowerCase();
         return cellValue.includes(filterValue);
@@ -171,8 +177,8 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
 
   clearChildFilters(element: any) {
     this.childColumns.forEach(c => c.filterValue = '');
-    if (element._originalItems) {
-      element[this.childDataField] = [...element._originalItems];
+    if (element.originalChildData) {
+      element[this.childDataField] = [...element.originalChildData];
     }
   }
 
@@ -187,7 +193,6 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
       element[this.childDataField] = data;
       return;
     }
-
     element[this.childDataField] = data.sort((a, b) => {
       const isAsc = sort.direction === 'asc';
       return this.compare(a[sort.active], b[sort.active], isAsc);
@@ -197,8 +202,6 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   compare(a: number | string, b: number | string, isAsc: boolean) {
     return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
   }
-
-  createNewPo() { }
 
   onResizeChild(col: any, event: MouseEvent) {
     event.preventDefault();
@@ -215,6 +218,7 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   }
+
   sortChildDir: boolean = true;
   currentChildSortField: string = '';
 
@@ -228,5 +232,6 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
       return this.sortChildDir ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
     });
   }
-
+  
+  createNewPo() { }
 }
