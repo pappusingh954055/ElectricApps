@@ -6,7 +6,6 @@ import { EnterpriseHierarchicalGridComponent } from '../../../shared/components/
 import { MatTableDataSource } from '@angular/material/table';
 import { GridColumn } from '../../../shared/models/grid-column.model';
 import { InventoryService } from '../service/inventory.service';
-import { AppSearchInput } from '../../../shared/components/app-search-input/app-search-input';
 
 @Component({
   selector: 'app-po-list',
@@ -26,14 +25,7 @@ export class PoList implements OnInit {
   public dataSource = new MatTableDataSource<any>([]);
   public totalRecords: number = 0;
   public pageSize: number = 10;
-  public pageIndex: number = 0;
-  public sortField: string = 'PoDate';
-  public sortOrder: string = 'desc';
   public isLoading: boolean = false;
-  public globalFilter: string = '';
-
-  public fromDate: Date | null = null;
-  public toDate: Date | null = null;
 
   public poColumns: GridColumn[] = [];
   public itemColumns: GridColumn[] = [];
@@ -49,7 +41,7 @@ export class PoList implements OnInit {
 
   ngOnInit() {
     this.initColumns();
-    this.initialLoad();
+    // initialLoad ki zaroorat nahi hai, Grid ka ngOnInit khud triggerDataLoad call karega
   }
 
   private initColumns() {
@@ -103,54 +95,32 @@ export class PoList implements OnInit {
     ];
   }
 
-  public initialLoad() {
-    this.loadData(this.currentGridState);
-  }
-
+  // Central control function: Grid se jo bhi change hoga, yahan se API call jayegi
   public onGridStateChange(state: any) {
     this.currentGridState = state;
-    this.pageIndex = state.pageIndex ?? 0;
-    this.pageSize = state.pageSize ?? 10;
-    this.sortField = state.sortField ?? 'PoDate';
-    this.sortOrder = state.sortOrder ?? 'desc';
     this.loadData(state);
-  }
-
-  // Yahan se value sidha Reusable Component se aayegi
-  public handleSearch(value: string) {
-    this.globalFilter = value; // Search term update
-    this.pageIndex = 0; // Search pe hamesha page reset karein
-    this.initialLoad();
-  }
-
-  public applyDateFilter() {
-    this.pageIndex = 0;
-    this.initialLoad();
   }
 
   public loadData(state: any) {
     this.isLoading = true;
     this.cdr.detectChanges();
 
-    const columnFilters = state && state.filters ? Object.keys(state.filters).map(key => ({
-      field: key,
-      value: state.filters[key]
-    })) : [];
+    // Mapping column filters if any
+    const columnFilters = state && state.filters ? state.filters : [];
 
     const requestPayload = {
-      pageIndex: this.pageIndex,
-      pageSize: this.pageSize,
-      sortField: this.sortField,
-      sortOrder: this.sortOrder,
-      filter: this.globalFilter, // Frontend se update hokar yahan jayega
-      fromDate: this.fromDate ? this.datePipe.transform(this.fromDate, 'yyyy-MM-dd') : null,
-      toDate: this.toDate ? this.datePipe.transform(this.toDate, 'yyyy-MM-dd') : null,
+      pageIndex: state.pageIndex ?? 0,
+      pageSize: state.pageSize ?? 10,
+      sortField: state.sortField ?? 'PoDate',
+      sortOrder: state.sortOrder ?? 'desc',
+      filter: state.globalSearch || '', // Grid ke Search input se aa raha hai
+      fromDate: state.fromDate ? this.datePipe.transform(state.fromDate, 'yyyy-MM-dd') : null,
+      toDate: state.toDate ? this.datePipe.transform(state.toDate, 'yyyy-MM-dd') : null,
       filters: columnFilters
     };
 
     this.poService.getPagedOrders(requestPayload).subscribe({
       next: (res) => {
-        console.log('API Response:', res);
         this.dataSource.data = res.data || [];
         this.totalRecords = res.totalRecords || 0;
         this.isLoading = false;
@@ -163,14 +133,4 @@ export class PoList implements OnInit {
       }
     });
   }
-
-  public clearAllFilters() {
-    this.fromDate = null;
-    this.toDate = null;
-    this.globalFilter = '';
-    this.pageIndex = 0;
-    this.initialLoad();
-  }
-
-
 }

@@ -8,19 +8,20 @@ import { GridColumn } from '../../../shared/models/grid-column.model';
 import { MaterialModule } from '../../material/material/material-module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AppSearchInput } from '../app-search-input/app-search-input';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-enterprise-hierarchical-grid',
   standalone: true,
   imports: [
-    CommonModule, 
-    MaterialModule, 
-    DragDropModule, 
-    MatTableModule, 
+    CommonModule,
+    MaterialModule,
+    DragDropModule,
+    MatTableModule,
     AppSearchInput,
-    MatSortModule, 
-    MatPaginatorModule, 
-    ReactiveFormsModule, 
+    MatSortModule,
+    MatPaginatorModule,
+    ReactiveFormsModule,
     FormsModule
   ],
   templateUrl: './enterprise-hierarchical-grid-component.html',
@@ -35,41 +36,50 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   @Input() totalRecords: number = 0;
   @Input() pageSize: number = 10;
 
+  @Input() addNewLabel: string = 'New Record'; // Default label
+@Input() addNewRoute: string = ''; // Dynamic path
+
   @Output() onGridStateChange = new EventEmitter<any>();
 
   @ViewChild(MatSort) sort!: MatSort;
-  
+
   globalSearchQuery: string = '';
   expandedElement: any | null = null;
   currentPage: number = 0;
-  sortField: string = '';
-  sortDirection: 'asc' | 'desc' | '' = '';
+  sortField: string = 'poDate';
+  sortDirection: 'asc' | 'desc' | '' = 'desc';
 
-  // --- Date Range Properties ---
   fromDate: string = '';
   toDate: string = '';
 
-  constructor(private cdr: ChangeDetectorRef) { }
+  constructor(private cdr: ChangeDetectorRef, private router: Router) { }
 
   ngOnInit() {
     this.dataSource.sort = null;
+    // Page load load trigger
+    setTimeout(() => {
+      this.triggerDataLoad();
+    }, 0);
   }
 
   get displayedColumns(): string[] {
     return this.columns.filter(c => c.visible !== false).map(c => c.field);
   }
 
-  // --- Global Search Handler ---
-  onGlobalSearch(event: any) {
-    this.globalSearchQuery = event;
-    console.log('Global Search Value:', this.globalSearchQuery);
-    this.currentPage = 0; 
+  // --- FIX: Proper Search Handler ---
+  onGlobalSearch(value: any) {
+    // Console for verification
+    console.log('Grid received search value:', value);
+
+    // Catching the string value from app-search-input
+    this.globalSearchQuery = typeof value === 'string' ? value : value?.target?.value || '';
+
+    this.currentPage = 0;
     this.triggerDataLoad();
   }
 
-  // --- Date Filter Logic ---
   applyDateFilter() {
-    this.currentPage = 0; 
+    this.currentPage = 0;
     this.triggerDataLoad();
   }
 
@@ -99,7 +109,7 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
       sortOrder: this.sortDirection,
       fromDate: this.fromDate,
       toDate: this.toDate,
-      globalSearch: this.globalSearchQuery, // <-- UPDATED: Added this to pass search to backend
+      globalSearch: this.globalSearchQuery,
       filters: this.columns
         .filter(c => c.filterValue && c.filterValue.trim() !== '')
         .map(c => ({ field: c.field, value: c.filterValue }))
@@ -107,15 +117,15 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     this.onGridStateChange.emit(state);
   }
 
-  // --- UI Handlers ---
   clearAllFilters() {
     this.columns.forEach(col => col.filterValue = '');
     this.fromDate = '';
     this.toDate = '';
-    this.globalSearchQuery = ''; // <-- Added to clear search state
+    this.globalSearchQuery = '';
     this.applyFilter();
   }
 
+  // --- UI & Child Logic (Unchanged to prevent breaks) ---
   hasActiveFilters(): boolean {
     const hasColumnFilters = this.columns.some(col => col.filterValue && col.filterValue.trim().length > 0);
     const hasDateFilters = !!(this.fromDate || this.toDate);
@@ -123,7 +133,6 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     return hasColumnFilters || hasDateFilters || hasGlobalSearch;
   }
 
-  // --- Grid Logic Methods ---
   drop(event: CdkDragDrop<string[]>) {
     moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
   }
@@ -232,6 +241,13 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
       return this.sortChildDir ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
     });
   }
-  
-  createNewPo() { }
+
+onAddNewClick() {
+  if (this.addNewRoute) {
+    console.log(`Redirecting to: ${this.addNewRoute}`);
+    this.router.navigate([this.addNewRoute]);
+  } else {
+    console.error('Add New Route is not defined!');
+  }
+}
 }

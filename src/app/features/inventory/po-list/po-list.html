@@ -1,35 +1,15 @@
 <mat-card class="list-card">
-  <div class="header-container">
-    <div class="filters-wrapper">
-      <!-- <app-search-input 
-        class="search-bar"
-        [label]="'Search PO, Status or Supplier...'" 
-        [placeholder]="'Ex. PO/26-27/0001'"
-        [value]="globalFilter"
-        (onSearch)="handleSearch($event)">
-      </app-search-input> -->
-
-      <button mat-icon-button color="warn" matTooltip="Clear All Filters"
-              *ngIf="globalFilter || fromDate || toDate" 
-              (click)="clearAllFilters()">
-        <mat-icon>filter_alt_off</mat-icon>
-      </button>
-    </div>
-
-  </div>
-
   <div class="page-container">
     <div class="loading-shade" *ngIf="isLoading">
       <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
     </div>
 
     <app-enterprise-hierarchical-grid 
-      [columns]="poColumns" 
-      [childColumns]="itemColumns" 
-      [dataSource]="dataSource"
-      [totalRecords]="totalRecords" 
-      [pageSize]="pageSize" 
-      [isLoading]="isLoading"
+      [addNewLabel]="'New PO'" 
+      [addNewRoute]="'/app/inventory/polist/add'"
+      [columns]="poColumns" [childColumns]="itemColumns" 
+      [dataSource]="dataSource" [totalRecords]="totalRecords"
+      [pageSize]="pageSize" [isLoading]="isLoading" 
       [childDataField]="'items'"
       (onGridStateChange)="onGridStateChange($event)">
     </app-enterprise-hierarchical-grid>

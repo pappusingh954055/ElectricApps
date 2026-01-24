@@ -13,7 +13,7 @@ export const routes: Routes = [
   // 🧱 2. Main Layout (Secure with AuthGuard)
   {
     path: 'app',
-    canActivate: [authGuard],
+    //canActivate: [authGuard],
     loadComponent: () =>
       import('./layout/main-layout-component/main-layout-component')
         .then(m => m.MainLayoutComponent),

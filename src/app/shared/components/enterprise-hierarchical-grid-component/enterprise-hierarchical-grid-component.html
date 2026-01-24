@@ -6,7 +6,9 @@
 
   <div class="grid-toolbar">
     <div class="date-range-container">
-      <app-search-input (search)="onGlobalSearch($any($event))"></app-search-input>
+      <app-search-input [value]="globalSearchQuery" (onSearch)="onGlobalSearch($event)">
+      </app-search-input>
+
       <mat-form-field appearance="outline" class="modern-datepicker">
         <mat-label>Select PO Date Range</mat-label>
         <mat-date-range-input [rangePicker]="picker">
@@ -23,8 +25,8 @@
     </div>
 
     <div class="right-actions">
-      <button mat-flat-button color="primary" (click)="createNewPo()" class="action-btn">
-        <mat-icon>add</mat-icon> New PO
+      <button mat-flat-button color="primary" (click)="onAddNewClick()" class="action-btn">
+        <mat-icon>add</mat-icon> {{ addNewLabel }}
       </button>
       <button mat-icon-button [matMenuTriggerFor]="colMenu" title="Hide/Show Columns">
         <mat-icon>view_column</mat-icon>
@@ -84,7 +86,6 @@
               <div class="child-header">
                 <span class="child-title">Detailed Line Items</span>
               </div>
-
               <div class="child-table-scroll">
                 <table class="inner-table" cdkDropList cdkDropListOrientation="horizontal"
                   (cdkDropListDropped)="dropChild($event)">
