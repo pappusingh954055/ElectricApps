@@ -28,9 +28,15 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   @Input() pageSize: number = 10;
   @Input() addNewLabel: string = 'New Record';
   @Input() addNewRoute: string = '';
+  @Output() editRecord = new EventEmitter<any>();
+  @Output() deleteRecord = new EventEmitter<any>();
+  @Output() bulkDeleteRecords = new EventEmitter<any[]>();
 
   @Output() onGridStateChange = new EventEmitter<any>();
   @Output() onSelectionChange = new EventEmitter<any>();
+
+  @Output() editChildRecord = new EventEmitter<any>();
+  @Output() deleteChildRecord = new EventEmitter<any>();
 
   @ViewChild(MatSort) sort!: MatSort;
   sortChildDir: boolean = true;
@@ -163,5 +169,34 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     this.currentPage = 0;
     this.triggerDataLoad();
   }
+  // Edit Function
+  onEdit(row: any) {
+    this.editRecord.emit(row);
+  }
 
+  // Single Delete
+  onDelete(row: any) {
+    if (confirm('Are you sure you want to delete this record?')) {
+      this.deleteRecord.emit(row);
+    }
+  }
+
+  // Bulk Delete
+  onBulkDelete() {
+    const selectedRows = this.selection.selected;
+    if (confirm(`Delete ${selectedRows.length} selected records?`)) {
+      this.bulkDeleteRecords.emit(selectedRows);
+      // Delete ke baad selection clear karein
+      this.selection.clear();
+    }
+  }
+  onEditChild(parent: any, child: any) {
+    this.editChildRecord.emit({ parent, child });
+  }
+
+  onDeleteChild(parent: any, child: any) {
+    if (confirm('Delete this line item?')) {
+      this.deleteChildRecord.emit({ parent, child });
+    }
+  }
 }

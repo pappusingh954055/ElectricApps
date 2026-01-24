@@ -13,20 +13,26 @@
 /* Loading state */
 .loading-shade {
   position: absolute;
-  top: 0; left: 0; bottom: 0; right: 0;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
   background: rgba(255, 255, 255, 0.7);
   z-index: 2000;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   backdrop-filter: blur(2px);
 }
 
 /* Toolbar responsiveness */
 .grid-toolbar {
-  display: flex; 
-  justify-content: space-between; 
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 8px 16px; 
-  background: #f9fafb; 
+  padding: 8px 16px;
+  background: #f9fafb;
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -34,7 +40,8 @@
 .date-range-container {
   display: flex;
   align-items: center;
-  gap: 12px; /* Dono ke beech ka space */
+  gap: 12px;
+  /* Dono ke beech ka space */
 }
 
 @media (max-width: 600px) {
@@ -43,6 +50,7 @@
     align-items: stretch;
     gap: 12px;
   }
+
   .date-range-container {
     flex-direction: column;
     align-items: stretch;
@@ -51,85 +59,103 @@
 
 .responsive-table-wrapper {
   overflow-x: auto;
-  width: 100%; 
+  width: 100%;
   max-height: 600px;
 }
 
 table {
-  width: 100%; 
-  border-collapse: collapse; 
-  min-width: 900px;
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1000px;
   table-layout: fixed;
 }
 
 .mat-mdc-header-row {
-  top: 0; 
-  position: sticky; 
-  z-index: 100; 
+  top: 0;
+  position: sticky;
+  z-index: 100;
   background: #f9fafb;
 }
 
 /* Header & Resizer styling */
 .header-main-container {
-  display: flex; 
-  align-items: center; 
-  width: 100%; 
+  display: flex;
+  align-items: center;
+  width: 100%;
   position: relative;
 }
 
 .header-label-group {
-  display: flex; 
-  align-items: center; 
-  flex: 1; 
-  cursor: pointer; 
+  display: flex;
+  align-items: center;
+  flex: 1;
+  cursor: pointer;
   user-select: none;
   overflow: hidden;
 }
 
 .header-label {
-  font-weight: 600; 
-  color: #374151; 
-  white-space: nowrap; 
+  font-weight: 600;
+  color: #374151;
+  white-space: nowrap;
   font-size: 13px;
-  overflow: hidden; 
+  overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .sort-indicator {
-  font-size: 16px; width: 16px; height: 16px; margin-left: 4px; color: #3b82f6;
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
+  margin-left: 4px;
+  color: #3b82f6;
 }
 
 .resizer-bar {
   position: absolute;
-  right: -5px; 
-  top: 0; bottom: 0; width: 4px;
-  cursor: col-resize; 
+  right: -5px;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
   z-index: 101;
   background: transparent;
   transition: background 0.2s;
 }
 
-.resizer-bar:hover, .resizer-bar:active {
+.resizer-bar:hover,
+.resizer-bar:active {
   background: rgba(59, 130, 246, 0.6);
 }
 
 /* CHILD TABLE SECTION */
 .child-table-scroll {
-  width: 100%; 
-  overflow-x: auto; 
+  width: 100%;
+  overflow-x: auto;
   padding: 5px;
 }
 
 .inner-table {
-  width: 100%; 
-  border: 1px solid #e5e7eb; 
-  table-layout: fixed;
-  min-width: 800px;
-  background: #fff;
+  width: 100%;
+  border-collapse: collapse;
+
+  .child-th,
+  td {
+    white-space: nowrap;
+    /* Text wrap hokar height na badhaye */
+  }
+
+  /* Child Actions column width fix */
+  th:last-child,
+  td:last-child {
+    width: 100px !important;
+    min-width: 100px;
+    text-align: center;
+  }
 }
 
 th.child-th {
-  background: #f3f4f6; 
+  background: #f3f4f6;
   padding: 8px 10px;
   position: relative;
   border-bottom: 2px solid #e5e7eb;
@@ -146,12 +172,12 @@ th.child-th {
 }
 
 .child-row td {
-  padding: 10px; 
+  padding: 10px;
   border-bottom: 1px solid #f1f5f9;
-  white-space: nowrap; 
-  overflow: hidden; 
+  white-space: nowrap;
+  overflow: hidden;
   text-overflow: ellipsis;
-  color: #475569; 
+  color: #475569;
   font-size: 13px;
 }
 
@@ -164,32 +190,34 @@ th.child-th {
 .detail-panel {
   background: #f8fafc;
   overflow: hidden;
-  max-height: 0; 
-  opacity: 0;    
+  max-height: 0;
+  opacity: 0;
   border-left: 0 solid #3b82f6;
-  transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
-              opacity 0.4s ease-in-out,
-              padding 0.6s ease;
+  transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.4s ease-in-out,
+    padding 0.6s ease;
 }
 
 .detail-panel.is-expanded {
-  max-height: 1200px; 
+  max-height: 1200px;
   opacity: 1;
-  border-left: 4px solid #3b82f6; 
+  border-left: 4px solid #3b82f6;
   padding: 15px;
 }
 
 .active-filter {
   color: #f44336 !important;
 }
+
 .no-data-msg {
   text-align: center;
   padding: 40px;
   color: #666;
 }
+
 .menu-header {
-  padding: 10px; 
-  font-weight: bold; 
+  padding: 10px;
+  font-weight: bold;
   border-bottom: 1px solid #eee;
   color: #333;
 }
@@ -249,13 +277,113 @@ th.child-th {
   font-weight: 800;
 }
 
+/* enterprise-hierarchical-grid.component.scss */
+
+.mat-column-actions {
+  position: sticky;
+  right: 0;
+  background: white !important;
+  /* Background zaroori hai varna transparent dikhega */
+  z-index: 100;
+  border-left: 1px solid #e0e0e0;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.05);
+  /* Thoda separation dikhane ke liye */
+}
+
+.mat-header-cell.mat-column-actions {
+  z-index: 101;
+  background: #f5f5f5 !important;
+  /* Header ka color match karein */
+}
+
+/* Hover effect handle karein taaki sticky row highlight ho */
+.master-row:hover .mat-column-actions {
+  background-color: #f9f9f9 !important;
+}
+
 /* --- RESPONSIVENESS --- */
 @media (max-width: 768px) {
-  .grid-toolbar { flex-direction: column; gap: 12px; padding: 12px; align-items: stretch; }
-  .date-range-container { flex-direction: column; gap: 8px; }
-  .detail-panel.is-expanded { 
-    padding: 8px; 
-    max-height: 2500px; 
+  .grid-toolbar {
+    flex-direction: column;
+    gap: 12px;
+    padding: 12px;
+    align-items: stretch;
   }
-  .responsive-table-wrapper { max-height: 500px; }
+
+  .date-range-container {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .detail-panel.is-expanded {
+    padding: 8px;
+    max-height: 2500px;
+  }
+
+  .responsive-table-wrapper {
+    overflow-x: auto;
+    width: 100%;
+    display: block;
+    position: relative;
+    /* Sticky positioning ke liye zaroori hai */
+  }
+
+}
+
+/* --- EXTRA ROW / GAP FIX --- */
+:host ::ng-deep {
+  .detail-panel {
+    padding: 0px !important;
+
+    .inner-table {
+      width: 100% !important;
+      border-collapse: collapse;
+      table-layout: auto !important; /* Fixed se Auto kiya taaki columns adjust ho sakein */
+
+      th.child-th, td {
+        padding: 6px 8px !important;
+        height: 38px !important;
+        font-size: 12px !important;
+        border-bottom: 1px solid #e5e7eb !important;
+        vertical-align: middle !important;
+      }
+
+      /* --- ACTION COLUMN SPECIFIC FIX --- */
+      // Isse 'Action' header aur buttons dono cover honge
+      th:last-child, 
+      td:last-child {
+        width: 110px !important;      /* Width badha di */
+        min-width: 110px !important;
+        max-width: 110px !important;
+        text-align: center !important;
+        padding: 0 5px !important;
+        position: relative;
+      }
+
+      /* Buttons ko ek line mein lane ke liye wrapper */
+      .action-buttons-container {
+        display: flex !important;
+        justify-content: center !important;
+        gap: 8px !important; /* Dono buttons ke beech ka gap */
+        align-items: center;
+        width: 100%;
+      }
+    }
+  }
+
+  /* Icons styling taaki wo overflow na karein */
+  .small-btn {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+
+    .mat-icon {
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
+    }
+  }
 }

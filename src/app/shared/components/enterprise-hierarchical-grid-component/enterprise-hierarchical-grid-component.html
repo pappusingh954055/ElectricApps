@@ -6,11 +6,13 @@
 
   <div class="grid-toolbar">
     <div class="date-range-container">
-      <app-search-input [value]="globalSearchQuery" (onSearch)="onGlobalSearch($event)"></app-search-input>
-      <button *ngIf="globalSearchQuery" mat-icon-button (click)="globalSearchQuery=''; triggerDataLoad()"
-        style="position: absolute; right: 8px;">
-        <mat-icon>close</mat-icon>
-      </button>
+      <div class="search-wrapper" style="position: relative; display: flex; align-items: center;">
+        <app-search-input [value]="globalSearchQuery" (onSearch)="onGlobalSearch($event)"></app-search-input>
+        <button *ngIf="globalSearchQuery" mat-icon-button (click)="globalSearchQuery=''; triggerDataLoad()"
+          style="position: absolute; right: 8px;">        
+        </button>
+      </div>
+
       <mat-form-field appearance="outline" class="modern-datepicker">
         <mat-label>Select PO Date Range</mat-label>
         <mat-date-range-input [rangePicker]="picker">
@@ -21,7 +23,12 @@
         <mat-date-range-picker #picker></mat-date-range-picker>
       </mat-form-field>
     </div>
+
     <div class="right-actions">
+      <button mat-flat-button color="warn" *ngIf="selection.hasValue()" (click)="onBulkDelete()" class="action-btn"
+        style="margin-right: 8px;">
+        <mat-icon>delete_sweep</mat-icon> Bulk Delete ({{selection.selected.length}})
+      </button>
       <button mat-flat-button color="primary" (click)="onAddNewClick()">+ {{ addNewLabel }}</button>
     </div>
   </div>
@@ -60,8 +67,8 @@
           <mat-menu #filterMenu="matMenu">
             <div style="padding: 10px;" (click)="$event.stopPropagation()">
               <mat-form-field appearance="outline" style="width: 100%;">
-                <mat-label>Search {{ col.header }}</mat-label> <input matInput [(ngModel)]="col.filterValue"
-                  (keyup)="applyFilter()">
+                <mat-label>Search {{ col.header }}</mat-label> 
+                <input matInput [(ngModel)]="col.filterValue" (keyup)="applyFilter()">
                 <button *ngIf="col.filterValue" matSuffix mat-icon-button (click)="col.filterValue=''; applyFilter()">
                   <mat-icon>close</mat-icon>
                 </button>
@@ -74,6 +81,20 @@
         </td>
       </ng-container>
 
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;"> Actions </th>
+        <td mat-cell *matCellDef="let row" (click)="$event.stopPropagation()">
+          <div style="display: flex; justify-content: center; gap: 8px;">
+            <button mat-icon-button color="primary" (click)="onEdit(row)" title="Edit">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="onDelete(row)" title="Delete">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </div>
+        </td>
+      </ng-container>
+
       <ng-container matColumnDef="expandedDetail">
         <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
           <div class="detail-panel" [class.is-expanded]="element === expandedElement">
@@ -83,7 +104,7 @@
                 <table class="inner-table" cdkDropList cdkDropListOrientation="horizontal"
                   (cdkDropListDropped)="dropChild($event)">
                   <thead>
-                    <tr class="child-header-row">
+                    <tr class="child-header-row">                      
                       <th class="child-th" style="width: 50px;">
                         <mat-checkbox (change)="$event ? childMasterToggle(element) : null"
                           [checked]="isAllChildSelected(element)"></mat-checkbox>
@@ -109,8 +130,8 @@
                         <mat-menu #cFilterMenu="matMenu">
                           <div style="padding: 10px;" (click)="$event.stopPropagation()">
                             <mat-form-field appearance="outline" style="width: 100%;">
-                              <mat-label>Search {{ cCol.header }}</mat-label> <input matInput
-                                [(ngModel)]="cCol.filterValue" (keyup)="applyChildFilter(element, cCol)">
+                              <mat-label>Search {{ cCol.header }}</mat-label> 
+                              <input matInput [(ngModel)]="cCol.filterValue" (keyup)="applyChildFilter(element, cCol)">
                               <button *ngIf="cCol.filterValue" matSuffix mat-icon-button
                                 (click)="cCol.filterValue=''; applyChildFilter(element, cCol)">
                                 <mat-icon>close</mat-icon>
@@ -119,6 +140,7 @@
                           </div>
                         </mat-menu>
                       </th>
+                      <th class="child-th" style="width: 100px; text-align: center;">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -128,7 +150,16 @@
                           (change)="$event ? childSelection.toggle(childRow) : null; emitSelection()"
                           [checked]="childSelection.isSelected(childRow)"></mat-checkbox>
                       </td>
-                      <td *ngFor="let cCol of childColumns" [style.text-align]="cCol.align">{{ childRow[cCol.field] }}
+                      <td *ngFor="let cCol of childColumns" [style.text-align]="cCol.align">{{ childRow[cCol.field] }}</td>
+                      <td>
+                        <div style="display: flex; gap: 4px; justify-content: center;">
+                          <button mat-icon-button (click)="onEditChild(element, childRow)" color="primary" title="Edit Item">
+                            <mat-icon style="font-size: 18px;">edit</mat-icon>
+                          </button>
+                          <button mat-icon-button (click)="onDeleteChild(element, childRow)" color="warn" title="Delete Item">
+                            <mat-icon style="font-size: 18px;">delete</mat-icon>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   </tbody>
@@ -136,10 +167,8 @@
                     <tr class="child-footer-row">
                       <td [attr.colspan]="childColumns.length" class="footer-label-cell"></td>
                       <td colspan="2" class="footer-summary-cell">
-                        <div class="summary-item">Total Tax: <span>{{ element.totalTaxAmount | currency:'INR' }}</span>
-                        </div>
-                        <div class="summary-item grand-total">Total: <span>{{ element.grandTotal | currency:'INR'
-                            }}</span></div>
+                        <div class="summary-item">Total Tax: <span>{{ element.totalTaxAmount | currency:'INR' }}</span></div>
+                        <div class="summary-item grand-total">Total: <span>{{ element.grandTotal | currency:'INR' }}</span></div>
                       </td>
                     </tr>
                   </tfoot>
