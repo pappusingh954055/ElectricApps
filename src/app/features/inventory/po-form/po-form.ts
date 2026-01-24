@@ -32,7 +32,7 @@ export class PoForm implements OnInit, OnDestroy {
 
   isPriceListAutoSelected = false;
   filteredProducts: Observable<any[]>[] = [];
-  isProductLoading: boolean[] = []; // Row-wise loader
+  isProductLoading: boolean[] = []; 
   suppliers: Supplier[] = [];
   priceLists: any[] = [];
   isLoading = false;
@@ -66,15 +66,10 @@ export class PoForm implements OnInit, OnDestroy {
 
   onSupplierChange(supplierId: number): void {
     this.supplierService.getSupplierById(supplierId).subscribe((res: any) => {
-      // Console check confirm kar raha hai ki key 'defaultpricelistId' hai
       const pListId = res.defaultpricelistId;
-
       if (pListId) {
-        // Isse 'Applicable Price List' dropdown auto-fill ho jayega
         this.poForm.patchValue({ priceListId: pListId });
         this.isPriceListAutoSelected = true;
-
-        // Purane selected products ke rates naye pricelist se update karein
         this.refreshAllItemRates(pListId);
       } else {
         this.poForm.patchValue({ priceListId: null });
@@ -97,11 +92,39 @@ export class PoForm implements OnInit, OnDestroy {
     });
   }
 
+  // --- UPDATED: Dynamic Product Change with Duplication Check ---
   onProductChange(index: number, event: any): void {
     const product = event.option.value;
     const row = this.items.at(index);
     const priceListId = this.poForm.get('priceListId')?.value;
 
+    // 1. Check for Duplication
+    const isDuplicate = this.items.controls.some((ctrl, i) => {
+      return i !== index && ctrl.get('productId')?.value === product.id;
+    });
+
+    if (isDuplicate) {
+      // Show Warning Dialog
+      this.dialog.open(StatusDialogComponent, {
+        width: '400px',
+        data: {
+          status: 'warning',
+          title: 'Duplicate Product',
+          message: `Product "${product.name}" is already added to the list.`
+        }
+      });
+
+      // Clear the current row's selection
+      row.patchValue({
+        productId: null,
+        productSearch: '',
+        unit: '',
+        price: 0
+      });
+      return;
+    }
+
+    // 2. If not duplicate, proceed with patching values
     row.patchValue({
       productId: product.id,
       productSearch: product.name,
@@ -233,80 +256,71 @@ export class PoForm implements OnInit, OnDestroy {
     this.inventoryService.getPriceLists().subscribe(data => this.priceLists = data);
   }
 
- saveDraft() {
-  if (this.poForm.invalid) {
-    this.poForm.markAllAsTouched();
-    return;
-  }
+  saveDraft() {
+    if (this.poForm.invalid) {
+      this.poForm.markAllAsTouched();
+      return;
+    }
 
-  this.isLoading = true;
-  
-  // User ID fetch karna audit purpose ke liye
-  const currentUserId = localStorage.getItem('userId') || '00000000-0000-0000-0000-000000000000';
-  
-  const formValue = this.poForm.getRawValue();
+    this.isLoading = true;
+    const currentUserId = localStorage.getItem('userId') || '00000000-0000-0000-0000-000000000000';
+    const formValue = this.poForm.getRawValue();
 
-  const payload: PurchaseOrderPayload = {
-    supplierId: formValue.supplierId,
-    supplierName: this.suppliers.find(s => s.id === formValue.supplierId)?.name || '',
-    priceListId: formValue.priceListId,
-    poDate: formValue.poDate,
-    expectedDeliveryDate: formValue.expectedDeliveryDate,
-    remarks: formValue.remarks,
-    poNumber: formValue.PoNumber, //
-    
-    // Audit field add kiya gaya hai
-    createdBy: currentUserId, 
+    const payload: PurchaseOrderPayload = {
+      supplierId: formValue.supplierId,
+      supplierName: this.suppliers.find(s => s.id === formValue.supplierId)?.name || '',
+      priceListId: formValue.priceListId,
+      poDate: formValue.poDate,
+      expectedDeliveryDate: formValue.expectedDeliveryDate,
+      remarks: formValue.remarks,
+      poNumber: formValue.PoNumber, 
+      createdBy: currentUserId, 
+      totalTax: Number(this.totalTaxAmount || 0), 
+      grandTotal: Number(this.grandTotal || 0),   
 
-    // Header Totals
-    totalTax: Number(this.totalTaxAmount || 0), 
-    grandTotal: Number(this.grandTotal || 0),   
+      items: formValue.items.map((item: any) => ({
+        productId: item.productId, 
+        qty: Number(item.qty),     
+        unit: item.unit,           
+        rate: Number(item.price),  
+        discountPercent: Number(item.discountPercent || 0),
+        gstPercent: Number(item.gstPercent || 0),
+        taxAmount: Number(item.taxAmount || 0),
+        total: Number(item.total)  
+      }))
+    };
 
-    items: formValue.items.map((item: any) => ({
-      productId: item.productId, //
-      qty: Number(item.qty),     //
-      unit: item.unit,           //
-      rate: Number(item.price),  //
-      discountPercent: Number(item.discountPercent || 0),
-      gstPercent: Number(item.gstPercent || 0),
-      taxAmount: Number(item.taxAmount || 0),
-      total: Number(item.total)  //
-    }))
-  };
+    this.inventoryService.savePoDraft(payload).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        if (res.success) {
+          const dialogRef = this.dialog.open(StatusDialogComponent, {
+            width: '400px',
+            data: {
+              status: 'success',
+              title: 'Success',
+              message: res.message || 'Purchase Order Draft Saved Successfully'
+            }
+          });
 
-  console.log('PO Payload:', payload);
-
-  this.inventoryService.savePoDraft(payload).subscribe({
-    next: (res) => {
-      this.isLoading = false;
-      if (res.success) {
-        const dialogRef = this.dialog.open(StatusDialogComponent, {
+          dialogRef.afterClosed().subscribe(() => {
+            this.router.navigate(['/inventory/po-list']);
+          });
+        }
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.dialog.open(StatusDialogComponent, {
           width: '400px',
           data: {
-            status: 'success',
-            title: 'Success',
-            message: res.message || 'Purchase Order Draft Saved Successfully'
+            status: 'error',
+            title: 'Error',
+            message: err.error?.message || 'Something went wrong while saving PO'
           }
         });
-
-        dialogRef.afterClosed().subscribe(() => {
-          this.router.navigate(['/inventory/po-list']);
-        });
       }
-    },
-    error: (err) => {
-      this.isLoading = false;
-      this.dialog.open(StatusDialogComponent, {
-        width: '400px',
-        data: {
-          status: 'error',
-          title: 'Error',
-          message: err.error?.message || 'Something went wrong while saving PO'
-        }
-      });
-    }
-  });
-}
+    });
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();
