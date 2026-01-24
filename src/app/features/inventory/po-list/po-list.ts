@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
@@ -6,6 +6,7 @@ import { EnterpriseHierarchicalGridComponent } from '../../../shared/components/
 import { MatTableDataSource } from '@angular/material/table';
 import { GridColumn } from '../../../shared/models/grid-column.model';
 import { InventoryService } from '../service/inventory.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-po-list',
@@ -31,6 +32,7 @@ export class PoList implements OnInit {
   public itemColumns: GridColumn[] = [];
 
   private currentGridState: any = {};
+  private router = inject(Router);
 
   constructor(
     private poService: InventoryService,
@@ -47,6 +49,7 @@ export class PoList implements OnInit {
   private initColumns() {
     this.poColumns = [
       { field: 'poNumber', header: 'PO No.', sortable: true, isFilterable: true, isResizable: true, width: 150 },
+      { field: 'id', header: 'ID', sortable: true, isFilterable: true, isResizable: true, width: 150 },
       {
         field: 'poDate',
         header: 'Date',
@@ -102,7 +105,7 @@ export class PoList implements OnInit {
   }
 
   public loadData(state: any) {
-    this.isLoading = true;
+    //this.isLoading = true;
     this.cdr.detectChanges();
 
     // Mapping column filters if any
@@ -128,9 +131,41 @@ export class PoList implements OnInit {
       },
       error: (err) => {
         console.error('API Error:', err);
-        this.isLoading = false;
+        //this.isLoading = false;
         this.cdr.detectChanges();
       }
     });
   }
+  OnEditPo(row: any): void {
+    // Hamari strategy 'state' transfer ki hai
+    this.router.navigate(['/app/inventory/po-list/add', row.id], {
+      state: {
+        data: row,        // Is 'row' object mein 'id' hona zaroori hai
+        mode: 'edit'
+      }
+    });
+  }
+  // po-list.component.ts
+  handleEdit(data: any) {
+    console.log('Redirecting to Edit Path:', data);
+
+    // Routing file mein 'edit/:id' hai, isliye wahi path use karein
+    const editPath = '/app/inventory/polist/edit';
+    const addPath = '/app/inventory/polist/add';
+
+    if (data && (data.id !== undefined && data.id !== null)) {
+      // Yeh routing ke { path: 'edit/:id' } se match karega
+      this.router.navigate([editPath, data.id]);
+    } else {
+      // Yeh routing ke { path: 'add' } se match karega
+      this.router.navigate([addPath]);
+    }
+  }
+
+  // handleEdit(data: any) {
+  //   // ID 0 hai, isliye poNumber use karein navigation ke liye
+  //   if (data && data.poNumber) {
+  //     this.router.navigate(['/app/inventory/polist/edit', data.poNumber]);
+  //   }
+  // }
 }

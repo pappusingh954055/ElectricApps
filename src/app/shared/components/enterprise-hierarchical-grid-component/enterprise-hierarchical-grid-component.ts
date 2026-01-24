@@ -14,7 +14,11 @@ import { SelectionModel } from '@angular/cdk/collections';
 @Component({
   selector: 'app-enterprise-hierarchical-grid',
   standalone: true,
-  imports: [CommonModule, MaterialModule, DragDropModule, MatTableModule, AppSearchInput, MatSortModule, MatPaginatorModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule,
+    MaterialModule,
+    DragDropModule,
+    MatTableModule,
+    AppSearchInput, MatSortModule, MatPaginatorModule, ReactiveFormsModule, FormsModule],
   templateUrl: './enterprise-hierarchical-grid-component.html',
   styleUrl: './enterprise-hierarchical-grid-component.scss'
 })
@@ -28,13 +32,12 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   @Input() pageSize: number = 10;
   @Input() addNewLabel: string = 'New Record';
   @Input() addNewRoute: string = '';
+
   @Output() editRecord = new EventEmitter<any>();
   @Output() deleteRecord = new EventEmitter<any>();
   @Output() bulkDeleteRecords = new EventEmitter<any[]>();
-
   @Output() onGridStateChange = new EventEmitter<any>();
   @Output() onSelectionChange = new EventEmitter<any>();
-
   @Output() editChildRecord = new EventEmitter<any>();
   @Output() deleteChildRecord = new EventEmitter<any>();
 
@@ -53,8 +56,6 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   fromDate: string = '';
   toDate: string = '';
 
-
-
   constructor(private cdr: ChangeDetectorRef, private router: Router) { }
 
   ngOnInit() {
@@ -64,10 +65,11 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
 
   get displayedColumns(): string[] {
     const dynamicCols = this.columns.filter(c => c.visible !== false).map(c => c.field);
-    return ['select', ...dynamicCols]; // Fixes "Could not find column with id select"
+    // Added 'actions' to ensure the column is rendered by the grid
+    return ['select', ...dynamicCols, 'actions'];
   }
 
-  // --- Checkbox Helpers (Types Fixed) ---
+  // --- Checkbox Helpers ---
   isAllSelected(): boolean {
     const numSelected = this.selection.selected.length;
     const numRows = this.dataSource.data.length;
@@ -101,25 +103,36 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     });
   }
 
-  // --- DRAG DROP FIXED FOR CHECKBOX OFFSET ---
+  // --- Drag & Drop ---
   drop(event: CdkDragDrop<string[]>): void {
     if (event.previousIndex > 0 && event.currentIndex > 0) {
       moveItemInArray(this.columns, event.previousIndex - 1, event.currentIndex - 1);
     }
   }
 
-  // --- REST OF YOUR ORIGINAL LOGIC (UNTOUCHED) ---
+  dropChild(event: CdkDragDrop<string[]>) {
+    moveItemInArray(this.childColumns, event.previousIndex, event.currentIndex);
+    this.cdr.detectChanges();
+  }
+
+  // --- Search & Filters ---
   onGlobalSearch(value: any) { this.globalSearchQuery = typeof value === 'string' ? value : value?.target?.value || ''; this.currentPage = 0; this.triggerDataLoad(); }
   applyDateFilter() { this.currentPage = 0; this.triggerDataLoad(); }
   onSortChange(sort: Sort) { this.sortField = sort.active; this.sortDirection = sort.direction as any; this.currentPage = 0; this.triggerDataLoad(); }
   onPageChange(event: PageEvent) { this.currentPage = event.pageIndex; this.pageSize = event.pageSize; this.triggerDataLoad(); }
   applyFilter() { this.currentPage = 0; this.triggerDataLoad(); }
+
   triggerDataLoad() {
     const state = { pageIndex: this.currentPage, pageSize: this.pageSize, sortField: this.sortField, sortOrder: this.sortDirection, fromDate: this.fromDate, toDate: this.toDate, globalSearch: this.globalSearchQuery, filters: this.columns.filter(c => c.filterValue).map(c => ({ field: c.field, value: c.filterValue })) };
     this.onGridStateChange.emit(state);
   }
+
   clearAllFilters() { this.columns.forEach(col => col.filterValue = ''); this.fromDate = ''; this.toDate = ''; this.globalSearchQuery = ''; this.applyFilter(); }
+  clearGlobalSearch() { this.globalSearchQuery = ''; this.currentPage = 0; this.triggerDataLoad(); }
+
+  // --- UI Row Helpers ---
   toggleRow(element: any) { this.expandedElement = this.expandedElement === element ? null : element; this.cdr.detectChanges(); }
+
   onResize(column: GridColumn, event: MouseEvent) {
     if (!column.isResizable) return;
     const startX = event.pageX; const startWidth = column.width || 150;
@@ -127,76 +140,79 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     const up = () => { document.removeEventListener('mousemove', move); document.removeEventListener('mouseup', up); };
     document.addEventListener('mousemove', move); document.addEventListener('mouseup', up);
   }
+
   toggleColumn(column: GridColumn) { column.visible = !column.visible; this.cdr.detectChanges(); }
+
   applyChildFilter(element: any, column: any) {
     if (!element.originalChildData) element.originalChildData = [...element[this.childDataField]];
     const val = column.filterValue?.toLowerCase().trim();
     element[this.childDataField] = val ? element.originalChildData.filter((r: any) => String(r[column.field]).toLowerCase().includes(val)) : element.originalChildData;
   }
-  onAddNewClick() { if (this.addNewRoute) this.router.navigate([this.addNewRoute]); }
 
-  dropChild(event: CdkDragDrop<string[]>) {
-    moveItemInArray(this.childColumns, event.previousIndex, event.currentIndex);
-    this.cdr.detectChanges();
-  }
   sortChild(field: string, element: any) {
     this.currentChildSortField = field;
     this.sortChildDir = !this.sortChildDir;
     const data = element[this.childDataField];
     data.sort((a: any, b: any) => {
-      const valA = a[field];
-      const valB = b[field];
+      const valA = a[field]; const valB = b[field];
       return this.sortChildDir ? (valA > valB ? 1 : -1) : (valA < valB ? 1 : -1);
     });
   }
+
   onResizeChild(col: any, event: MouseEvent) {
     event.preventDefault();
-    const startX = event.pageX;
-    const startWidth = col.width || 120;
-    const onMouseMove = (e: MouseEvent) => {
-      const movement = e.pageX - startX;
-      col.width = Math.max(60, startWidth + movement);
-    };
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-    };
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
+    const startX = event.pageX; const startWidth = col.width || 120;
+    const onMouseMove = (e: MouseEvent) => { col.width = Math.max(60, startWidth + (e.pageX - startX)); };
+    const onMouseUp = () => { document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onMouseUp); };
+    document.addEventListener('mousemove', onMouseMove); document.addEventListener('mouseup', onMouseUp);
   }
-  clearGlobalSearch() {
-    this.globalSearchQuery = '';
-    this.currentPage = 0;
-    this.triggerDataLoad();
-  }
-  // Edit Function
-  onEdit(row: any) {
+
+  onAddNewClick() { if (this.addNewRoute) this.router.navigate([this.addNewRoute]); }
+
+  // --- Action Methods ---
+
+  onEdit(row: any, event?: MouseEvent) {
+    if (event) { event.stopPropagation(); event.preventDefault(); }
+    alert('Edit function called for: ' + (row.poNo || 'Selected Row'));
     this.editRecord.emit(row);
   }
 
-  // Single Delete
-  onDelete(row: any) {
+  onDelete(row: any, event?: MouseEvent) {
+    if (event) event.stopPropagation();
     if (confirm('Are you sure you want to delete this record?')) {
       this.deleteRecord.emit(row);
     }
   }
 
-  // Bulk Delete
   onBulkDelete() {
     const selectedRows = this.selection.selected;
     if (confirm(`Delete ${selectedRows.length} selected records?`)) {
       this.bulkDeleteRecords.emit(selectedRows);
-      // Delete ke baad selection clear karein
       this.selection.clear();
     }
   }
-  onEditChild(parent: any, child: any) {
-    this.editChildRecord.emit({ parent, child });
-  }
 
-  onDeleteChild(parent: any, child: any) {
-    if (confirm('Delete this line item?')) {
-      this.deleteChildRecord.emit({ parent, child });
+
+  onEditChild(child: any, event?: any) {
+    if (event && event.stopPropagation) {
+        event.stopPropagation();
+    }
+    
+    // Agar expandedElement (Header) hai, toh usey bhejo, nahi toh child item ko
+    const dataToEdit = this.expandedElement ? this.expandedElement : child;
+    
+    console.log('Passing Data to Form:', dataToEdit);    
+
+    this.editRecord.emit(dataToEdit);
+}
+
+  onDeleteChild(child: any, event?: any) {
+    if (event && event.stopPropagation) {
+      event.stopPropagation();
+    }
+
+    if (confirm('Are you sure you want to delete this line item?')) {
+      this.deleteChildRecord.emit({ parent: this.expandedElement, child: child });
     }
   }
 }

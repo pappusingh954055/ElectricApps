@@ -28,44 +28,34 @@ export class LoginComponent {
   }
 
   Login() {
-    if (this.loginForm.valid) {
-      this.loading = true;
-      this.errorMessage = '';
-
-      this.LoginDto = {
-        Email: this.loginForm.value.Email,
-        Password: this.loginForm.value.Password
-      };
-
-      this.auth.login(this.LoginDto).subscribe({
-        next: (res) => {
-          console.log('Login successful', res);
-
-          // 1. Check karein ki response null to nahi hai
-          if (res) {
-            // 2. UserId aur Tokens save karein (Screenshot ke mapping ke hisaab se)
-            localStorage.setItem('userId', res.userId);
-
-            // Agar response mein userName alag se nahi hai, toh roles ya email use kar sakte hain
-            // filhal hum res.userName hi rakhte hain agar backend bhej raha hai
-            if (res.userName) localStorage.setItem('userName', res.userName);
-
-            // Token aur Roles save karna professional practice hai
-            localStorage.setItem('accessToken', res.accessToken);
-            localStorage.setItem('roles', JSON.stringify(res.roles));
-
-            this.router.navigate(['/app/dashboard']);
-          }
-        },
-        error: (err) => {
-          console.error('Login error:', err);
-          this.errorMessage = 'Invalid email or password';
-          this.loading = false;
-        },
-        complete: () => {
-          this.loading = false;
-        }
-      });
+    if (this.loginForm.invalid) {
+      this.loginForm.markAllAsTouched();
+      return;
     }
+
+    this.loading = true;
+    this.errorMessage = '';
+
+    this.LoginDto = {
+      Email: this.loginForm.value.Email,
+      Password: this.loginForm.value.Password
+    };
+
+    this.auth.login(this.LoginDto).subscribe({
+
+      next: (res) => {
+        console.log('Login successful');
+        if (res.userName) localStorage.setItem('userName', res.userName);
+        localStorage.setItem('accessToken', res.accessToken);
+        localStorage.setItem('roles', JSON.stringify(res.roles));
+        this.loading = false;
+        this.router.navigate(['/app/dashboard']); // ✅ IMPORTANT
+      },
+      error: err => {
+        console.error(err);
+        this.errorMessage = err?.error?.message || 'Login failed';
+        this.loading = false;
+      }
+    });
   }
 }

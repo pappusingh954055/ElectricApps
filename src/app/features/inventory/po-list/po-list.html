@@ -9,9 +9,12 @@
       [addNewRoute]="'/app/inventory/polist/add'"
       [columns]="poColumns" [childColumns]="itemColumns" 
       [dataSource]="dataSource" [totalRecords]="totalRecords"
-      [pageSize]="pageSize" [isLoading]="isLoading" 
+      [pageSize]="pageSize" 
+      [isLoading]="isLoading" 
       [childDataField]="'items'"
-      (onGridStateChange)="onGridStateChange($event)">
+      (onGridStateChange)="onGridStateChange($event)"
+      (editRecord)="handleEdit($event)"
+      >
     </app-enterprise-hierarchical-grid>
   </div>
 </mat-card>

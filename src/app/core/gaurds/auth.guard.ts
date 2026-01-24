@@ -1,18 +1,15 @@
-import { inject } from "@angular/core";
-import { CanActivateFn, Router } from "@angular/router";
-import { AuthService } from "../services/auth.service";
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
 
-export const authGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
+export const authGuard: CanActivateFn = () => {
   const router = inject(Router);
+  const token = localStorage.getItem('access_token');
 
-  // Check karein ki token expire toh nahi ho gaya
-  if (authService.isTokenExpired()) {
-    console.warn('Token expired, redirecting to login...');
-    authService.logout(); // Storage clear karega
-    router.navigate(['/login']);
-    return false;
+  console.log('[AuthGuard] token:', token);
+
+  if (token) {
+    return true;
   }
 
-  return true;
+  return router.createUrlTree(['/login']);
 };

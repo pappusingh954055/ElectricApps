@@ -19,7 +19,8 @@
           <mat-select formControlName="priceListId">
             <mat-option *ngFor="let pl of priceLists" [value]="pl.id">{{ pl.name }}</mat-option>
           </mat-select>
-          <mat-hint *ngIf="isPriceListAutoSelected" style="color: green; font-size: 10px;">Auto-linked from Supplier</mat-hint>
+          <mat-hint *ngIf="isPriceListAutoSelected" style="color: green; font-size: 10px;">Auto-linked from
+            Supplier</mat-hint>
         </mat-form-field>
       </div>
 
@@ -53,16 +54,17 @@
       <button mat-flat-button color="primary" type="button" (click)="addRow()">
         <mat-icon>add</mat-icon> Add Item
       </button>
-      <span class="text-muted" style="font-size: 12px;">&nbsp;Prices will be fetched from the selected Price List.</span>
+      <span class="text-muted" style="font-size: 12px;">&nbsp;Prices will be fetched from the selected Price
+        List.</span>
     </div>
 
     <div formArrayName="items" class="items-section mt-3">
       <div class="item-row" *ngFor="let row of items.controls; let i = index" [formGroupName]="i">
-        
+
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Search Product</mat-label>
           <input type="text" matInput formControlName="productSearch" [matAutocomplete]="auto">
-          
+
           <div matSuffix *ngIf="isProductLoading[i]" style="display: flex; align-items: center; padding-right: 8px;">
             <mat-spinner diameter="18"></mat-spinner>
           </div>
@@ -142,7 +144,7 @@
               [disabled]="poForm.invalid || isLoading">
               <mat-icon *ngIf="!isLoading">save</mat-icon>
               <mat-spinner diameter="20" *ngIf="isLoading" class="d-inline-block me-2"></mat-spinner>
-              Save Draft (PO)
+              {{ isEditMode ? 'Update Draft (PO)' : 'Save Draft (PO)' }}
             </button>
           </div>
         </div>
