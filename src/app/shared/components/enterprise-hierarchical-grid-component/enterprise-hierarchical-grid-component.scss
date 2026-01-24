@@ -144,24 +144,27 @@ th.child-th {
   font-size: 13px;
 }
 
-/* Expand animation and detail panel */
+/* --- UPDATED: Expand animation section (Slower & Smoother) --- */
 .detail-row {
-  height: 0;
-  display: none !important;
-}
-
-.detail-row.expanded-row-visible {
+  height: 0 !important;
   display: table-row !important;
 }
 
 .detail-panel {
   background: #f8fafc;
   overflow: hidden;
+  max-height: 0; 
+  opacity: 0;    
   border-left: 0 solid #3b82f6;
-  transition: all 0.3s ease;
+  /* 0.6s for a more elegant, slower feel */
+  transition: max-height 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+              opacity 0.4s ease-in-out,
+              padding 0.6s ease;
 }
 
 .detail-panel.is-expanded {
+  max-height: 1200px; 
+  opacity: 1;
   border-left: 4px solid #3b82f6; 
   padding: 15px;
 }
@@ -176,7 +179,6 @@ th.child-th {
   border-bottom: 1px solid #eee;
   color: #333;
 }
-
 
 /* CHILD TABLE FOOTER STYLING */
 .child-footer-row {
@@ -204,16 +206,16 @@ th.child-th {
   margin-bottom: 4px;
   font-size: 13px;
   color: #64748b;
+}
 
-  .label {
-    font-weight: 500;
-  }
+.summary-item .label {
+  font-weight: 500;
+}
 
-  .value {
-    font-weight: 600;
-    color: #1e293b;
-    min-width: 100px;
-  }
+.summary-item .value {
+  font-weight: 600;
+  color: #1e293b;
+  min-width: 100px;
 }
 
 .summary-item.grand-total {
@@ -221,20 +223,24 @@ th.child-th {
   padding-top: 8px;
   border-top: 1px dashed #cbd5e1;
   font-size: 15px;
-  
-  .label {
-    color: #1e293b;
-    font-weight: 700;
-  }
-  
-  .value {
-    color: #3b82f6; /* Highlighted Blue */
-    font-weight: 800;
-  }
 }
-// --- RESPONSIVENESS ---
+
+.summary-item.grand-total .label {
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.summary-item.grand-total .value {
+  color: #3b82f6;
+  font-weight: 800;
+}
+
+/* --- RESPONSIVENESS --- */
 @media (max-width: 768px) {
   .grid-toolbar { flex-direction: column; gap: 12px; padding: 12px; align-items: stretch; }
-  .detail-panel.is-expanded { padding: 8px; }
+  .detail-panel.is-expanded { 
+    padding: 8px; 
+    max-height: 2500px; 
+  }
   .responsive-table-wrapper { max-height: 500px; }
 }
