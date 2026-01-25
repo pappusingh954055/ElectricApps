@@ -330,6 +330,43 @@ th.child-th {
 
 }
 
+.child-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  /* Vertical centering */
+  padding: 8px 16px;
+  /* Header ko thoda space dene ke liye */
+  background-color: #f8f9fa;
+  /* Light background for header bar */
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.child-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Bulk Delete Button Adjustment */
+.child-header button[color="warn"] {
+  height: 32px !important;
+  /* Fixed height for consistency */
+  line-height: 32px !important;
+  padding: 0 16px !important;
+  font-size: 12px !important;
+  border-radius: 4px !important;
+  box-shadow: none !important;
+  /* Flat look better lagta hai detail mein */
+
+  /* Icon alignment inside button */
+  mat-icon {
+    margin-right: 4px;
+    vertical-align: middle;
+    margin-top: -2px;
+  }
+}
+
 /* --- EXTRA ROW / GAP FIX --- */
 :host ::ng-deep {
   .detail-panel {
@@ -338,9 +375,11 @@ th.child-th {
     .inner-table {
       width: 100% !important;
       border-collapse: collapse;
-      table-layout: auto !important; /* Fixed se Auto kiya taaki columns adjust ho sakein */
+      table-layout: auto !important;
+      /* Fixed se Auto kiya taaki columns adjust ho sakein */
 
-      th.child-th, td {
+      th.child-th,
+      td {
         padding: 6px 8px !important;
         height: 38px !important;
         font-size: 12px !important;
@@ -350,9 +389,10 @@ th.child-th {
 
       /* --- ACTION COLUMN SPECIFIC FIX --- */
       // Isse 'Action' header aur buttons dono cover honge
-      th:last-child, 
+      th:last-child,
       td:last-child {
-        width: 110px !important;      /* Width badha di */
+        width: 110px !important;
+        /* Width badha di */
         min-width: 110px !important;
         max-width: 110px !important;
         text-align: center !important;
@@ -364,7 +404,8 @@ th.child-th {
       .action-buttons-container {
         display: flex !important;
         justify-content: center !important;
-        gap: 8px !important; /* Dono buttons ke beech ka gap */
+        gap: 8px !important;
+        /* Dono buttons ke beech ka gap */
         align-items: center;
         width: 100%;
       }
@@ -385,5 +426,48 @@ th.child-th {
       width: 18px !important;
       height: 18px !important;
     }
+  }
+
+
+}
+
+/* enterprise-hierarchical-grid.css */
+
+.footer-summary-container {
+  padding: 15px 25px !important;
+  background-color: #f9f9f9;
+}
+
+.summary-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Totals right align honge */
+  gap: 4px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  width: 280px; /* Desktop standard */
+  font-size: 14px;
+  color: #444;
+}
+
+/* Image 7 specific styling */
+.grand-total-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #ccc;
+  color: #1a237e; /* Navy Blue color */
+  font-weight: 900;
+  font-size: 18px;
+}
+
+@media (max-width: 768px) {
+  .summary-item {
+    width: 100%; /* Mobile par full width */
+  }
+  .footer-spacer {
+    display: none;
   }
 }

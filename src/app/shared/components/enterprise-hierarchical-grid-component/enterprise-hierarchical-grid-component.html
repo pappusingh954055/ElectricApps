@@ -25,7 +25,7 @@
     </div>
 
     <div class="right-actions">
-      <button mat-flat-button color="warn" *ngIf="selection.hasValue()" (click)="onBulkDelete()" class="action-btn"
+      <button mat-flat-button color="warn" *ngIf="selection.hasValue()" (click)="onBulkDeleteClick()" class="action-btn"
         style="margin-right: 8px;">
         <mat-icon>delete_sweep</mat-icon> Bulk Delete ({{selection.selected.length}})
       </button>
@@ -44,8 +44,8 @@
           </mat-checkbox>
         </th>
         <td mat-cell *matCellDef="let row" (click)="$event.stopPropagation()">
-          <mat-checkbox (click)="$event.stopPropagation()"
-            (change)="$event ? selection.toggle(row) : null; emitSelection()" [checked]="selection.isSelected(row)">
+          <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? onParentCheck(row) : null"
+            [checked]="selection.isSelected(row)">
           </mat-checkbox>
         </td>
       </ng-container>
@@ -83,24 +83,39 @@
 
       <ng-container matColumnDef="actions">
         <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;"> Actions </th>
-        <td mat-cell *matCellDef="let child">
-          <div style="display: flex; justify-content: center; gap: 8px;">
-            <button mat-icon-button color="primary" (click)="$event.stopPropagation(); onEditChild(child, $event)">
+        <td mat-cell *matCellDef="let row">
+          <div *ngIf="!selection.hasValue() && !childSelection.hasValue()"
+            style="display: flex; justify-content: center; gap: 8px;">
+            <button mat-icon-button color="primary" (click)="$event.stopPropagation(); onEditChild(row, $event)">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button color="warn" (click)="$event.stopPropagation(); onDeleteChild(child, $event)" title="Delete">
+            <button mat-icon-button color="warn" (click)="$event.stopPropagation(); onDeleteChild(row, $event)"
+              title="Delete">
               <mat-icon>delete</mat-icon>
             </button>
           </div>
+          <div *ngIf="selection.isSelected(row)"
+            style="text-align: center; color: #999; font-size: 12px; font-style: italic;">
+            Selected
+          </div>
         </td>
       </ng-container>
-
 
       <ng-container matColumnDef="expandedDetail">
         <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
           <div class="detail-panel" [class.is-expanded]="element === expandedElement">
             <div class="child-grid-wrapper" *ngIf="element === expandedElement">
-              <div class="child-header"><span class="child-title">Detailed Line Items</span></div>
+
+              <div class="child-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <span class="child-title">Detailed Line Items</span>
+                <button mat-flat-button color="warn" size="small" *ngIf="childSelection.hasValue()"
+                  (click)="onBulkDeleteChildItems(element)"
+                  style="line-height: 28px; height: 30px; font-size: 12px; margin-right: 15px;">
+                  <mat-icon style="font-size: 16px; width: 16px; height: 16px;">delete_sweep</mat-icon>
+                  Delete Selected ({{childSelection.selected.length}})
+                </button>
+              </div>
+
               <div class="child-table-scroll">
                 <table class="inner-table" cdkDropList cdkDropListOrientation="horizontal"
                   (cdkDropListDropped)="dropChild($event)">
@@ -148,13 +163,14 @@
                     <tr *ngFor="let childRow of element[childDataField]" class="child-row">
                       <td style="text-align: center;">
                         <mat-checkbox (click)="$event.stopPropagation()"
-                          (change)="$event ? childSelection.toggle(childRow) : null; emitSelection()"
+                          (change)="$event ? onChildCheck(childRow) : null"
                           [checked]="childSelection.isSelected(childRow)"></mat-checkbox>
                       </td>
                       <td *ngFor="let cCol of childColumns" [style.text-align]="cCol.align">{{ childRow[cCol.field] }}
                       </td>
                       <td>
-                        <div style="display: flex; gap: 4px; justify-content: center;">
+                        <div *ngIf="!childSelection.hasValue()"
+                          style="display: flex; gap: 4px; justify-content: center;">
                           <button mat-icon-button (click)="onEditChild(element, childRow)" color="primary"
                             title="Edit Item">
                             <mat-icon style="font-size: 18px;">edit</mat-icon>
@@ -164,17 +180,33 @@
                             <mat-icon style="font-size: 18px;">delete</mat-icon>
                           </button>
                         </div>
+                        <div *ngIf="childSelection.isSelected(childRow)" style="text-align: center;">
+                          <mat-icon color="primary" style="font-size: 18px;">check_circle</mat-icon>
+                        </div>
                       </td>
                     </tr>
                   </tbody>
                   <tfoot>
                     <tr class="child-footer-row">
-                      <td [attr.colspan]="childColumns.length" class="footer-label-cell"></td>
-                      <td colspan="2" class="footer-summary-cell">
-                        <div class="summary-item">Total Tax: <span>{{ element.totalTaxAmount | currency:'INR' }}</span>
+                      <td [attr.colspan]="childColumns.length - 1" class="footer-spacer"></td>
+
+                      <td colspan="2" class="footer-summary-container">
+                        <div class="summary-box">
+                          <div class="summary-item">
+                            <span class="label">Sub-Total:</span>
+                            <span class="value">{{ (element.subTotal || 0) | currency:'INR' }}</span>
+                          </div>
+
+                          <div class="summary-item">
+                            <span class="label">Total Tax:</span>
+                            <span class="value">{{ (element.totalTax || 0) | currency:'INR' }}</span>
+                          </div>
+
+                          <div class="summary-item grand-total-section">
+                            <span class="label">GRAND TOTAL:</span>
+                            <span class="value">{{ (element.grandTotal || 0) | currency:'INR' }}</span>
+                          </div>
                         </div>
-                        <div class="summary-item grand-total">Total: <span>{{ element.grandTotal | currency:'INR'
-                            }}</span></div>
                       </td>
                     </tr>
                   </tfoot>

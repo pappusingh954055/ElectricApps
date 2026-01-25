@@ -73,4 +73,35 @@ export class InventoryService {
         // Ye POST call aapke naye [HttpPost("get-paged-orders")] endpoint ko hit karega
         return this.http.post<any>(`${this.apiUrl}/PurchaseOrders/get-paged-orders`, request);
     }
+
+    
+
+    /**
+     * 2. Delete Single Purchase Order (From Grid/List)
+     * Method: DELETE
+     * Purpose: Poore Purchase Order record ko database se khatam karna
+     */
+    deletePurchaseOrder(poId: number): Observable<any> {
+        return this.http.delete(`${this.apiUrl}/PurchaseOrders/${poId}`);
+    }
+
+
+    
+    bulkDeletePurchaseOrders(ids: number[]): Observable<any> {
+        // Method: POST ya DELETE (Aapke backend ke hisaab se)
+        return this.http.post(`${this.apiUrl}/PurchaseOrders/bulk-delete-orders`, { ids });
+    }
+
+    /**
+     * 1. Bulk Delete Items (From Entry Screen)
+     * Method: POST
+     * Purpose: PO ke andar se selected products ko delete karna
+     */
+    bulkDeletePOItems(poId: number, itemIds: number[]): Observable<any> {
+        const payload = {
+            purchaseOrderId: poId,
+            itemIds: itemIds
+        };
+        return this.http.post(`${this.apiUrl}/PurchaseOrders/bulk-delete-items`, payload);
+    }
 }

@@ -7,6 +7,10 @@ import { MatTableDataSource } from '@angular/material/table';
 import { GridColumn } from '../../../shared/models/grid-column.model';
 import { InventoryService } from '../service/inventory.service';
 import { Router } from '@angular/router';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
+import { MatDialog } from '@angular/material/dialog';
+import { NotificationService } from '../../shared/notification.service';
+import { SelectionModel } from '@angular/cdk/collections';
 
 @Component({
   selector: 'app-po-list',
@@ -34,11 +38,19 @@ export class PoList implements OnInit {
   private currentGridState: any = {};
   private router = inject(Router);
 
+  selection = new SelectionModel<any>(true, []);
+  selectedParentRows: any[] = [];
+
+  // Aur agar child ke liye bhi chahiye:
+  childSelection = new SelectionModel<any>(true, []);
+
   constructor(
     private poService: InventoryService,
     private cdr: ChangeDetectorRef,
     private datePipe: DatePipe,
-    private currencyPipe: CurrencyPipe
+    private currencyPipe: CurrencyPipe,
+    private dialog: MatDialog,
+    private notification: NotificationService
   ) { }
 
   ngOnInit() {
@@ -105,7 +117,7 @@ export class PoList implements OnInit {
   }
 
   public loadData(state: any) {
-    //this.isLoading = true;
+    this.isLoading = true;
     this.cdr.detectChanges();
 
     // Mapping column filters if any
@@ -131,7 +143,7 @@ export class PoList implements OnInit {
       },
       error: (err) => {
         console.error('API Error:', err);
-        //this.isLoading = false;
+        this.isLoading = false;
         this.cdr.detectChanges();
       }
     });
@@ -162,10 +174,126 @@ export class PoList implements OnInit {
     }
   }
 
-  // handleEdit(data: any) {
-  //   // ID 0 hai, isliye poNumber use karein navigation ke liye
-  //   if (data && data.poNumber) {
-  //     this.router.navigate(['/app/inventory/polist/edit', data.poNumber]);
-  //   }
-  // }
+  // --- 1. SINGLE PARENT DELETE (Row Trash Icon) ---
+  onDeleteSingleParentRecord(row: any) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Purchase Order',
+        message: `Do you want to delete the PO No: ${row.poNumber}? This will delete all items.`,
+        confirmText: 'Yes, Delete All',
+        cancelText: 'No'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        this.poService.deletePurchaseOrder(row.id).subscribe({
+          next: (res) => {
+            this.isLoading = false;
+            if (res.success) {
+              this.notification.showStatus(true, `PO: ${row.poNumber} deleted!`);
+              this.loadData(this.currentGridState);
+            }
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.isLoading = false;
+            this.notification.showStatus(false, 'Error: PO not deleted.');
+            this.cdr.detectChanges();
+          }
+        });
+      }
+    });
+  }
+
+  // --- 2. BULK PARENT DELETE (Main Selection) ---
+  onBulkDeleteParentOrders(selectedRows: any[]) {
+    if (!selectedRows || selectedRows.length === 0) {
+      this.notification.showStatus(false, 'First select the po!');
+      return;
+    }
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '450px',
+      data: {
+        title: '⚠️ Critical: Bulk Delete Parent Orders',
+        message: `Do you want to permanently remove these ${selectedRows.length} orders?`,
+        confirmText: 'Yes, Delete All',
+        cancelText: 'Cancel'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        const parentIds = selectedRows.map(row => row.id);
+
+        this.poService.bulkDeletePurchaseOrders(parentIds).subscribe({
+          next: (res) => {
+            this.isLoading = false;
+            if (res.success) {
+              this.notification.showStatus(true, `${selectedRows.length} Orders deleted.`);
+              this.selection.clear(); // Important cleanup
+              this.loadData(this.currentGridState);
+            }
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.isLoading = false;
+            this.notification.showStatus(false, 'Error: Bulk delete failed.');
+            this.cdr.detectChanges();
+          }
+        });
+      }
+    });
+  }
+
+  // --- 3. CHILD DELETE (Single & Bulk merged) ---
+  onBulkDeleteChildItems(event: any) {
+    // event.isBulk true hai toh multiple IDs, warna single ID array mein
+    const poNo = event.parent.poNumber;
+    const itemIds = event.isBulk ? event.child.map((i: any) => i.id) : [event.child.id];
+    const displayMsg = event.isBulk ? `${event.child.length} items` : `item "${event.child.productName}"`;
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Remove Line Item(s)',
+        message: `Do you want to remove ${displayMsg} from PO: ${poNo}?`,
+        confirmText: 'Remove',
+        cancelText: 'Keep'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        this.poService.bulkDeletePOItems(event.parent.id, itemIds).subscribe({
+          next: (res) => {
+            this.isLoading = false;
+            if (res.success) {
+              this.notification.showStatus(true, 'Items removed successfully.');
+              if (event.isBulk) this.childSelection.clear(); // Clear child selections
+              this.loadData(this.currentGridState);
+            }
+            this.cdr.detectChanges();
+          },
+          error: () => {
+            this.isLoading = false;
+            this.notification.showStatus(false, 'Error removing items.');
+            this.cdr.detectChanges();
+          }
+        });
+      }
+    });
+  }
+
+
+  onGridSelectionChange(selectedRows: any[]) {
+    this.selectedParentRows = selectedRows;
+  }
+
+  
 }

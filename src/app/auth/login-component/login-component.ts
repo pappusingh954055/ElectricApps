@@ -44,7 +44,8 @@ export class LoginComponent {
     this.auth.login(this.LoginDto).subscribe({
 
       next: (res) => {
-        console.log('Login successful');
+        console.log('Login successful', res);
+        localStorage.setItem('userId', res.userId);  
         if (res.userName) localStorage.setItem('userName', res.userName);
         localStorage.setItem('accessToken', res.accessToken);
         localStorage.setItem('roles', JSON.stringify(res.roles));

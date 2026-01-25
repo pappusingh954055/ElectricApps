@@ -10,9 +10,10 @@ import { Observable, of, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, takeUntil, finalize, catchError } from 'rxjs/operators';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../../master/product/service/product.service';
-import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
-import { PurchaseOrderPayload } from '../models/purchaseorder.model';
+
 import { POService } from '../service/po.service';
+import { DateHelper } from '../../../shared/models/date-helper';
+import { NotificationService } from '../../shared/notification.service';
 
 @Component({
   selector: 'app-po-form',
@@ -32,6 +33,7 @@ export class PoForm implements OnInit, OnDestroy {
   private router = inject(Router);
   private destroy$ = new Subject<void>();
   private route = inject(ActivatedRoute);
+  private notification = inject(NotificationService);
 
   isPriceListAutoSelected = false;
   filteredProducts: Observable<any[]>[] = [];
@@ -42,7 +44,6 @@ export class PoForm implements OnInit, OnDestroy {
   grandTotal = 0;
   totalTaxAmount = 0;
   poForm!: FormGroup;
-
 
   poId!: any;
 
@@ -81,58 +82,67 @@ export class PoForm implements OnInit, OnDestroy {
     }
   }
 
+
+
   loadPODetails(id: any) {
     this.isLoading = true;
     this.poService.getById(id).subscribe({
       next: (res: any) => {
-        console.log('PO Details Loaded items:', res);
-        // 1. Header fields (Supplier, PO Number, Date, Remarks) ko patch karein
+        console.log('PO Details Loaded:', res);
+
+        // 1. Header fields mapping
         this.poForm.patchValue({
           supplierId: res.supplierId,
           priceListId: res.priceListId,
           PoNumber: res.poNumber,
-          poDate: res.poDate,
-          expectedDeliveryDate: res.expectedDeliveryDate,
+          poDate: DateHelper.toDateObject(res.poDate),
+          expectedDeliveryDate: DateHelper.toDateObject(res.expectedDeliveryDate),
+          status: res.status,
           remarks: res.remarks,
+          // Ensure these names match your FormGroup controls
           totalTaxAmount: res.totalTax,
           grandTotal: res.grandTotal
         });
 
-        // 2. FormArray (Items) ko populate karein
+        // 2. FormArray (Items) population
         const itemsArray = this.poForm.get('items') as FormArray;
-        itemsArray.clear(); // Purana data saaf karein
+        itemsArray.clear();
 
         if (res.items && res.items.length > 0) {
           res.items.forEach((item: any) => {
-            // Naya group banayein aur backend values map karein
             const itemGroup = this.fb.group({
-              productSearch: [item.productName], // displayProductFn ke liye
+              // VERY IMPORTANT: ID field zaroori hai update ke liye
+              id: [item.id || 0],
+
+              productSearch: [item.productName],
               productId: [item.productId],
               qty: [item.qty],
               unit: [item.unit],
-              price: [item.rate], // API mein 'rate' hai, control mein 'rate'
-              discountPercent: [item.discountPercent],
-              gstPercent: [item.gstPercent],
-              taxAmount: [item.taxAmount],
-              total: [item.total]
+              price: [item.rate], // Backend 'rate' -> UI 'price'
+              discountPercent: [item.discountPercent || 0],
+              gstPercent: [item.gstPercent || 0],
+              taxAmount: [item.taxAmount || 0],
+              total: [item.total || 0]
             });
 
             itemsArray.push(itemGroup);
           });
         }
 
-        // 3. Totals update karein
+        // 3. Update local variables for UI display
         this.grandTotal = res.grandTotal;
         this.totalTaxAmount = res.totalTax;
+
+        // Spinner stop
         this.isLoading = false;
       },
       error: (err) => {
         console.error('Error loading PO:', err);
         this.isLoading = false;
+        this.notification.showStatus(false, 'Failed to load order details');
       }
     });
   }
-
 
   initForm(): void {
     this.poForm = this.fb.group({
@@ -175,7 +185,7 @@ export class PoForm implements OnInit, OnDestroy {
         this.calculateGrandTotal();
       },
       error: (err) => {
-        this.showStatusPopup('error', 'Error', 'Failed to load PO details');
+        this.notification.showStatus(false, 'Failed to load PO details');
       }
     });
   }
@@ -238,64 +248,118 @@ export class PoForm implements OnInit, OnDestroy {
     const row = this.items.at(index);
     const priceListId = this.poForm.get('priceListId')?.value;
 
+    // Debugging logs
+    console.log("1. Selected Product Object:", product);
+
+    if (!product) return;
+
+    // Fix: Safe Name extraction taaki popup mein 'undefined' na aaye
+    const displayName = product.productName || product.name || 'Unknown Product';
+
+    // 1. Duplicate Check
     const isDuplicate = this.items.controls.some((ctrl, i) => {
       return i !== index && ctrl.get('productId')?.value === product.id;
     });
 
     if (isDuplicate) {
-      this.showStatusPopup('warning', 'Duplicate Product', `Product "${product.name}" is already added.`);
-      row.patchValue({ productId: null, productSearch: '', unit: '', price: 0 });
+      console.warn("Duplicate product detected!");
+      // Ab yahan 'undefined' nahi dikhayega
+      this.notification.showStatus(false, `Product "${displayName}" is already added.`);
+
+      row.patchValue({
+        productId: null,
+        productSearch: '',
+        unit: '',
+        price: 0,
+        gstPercent: 0,
+        total: 0
+      });
       return;
     }
 
+    // 2. Initial Mapping
+    // Note: 'productSearch' mein poora 'product' object daala hai taaki selection gayab na ho
     row.patchValue({
       productId: product.id,
-      productSearch: product.name,
-      unit: product.unit,
-      price: product.price
+      productSearch: product,
+      unit: product.unit || 'PCS',
+      price: product.basePurchasePrice || 0,
+      gstPercent: product.defaultGst || 0,
+      qty: 1 // Default quantity set kar rahe hain
     });
 
-    if (priceListId) {
-      this.inventoryService.getProductRate(product.id, priceListId).subscribe((res: any) => {
-        if (res && res.rate) {
-          row.patchValue({ price: res.rate });
+    // 3. Price Fetching Logic (Backend Fallback Integration)
+    if (product.id) {
+      this.inventoryService.getProductRate(product.id, priceListId).subscribe({
+        next: (res: any) => {
+          console.log("4. API Response:", res);
+
+          if (res) {
+            row.patchValue({
+              // 'recommendedRate' automatically price list ya base price pick karega
+              price: res.recommendedRate,
+              gstPercent: res.gstPercent,
+              unit: res.unit || product.unit
+            }, { emitEvent: false });
+          }
+
+          // Calculation trigger karein
+          this.updateTotal(index);
+        },
+        error: (err) => {
+          console.error("6. Rate fetch failed:", err);
+          this.updateTotal(index);
         }
-        this.updateTotal(index);
       });
     } else {
       this.updateTotal(index);
     }
   }
-
-  updateTotal(index: number) {
+  updateTotal(index: number): void {
     const row = this.items.at(index);
-    const qty = row.get('qty')?.value || 0;
-    const price = row.get('price')?.value || 0;
-    const disc = row.get('discountPercent')?.value || 0;
-    const gst = row.get('gstPercent')?.value || 0;
+    const qty = Number(row.get('qty')?.value || 0);
+    const price = Number(row.get('price')?.value || 0);
+    const discPercent = Number(row.get('discountPercent')?.value || 0);
+    const gstPercent = Number(row.get('gstPercent')?.value || 0);
 
-    const amountAfterDisc = (qty * price) * (1 - disc / 100);
-    const taxAmt = amountAfterDisc * (gst / 100);
-    const finalTotal = amountAfterDisc + taxAmt;
+    // Step 1: Basic Amount
+    const amount = qty * price;
+
+    // Step 2: Discount
+    const discountAmt = (amount * discPercent) / 100;
+    const taxableAmount = amount - discountAmt;
+
+    // Step 3: Tax Calculation
+    const taxAmt = (taxableAmount * gstPercent) / 100;
+
+    // Step 4: Row Total (Taxable + Tax)
+    const rowTotal = taxableAmount + taxAmt;
 
     row.patchValue({
       taxAmount: taxAmt.toFixed(2),
-      total: finalTotal.toFixed(2),
-      amount: amountAfterDisc
+      total: rowTotal.toFixed(2) // Yahan tax add hona zaroori hai
     }, { emitEvent: false });
 
     this.calculateGrandTotal();
   }
 
   calculateGrandTotal(): void {
-    let tax = 0;
-    let grand = 0;
+    let totalTax = 0;
+    let totalWithTax = 0;
+
     this.items.controls.forEach(c => {
-      tax += Number(c.get('taxAmount')?.value || 0);
-      grand += Number(c.get('total')?.value || 0);
+      const rowTax = Number(c.get('taxAmount')?.value || 0);
+      const rowTotal = Number(c.get('total')?.value || 0);
+
+      totalTax += rowTax;
+      totalWithTax += rowTotal;
     });
-    this.totalTaxAmount = Number(tax.toFixed(2));
-    this.grandTotal = Number(grand.toFixed(2));
+
+    // Final State Updates
+    this.totalTaxAmount = Number(totalTax.toFixed(2));
+    this.grandTotal = Number(totalWithTax.toFixed(2));
+
+    // Change Detection manually trigger karein
     this.cdr.detectChanges();
   }
 
@@ -381,51 +445,68 @@ export class PoForm implements OnInit, OnDestroy {
   }
 
 
-  // Common Status Popup Helper
-  private showStatusPopup(status: string, title: string, message: string) {
-    this.dialog.open(StatusDialogComponent, {
-      width: '400px',
-      data: { status, title, message }
-    });
-  }
+
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
   saveDraft() {
-    if (this.poForm.invalid) {
-      this.poForm.markAllAsTouched();
-      return;
+    // 1. Sabse pehle raw values uthaein
+    const formValue = this.poForm.getRawValue();
+
+    // 2. STAGE 1: Date Validation
+    const isDateValid = this.notification.isValidDeliveryDate(formValue.poDate, formValue.expectedDeliveryDate);
+
+    if (!isDateValid) {
+      console.error('Validation Blocked: Invalid Date');
+      this.notification.showStatus(false, 'Expected Delivery Date cannot be earlier than PO Date.');
+      return; // <--- YEH ZAROORI HAI: Iske niche wala koi code nahi chalega
     }
 
-    // ExpressionChangedAfterItHasBeenCheckedError se bachne ke liye
+    // 3. STAGE 2: Items Array Validation
+    // Screenshot mein items array empty hai, isliye hum strictly check karenge
+    const hasItems = formValue.items && formValue.items.length > 0;
+
+    if (!hasItems) {
+      console.error('Validation Blocked: No Items Found');
+      this.notification.showStatus(false, 'Please add at least one product to the Purchase Order.');
+      return; // <--- YEH ZAROORI HAI: API call ko yahi stop karega
+    }
+
+    // 4. STAGE 3: Form Controls Validation
+    if (this.poForm.invalid) {
+      this.poForm.markAllAsTouched();
+      this.notification.showStatus(false, 'Please fill all required fields correctly.');
+      return; // <--- Stop if form is invalid
+    }
+
+    // 5. STAGE 4: Final Processing (Sirf tabhi chalega jab upar ke 3 stages pass honge)
     this.isLoading = true;
 
     const currentUserId = localStorage.getItem('userId') || '00000000-0000-0000-0000-000000000000';
-    const formValue = this.poForm.getRawValue();
 
-    // Payload structure as per backend UpdatePurchaseOrderDto
     const payload: any = {
-      // URL mein 4 ja raha hai toh yahan bhi numeric 4 hona chahiye
       id: this.isEditMode ? Number(this.poId) : 0,
       supplierId: Number(formValue.supplierId),
       supplierName: this.suppliers.find(s => s.id === formValue.supplierId)?.name || '',
-      priceListId: Number(formValue.priceListId),
-      poDate: formValue.poDate,
-      expectedDeliveryDate: formValue.expectedDeliveryDate,
+      priceListId: formValue.priceListId,
+      priceList: { id: formValue.priceListId },
+      poDate: DateHelper.toLocalISOString(formValue.poDate),
+      expectedDeliveryDate: DateHelper.toLocalISOString(formValue.expectedDeliveryDate),
       remarks: formValue.remarks || '',
-      poNumber: formValue.PoNumber, // Backend property name check karein (P capital or small)
+      poNumber: formValue.PoNumber,
       createdBy: currentUserId,
+      updatedBy: currentUserId,
       totalTax: Number(this.totalTaxAmount || 0),
       grandTotal: Number(this.grandTotal || 0),
-
       items: formValue.items.map((item: any) => ({
-        id: Number(item.id || 0), // Existing item update ke liye ID zaroori hai
-        productId: item.productId, // Guid format
+        id: Number(item.id || 0),
+        productId: item.productId,
         qty: Number(item.qty),
         unit: item.unit,
-        rate: Number(item.price), // Angular 'price' -> Backend 'rate' mapping
+        rate: Number(item.price),
         discountPercent: Number(item.discountPercent || 0),
         gstPercent: Number(item.gstPercent || 0),
         taxAmount: Number(item.taxAmount || 0),
@@ -433,25 +514,28 @@ export class PoForm implements OnInit, OnDestroy {
       }))
     };
 
-    // Debugging: object ko stringify karke dekhein
-    console.log("Final JSON Payload:", JSON.stringify(payload));
+    console.log('API Request Triggered with Payload:', payload);
 
     const request$ = this.isEditMode
-      ? this.poService.update(this.poId, payload) // PUT /api/purchaseorders/4
+      ? this.poService.update(this.poId, payload)
       : this.inventoryService.savePoDraft(payload);
 
     request$.subscribe({
       next: (res: any) => {
         this.isLoading = false;
-        const msg = this.isEditMode ? 'Updated' : 'Saved';
-        this.showStatusPopup('success', 'Success', res.message || `Purchase Order ${msg} Successfully`);
-        this.router.navigate(['/app/inventory/po-list']);
+        const isSuccess = res !== null && res !== false && res !== undefined;
+
+        if (isSuccess) {
+          const successMsg = this.isEditMode ? 'Updated Successfully' : 'Saved Successfully';
+          this.notification.showStatus(true, successMsg);
+          this.router.navigate(['/app/inventory/polist']);
+        } else {
+          this.notification.showStatus(false, res?.message || 'Transaction failed');
+        }
       },
       error: (err: any) => {
         this.isLoading = false;
-        // Backend validation errors ko console mein dekhein
-        console.error("Backend Error Details:", err.error);
-        this.showStatusPopup('error', 'Error', err.error?.message || 'Transaction failed');
+        this.notification.showStatus(false, err.error?.message || 'Server connection error');
       }
     });
   }

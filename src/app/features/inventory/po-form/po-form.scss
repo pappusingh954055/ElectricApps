@@ -153,16 +153,19 @@ input.bg-light {
 }
 
 .save-btn {
-  height: 48px !important;
-  padding: 0 35px !important;
-  font-weight: 600 !important;
+ min-width: 180px; /* Thoda wide button zyada premium lagta hai */
+  height: 45px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  border-radius: 6px; /* Modern look ke liye */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Halka shadow depth ke liye */
 }
 
-/* Save Button Styling */
-.save-btn {
-  height: 40px;
-  padding: 0 25px !important;
-  font-weight: 600 !important;
+.save-btn-container {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end; /* Desktop par right alignment maintain rakhega */
+  padding-bottom: 20px;
 }
 
 .total-value {
@@ -171,7 +174,11 @@ input.bg-light {
   color: #1a237e;
   margin-top: 4px;
 }
-
+/* Final Enterprise UI Touch */
+.grand-total-label {
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
 /* ================= RESPONSIVE ================= */
 @media (max-width: 1400px) {
   .item-row {
@@ -189,5 +196,116 @@ input.bg-light {
     grid-column: span 3;
     width: 100% !important;
     margin-left: 0;
+  }
+}
+
+.summary-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Desktop par Right Align */
+  min-width: 250px;
+  text-align: right;
+  padding: 10px;
+
+  .total-info {
+    width: 100%; // Taaki items alignment sahi rahe
+    margin-bottom: 15px;
+
+    .sub-total-row, .tax-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      font-size: 14px;
+      margin-bottom: 4px;
+      color: #666; // Sub-labels ke liye thoda light color
+    }
+
+    .grand-total-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      font-size: 22px;
+      font-weight: 700;
+      color: #3f51b5; /* Primary brand color */
+      margin-top: 8px;
+      border-top: 1px solid #ddd; /* Separator line */
+      padding-top: 8px;
+
+      .amount {
+        margin-left: 5px;
+      }
+    }
+  }
+}
+/* Container for the totals */
+.totals-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Desktop par right side mein dikhega */
+  padding: 15px;
+  min-width: 280px;
+}
+
+/* Common row style for Sub-Total and Tax */
+.total-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  width: 100%;
+  font-size: 15px;
+  margin-bottom: 6px;
+  color: #555;
+}
+
+/* Label aur Value ko fixed alignment dene ke liye span handle karein */
+.total-row span:first-child {
+  font-weight: 500;
+}
+
+/* Horizontal line style */
+hr {
+  width: 100%;
+  border: 0;
+  border-top: 1px solid #ddd;
+  margin: 10px 0;
+}
+
+/* Grand Total highlight */
+.grand-total {
+  font-size: 22px;
+  color: #3f51b5; /* Aapka primary theme color */
+  margin-top: 5px;
+}
+
+.grand-total strong:last-child {
+  margin-left: 10px;
+}
+
+/* Responsive: Mobile Screens */
+@media (max-width: 600px) {
+  .totals-container {
+    align-items: stretch; /* Mobile par full width le lega */
+    padding: 10px;
+    min-width: 100%;
+  }
+
+  .total-row {
+    justify-content: space-between; /* Mobile par label left aur value right */
+    font-size: 14px;
+  }
+
+  .grand-total {
+    font-size: 18px; /* Mobile par font thoda chota */
+  }
+}
+/* Responsive adjustment for Mobile */
+@media (max-width: 600px) {
+  .summary-box {
+    align-items: stretch; /* Mobile par full width */
+    min-width: 100%;
+    
+    .sub-total-row, .tax-row, .grand-total-row {
+      justify-content: space-between; /* Labels left aur values right mein */
+    }
   }
 }

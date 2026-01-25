@@ -128,22 +128,30 @@
         </div>
 
         <div class="summary-box">
-          <div class="total-info">
-            <div class="tax-row">
-              <span class="text-muted">Total Tax:</span>
-              <strong class="ms-2">₹ {{ totalTaxAmount | number:'1.2-2' }}</strong>
+          <div class="totals-container">
+            <div class="total-row">
+              <span>Sub-Total:</span>
+              <span>₹{{ grandTotal - totalTaxAmount | number:'1.2-2' }}</span>
             </div>
-            <div class="grand-total-row">
-              <span class="text-muted h6 me-2">GRAND TOTAL:</span>
-              <span class="amount">₹ {{ grandTotal | number:'1.2-2' }}</span>
+            <div class="total-row">
+              <span>Total Tax:</span>
+              <span>₹{{ totalTaxAmount | number:'1.2-2' }}</span>
+            </div>
+            <hr>
+            <div class="total-row grand-total">
+              <strong>GRAND TOTAL:</strong>
+              <strong>₹{{ grandTotal | number:'1.2-2' }}</strong>
             </div>
           </div>
 
           <div class="button-row">
-            <button mat-flat-button color="accent" class="save-btn" (click)="saveDraft()"
+            <button mat-flat-button class="bg-azure" (click)="saveDraft()"
               [disabled]="poForm.invalid || isLoading">
-              <mat-icon *ngIf="!isLoading">save</mat-icon>
-              <mat-spinner diameter="20" *ngIf="isLoading" class="d-inline-block me-2"></mat-spinner>
+              <!-- <mat-icon *ngIf="!isLoading">save</mat-icon> -->
+              @if (isLoading) {
+              <div class="loader-overlay">
+                <mat-spinner diameter="60"></mat-spinner>
+              </div>}
               {{ isEditMode ? 'Update Draft (PO)' : 'Save Draft (PO)' }}
             </button>
           </div>

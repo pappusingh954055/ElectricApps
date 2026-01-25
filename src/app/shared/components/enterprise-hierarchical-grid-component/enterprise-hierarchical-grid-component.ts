@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, inject, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, PageEvent, MatPaginatorModule } from '@angular/material/paginator';
@@ -10,6 +10,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AppSearchInput } from '../app-search-input/app-search-input';
 import { Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
+import { NotificationService } from '../../../features/shared/notification.service';
+import { ConfirmDialogComponent } from '../confirm-dialog-component/confirm-dialog-component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-enterprise-hierarchical-grid',
@@ -39,7 +42,14 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   @Output() onGridStateChange = new EventEmitter<any>();
   @Output() onSelectionChange = new EventEmitter<any>();
   @Output() editChildRecord = new EventEmitter<any>();
-  @Output() deleteChildRecord = new EventEmitter<any>();
+  @Output() bulkDeleteChildItems = new EventEmitter<any>();
+
+  @Output() selectionChanged = new EventEmitter<any[]>();
+
+  @Output() bulkDeleteParentOrders = new EventEmitter<any[]>();
+
+  private notification = inject(NotificationService);
+  private dialog = inject(MatDialog);
 
   @ViewChild(MatSort) sort!: MatSort;
   sortChildDir: boolean = true;
@@ -76,8 +86,19 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     return numSelected === numRows && numRows > 0;
   }
 
-  masterToggle(): void {
-    this.isAllSelected() ? this.selection.clear() : this.dataSource.data.forEach((row: any) => this.selection.select(row));
+  // masterToggle(): void {
+  //   this.isAllSelected() ? this.selection.clear() : this.dataSource.data.forEach((row: any) => this.selection.select(row));
+  //   this.emitSelection();
+  // }
+
+  masterToggle() {
+    if (this.isAllSelected()) {
+      this.selection.clear();
+    } else {
+      // Jab Parent Header select ho:
+      this.childSelection.clear(); // 1. Saare child selections saaf
+      this.dataSource.data.forEach(row => this.selection.select(row)); // 2. Saare parents select
+    }
     this.emitSelection();
   }
 
@@ -86,16 +107,29 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     return items.length > 0 && items.every((item: any) => this.childSelection.isSelected(item));
   }
 
-  childMasterToggle(element: any): void {
-    const items = element[this.childDataField] || [];
-    if (this.isAllChildSelected(element)) {
-      items.forEach((i: any) => this.childSelection.deselect(i));
+  // childMasterToggle(element: any): void {
+  //   const items = element[this.childDataField] || [];
+  //   if (this.isAllChildSelected(element)) {
+  //     items.forEach((i: any) => this.childSelection.deselect(i));
+  //   } else {
+  //     items.forEach((i: any) => this.childSelection.select(i));
+  //   }
+  //   this.emitSelection();
+  // }
+  childMasterToggle(parentRow: any) {
+    if (this.isAllChildSelected(parentRow)) {
+      this.childSelection.clear();
     } else {
-      items.forEach((i: any) => this.childSelection.select(i));
+      // Jab Child Header select ho:
+      this.selection.clear(); // 1. Saare parent selections saaf (Header included)
+
+      // 2. Sirf is specific parent ke items ko select karein
+      if (parentRow[this.childDataField]) {
+        parentRow[this.childDataField].forEach((item: any) => this.childSelection.select(item));
+      }
     }
     this.emitSelection();
   }
-
   emitSelection(): void {
     this.onSelectionChange.emit({
       parents: this.selection.selected,
@@ -123,6 +157,8 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   applyFilter() { this.currentPage = 0; this.triggerDataLoad(); }
 
   triggerDataLoad() {
+    this.selection.clear();
+    this.childSelection.clear();
     const state = { pageIndex: this.currentPage, pageSize: this.pageSize, sortField: this.sortField, sortOrder: this.sortDirection, fromDate: this.fromDate, toDate: this.toDate, globalSearch: this.globalSearchQuery, filters: this.columns.filter(c => c.filterValue).map(c => ({ field: c.field, value: c.filterValue })) };
     this.onGridStateChange.emit(state);
   }
@@ -177,42 +213,157 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     this.editRecord.emit(row);
   }
 
-  onDelete(row: any, event?: MouseEvent) {
+  // 1. Single Parent Delete
+  // enterprise-hierarchical-grid.ts
+
+  SingleParentDelete(row: any, event?: MouseEvent) {
     if (event) event.stopPropagation();
-    if (confirm('Are you sure you want to delete this record?')) {
-      this.deleteRecord.emit(row);
+
+    // 1. Domain Rule Check (Draft Only)
+    if (row.status !== 'Draft') {
+      this.notification.showStatus(false, `Dude, the command is '${row.status}'. Only drafts will be deleted!`);
+      return;
     }
+
+    // 2. Browser confirm() ki jagah Modal Popup
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Remove Purchase Order',
+        // PO Number dikhana achha hota hai user confirmation ke liye
+        message: `Do you want to remove PO: ${row.poNumber}?`,
+        buttonText: { ok: 'Remove', cancel: 'Keep' }
+      }
+    });
+
+    // 3. Modal close hone par action
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.deleteRecord.emit(row);
+      }
+    });
   }
 
-  onBulkDelete() {
-    const selectedRows = this.selection.selected;
-    if (confirm(`Delete ${selectedRows.length} selected records?`)) {
-      this.bulkDeleteRecords.emit(selectedRows);
-      this.selection.clear();
-    }
-  }
-
+  // onBulkDelete() {
+  //   const selectedRows = this.selection.selected;
+  //   // Browser confirm hataya, ab direct parent ko data bhej rahe hain
+  //   if (selectedRows && selectedRows.length > 0) {
+  //     this.bulkDeleteRecords.emit(selectedRows);
+  //     // Note: selection.clear() hum Parent mein API success ke baad karenge
+  //   } else {
+  //     alert("Please select at least one record."); // Ye simple validation hai
+  //   }
+  // }
 
   onEditChild(child: any, event?: any) {
-    if (event && event.stopPropagation) {
-        event.stopPropagation();
-    }
-    
-    // Agar expandedElement (Header) hai, toh usey bhejo, nahi toh child item ko
-    const dataToEdit = this.expandedElement ? this.expandedElement : child;
-    
-    console.log('Passing Data to Form:', dataToEdit);    
-
-    this.editRecord.emit(dataToEdit);
-}
-
-  onDeleteChild(child: any, event?: any) {
     if (event && event.stopPropagation) {
       event.stopPropagation();
     }
 
-    if (confirm('Are you sure you want to delete this line item?')) {
-      this.deleteChildRecord.emit({ parent: this.expandedElement, child: child });
+    // Agar expandedElement (Header) hai, toh usey bhejo, nahi toh child item ko
+    const dataToEdit = this.expandedElement ? this.expandedElement : child;
+
+    this.editRecord.emit(dataToEdit);
+  }
+
+  // Single Item Delete (Trash icon click par)
+  onDeleteChild(parentRow: any, childRow: any) {
+    this.bulkDeleteChildItems.emit({
+      parent: parentRow,
+      child: childRow,
+      isBulk: false
+    });
+  }
+
+  // 2. Bulk Parent Delete 
+  // enterprise-hierarchical-grid.ts
+
+  onBulkDeleteClick() {
+    const selectedRows = this.selection.selected;
+
+    if (selectedRows.length === 0) return;
+
+    // Validation Check
+    const invalidOrders = selectedRows.filter(r => r.status !== 'Draft');
+    if (invalidOrders.length > 0) {
+      // Yahan aap toastr ya notification dikha sakte hain alert ki jagah
+      this.notification.showStatus(false, 'Only draft orders can be bulk deleted!');
+      return;
     }
+
+    // Ab confirm() ki jagah Modal trigger karenge
+    this.openBulkDeleteDialog(selectedRows);
+  }
+
+  openBulkDeleteDialog(selectedRows: any[]) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Remove Purchase Order(s)',
+        message: `Do you want to remove ${selectedRows.length} selected orders?`,
+        buttonText: { ok: 'Remove', cancel: 'Keep' }
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Agar user ne 'Remove' click kiya, tab emit karo
+        this.bulkDeleteParentOrders.emit(selectedRows);
+        this.selection.clear(); // Selection clear karna mat bhoolna
+      }
+    });
+  }
+
+  // Child Delete Trigger (Bulk)
+  onBulkDeleteChildItems(element: any) {
+    this.bulkDeleteChildItems.emit({
+      parent: element,
+      child: this.childSelection.selected,
+      isBulk: true
+    });
+  }
+  // enterprise-hierarchical-grid.ts
+
+  // Jab Parent checkbox click ho
+  onParentSelectionChange(row: any) {
+    this.selection.toggle(row);
+
+    if (this.selection.hasValue()) {
+      // Agar Parent select hua, toh Child selection ko khali kar do
+      this.childSelection.clear();
+    }
+  }
+
+  // Jab Child checkbox click ho
+  onChildSelectionChange(item: any) {
+    this.childSelection.toggle(item);
+
+    if (this.childSelection.hasValue()) {
+      // Agar Child select hua, toh Parent selection ko khali kar do
+      this.selection.clear();
+    }
+  }
+
+  // Jab Parent row ka checkbox click ho
+  onParentCheck(row: any) {
+    // Exclusive logic: Parent select hua toh Child ki saari selections saaf
+    this.childSelection.clear();
+    this.selection.toggle(row);
+  }
+
+  // Jab Child (Item) row ka checkbox click ho
+  onChildCheck(item: any) {
+    // Exclusive logic: Child select hua toh Parent ki saari selections saaf
+    this.selection.clear();
+    this.childSelection.toggle(item);
+  }
+
+  // enterprise-hierarchical-grid.ts
+
+  calculateSubTotal(element: any): number {
+    // Logic: Grand Total mein se Tax hata do toh Sub-Total mil jayega
+    const grand = element.grandTotal || 0;
+    const tax = element.totalTaxAmount || 0;
+    return grand - tax;
   }
 }
