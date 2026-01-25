@@ -471,3 +471,16 @@ th.child-th {
     display: none;
   }
 }
+.no-records-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+}
+
+/* Checkbox ke saath dot ka space khatam karne ke liye */
+.mat-column-select, .mat-column-ID {
+  white-space: nowrap;
+}

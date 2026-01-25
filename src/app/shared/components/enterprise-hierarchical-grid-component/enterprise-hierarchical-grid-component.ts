@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, inject, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, inject, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, PageEvent, MatPaginatorModule } from '@angular/material/paginator';
@@ -25,7 +25,7 @@ import { MatDialog } from '@angular/material/dialog';
   templateUrl: './enterprise-hierarchical-grid-component.html',
   styleUrl: './enterprise-hierarchical-grid-component.scss'
 })
-export class EnterpriseHierarchicalGridComponent implements OnInit {
+export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewInit {
   @Input() columns: GridColumn[] = [];
   @Input() dataSource = new MatTableDataSource<any>();
   @Input() childColumns: GridColumn[] = [];
@@ -69,10 +69,22 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   constructor(private cdr: ChangeDetectorRef, private router: Router) { }
 
   ngOnInit() {
+    this.columns.forEach(col => {
+      if (col.visible === undefined) col.visible = true;
+    });
+
     this.dataSource.sort = null;
     setTimeout(() => { this.triggerDataLoad(); }, 0);
   }
 
+  ngAfterViewInit() {
+    this.dataSource.sort = this.sort;
+    this.cdr.detectChanges();
+  }
+  onColumnToggle() {
+    this.cdr.detectChanges(); // UI refresh karne ke liye
+    // Agar aap grid state save karna chahte hain toh yahan emit bhi kar sakte hain
+  }
   get displayedColumns(): string[] {
     const dynamicCols = this.columns.filter(c => c.visible !== false).map(c => c.field);
     // Added 'actions' to ensure the column is rendered by the grid
@@ -107,15 +119,11 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
     return items.length > 0 && items.every((item: any) => this.childSelection.isSelected(item));
   }
 
-  // childMasterToggle(element: any): void {
-  //   const items = element[this.childDataField] || [];
-  //   if (this.isAllChildSelected(element)) {
-  //     items.forEach((i: any) => this.childSelection.deselect(i));
-  //   } else {
-  //     items.forEach((i: any) => this.childSelection.select(i));
-  //   }
-  //   this.emitSelection();
-  // }
+  toggleAllColumns(state: boolean) {
+    this.columns.forEach(col => col.visible = state);
+    this.onColumnToggle();
+  }
+
   childMasterToggle(parentRow: any) {
     if (this.isAllChildSelected(parentRow)) {
       this.childSelection.clear();
@@ -159,7 +167,17 @@ export class EnterpriseHierarchicalGridComponent implements OnInit {
   triggerDataLoad() {
     this.selection.clear();
     this.childSelection.clear();
-    const state = { pageIndex: this.currentPage, pageSize: this.pageSize, sortField: this.sortField, sortOrder: this.sortDirection, fromDate: this.fromDate, toDate: this.toDate, globalSearch: this.globalSearchQuery, filters: this.columns.filter(c => c.filterValue).map(c => ({ field: c.field, value: c.filterValue })) };
+    const state =
+    {
+      pageIndex: this.currentPage,
+      pageSize: this.pageSize,
+      sortField: this.sortField || 'poDate',
+      sortOrder: this.sortDirection || 'desc',
+      fromDate: this.fromDate,
+      toDate: this.toDate,
+      globalSearch: this.globalSearchQuery,
+      filters: this.columns.filter(c => c.filterValue).map(c => ({ field: c.field, value: c.filterValue }))
+    };
     this.onGridStateChange.emit(state);
   }
 

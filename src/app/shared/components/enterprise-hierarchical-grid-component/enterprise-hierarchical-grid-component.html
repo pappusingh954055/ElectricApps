@@ -1,8 +1,8 @@
 <div class="enterprise-grid-container">
-  <div class="loading-shade" *ngIf="isLoading">
+  <!-- <div class="loading-shade" *ngIf="isLoading">
     <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
     <p>Loading data...</p>
-  </div>
+  </div> -->
 
   <div class="grid-toolbar">
     <div class="date-range-container">
@@ -16,8 +16,8 @@
       <mat-form-field appearance="outline" class="modern-datepicker">
         <mat-label>Select PO Date Range</mat-label>
         <mat-date-range-input [rangePicker]="picker">
-          <input matStartDate [(ngModel)]="fromDate" placeholder="Start Date" (dateChange)="applyDateFilter()">
-          <input matEndDate [(ngModel)]="toDate" placeholder="End Date" (dateChange)="applyDateFilter()">
+          <input matStartDate [value]="fromDate" placeholder="Start Date" (dateChange)="applyDateFilter()">
+          <input matEndDate [value]="toDate" placeholder="End Date" (dateChange)="applyDateFilter()">
         </mat-date-range-input>
         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-date-range-picker #picker></mat-date-range-picker>
@@ -25,6 +25,27 @@
     </div>
 
     <div class="right-actions">
+      <button mat-icon-button [matMenuTriggerFor]="columnMenu" title="Hide/Show Columns" style="margin-right: 8px;">
+        <mat-icon color="primary">view_column</mat-icon>
+      </button>
+
+      <mat-menu #columnMenu="matMenu" class="custom-column-menu">
+        <div class="menu-header">Show/Hide Columns</div>
+
+        <div class="menu-actions-row" (click)="$event.stopPropagation()">
+          <button mat-button color="primary" class="mini-link-btn" (click)="toggleAllColumns(true)">Select All</button>
+          <span class="v-divider">|</span>
+          <button mat-button color="warn" class="mini-link-btn" (click)="toggleAllColumns(false)">Clear All</button>
+        </div>
+
+        <div class="menu-scroll-container">
+          <div *ngFor="let col of columns" class="menu-item-checkbox" (click)="$event.stopPropagation()">
+            <mat-checkbox [(ngModel)]="col.visible" (change)="onColumnToggle()" color="primary">
+              {{ col.header }}
+            </mat-checkbox>
+          </div>
+        </div>
+      </mat-menu>
       <button mat-flat-button color="warn" *ngIf="selection.hasValue()" (click)="onBulkDeleteClick()" class="action-btn"
         style="margin-right: 8px;">
         <mat-icon>delete_sweep</mat-icon> Bulk Delete ({{selection.selected.length}})
@@ -220,6 +241,14 @@
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="master-row" (click)="toggleRow(row)"></tr>
       <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" [attr.colspan]="displayedColumns.length" style="padding: 40px 0;">
+          <div class="no-records-wrapper">
+            <mat-icon style="font-size: 32px; color: #ccc;">manage_search</mat-icon>
+            <p style="margin: 10px 0; color: #666; font-weight: 500;">No records found matching your criteria.</p>
+          </div>
+        </td>
+      </tr>
     </table>
   </div>
   <mat-paginator [length]="totalRecords" [pageSize]="pageSize" (page)="onPageChange($event)"></mat-paginator>
