@@ -501,6 +501,7 @@ export class PoForm implements OnInit, OnDestroy {
       updatedBy: currentUserId,
       totalTax: Number(this.totalTaxAmount || 0),
       grandTotal: Number(this.grandTotal || 0),
+      subTotal: Number((this.grandTotal - this.totalTaxAmount).toFixed(2)) || 0,
       items: formValue.items.map((item: any) => ({
         id: Number(item.id || 0),
         productId: item.productId,
