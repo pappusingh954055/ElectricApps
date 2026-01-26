@@ -1,0 +1,18 @@
+.full-width {
+      width: 100%;
+      margin-top: 5px;
+    }
+    .dialog-footer {
+      padding: 16px 0;
+    }
+    @media (max-width: 600px) {
+      .dialog-footer {
+        flex-direction: column-reverse;
+        gap: 10px;
+        align-items: stretch;
+      }
+      button {
+        width: 100%;
+        margin-left: 0 !important;
+      }
+    }

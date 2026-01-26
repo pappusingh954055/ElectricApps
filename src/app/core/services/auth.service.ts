@@ -36,13 +36,13 @@ export class AuthService {
 
     console.log('[AuthService] saving tokens');
 
-    localStorage.setItem('access_token', res.accessToken);
-    localStorage.setItem('refresh_token', res.refreshToken);
+    localStorage.setItem('accessToken', res.accessToken);
+    localStorage.setItem('refreshToken', res.refreshToken);
   }
 
   // 🔍 CHECK LOGIN STATUS
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('access_token');
+    return !!localStorage.getItem('accessToken');
   }
 
   // 🚪 LOGOUT
@@ -53,10 +53,19 @@ export class AuthService {
 
   // 🔑 GET TOKEN
   getAccessToken(): string | null {
-    return localStorage.getItem('access_token');
+    return localStorage.getItem('accessToken');
   }
 
   getRefreshToken(): string | null {
-    return localStorage.getItem('refresh_token');
+    return localStorage.getItem('refreshToken');
+  }
+  getUserRole(): string {
+    const roles = localStorage.getItem('roles');
+    if (roles) {
+      const parsedRoles = JSON.parse(roles);
+      // Agar array hai ["User"], toh pehla element dein, warna string dein
+      return Array.isArray(parsedRoles) ? parsedRoles[0] : parsedRoles;
+    }
+    return 'User'; // Default role agar kuch na mile
   }
 }

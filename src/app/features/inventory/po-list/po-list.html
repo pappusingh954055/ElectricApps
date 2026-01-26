@@ -4,22 +4,24 @@
       <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
     </div>
 
-    <app-enterprise-hierarchical-grid 
-      [addNewLabel]="'New PO'" 
-      [addNewRoute]="'/app/inventory/polist/add'"
-      [columns]="poColumns" [childColumns]="itemColumns" 
-      [dataSource]="dataSource" [totalRecords]="totalRecords"
-      [pageSize]="pageSize" 
-      [isLoading]="isLoading" 
-      [childDataField]="'items'"
-      (onGridStateChange)="onGridStateChange($event)"
-      (editRecord)="handleEdit($event)"
-      (deleteRecord)="onDeleteSingleParentRecord($event)"
-      (bulkDeleteChildItems)="onBulkDeleteChildItems($event)"
-      (selectionChanged)="onGridSelectionChange($event)"
-      (bulkDeleteParentOrders)="onBulkDeleteParentOrders($event)"
-      
-      >
-    </app-enterprise-hierarchical-grid>
+ <app-enterprise-hierarchical-grid 
+  [addNewLabel]="'New PO'" 
+  [addNewRoute]="'/app/inventory/polist/add'"
+  [columns]="poColumns" 
+  [childColumns]="itemColumns" 
+  [dataSource]="dataSource" 
+  [totalRecords]="totalRecords"
+  [pageSize]="pageSize" 
+  [isLoading]="isLoading" 
+  [childDataField]="'items'"
+  [userRole]="userRole"                    
+  (onGridStateChange)="onGridStateChange($event)"
+  (editRecord)="handleEdit($event)"
+  (deleteRecord)="onDeleteSingleParentRecord($event)"
+  (bulkDeleteChildItems)="onBulkDeleteChildItems($event)"
+  (selectionChanged)="onGridSelectionChange($event)"
+  (bulkDeleteParentOrders)="onBulkDeleteParentOrders($event)"
+  (actionClicked)="handleGridAction($event)" >
+</app-enterprise-hierarchical-grid>
   </div>
 </mat-card>

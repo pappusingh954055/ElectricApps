@@ -1,18 +1,18 @@
 <div class="dialog-container" [class.success-border]="data.isSuccess" [class.error-border]="!data.isSuccess">
-    <h2 mat-dialog-title [style.color]="data.isSuccess ? '#2e7d32' : '#d32f2f'">
+    <h2 mat-dialog-title class="d-flex align-items-center justify-content-center">
         @if (data.isSuccess) {
-            <mat-icon class="text-success">check_circle</mat-icon>
+            <mat-icon class="text-success" style="font-size: 32px; height: 32px; width: 32px;">check_circle</mat-icon>
         } @else {
-            <mat-icon class="text-error">error</mat-icon>
+            <mat-icon class="text-error" style="font-size: 32px; height: 32px; width: 32px;">error</mat-icon>
         }
-        {{ data.isSuccess ? 'Success' : 'Error' }}
+        <span class="ms-2">{{ data.isSuccess ? 'Success' : 'Error' }}</span>
     </h2>
     
-    <mat-dialog-content>
+    <mat-dialog-content class="text-center">
         <p>{{ data.message }}</p>
     </mat-dialog-content>
     
-    <mat-dialog-actions align="end">
+    <mat-dialog-actions align="center">
         <button mat-flat-button 
                 [color]="data.isSuccess ? 'primary' : 'warn'" 
                 mat-dialog-close>

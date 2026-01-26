@@ -1,0 +1,120 @@
+/* Container: Tight layout [cite: 2026-01-22] */
+.grn-main-wrapper {
+  padding: 12px 20px;
+  background-color: #f4f6f9;
+  min-height: calc(100vh - 64px);
+}
+
+/* Header Section: Reduced margins [cite: 2026-01-22] */
+.header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px; /* Bahut kam gap grid se */
+}
+
+.title-section h1 {
+  margin: 0;
+  font-size: 18px; /* Professional small header */
+  font-weight: 600;
+  color: #333;
+}
+
+.text-muted { font-size: 11px; color: #777; margin: 0; }
+
+/* Action Group Alignment [cite: 2026-01-22] */
+.action-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Search Box: Dense look [cite: 2026-01-22] */
+.search-box {
+  width: 240px;
+  transform: scale(0.9); /* Slightly smaller scale */
+  transform-origin: right center;
+}
+
+.add-button {
+  height: 32px !important; /* Fixed compact height */
+  padding: 0 12px !important;
+  font-size: 12px !important;
+  border-radius: 4px !important;
+}
+
+/* TABLE COMPACT DESIGN (The "Professional" Fix) [cite: 2026-01-22] */
+
+/* Header: Gray background, very small padding [cite: 2026-01-22] */
+.mat-mdc-header-row {
+  height: 36px !important; /* Fixed small height */
+  background-color: #eaeff5;
+}
+
+.mat-mdc-header-cell {
+  padding: 0 8px !important; /* Minimum padding */
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  color: #444 !important;
+  border-bottom: 2px solid #dee2e6 !important;
+}
+
+/* Rows: Extreme compact padding [cite: 2026-01-22] */
+.mat-mdc-row {
+  height: 34px !important; /* Bahut hi compact height */
+}
+
+.mat-mdc-cell {
+  padding: 0 8px !important; /* Sirf 8px padding left-right */
+  font-size: 12px !important;
+  border-bottom: 1px solid #f0f0f0 !important;
+}
+
+/* Status Badges: Small & Flat [cite: 2026-01-22] */
+.status-badge {
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Action Icons: Smaller [cite: 2026-01-22] */
+.mat-icon-button {
+  width: 28px !important;
+  height: 28px !important;
+  line-height: 28px !important;
+}
+
+.mat-icon-button .mat-icon {
+  font-size: 18px !important;
+}
+
+/* Paginator: Compact [cite: 2026-01-22] */
+.mat-mdc-paginator-container {
+  min-height: 40px !important;
+  padding: 0 8px !important;
+}
+
+/* 1. Row Hover Effect [cite: 2026-01-22] */
+.mat-mdc-row:hover {
+  background-color: #f0f4ff !important; /* Halka blueish tint hover par */
+  cursor: pointer;
+  transition: background-color 0.15s ease-in-out;
+}
+
+/* 2. Text highlighting on hover [cite: 2026-01-22] */
+.mat-mdc-row:hover .mat-mdc-cell {
+  color: #1a237e !important; /* Hover karne par text thoda dark ho jayega */
+  font-weight: 500;
+}
+
+/* 3. Border highlight for better separation [cite: 2026-01-22] */
+.mat-mdc-row:hover {
+  box-shadow: inset 2px 0 0 #3f51b5; /* Row ke left mein ek patli blue line dikhegi */
+}
+
+/* 4. Active/Click state (Optional but professional) [cite: 2026-01-22] */
+.mat-mdc-row:active {
+  background-color: #e0e7ff !important;
+}

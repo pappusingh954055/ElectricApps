@@ -15,7 +15,7 @@ export const authInterceptor: HttpInterceptorFn = (
 ) => {
 
   const router = inject(Router);
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem('accessToken');
 
   // Attach token (except login)
   if (token && !req.url.includes('/login')) {

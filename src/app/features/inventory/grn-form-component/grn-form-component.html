@@ -1,0 +1,87 @@
+<div class="grn-form-container">
+  <div class="form-header">
+    <div class="title-group">
+      <button mat-icon-button (click)="goBack()">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h2 class="mat-h2">Create New GRN</h2>
+    </div>
+    <div class="header-buttons">
+      <button mat-stroked-button color="warn" (click)="onCancel()">Cancel</button>
+      <button mat-flat-button color="primary" (click)="saveGRN()" [disabled]="!grnForm.valid">
+        <mat-icon>save</mat-icon> Save & Update Stock
+      </button>
+    </div>
+  </div>
+
+  <mat-card class="compact-card mat-elevation-z2">
+    <mat-card-content>
+      <form [formGroup]="grnForm" class="header-grid">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>GRN Number</mat-label>
+          <input matInput formControlName="grnNumber" readonly>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Received Date</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="receivedDate">
+          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Supplier</mat-label>
+          <input matInput formControlName="supplierName" readonly>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Ref. PO Number</mat-label>
+          <input matInput formControlName="poNumber" readonly>
+        </mat-form-field>
+      </form>
+
+      <mat-divider class="section-divider"></mat-divider>
+
+      <div class="table-responsive">
+        <table class="grn-items-table">
+          <thead>
+            <tr>
+              <th>Product Name</th>
+              <th class="text-center">Ordered Qty</th>
+              <th class="text-center">Pending Qty</th>
+              <th class="text-center" width="150">Received Qty</th>
+              <th class="text-right">Unit Rate</th>
+              <th class="text-right">Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of items; let i = index">
+              <td>{{item.productName}}</td>
+              <td class="text-center">{{item.orderedQty}}</td>
+              <td class="text-center text-primary"><b>{{item.pendingQty}}</b></td>
+              <td>
+                <mat-form-field appearance="outline" class="dense-input" subscriptSizing="dynamic">
+                  <input matInput type="number" [value]="item.receivedQty" 
+                         (input)="calculateTotal(item)" [max]="item.pendingQty">
+                </mat-form-field>
+              </td>
+              <td class="text-right">{{item.unitRate | currency:'INR'}}</td>
+              <td class="text-right"><b>{{item.receivedQty * item.unitRate | currency:'INR'}}</b></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form-footer">
+        <mat-form-field appearance="outline" class="remarks-field">
+          <mat-label>Remarks / Notes</mat-label>
+          <textarea matInput rows="2"></textarea>
+        </mat-form-field>
+        <div class="grand-total-box">
+          <span class="label">Grand Total:</span>
+          <span class="value">{{calculateGrandTotal() | currency:'INR'}}</span>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

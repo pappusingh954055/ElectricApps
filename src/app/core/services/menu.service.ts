@@ -25,6 +25,11 @@ export class MenuService {
             icon: 'description',
             route: '/app/inventory/solist/add'
           },
+          {
+            label: 'Stock',
+            icon: 'shopping_cart',
+            route: ''
+          },
         ]
       },
 

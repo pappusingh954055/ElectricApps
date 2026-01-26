@@ -500,3 +500,166 @@ th.child-th {
     background-color: #f9f9f9;
   }
 }
+
+
+/* Action column container optimization */
+div[style*="display: flex"] {
+  flex-wrap: nowrap; /* Mobile par icons stack na hon */
+  
+  button[mat-icon-button] {
+    width: 32px;  /* Thoda compact size for better fit */
+    height: 32px;
+    line-height: 32px;
+
+    mat-icon {
+      font-size: 20px;
+    }
+  }
+}
+/* Actions Column Optimization */
+.mat-column-actions {
+  width: 130px !important; /* Mobile par thoda adjust karega */
+  
+  @media (max-width: 600px) {
+    width: 100px !important;
+    button[mat-icon-button] {
+      transform: scale(0.85); /* Mobile par icons thode chote */
+    }
+  }
+}
+
+/* Specific green for submit/approve */
+.text-success {
+  color: #2e7d32;
+}
+/* Actions Column Styling [cite: 2026-01-22] */
+.actions-header {
+  width: 140px !important;
+  text-align: center;
+}
+
+.po-actions-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  align-items: center;
+  white-space: nowrap; /* Prevent buttons from wrapping to next line */
+}
+
+/* Custom button colors [cite: 2026-01-22] */
+.btn-submit, .btn-approve {
+  color: #2e7d32 !important;
+}
+
+.locked-icon {
+  color: #bbb;
+  padding: 4px;
+  font-size: 20px;
+}
+
+.selected-text {
+  text-align: center;
+  color: #999;
+  font-size: 12px;
+  font-style: italic;
+}
+
+/* Mobile Responsiveness [cite: 2026-01-22] */
+@media (max-width: 768px) {
+  .actions-header {
+    width: 100px !important;
+  }
+  
+  .po-actions-wrapper {
+    gap: 2px;
+  }
+
+  /* Make icons slightly smaller on mobile to prevent overflow [cite: 2026-01-22] */
+  .mat-icon-button {
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+  }
+}
+
+
+/* enterprise-hierarchical-grid.component.css */
+
+/* Status text styling */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+/* Disabled state for checkboxes [cite: 2026-01-22] */
+.mat-mdc-checkbox-disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+}
+
+/* Row transparency for locked status [cite: 2026-01-22] */
+.status-locked-row {
+  background-color: #fdfdfd;
+  pointer-events: none; /* Mobile par accidental clicks rokne ke liye [cite: 2026-01-22] */
+}
+
+@media (max-width: 600px) {
+  .mat-mdc-header-cell, .mat-mdc-cell {
+    padding: 4px !important; /* Mobile par space bachaane ke liye [cite: 2026-01-22] */
+  }
+}
+
+/* Mobile responsive adjustments [cite: 2026-01-22] */
+@media (max-width: 768px) {
+  .status-badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  
+  /* Buttons spacing in responsive view [cite: 2026-01-22] */
+  .action-buttons {
+    display: flex;
+    gap: 4px;
+  }
+}
+
+
+
+
+
+/* Status Badge Styling for Rejected POs [cite: 2026-01-22] */
+.rejection-info {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  justify-content: center; /* Center align karne ke liye */
+}
+
+.status-text.rejected {
+  color: #d32f2f;
+  font-weight: bold;
+  font-size: 11px;
+  text-transform: uppercase;
+  border: 1px solid #d32f2f;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: #fff1f0; /* Light red background [cite: 2026-01-22] */
+}
+
+/* Mobile Responsiveness [cite: 2026-01-22] */
+@media (max-width: 600px) {
+  .rejection-info mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+  
+  .status-text.rejected {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+}

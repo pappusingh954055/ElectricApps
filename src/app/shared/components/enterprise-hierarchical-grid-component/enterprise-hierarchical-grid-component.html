@@ -66,7 +66,7 @@
         </th>
         <td mat-cell *matCellDef="let row" (click)="$event.stopPropagation()" style="width: 50px; padding-right: 0;">
           <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? onParentCheck(row) : null"
-            [checked]="selection.isSelected(row)">
+            [checked]="selection.isSelected(row)" [disabled]="row.status !== 'Draft'">
           </mat-checkbox>
         </td>
       </ng-container>
@@ -102,22 +102,68 @@
         </td>
       </ng-container>
 
+
+      
       <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef style="width: 100px; text-align: center;"> Actions </th>
+        <th mat-header-cell *matHeaderCellDef class="actions-header"> Actions </th>
         <td mat-cell *matCellDef="let row">
-          <div *ngIf="!selection.hasValue() && !childSelection.hasValue()"
-            style="display: flex; justify-content: center; gap: 8px;">
-            <button mat-icon-button color="primary" (click)="$event.stopPropagation(); onEditChild(row, $event)">
-              <mat-icon>edit</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" (click)="$event.stopPropagation(); onDeleteChild(row, $event)"
-              title="Delete">
-              <mat-icon>delete</mat-icon>
-            </button>
-          </div>
-          <div *ngIf="selection.isSelected(row)"
-            style="text-align: center; color: #999; font-size: 12px; font-style: italic;">
-            Selected
+
+          <div *ngIf="!selection.hasValue() && !childSelection.hasValue()" class="po-actions-wrapper">
+
+            <ng-container *ngIf="userRole === 'User' && row.status === 'Draft'">
+              <button mat-icon-button color="primary" (click)="onEditChild(row, $event)" title="Edit">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button style="color: green;" (click)="onSubmitPO(row)" title="Submit">
+                <mat-icon>send</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="onDeletePO(row)" title="Delete">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </ng-container>
+
+            <ng-container *ngIf="userRole === 'Manager' && row.status === 'Submitted'">
+              <button mat-icon-button (click)="$event.stopPropagation(); onApprovePO(row)" title="Approve">
+                <mat-icon style="color: green;">check_circle</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="$event.stopPropagation(); onRejectPO(row)" title="Reject">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            </ng-container>
+
+            <ng-container *ngIf="row.status === 'Approved'">
+              <button mat-icon-button color="accent" (click)="$event.stopPropagation(); onCreateGRN(row)"
+                title="Receive Goods (GRN)">
+                <mat-icon>local_shipping</mat-icon>
+              </button>
+              <button mat-icon-button (click)="$event.stopPropagation(); onPrintPO(row)" title="Print PO">
+                <mat-icon>print</mat-icon>
+              </button>
+            </ng-container>
+
+            <div *ngIf="row.status === 'Rejected'" class="rejection-info" (click)="$event.stopPropagation()">
+              <span class="status-text rejected">Rejected</span>
+              <mat-icon color="warn"
+                [matTooltip]="row.remarks || row.rejectionReason || 'Reason: Please check with Manager'"
+                matTooltipPosition="above">
+                info
+              </mat-icon>
+              <button *ngIf="userRole === 'User'" mat-icon-button color="primary" (click)="onEditChild(row, $event)"
+                title="Edit & Re-submit">
+                <mat-icon>edit</mat-icon>
+              </button>
+            </div>
+
+            <mat-icon
+              *ngIf="userRole === 'User' && row.status !== 'Draft' && row.status !== 'Rejected' && row.status !== 'Approved'"
+              class="locked-icon" title="Locked for Review">
+              lock
+            </mat-icon>
+
+            <mat-icon *ngIf="row.status === 'Approved'" style="color: #4caf50;" title="Verified/Approved">
+              verified
+            </mat-icon>
+
           </div>
         </td>
       </ng-container>
@@ -144,7 +190,8 @@
                     <tr class="child-header-row">
                       <th class="child-th" style="width: 50px;">
                         <mat-checkbox (change)="$event ? childMasterToggle(element) : null"
-                          [checked]="isAllChildSelected(element)"></mat-checkbox>
+                          [checked]="isAllChildSelected(element)" [disabled]="element.status !== 'Draft'">
+                        </mat-checkbox>
                       </th>
                       <th *ngFor="let cCol of childColumns" cdkDrag class="child-th" [style.width.px]="cCol.width">
                         <div class="header-main-container">
@@ -185,21 +232,27 @@
                       <td style="text-align: center;">
                         <mat-checkbox (click)="$event.stopPropagation()"
                           (change)="$event ? onChildCheck(childRow) : null"
-                          [checked]="childSelection.isSelected(childRow)"></mat-checkbox>
+                          [checked]="childSelection.isSelected(childRow)" [disabled]="element.status !== 'Draft'">
+                        </mat-checkbox>
                       </td>
                       <td *ngFor="let cCol of childColumns" [style.text-align]="cCol.align">{{ childRow[cCol.field] }}
                       </td>
                       <td>
                         <div *ngIf="!childSelection.hasValue()"
                           style="display: flex; gap: 4px; justify-content: center;">
+                          @if (element.status === 'Draft') {
                           <button mat-icon-button (click)="onEditChild(element, childRow)" color="primary"
                             title="Edit Item">
                             <mat-icon style="font-size: 18px;">edit</mat-icon>
                           </button>
+
                           <button mat-icon-button (click)="onDeleteChild(element, childRow)" color="warn"
                             title="Delete Item">
                             <mat-icon style="font-size: 18px;">delete</mat-icon>
                           </button>
+                          } @else {
+                          <mat-icon style="font-size: 18px; color: #bdbdbd;" title="Locked">lock</mat-icon>
+                          }
                         </div>
                         <div *ngIf="childSelection.isSelected(childRow)" style="text-align: center;">
                           <mat-icon color="primary" style="font-size: 18px;">check_circle</mat-icon>
@@ -209,9 +262,9 @@
                   </tbody>
                   <tfoot>
                     <tr class="child-footer-row">
-                      <td [attr.colspan]="childColumns.length - 1" class="footer-spacer"></td>
+                      <td [attr.colspan]="childColumns.length" class="footer-spacer"></td>
 
-                      <td colspan="2" class="footer-summary-container">
+                      <td class="footer-summary-container">
                         <div class="summary-box">
                           <div class="summary-item">
                             <span class="label">Sub-Total:</span>
@@ -240,7 +293,7 @@
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
       <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="master-row" (click)="toggleRow(row)">
-        
+
       </tr>
       <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
       <tr class="mat-row" *matNoDataRow>

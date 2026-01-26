@@ -1,0 +1,27 @@
+<h2 mat-dialog-title style="color: #d32f2f;">Reject Purchase Order</h2>
+    <mat-dialog-content>
+      <p>Kripya PO No: <strong>{{data.poNo}}</strong> ko reject karne ka karan batayein:</p>
+      
+      <mat-form-field appearance="outline" style="width: 100%; margin-top: 10px;">
+        <mat-label>Rejection Reason</mat-label>
+        <textarea 
+          matInput 
+          [(ngModel)]="rejectReason" 
+          name="reason" 
+          rows="4" 
+          placeholder="Reason likhein..." 
+          required>
+        </textarea>
+      </mat-form-field>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end" style="padding-bottom: 20px;">
+      <button mat-button (click)="onCancel()">Cancel</button>
+      <button 
+        mat-flat-button 
+        color="warn" 
+        [disabled]="!rejectReason || rejectReason.trim().length < 3" 
+        (click)="onConfirm()">
+        Confirm Reject
+      </button>
+    </mat-dialog-actions>

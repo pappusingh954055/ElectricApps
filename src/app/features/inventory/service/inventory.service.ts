@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../enviornments/environment';
 import { ApiService } from '../../../shared/api.service';
@@ -74,7 +74,7 @@ export class InventoryService {
         return this.http.post<any>(`${this.apiUrl}/PurchaseOrders/get-paged-orders`, request);
     }
 
-    
+
 
     /**
      * 2. Delete Single Purchase Order (From Grid/List)
@@ -86,7 +86,7 @@ export class InventoryService {
     }
 
 
-    
+
     bulkDeletePurchaseOrders(ids: number[]): Observable<any> {
         // Method: POST ya DELETE (Aapke backend ke hisaab se)
         return this.http.post(`${this.apiUrl}/PurchaseOrders/bulk-delete-orders`, { ids });
@@ -103,5 +103,28 @@ export class InventoryService {
             itemIds: itemIds
         };
         return this.http.post(`${this.apiUrl}/PurchaseOrders/bulk-delete-items`, payload);
+    }
+
+    /** * PO Status update karne ke liye nullable reason parameter ke sath [cite: 2026-01-22]
+   */
+    updatePOStatus(id: number, status: string, reason?: string): Observable<any> {
+        // Payload mein 'Reason' add kiya gaya hai [cite: 2026-01-22]
+        const payload = {
+            Id: id,
+            Status: status,
+            Reason: reason || null  // Agar reason undefined hai toh null bhejein [cite: 2026-01-22]
+        };
+
+        return this.http.put(`${this.apiUrl}/PurchaseOrders/UpdateStatus`, payload);
+    }
+
+    // PO Data pick karne ke liye
+    getPODataForGRN(poId: number): Observable<any> {
+        return this.http.get(`${this.apiUrl}/GRN/GetPOData/${poId}`);
+    }
+
+    // GRN save aur stock update ke liye (CQRS Command)
+    saveGRN(payload: any): Observable<any> {
+        return this.http.post(`${this.apiUrl}/GRN/Save`, payload);
     }
 }

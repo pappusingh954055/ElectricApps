@@ -63,3 +63,47 @@
     }
   }
 }
+
+/* Status Dialog Container [cite: 2026-01-22] */
+.dialog-container {
+  min-width: 320px; /* Minimum width set karein taaki message break na ho [cite: 2026-01-22] */
+  max-width: 450px;
+  padding: 10px;
+}
+
+/* Message text styling [cite: 2026-01-22] */
+mat-dialog-content p {
+  font-size: 16px;
+  line-height: 1.5;
+  margin: 15px 0;
+  white-space: normal; /* Text ko wrap karne ke liye [cite: 2026-01-22] */
+  word-break: break-word; 
+  text-align: center;
+  color: #555;
+}
+/* Status Dialog layout [cite: 2026-01-22] */
+.dialog-container {
+  min-width: 350px; /* Thodi zyada width taaki text break na ho */
+  padding: 20px;
+}
+
+mat-dialog-content p {
+  word-wrap: break-word;
+  white-space: normal;
+  text-align: center;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+@media (max-width: 600px) {
+  .dialog-container {
+    min-width: 90vw; /* Mobile par width adjust hogi */
+    padding: 15px;
+  }
+}
+/* Mobile Responsiveness [cite: 2026-01-22] */
+@media (max-width: 600px) {
+  .dialog-container {
+    min-width: 85vw; /* Mobile par width automatically adjust hogi [cite: 2026-01-22] */
+  }
+}

@@ -1,0 +1,82 @@
+<div class="grn-main-wrapper">
+    <div class="header-container">
+        <div class="title-section">
+            <h1 class="mat-h1">Goods Receipt Notes (GRN)</h1>
+            <p class="mat-body-1 text-muted">Manage and track your incoming supplier stock</p>
+        </div>
+
+        <div class="action-section">
+            <mat-form-field appearance="outline" class="search-box">
+                <mat-label>Search GRN or PO...</mat-label>
+                <input matInput (keyup)="applyFilter($event)" placeholder="Ex. GRN/26-27/001">
+                <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+
+            <button mat-flat-button color="primary" class="add-button" routerLink="/app/inventory/grn-list/add">
+                <mat-icon>add</mat-icon>
+                Receive New Stock
+            </button>
+        </div>
+    </div>
+
+    <div class="table-card mat-elevation-z3">
+        <div class="table-responsive">
+            <table mat-table [dataSource]="dataSource" matSort>
+
+                <ng-container matColumnDef="grnNumber">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> GRN No. </th>
+                    <td mat-cell *matCellDef="let row"> <b>{{row.grnNumber}}</b> </td>
+                </ng-container>
+
+                <ng-container matColumnDef="poNumber">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Ref. PO </th>
+                    <td mat-cell *matCellDef="let row">
+                        <a class="po-link" (click)="viewPO(row.poId)">{{row.poNumber}}</a>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="supplierName">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Supplier </th>
+                    <td mat-cell *matCellDef="let row"> {{row.supplierName}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="receivedDate">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Received Date </th>
+                    <td mat-cell *matCellDef="let row"> {{row.receivedDate | date:'mediumDate'}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+                    <td mat-cell *matCellDef="let row">
+                        <span class="status-badge" [ngClass]="row.status.toLowerCase()">
+                            {{row.status}}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef> Actions </th>
+                    <td mat-cell *matCellDef="let row">
+                        <button mat-icon-button color="primary" (click)="viewGRN(row)" matTooltip="View Details">
+                            <mat-icon>visibility</mat-icon>
+                        </button>
+                        <button mat-icon-button (click)="printGRN(row)" matTooltip="Print Receipt">
+                            <mat-icon>print</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="row-hover"></tr>
+
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="6" style="text-align: center; padding: 40px;">
+                        No GRN records found matching the filter.
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <mat-paginator [pageSizeOptions]="[10, 25, 50]" showFirstLastButtons aria-label="Select page"></mat-paginator>
+    </div>
+</div>

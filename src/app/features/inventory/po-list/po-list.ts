@@ -11,6 +11,11 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from '../../shared/notification.service';
 import { SelectionModel } from '@angular/cdk/collections';
+import { AuthService } from '../../../core/services/auth.service';
+import { PurchaseOrderStatus } from '../models/po-status.enum';
+import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { ActionConfirmDialog } from '../../../shared/components/action-confirm-dialog/action-confirm-dialog';
+import { ReasonRejectDialog } from '../../../shared/components/reason-reject-dialog/reason-reject-dialog';
 
 @Component({
   selector: 'app-po-list',
@@ -44,6 +49,10 @@ export class PoList implements OnInit {
   // Aur agar child ke liye bhi chahiye:
   childSelection = new SelectionModel<any>(true, []);
 
+  private authService = inject(AuthService);
+
+  userRole: any;
+
   constructor(
     private poService: InventoryService,
     private cdr: ChangeDetectorRef,
@@ -55,7 +64,12 @@ export class PoList implements OnInit {
 
   ngOnInit() {
     this.initColumns();
-    // initialLoad ki zaroorat nahi hai, Grid ka ngOnInit khud triggerDataLoad call karega
+    this.userRole = this.authService.getUserRole();
+
+    console.log('[PoList] Current User Role:', this.userRole);
+
+    // Iske baad apna data load karein
+    this.loadData(this.currentGridState);
   }
 
   private initColumns() {
@@ -295,5 +309,132 @@ export class PoList implements OnInit {
     this.selectedParentRows = selectedRows;
   }
 
-  
+  // 1. Grid se aane wale actions ko route karne ke liye
+  handleGridAction(event: { action: string, row: any }) {
+    const row = event.row;
+
+    switch (event.action) {
+      case 'SUBMIT':
+        this.onSubmitPO(row);
+        break;
+      case 'APPROVE':
+        this.onApprovePO(row);
+        break;
+      case 'REJECT':
+        this.onRejectPO(row);
+        break;
+    }
+  }
+
+
+  // 1. User: Submit (Status: 'Submitted')
+  onSubmitPO(row: any) {
+    const poNumber = row.poNumber || 'N/A';
+
+    const dialogRef = this.dialog.open(ActionConfirmDialog, {
+      width: '400px',
+      data: {
+        title: 'Confirm Submission',
+        message: `Do you want to send Po No: ${poNumber} for approval?`,
+        confirmText: 'Submit',
+        confirmColor: 'primary'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.updateStatus(row.id, 'Submitted', `PO ${poNumber} has been successfully submitted!`);
+      }
+    });
+  }
+
+  // 2. Manager: Approve (Status: 'Approved')
+  onApprovePO(row: any) {
+    const poNumber =row.poNumber || 'N/A';
+
+    const dialogRef = this.dialog.open(ActionConfirmDialog, {
+      width: '400px',
+      data: {
+        title: 'Approve PO',
+        message: `Do you want to approve the PO NO: ${poNumber}?`,
+        confirmText: 'Approve',
+        confirmColor: 'success'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.updateStatus(row.id, 'Approved', 'PO Approved Successfully!');
+      }
+    });
+  }
+
+  // 3. Manager: Reject (Status: 'Rejected')
+  onRejectPO(row: any) {
+    // Debugging ke liye console zaroor check karein ki 'row' mein kya aa raha hai
+    console.log('Rejecting Row:', row);
+
+    const dialogRef = this.dialog.open(ReasonRejectDialog, {
+      width: '450px',
+      maxWidth: '90vw',
+      disableClose: true,
+      // Fallback logic: poNo check karein, agar nahi hai toh pono check karein [cite: 2026-01-22]
+      data: { poNo: row.poNumber || row.poNumber || 'N/A' }
+    });
+
+    dialogRef.afterClosed().subscribe(reason => {
+      if (reason) {
+        this.poService.updatePOStatus(row.id, 'Rejected', reason).subscribe({
+          next: () => {
+            this.loadData(this.currentGridState);
+            this.dialog.open(StatusDialogComponent, {
+              width: '400px',
+              data: {
+                title: 'Success',
+                message: `PO ${row.poNumber || row.poNumber} has been rejected successfully.`,
+                isSuccess: true
+              }
+            });
+          },
+          error: (err) => {
+            this.dialog.open(StatusDialogComponent, {
+              width: '400px',             
+              data: { title: 'Error', message: 'Failed to reject PO.', type: 'error' , isSuccess: false,},
+              
+            });
+          }
+        });
+      }
+    });
+  }
+
+  // 4. Common Update Method with Status Dialog
+  private updateStatus(id: number, status: string, successMessage: string) {
+    this.poService.updatePOStatus(id, status).subscribe({
+      next: (response) => {
+        // SUCCESS logic: isSuccess ko true bhejna hai [cite: 2026-01-22]
+        const dialogRef = this.dialog.open(StatusDialogComponent, {
+          width: '350px',
+          data: {
+            message: successMessage,
+            isSuccess: true // Aapke HTML mein yahi property use ho rahi hai [cite: 2026-01-22]
+          }
+        });
+
+        setTimeout(() => dialogRef.close(), 2500);
+        this.loadData(this.currentGridState);
+      },
+      error: (err) => {
+        console.error('API Error:', err);
+        // ERROR logic: isSuccess ko false bhejna hai [cite: 2026-01-22]
+        this.dialog.open(StatusDialogComponent, {
+          width: '350px',
+          data: {
+            message: 'Server connectivity issue ya data validation error.',
+            isSuccess: false // Error icon aur red color ke liye [cite: 2026-01-22]
+          }
+        });
+      }
+    });
+  }
 }

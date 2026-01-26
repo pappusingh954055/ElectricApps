@@ -45,9 +45,10 @@ export class LoginComponent {
 
       next: (res) => {
         console.log('Login successful', res);
-        localStorage.setItem('userId', res.userId);  
+        localStorage.setItem('userId', res.userId);
         if (res.userName) localStorage.setItem('userName', res.userName);
         localStorage.setItem('accessToken', res.accessToken);
+        localStorage.setItem('refreshToken', res.refreshToken);
         localStorage.setItem('roles', JSON.stringify(res.roles));
         this.loading = false;
         this.router.navigate(['/app/dashboard']); // ✅ IMPORTANT

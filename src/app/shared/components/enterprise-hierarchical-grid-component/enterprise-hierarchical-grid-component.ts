@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, inject, Input, OnInit, Output, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, EventEmitter, inject, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, PageEvent, MatPaginatorModule } from '@angular/material/paginator';
@@ -25,7 +25,7 @@ import { MatDialog } from '@angular/material/dialog';
   templateUrl: './enterprise-hierarchical-grid-component.html',
   styleUrl: './enterprise-hierarchical-grid-component.scss'
 })
-export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewInit {
+export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() columns: GridColumn[] = [];
   @Input() dataSource = new MatTableDataSource<any>();
   @Input() childColumns: GridColumn[] = [];
@@ -43,10 +43,16 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   @Output() onSelectionChange = new EventEmitter<any>();
   @Output() editChildRecord = new EventEmitter<any>();
   @Output() bulkDeleteChildItems = new EventEmitter<any>();
+  @Output() deletePO = new EventEmitter<any>();
 
   @Output() selectionChanged = new EventEmitter<any[]>();
 
   @Output() bulkDeleteParentOrders = new EventEmitter<any[]>();
+  @Output() actionClicked = new EventEmitter<{ action: string, row: any }>();
+
+  @Input() userRole: string = ''; // Parent se role lene ke liye
+
+
 
   private notification = inject(NotificationService);
   private dialog = inject(MatDialog);
@@ -66,15 +72,24 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   fromDate: string = '';
   toDate: string = '';
 
+
+
   constructor(private cdr: ChangeDetectorRef, private router: Router) { }
 
   ngOnInit() {
+
     this.columns.forEach(col => {
       if (col.visible === undefined) col.visible = true;
     });
 
     this.dataSource.sort = null;
     setTimeout(() => { this.triggerDataLoad(); }, 0);
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['userRole']) {
+      console.log('Child Grid mein Role aaya:', changes['userRole'].currentValue);
+    }
   }
 
   ngAfterViewInit() {
@@ -92,27 +107,53 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   }
 
   // --- Checkbox Helpers ---
-  isAllSelected(): boolean {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
-    return numSelected === numRows && numRows > 0;
-  }
+  // isAllSelected(): boolean {
+  //   const numSelected = this.selection.selected.length;
+  //   const numRows = this.dataSource.data.length;
+  //   return numSelected === numRows && numRows > 0;
+  // }
 
   // masterToggle(): void {
   //   this.isAllSelected() ? this.selection.clear() : this.dataSource.data.forEach((row: any) => this.selection.select(row));
   //   this.emitSelection();
   // }
 
+  isAllSelected(): boolean {
+    const numSelected = this.selection.selected.length;
+    // Sirf un rows ko count karein jinaka status 'Draft' hai [cite: 2026-01-22]
+    const selectableRows = this.dataSource.data.filter(row => row.status === 'Draft').length;
+
+    return numSelected === selectableRows && selectableRows > 0;
+  }
+
   masterToggle() {
     if (this.isAllSelected()) {
       this.selection.clear();
     } else {
-      // Jab Parent Header select ho:
-      this.childSelection.clear(); // 1. Saare child selections saaf
-      this.dataSource.data.forEach(row => this.selection.select(row)); // 2. Saare parents select
+      // 1. Pehle pura selection clear karein safety ke liye [cite: 2026-01-22]
+      this.selection.clear();
+      this.childSelection.clear();
+
+      // 2. Sirf 'Draft' status wali rows ko hi loop karke select karein [cite: 2026-01-22]
+      this.dataSource.data.forEach(row => {
+        if (row.status === 'Draft') {
+          this.selection.select(row);
+        }
+      });
     }
     this.emitSelection();
   }
+
+  // masterToggle() {
+  //   if (this.isAllSelected()) {
+  //     this.selection.clear();
+  //   } else {
+  //     // Jab Parent Header select ho:
+  //     this.childSelection.clear(); // 1. Saare child selections saaf
+  //     this.dataSource.data.forEach(row => this.selection.select(row)); // 2. Saare parents select
+  //   }
+  //   this.emitSelection();
+  // }
 
   isAllChildSelected(element: any): boolean {
     const items = element[this.childDataField] || [];
@@ -262,16 +303,7 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
     });
   }
 
-  // onBulkDelete() {
-  //   const selectedRows = this.selection.selected;
-  //   // Browser confirm hataya, ab direct parent ko data bhej rahe hain
-  //   if (selectedRows && selectedRows.length > 0) {
-  //     this.bulkDeleteRecords.emit(selectedRows);
-  //     // Note: selection.clear() hum Parent mein API success ke baad karenge
-  //   } else {
-  //     alert("Please select at least one record."); // Ye simple validation hai
-  //   }
-  // }
+
 
   onEditChild(child: any, event?: any) {
     if (event && event.stopPropagation) {
@@ -383,5 +415,39 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
     const grand = element.grandTotal || 0;
     const tax = element.totalTaxAmount || 0;
     return grand - tax;
+  }
+
+  onDeletePO(row: any) {
+    // Parent ko signal bhej rahe hain delete karne ke liye [cite: 2026-01-22]
+    this.deletePO.emit(row);
+  }
+
+  // 3. Ye functions buttons se call honge
+  onSubmitPO(row: any) {
+    this.actionClicked.emit({ action: 'SUBMIT', row: row });
+  }
+
+  onApprovePO(row: any) {
+    this.actionClicked.emit({ action: 'APPROVE', row: row });
+  }
+
+  onRejectPO(row: any) {
+    this.actionClicked.emit({ action: 'REJECT', row: row });
+  }
+
+  // Child Grid TS [cite: 2026-01-22]
+  onCreateGRN(row: any) {
+    // Hum child grid se event emit bhi kar sakte hain ya seedha navigate
+    // Sabse asan hai ki hum yahan se navigate kar jayein
+    this.router.navigate(['/app/inventory/grn-list/add'], {
+      queryParams: { poId: row.id }
+    });
+  }
+
+  onPrintPO(row: any) {
+    // Print ke liye hum aksar parent ko batate hain ya alag window open karte hain
+    console.log('Printing PO:', row.poNumber);
+    // Example: Window open for PDF
+    // window.open(`${environment.apiUrl}/reports/po-print/${row.id}`, '_blank');
   }
 }
