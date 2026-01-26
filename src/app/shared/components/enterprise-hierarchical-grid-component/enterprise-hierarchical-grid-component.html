@@ -239,7 +239,9 @@
       </ng-container>
 
       <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="master-row" (click)="toggleRow(row)"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="master-row" (click)="toggleRow(row)">
+        
+      </tr>
       <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
       <tr class="mat-row" *matNoDataRow>
         <td class="mat-cell" [attr.colspan]="displayedColumns.length" style="padding: 40px 0;">

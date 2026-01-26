@@ -484,3 +484,19 @@ th.child-th {
 .mat-column-select, .mat-column-ID {
   white-space: nowrap;
 }
+/* enterprise-hierarchical-grid.component.scss */
+
+.master-row {
+  cursor: pointer !important; /* Isse poori row par hand icon aayega */
+  transition: background-color 0.2s ease;
+
+  /* Hover effect taaki responsive feel aaye */
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+  }
+
+  /* Agar row expand ho gayi hai toh highlight karne ke liye (Optional) */
+  &.expanded {
+    background-color: #f9f9f9;
+  }
+}
