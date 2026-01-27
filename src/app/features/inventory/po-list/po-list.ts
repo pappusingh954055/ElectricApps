@@ -323,10 +323,38 @@ export class PoList implements OnInit {
       case 'REJECT':
         this.onRejectPO(row);
         break;
+
+      // --- Naye Cases Jo Humne Add Kiye ---
+      case 'PRINT':
+        this.onPrintPO(row);
+        break;
+      case 'CREATE_GRN':
+        this.onCreateGRN(row); // Approved PO ke liye truck icon logic
+        break;
+
+      default:
+        console.warn(`Action ${event.action} is not handled.`);
+        break;
     }
   }
+  // 1. GRN Page par bhejta hai
+  onCreateGRN(row: any) {
+    console.log('Redirecting to GRN for PO:', row.poNumber);
+    // Hum router ka use karke GRN page par redirect kar rahe hain
+    this.router.navigate(['/app/inventory/grn/add'], {
+      state: { poData: row }
+    });
+  }
 
+  // 2. Print logic
+  onPrintPO(row: any) {
+    console.log('Printing PO:', row.poNumber);
+    // Yahan aap apna printing logic ya service call likh sakte hain
+    this.notification.showStatus(true, `Printing Order: ${row.poNumber}...`);
 
+    // Example: browser print open karne ke liye
+    // window.print(); 
+  }
   // 1. User: Submit (Status: 'Submitted')
   onSubmitPO(row: any) {
     const poNumber = row.poNumber || 'N/A';
@@ -350,7 +378,7 @@ export class PoList implements OnInit {
 
   // 2. Manager: Approve (Status: 'Approved')
   onApprovePO(row: any) {
-    const poNumber =row.poNumber || 'N/A';
+    const poNumber = row.poNumber || 'N/A';
 
     const dialogRef = this.dialog.open(ActionConfirmDialog, {
       width: '400px',
@@ -398,9 +426,9 @@ export class PoList implements OnInit {
           },
           error: (err) => {
             this.dialog.open(StatusDialogComponent, {
-              width: '400px',             
-              data: { title: 'Error', message: 'Failed to reject PO.', type: 'error' , isSuccess: false,},
-              
+              width: '400px',
+              data: { title: 'Error', message: 'Failed to reject PO.', type: 'error', isSuccess: false, },
+
             });
           }
         });

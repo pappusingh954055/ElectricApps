@@ -450,4 +450,12 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
     // Example: Window open for PDF
     // window.open(`${environment.apiUrl}/reports/po-print/${row.id}`, '_blank');
   }
+
+  handleAction(actionName: string, rowData: any) {
+    // Hum action ka naam aur poora row data emit kar rahe hain
+    this.actionClicked.emit({
+      action: actionName,
+      row: rowData
+    });
+  }
 }
