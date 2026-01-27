@@ -162,31 +162,17 @@ export class PoList implements OnInit {
       }
     });
   }
+
   OnEditPo(row: any): void {
-    // Hamari strategy 'state' transfer ki hai
-    this.router.navigate(['/app/inventory/po-list/add', row.id], {
+    this.router.navigate(['/app/inventory/polist/edit', row.id], {
       state: {
-        data: row,        // Is 'row' object mein 'id' hona zaroori hai
+        data: row,
         mode: 'edit'
       }
     });
   }
-  // po-list.component.ts
-  handleEdit(data: any) {
-    console.log('Redirecting to Edit Path:', data);
 
-    // Routing file mein 'edit/:id' hai, isliye wahi path use karein
-    const editPath = '/app/inventory/polist/edit';
-    const addPath = '/app/inventory/polist/add';
 
-    if (data && (data.id !== undefined && data.id !== null)) {
-      // Yeh routing ke { path: 'edit/:id' } se match karega
-      this.router.navigate([editPath, data.id]);
-    } else {
-      // Yeh routing ke { path: 'add' } se match karega
-      this.router.navigate([addPath]);
-    }
-  }
 
   // --- 1. SINGLE PARENT DELETE (Row Trash Icon) ---
   onDeleteSingleParentRecord(row: any) {
@@ -314,6 +300,9 @@ export class PoList implements OnInit {
     const row = event.row;
 
     switch (event.action) {
+      case 'EDIT': // <--- Yeh case miss ho gaya tha
+        this.OnEditPo(row);
+        break;
       case 'SUBMIT':
         this.onSubmitPO(row);
         break;
@@ -340,9 +329,8 @@ export class PoList implements OnInit {
   // 1. GRN Page par bhejta hai
   onCreateGRN(row: any) {
     console.log('Redirecting to GRN for PO:', row.poNumber);
-    // Hum router ka use karke GRN page par redirect kar rahe hain
-    this.router.navigate(['/app/inventory/grn/add'], {
-      state: { poData: row }
+    this.router.navigate(['/app/inventory/grn-list/edit', row.id], {
+      state: { poData: row, mode: 'save' }
     });
   }
 

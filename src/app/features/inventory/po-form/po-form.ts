@@ -454,94 +454,7 @@ export class PoForm implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // saveDraft() {
-  //   // 1. Sabse pehle raw values uthaein
-  //   const formValue = this.poForm.getRawValue();
 
-  //   // 2. STAGE 1: Date Validation
-  //   const isDateValid = this.notification.isValidDeliveryDate(formValue.poDate, formValue.expectedDeliveryDate);
-
-  //   if (!isDateValid) {
-  //     console.error('Validation Blocked: Invalid Date');
-  //     this.notification.showStatus(false, 'Expected Delivery Date cannot be earlier than PO Date.');
-  //     return; // <--- YEH ZAROORI HAI: Iske niche wala koi code nahi chalega
-  //   }
-
-  //   // 3. STAGE 2: Items Array Validation
-  //   // Screenshot mein items array empty hai, isliye hum strictly check karenge
-  //   const hasItems = formValue.items && formValue.items.length > 0;
-
-  //   if (!hasItems) {
-  //     console.error('Validation Blocked: No Items Found');
-  //     this.notification.showStatus(false, 'Please add at least one product to the Purchase Order.');
-  //     return; // <--- YEH ZAROORI HAI: API call ko yahi stop karega
-  //   }
-
-  //   // 4. STAGE 3: Form Controls Validation
-  //   if (this.poForm.invalid) {
-  //     this.poForm.markAllAsTouched();
-  //     this.notification.showStatus(false, 'Please fill all required fields correctly.');
-  //     return; // <--- Stop if form is invalid
-  //   }
-
-  //   // 5. STAGE 4: Final Processing (Sirf tabhi chalega jab upar ke 3 stages pass honge)
-  //   this.isLoading = true;
-
-  //   const currentUserId = localStorage.getItem('userId') || '00000000-0000-0000-0000-000000000000';
-
-  //   const payload: any = {
-  //     id: this.isEditMode ? Number(this.poId) : 0,
-  //     supplierId: Number(formValue.supplierId),
-  //     supplierName: this.suppliers.find(s => s.id === formValue.supplierId)?.name || '',
-  //     priceListId: formValue.priceListId,
-  //     priceList: { id: formValue.priceListId },
-  //     poDate: DateHelper.toLocalISOString(formValue.poDate),
-  //     expectedDeliveryDate: DateHelper.toLocalISOString(formValue.expectedDeliveryDate),
-  //     remarks: formValue.remarks || '',
-  //     poNumber: formValue.PoNumber,
-  //     createdBy: currentUserId,
-  //     updatedBy: currentUserId,
-  //     totalTax: Number(this.totalTaxAmount || 0),
-  //     grandTotal: Number(this.grandTotal || 0),
-  //     subTotal: Number((this.grandTotal - this.totalTaxAmount).toFixed(2)) || 0,
-  //     items: formValue.items.map((item: any) => ({
-  //       id: Number(item.id || 0),
-  //       productId: item.productId,
-  //       qty: Number(item.qty),
-  //       unit: item.unit,
-  //       rate: Number(item.price),
-  //       discountPercent: Number(item.discountPercent || 0),
-  //       gstPercent: Number(item.gstPercent || 0),
-  //       taxAmount: Number(item.taxAmount || 0),
-  //       total: Number(item.total)
-  //     }))
-  //   };
-
-  //   console.log('API Request Triggered with Payload:', payload);
-
-  //   const request$ = this.isEditMode
-  //     ? this.poService.update(this.poId, payload)
-  //     : this.inventoryService.savePoDraft(payload);
-
-  //   request$.subscribe({
-  //     next: (res: any) => {
-  //       this.isLoading = false;
-  //       const isSuccess = res !== null && res !== false && res !== undefined;
-
-  //       if (isSuccess) {
-  //         const successMsg = this.isEditMode ? 'Updated Successfully' : 'Saved Successfully';
-  //         this.notification.showStatus(true, successMsg);
-  //         this.router.navigate(['/app/inventory/polist']);
-  //       } else {
-  //         this.notification.showStatus(false, res?.message || 'Transaction failed');
-  //       }
-  //     },
-  //     error: (err: any) => {
-  //       this.isLoading = false;
-  //       this.notification.showStatus(false, err.error?.message || 'Server connection error');
-  //     }
-  //   });
-  // }
 
 
   saveDraft() {
@@ -591,6 +504,8 @@ export class PoForm implements OnInit, OnDestroy {
       totalTax: Number(this.totalTaxAmount || 0),
       grandTotal: Number(this.grandTotal || 0),
       subTotal: Number((this.grandTotal - this.totalTaxAmount).toFixed(2)) || 0,
+      // Agar payload mein status field jati hai, toh yahan 'Draft' set karna best hai
+      status: 'Draft',
       items: formValue.items.map((item: any) => ({
         id: Number(item.id || 0),
         productId: item.productId,
@@ -614,13 +529,13 @@ export class PoForm implements OnInit, OnDestroy {
         const isSuccess = res !== null && res !== false && res !== undefined;
 
         if (isSuccess) {
-          // --- FIXED RE-SUBMISSION LOGIC --- [cite: 2026-01-22]
-          // formValue.status ki jagah humne independent variable use kiya hai [cite: 2026-01-22]
+          // --- FIXED FLOW: REJECTED TO DRAFT ---
+          // Save karne par status Submitted nahi hona chahiye, balki Draft hona chahiye
           if (this.isEditMode && this.currentStatus === 'Rejected') {
-            console.log('Detected Rejected PO, triggering status update...');
-            this.inventoryService.updatePOStatus(this.poId, 'Submitted').subscribe({
-              next: () => console.log('Status updated to Submitted after rejection edit'),
-              error: (err) => console.error('Failed to update status:', err)
+            console.log('Detected Rejected PO, resetting to Draft mode for user review...');
+            this.inventoryService.updatePOStatus(this.poId, 'Draft').subscribe({
+              next: () => console.log('Status successfully reset to Draft'),
+              error: (err) => console.error('Failed to reset status:', err)
             });
           }
 

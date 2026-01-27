@@ -310,7 +310,6 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
       event.stopPropagation();
     }
 
-    // Agar expandedElement (Header) hai, toh usey bhejo, nahi toh child item ko
     const dataToEdit = this.expandedElement ? this.expandedElement : child;
 
     this.editRecord.emit(dataToEdit);

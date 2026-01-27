@@ -19,29 +19,31 @@ export class GrnFormComponent implements OnInit {
   grnForm!: FormGroup;
   items: any[] = [];
   poId: number = 0;
-  supplierId: number = 0; // Backend save ke liye zaroori hai
+  supplierId: number = 0;
   private dialog = inject(MatDialog);
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
 
-    private inventoryService: InventoryService // Service inject ho gayi [cite: 2026-01-22]
+    private inventoryService: InventoryService
   ) {
     this.initForm();
   }
 
   ngOnInit(): void {
-    // FIX: URL mein 'poid' hai (image_ca9490 dekhein), isliye yahan bhi 'poid' use karein
-    this.route.queryParams.subscribe(params => {
-      const idFromUrl = params['poId'];
-      console.log('URL se mili ID:', idFromUrl); // Debugging ke liye
+
+    this.route.params.subscribe(params => {
+
+      const idFromUrl = params['id'];
+
+      console.log('URL se mili ID:', idFromUrl);
 
       if (idFromUrl) {
-        this.poId = +idFromUrl;
-        this.loadPOData(this.poId); // Real API call trigger karega
+        this.poId = +idFromUrl; // String ko number mein convert karein
+        this.loadPOData(this.poId);
       } else {
-        console.error('URL mein poid nahi mila!');
+        console.error('URL mein ID parameter nahi mila!');
       }
     });
   }
