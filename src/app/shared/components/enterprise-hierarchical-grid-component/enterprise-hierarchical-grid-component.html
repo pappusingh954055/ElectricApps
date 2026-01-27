@@ -98,54 +98,61 @@
       </ng-container>
 
       <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef> Actions </th>
-        <td mat-cell *matCellDef="let row">
-          <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+  <th mat-header-cell *matHeaderCellDef> Actions </th>
+  <td mat-cell *matCellDef="let row">
+    <div style="display: flex; align-items: center; gap: 4px; white-space: nowrap; min-height: 40px;">
 
-            <ng-container *ngIf="(row.status === 'Draft' || row.status === 'Rejected') && userRole === 'User'">
-              <button mat-icon-button color="primary" (click)="$event.stopPropagation(); handleAction('EDIT', row)"
-                matTooltip="Edit PO">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button color="warn" (click)="$event.stopPropagation(); handleAction('DELETE', row)"
-                matTooltip="Delete PO">
-                <mat-icon>delete</mat-icon>
-              </button>
-              <button mat-icon-button style="color: #2196f3;"
-                (click)="$event.stopPropagation(); handleAction('SUBMIT', row)" matTooltip="Submit for Approval">
-                <mat-icon>send</mat-icon>
-              </button>
-            </ng-container>
-
-            <ng-container *ngIf="row.status === 'Submitted' && userRole === 'Manager'">
-              <button mat-icon-button color="primary" (click)="$event.stopPropagation(); handleAction('APPROVE', row)"
-                matTooltip="Approve PO">
-                <mat-icon>check_circle</mat-icon>
-              </button>
-              <button mat-icon-button color="warn" (click)="$event.stopPropagation(); handleAction('REJECT', row)"
-                matTooltip="Reject PO">
-                <mat-icon>cancel</mat-icon>
-              </button>
-            </ng-container>
-
-            <ng-container *ngIf="row.status === 'Approved' && userRole === 'Warehouse'">
-              <button mat-icon-button color="accent" (click)="$event.stopPropagation(); handleAction('CREATE_GRN', row)"
-                matTooltip="Create GRN">
-                <mat-icon>local_shipping</mat-icon>
-              </button>
-            </ng-container>
-
-            <ng-container *ngIf="row.status === 'Received'">
-              <button mat-icon-button (click)="$event.stopPropagation(); handleAction('PRINT', row)"
-                matTooltip="Print PO">
-                <mat-icon color="primary">print</mat-icon>
-              </button>
-              <mat-icon style="color: #4caf50; margin-left: 8px;" matTooltip="Goods Fully Received">verified</mat-icon>
-            </ng-container>
-
-          </div>
-        </td>
+      <ng-container *ngIf="(row.status === 'Draft' || row.status === 'Rejected') && userRole === 'User'">
+        <button mat-icon-button color="primary" (click)="$event.stopPropagation(); handleAction('EDIT', row)" matTooltip="Edit PO">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="$event.stopPropagation(); handleAction('DELETE', row)" matTooltip="Delete PO">
+          <mat-icon>delete</mat-icon>
+        </button>
+        <button mat-icon-button style="color: #2196f3;" (click)="$event.stopPropagation(); handleAction('SUBMIT', row)" matTooltip="Submit for Approval">
+          <mat-icon>send</mat-icon>
+        </button>
       </ng-container>
+
+      <ng-container *ngIf="row.status === 'Submitted' && userRole === 'Manager'">
+        <button mat-icon-button color="primary" (click)="$event.stopPropagation(); handleAction('APPROVE', row)" matTooltip="Approve PO">
+          <mat-icon>check_circle</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="$event.stopPropagation(); handleAction('REJECT', row)" matTooltip="Reject PO">
+          <mat-icon>cancel</mat-icon>
+        </button>
+      </ng-container>
+
+      <ng-container *ngIf="row.status === 'Approved' && userRole === 'Warehouse'">
+        <button mat-icon-button color="accent" (click)="$event.stopPropagation(); handleAction('CREATE_GRN', row)" matTooltip="Create GRN">
+          <mat-icon>local_shipping</mat-icon>
+        </button>
+      </ng-container>
+
+      <ng-container *ngIf="row.status === 'Approved' && userRole !== 'Warehouse'">
+        <button mat-icon-button color="primary" (click)="$event.stopPropagation(); handleAction('VIEW', row)" matTooltip="View Details">
+          <mat-icon style="opacity: 0.7;">visibility</mat-icon>
+        </button>
+        <button mat-icon-button (click)="$event.stopPropagation(); handleAction('PRINT', row)" matTooltip="Print PO">
+          <mat-icon style="color: #607d8b;">print</mat-icon>
+        </button>
+      </ng-container>
+
+      <ng-container *ngIf="row.status === 'Submitted' && userRole === 'User'">
+        <mat-icon style="color: #ff9800; transform: scale(0.8);" matTooltip="Pending Manager Approval">hourglass_empty</mat-icon>
+        <span style="font-size: 11px; color: #888;">Pending Approval</span>
+      </ng-container>
+
+      <ng-container *ngIf="row.status === 'Received'">
+        <button mat-icon-button (click)="$event.stopPropagation(); handleAction('PRINT', row)" matTooltip="Print PO">
+          <mat-icon color="primary">print</mat-icon>
+        </button>
+        <mat-icon style="color: #4caf50; margin-left: 8px;" matTooltip="Goods Fully Received">verified</mat-icon>
+      </ng-container>
+
+    </div>
+  </td>
+</ng-container>
 
       <ng-container matColumnDef="expandedDetail">
         <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
