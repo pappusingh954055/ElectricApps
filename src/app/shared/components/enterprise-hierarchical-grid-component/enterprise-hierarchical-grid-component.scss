@@ -663,3 +663,60 @@ div[style*="display: flex"] {
     padding: 1px 4px;
   }
 }
+
+.footer-summary-row td {
+  background-color: #fafafa; /* Thoda alag dikhne ke liye light background */
+}
+
+.summary-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end; /* Saara content right side push karega */
+  gap: 10px;
+  width: 100%;
+}
+
+.summary-line {
+  display: flex;
+  justify-content: flex-end; /* Label aur Value ko right align karega */
+  width: 100%;
+  max-width: 250px; /* Ek fixed width taaki amounts vertical line mein rahein */
+}
+
+.summary-line .label {
+  flex: 1;
+  text-align: right;
+  padding-right: 20px;
+  font-weight: 500;
+  color: #666;
+}
+
+.summary-line .value {
+  width: 120px; /* Fixed width for amounts to align decimals */
+  text-align: right;
+  font-weight: bold;
+  color: #333;
+}
+
+.grand-total {
+  border-top: 1px dashed #ccc;
+  padding-top: 10px;
+  margin-top: 5px;
+}
+
+.grand-total .label, 
+.grand-total .value {
+  color: #1a237e; /* Professional Blue color */
+  font-size: 16px;
+  font-weight: 900;
+}
+
+/* Responsive: Mobile par space adjust karein */
+@media (max-width: 600px) {
+  .summary-line {
+    max-width: 100%;
+  }
+  .summary-line .label {
+    padding-right: 10px;
+  }
+}

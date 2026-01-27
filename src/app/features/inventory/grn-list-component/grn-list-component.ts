@@ -1,62 +1,147 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { MaterialModule } from '../../../shared/material/material/material-module';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { Router, RouterLink } from '@angular/router';
+import { InventoryService } from '../service/inventory.service';
+import { merge, of } from 'rxjs';
+import { startWith, switchMap, map, catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { PoSelectionDialog } from '../po-selection-dialog/po-selection-dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-grn-list-component',
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink],
+  standalone: true,
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule],
   templateUrl: './grn-list-component.html',
   styleUrl: './grn-list-component.scss',
 })
-export class GrnListComponent implements OnInit {
-  displayedColumns: string[] = ['grnNumber', 'poNumber', 'supplierName', 'receivedDate', 'status', 'actions'];
+export class GrnListComponent implements OnInit, AfterViewInit {
+  // Columns matching Backend DTO
+  displayedColumns: string[] = ['grnNo', 'refPO', 'supplierName', 'receivedDate', 'status', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
+
+  // Search and Pagination states
+  resultsLength = 0;
+  isLoadingResults = true;
+  searchControl = new FormControl('');
+
+
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private inventoryService: InventoryService, private dialog: MatDialog
+  ) { }
 
   ngOnInit(): void {
+    // Search input par debounce lagaya hai taaki har word par API call na ho [cite: 2026-01-22]
+    this.searchControl.valueChanges.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe(() => {
+      this.paginator.pageIndex = 0;
+      this.loadGRNData();
+    });
+  }
+
+  ngAfterViewInit() {
+    // Sorting change hone par page index reset karein [cite: 2026-01-22]
+    this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
+
+    // Merge Sort, Page aur Search events into one stream [cite: 2026-01-22]
     this.loadGRNData();
   }
 
-  // 1. Search Filter Logic [cite: 2026-01-22]
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
-  }
-
-  // 2. View PO Logic (Navigation to PO Details) [cite: 2026-01-22]
-  viewPO(poId: number) {
-    // Agar humein PO ki details dekhni ho toh [cite: 2026-01-22]
-    this.router.navigate(['/app/inventory/purchase-order'], { queryParams: { id: poId, mode: 'view' } });
-  }
-
-  // 3. View GRN Details [cite: 2026-01-22]
-  viewGRN(row: any) {
-    this.router.navigate(['/app/inventory/grn-form'], { queryParams: { grnId: row.id, mode: 'view' } });
-  }
-
-  // Temporary Data for UI Testing [cite: 2026-01-22]
   loadGRNData() {
-    const dummyData = [
-      { id: 1, grnNumber: 'GRN/26-27/001', poId: 21, poNumber: 'PO/26-27/0018', supplierName: 'ABC Traders', receivedDate: new Date(), status: 'Completed' },
-      { id: 2, grnNumber: 'GRN/26-27/002', poId: 22, poNumber: 'PO/26-27/0019', supplierName: 'XYZ Traders', receivedDate: new Date(), status: 'Partial' }
-    ];
-    this.dataSource = new MatTableDataSource(dummyData);
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    merge(this.sort.sortChange, this.paginator.page)
+      .pipe(
+        startWith({}),
+        switchMap(() => {
+          // Loader ON: API call start [cite: 2026-01-22]
+          this.isLoadingResults = true;
+
+          return this.inventoryService.getGRNPagedList(
+            this.sort.active,
+            this.sort.direction,
+            this.paginator.pageIndex,
+            this.paginator.pageSize,
+            this.searchControl.value || ''
+          ).pipe(
+            catchError(() => {
+              // Loader OFF: Agar API fail ho jaye
+              this.isLoadingResults = false;
+              return of(null);
+            })
+          );
+        }),
+        map(data => {
+          // Loader OFF: Success response aane par
+          this.isLoadingResults = false;
+
+          if (data === null) return [];
+
+          this.resultsLength = data.totalCount; //
+          return data.items;
+        })
+      ).subscribe(data => {
+        this.dataSource.data = data;
+        console.log('GRN Data Loaded:', data);
+      });
+  }
+  // Navigation Logic
+  viewGRN(id: number) {
+    this.router.navigate(['/app/inventory/grn-list/edit', id]);
   }
 
-  printGRN(grn: any) { }
+
+  printGRN(grn: any) {
+    console.log("Printing GRN:", grn.grnNumber);
+  }
+  applyFilter(event: any) { }
+
+  openPOSearchDialog() {
+    const dialogRef = this.dialog.open(PoSelectionDialog, {
+      width: '600px',
+      disableClose: true,
+      panelClass: 'custom-dialog-container'
+    });
+
+    dialogRef.afterClosed().subscribe(selectedPO => {
+      if (selectedPO) {
+        // Selected PO milne par GRN form par navigate karein
+        this.router.navigate(['/app/inventory/grn-list/add'], {
+          queryParams: { poId: selectedPO.id, poNo: selectedPO.poNumber }
+        });
+      }
+    });
+  }
+
+  // receiveNewStock() {
+  //   // 1. Dialog Open karein
+  //   const dialogRef = this.dialog.open(PoSelectionDialog, {
+  //     width: '800px', // Thoda bada rakha hai taaki table sahi dikhe
+  //     disableClose: false,
+  //     panelClass: 'custom-dialog-container'
+  //   });
+
+  //   // 2. Dialog close hone ka wait karein
+  //   dialogRef.afterClosed().subscribe(selectedPO => {
+  //     if (selectedPO) {
+  //       // Agar PO select hua hai, toh use GRN Form par bhej dein
+  //       // Hum Query Params ke zariye ID bhej rahe hain
+  //       this.router.navigate(['/app/inventory/grn-form'], {
+  //         queryParams: {
+  //           poId: selectedPO.id,
+  //           poNumber: selectedPO.poNumber
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
 }

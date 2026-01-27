@@ -26,9 +26,14 @@ export class MenuService {
             route: '/app/inventory/solist/add'
           },
           {
-            label: 'Stock',
+            label: 'GRN LIST',
+            icon: 'list',
+            route: '/app/inventory/grn-list'
+          },
+          {
+            label: 'Current Stock',
             icon: 'shopping_cart',
-            route: ''
+            route: '/app/inventory/current-stock'
           },
         ]
       },

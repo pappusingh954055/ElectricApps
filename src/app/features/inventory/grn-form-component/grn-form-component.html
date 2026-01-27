@@ -1,9 +1,9 @@
 <div class="grn-form-container">
   <div class="form-header">
     <div class="title-group">
-      <button mat-icon-button (click)="goBack()">
+      <!-- <button mat-icon-button (click)="goBack()" matTooltip="Go Back">
         <mat-icon>arrow_back</mat-icon>
-      </button>
+      </button> -->
       <h2 class="mat-h2">Create New GRN</h2>
     </div>
     <div class="header-buttons">
@@ -61,22 +61,26 @@
               <td class="text-center text-primary"><b>{{item.pendingQty}}</b></td>
               <td>
                 <mat-form-field appearance="outline" class="dense-input" subscriptSizing="dynamic">
-                  <input matInput type="number" [value]="item.receivedQty" 
-                         (input)="calculateTotal(item)" [max]="item.pendingQty">
+                  <input matInput type="number" 
+                         [(ngModel)]="item.receivedQty" 
+                         (ngModelChange)="onQtyChange(item)"
+                         [max]="item.pendingQty"
+                         min="0">
                 </mat-form-field>
               </td>
               <td class="text-right">{{item.unitRate | currency:'INR'}}</td>
-              <td class="text-right"><b>{{item.receivedQty * item.unitRate | currency:'INR'}}</b></td>
+              <td class="text-right"><b>{{item.total | currency:'INR'}}</b></td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div class="form-footer">
+      <div class="form-footer" [formGroup]="grnForm">
         <mat-form-field appearance="outline" class="remarks-field">
           <mat-label>Remarks / Notes</mat-label>
-          <textarea matInput rows="2"></textarea>
+          <textarea matInput rows="2" formControlName="remarks"></textarea>
         </mat-form-field>
+        
         <div class="grand-total-box">
           <span class="label">Grand Total:</span>
           <span class="value">{{calculateGrandTotal() | currency:'INR'}}</span>

@@ -1,17 +1,16 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { MaterialModule } from '../../../shared/material/material/material-module';
-import { FormGroup, FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InventoryService } from '../service/inventory.service';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
 
-
 @Component({
   selector: 'app-grn-form-component',
-  standalone: true, // Agar standalone use kar rahe hain
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule],
+  standalone: true,
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule], // FormsModule zaroori hai ngModel ke liye
   templateUrl: './grn-form-component.html',
   styleUrl: './grn-form-component.scss',
 })
@@ -21,29 +20,22 @@ export class GrnFormComponent implements OnInit {
   poId: number = 0;
   supplierId: number = 0;
   private dialog = inject(MatDialog);
+
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
     private router: Router,
-
     private inventoryService: InventoryService
   ) {
     this.initForm();
   }
 
   ngOnInit(): void {
-
     this.route.params.subscribe(params => {
-
       const idFromUrl = params['id'];
-
-      console.log('URL se mili ID:', idFromUrl);
-
       if (idFromUrl) {
-        this.poId = +idFromUrl; // String ko number mein convert karein
+        this.poId = +idFromUrl;
         this.loadPOData(this.poId);
-      } else {
-        console.error('URL mein ID parameter nahi mila!');
       }
     });
   }
@@ -52,13 +44,14 @@ export class GrnFormComponent implements OnInit {
     this.grnForm = this.fb.group({
       grnNumber: [{ value: 'AUTO-GEN', disabled: true }],
       receivedDate: [new Date(), Validators.required],
-      supplierName: [{ value: '', disabled: true }], // Readonly as per UI
-      poNumber: [{ value: '', disabled: true }], // Readonly as per UI
+      supplierName: [{ value: '', disabled: true }],
+      poNumber: [{ value: '', disabled: true }],
       remarks: ['']
     });
   }
-
-  // API se real data fetch karna
+goBack() { 
+  this.router.navigate(['/app/inventory/grn-list']); 
+}
   loadPOData(id: number) {
     this.inventoryService.getPODataForGRN(id).subscribe({
       next: (res) => {
@@ -67,37 +60,49 @@ export class GrnFormComponent implements OnInit {
           supplierName: res.supplierName
         });
         this.supplierId = res.supplierId;
-
-        // Items mapping with default received quantity
         this.items = res.items.map((item: any) => ({
           ...item,
-          receivedQty: item.pendingQty, // Default logic
-          total: item.pendingQty * item.unitRate
+          receivedQty: item.pendingQty, 
+          total: Number(item.pendingQty) * Number(item.unitRate)
         }));
-      },
-      error: (err) => console.error("Data load failed", err)
+      }
     });
   }
 
-  // Row level calculation [cite: 2026-01-22]
+  // FIXED: Row level calculation with explicit Number conversion
   onQtyChange(item: any) {
-    if (item.receivedQty > item.pendingQty) {
-      item.receivedQty = item.pendingQty; // Validation: Pending se zyada nahi le sakte
+    const enteredQty = Number(item.receivedQty); // String to Number
+    const pendingQty = Number(item.pendingQty);
+    const unitRate = Number(item.unitRate);
+
+    // Validation: Check if entered qty is more than pending
+    if (enteredQty > pendingQty) {
+      item.receivedQty = pendingQty; // Reset to max
+      
+      this.dialog.open(StatusDialogComponent, {
+        width: '350px',
+        data: {
+          title: 'Validation Error',
+          message: `Received quantity cannot exceed the pending quantity (${pendingQty}).`,
+          status: 'error',
+          isSuccess: false
+        }
+      });
     }
-    item.total = item.receivedQty * item.unitRate;
+
+    // Amount Reflection: Update total for this row
+    item.total = Number(item.receivedQty) * unitRate;
+    
+    // Global Update: Calculate Grand Total
+    this.calculateGrandTotal();
   }
 
   calculateGrandTotal(): number {
-    return this.items.reduce((acc, item) => acc + (item.receivedQty * item.unitRate), 0);
+    return this.items.reduce((acc, item) => acc + (Number(item.receivedQty) * Number(item.unitRate)), 0);
   }
 
-  // Save Logic with CQRS Payload
   saveGRN() {
     if (this.grnForm.invalid || this.items.length === 0) return;
-
-    const savedRoles = localStorage.getItem('roles');
-    const rolesArray = savedRoles ? JSON.parse(savedRoles) : [];
-    const userRole = rolesArray.length > 0 ? rolesArray[0] : 'Unknown User';
 
     const grnData = {
       poHeaderId: this.poId,
@@ -106,47 +111,25 @@ export class GrnFormComponent implements OnInit {
       remarks: this.grnForm.value.remarks,
       totalAmount: this.calculateGrandTotal(),
       status: 'Received',
-      createdBy: userRole,
       items: this.items.map(item => ({
         productId: item.productId,
         orderedQty: item.orderedQty,
-        receivedQty: item.receivedQty,
-        unitRate: item.unitRate
+        receivedQty: Number(item.receivedQty), // Ensure number
+        unitRate: Number(item.unitRate)
       }))
     };
 
-    // ERROR FIX: Backend 'Data' property maang raha hai, isliye wrap karein
-    const finalPayload = { data: grnData };
-
-    this.inventoryService.saveGRN(finalPayload).subscribe({
+    this.inventoryService.saveGRN({ data: grnData }).subscribe({
       next: () => {
         this.dialog.open(StatusDialogComponent, {
           width: '350px',
-          data: {
-            title: 'Success',
-            message: 'Stock Updated Successfully!',
-            type: 'success',
-            isSuccess: true
-          }
+          data: { title: 'Success', message: 'Stock Updated Successfully!', status: 'success', isSuccess: true }
         }).afterClosed().subscribe(() => {
-          this.router.navigate(['/app/inventory/grn-list']);
-        });
-      },
-      error: (err) => {
-        this.dialog.open(StatusDialogComponent, {
-          width: '350px',
-          data: {
-            title: 'Error',
-            message: 'Error saving GRN: ' + err.message,
-            type: 'error',
-            isSuccess: false
-          }
+          this.router.navigate(['/app/inventory/current-stock']);
         });
       }
     });
   }
-  onCancel() { this.router.navigate(['/app/inventory/grn-list']); }
-  goBack() { this.router.navigate(['/app/inventory/grn-list']); }
 
-  calculateTotal(item: any) { }
+  onCancel() { this.router.navigate(['/app/inventory/grn-list']); }
 }

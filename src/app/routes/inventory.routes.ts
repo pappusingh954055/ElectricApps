@@ -19,6 +19,13 @@ export const INVENTORY_ROUTES: Routes = [
       { path: 'edit/:id', loadComponent: () => import('../features/inventory/grn-form-component/grn-form-component').then(m => m.GrnFormComponent) }
     ]
   },
+  {
+    path: 'current-stock',
+    children: [
+      { path: '', loadComponent: () => import('../features/inventory/current-stock-component/current-stock-component').then(m => m.CurrentStockComponent) },
+     
+    ]
+  },
 
   {
     path: 'solist',

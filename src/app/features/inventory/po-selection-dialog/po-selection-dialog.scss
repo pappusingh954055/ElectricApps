@@ -1,0 +1,121 @@
+.po-dialog-content {
+    position: relative;
+    min-height: 200px;
+    max-height: 400px;
+    overflow: auto;
+
+    .loading-shade {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.7);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .table-container {
+        width: 100%;
+        overflow-x: auto;
+    }
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+
+    &.pending {
+        background: #fff3e0;
+        color: #ef6c00;
+    }
+
+    &.partial {
+        background: #e3f2fd;
+        color: #1565c0;
+    }
+}
+
+
+/* Dialog Content area jisme scrolling chahiye [cite: 2026-01-22] */
+.po-dialog-content {
+    max-height: 60vh !important;
+    /* Viewport ki 60% height tak hi badhega [cite: 2026-01-22] */
+    overflow: auto !important;
+    /* Content zyada hone par scrollbar dega [cite: 2026-01-22] */
+    margin-bottom: 0;
+    padding: 0 !important;
+    /* Side padding kam karke space bachayein */
+
+    .table-container {
+        width: 100%;
+        position: relative;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    /* Sticky header taaki scroll ke waqt headers gayab na ho [cite: 2026-01-22] */
+    th.mat-mdc-header-cell {
+        background: #f5f5f5;
+        z-index: 100;
+        top: 0;
+    }
+}
+
+/* [cite: 2026-01-22] */
+.po-dialog-content {
+    position: relative;
+    padding: 0 !important; // Clean look
+    margin: 0;
+
+    // Dialog ki height fix karein taaki internal scroll chal sake [cite: 2026-01-22]
+    max-height: 450px !important;
+    overflow: auto !important;
+
+    .table-container {
+        width: 100%;
+        overflow: auto;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    // Sticky Header fix: Background aur Z-index zaroori hai [cite: 2026-01-22]
+    .mat-mdc-header-row {
+        background: #f5f5f5 !important;
+        z-index: 1000;
+    }
+}
+
+.loading-shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.7);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsiveness [cite: 2026-01-22] */
+@media (max-width: 600px) {
+    .po-dialog-content {
+        max-height: 70vh !important;
+    }
+}
+
+/* Modal box ki width ko responsive banayein [cite: 2026-01-22] */
+@media (max-width: 600px) {
+    .po-dialog-content {
+        max-height: 70vh !important;
+    }
+}

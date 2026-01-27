@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../enviornments/environment';
 import { ApiService } from '../../../shared/api.service';
 import { PurchaseOrderPayload } from '../models/purchaseorder.model';
+import { StockSummary } from '../models/stock-summary.model';
 
 
 
@@ -127,4 +128,53 @@ export class InventoryService {
     saveGRN(payload: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/GRN/Save`, payload);
     }
+
+    getCurrentStock(
+        sortField: string = '',
+        sortOrder: string = '',
+        pageIndex: number = 0,
+        pageSize: number = 10,
+        search: string = ''
+    ): Observable<any> {
+        // Query parameters build karein [cite: 2026-01-22]
+        let params = new HttpParams()
+            .set('sortField', sortField)
+            .set('sortOrder', sortOrder)
+            .set('pageIndex', pageIndex.toString())
+            .set('pageSize', pageSize.toString())
+            .set('search', search);
+
+        // Note: Ab return type StockSummary[] se badal kar 'any' ya ek specific Paged DTO hoga [cite: 2026-01-22]
+        return this.http.get<any>(`${this.apiUrl}/stock/current-stock`, { params });
+    }
+
+    /**
+   * GRN List fetch karne ke liye (with Paging, Sorting, Searching)
+   *
+   */
+    getGRNPagedList(
+        sortField: string = '',
+        sortOrder: string = '',
+        pageIndex: number = 0,
+        pageSize: number = 10,
+        search: string = ''
+    ): Observable<any> {
+        // Query parameters build karein [cite: 2026-01-22]
+        let params = new HttpParams()
+            .set('sortField', sortField)
+            .set('sortOrder', sortOrder)
+            .set('pageIndex', pageIndex.toString())
+            .set('pageSize', pageSize.toString())
+            .set('search', search);
+
+        return this.http.get<any>(`${this.apiUrl}/grn/grn-list`, { params });
+    }
+
+    getPendingPurchaseOrders(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/PurchaseOrders/pending-pos`);
+    }
+
+    getPOItemsForGRN(poId: number): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}/PurchaseOrders/po-items/${poId}`);
+}
 }
