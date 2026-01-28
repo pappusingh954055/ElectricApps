@@ -1,16 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { MaterialModule } from '../../../shared/material/material/material-module';
-import { FormGroup, FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, ReactiveFormsModule, FormsModule, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InventoryService } from '../service/inventory.service';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
+import { of } from 'rxjs';
 
 @Component({
   selector: 'app-grn-form-component',
   standalone: true,
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule], // FormsModule zaroori hai ngModel ke liye
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule],
   templateUrl: './grn-form-component.html',
   styleUrl: './grn-form-component.scss',
 })
@@ -19,25 +20,54 @@ export class GrnFormComponent implements OnInit {
   items: any[] = [];
   poId: number = 0;
   supplierId: number = 0;
+  isFromPopup: boolean = false; // Source track karne ke liye [cite: 2026-01-22]
   private dialog = inject(MatDialog);
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
-    private router: Router,
+    private router: Router, private cdr: ChangeDetectorRef,
     private inventoryService: InventoryService
   ) {
     this.initForm();
   }
 
   ngOnInit(): void {
+    // 1. Grid Flow: Jab aap list se 'Edit' ya 'View' karke aate hain
     this.route.params.subscribe(params => {
-      const idFromUrl = params['id'];
-      if (idFromUrl) {
-        this.poId = +idFromUrl;
+      if (params['id']) {
+        this.resetFormBeforeLoad(); // Purana data saaf karein
+        this.poId = +params['id'];
+        this.isFromPopup = false;
         this.loadPOData(this.poId);
       }
     });
+
+    // 2. Popup Flow: Jab selection popup band hota hai
+    this.route.queryParams.subscribe(params => {
+      if (params['poId']) {
+        this.resetFormBeforeLoad(); // Items list ko saaf karein taaki glitch na ho
+        this.poId = +params['poId'];
+        this.isFromPopup = true;
+
+        // Header data agar URL mein hai toh turant fill karein
+        if (params['poNo']) {
+          this.grnForm.patchValue({ poNumber: params['poNo'] });
+        }
+
+        this.loadPOData(this.poId);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+
+
+
+
+  private resetFormBeforeLoad() {
+    this.items = []; // Items table khali karein
+    this.grnForm.patchValue({ supplierName: '', poNumber: '' });
   }
 
   initForm() {
@@ -49,36 +79,132 @@ export class GrnFormComponent implements OnInit {
       remarks: ['']
     });
   }
-goBack() { 
-  this.router.navigate(['/app/inventory/grn-list']); 
-}
+
+  goBack() {
+    this.router.navigate(['/app/inventory/grn-list']);
+  }
+
+
+
+  // loadPOData(id: number) {
+  //   console.log("Fetching data for PO ID:", id);
+  //   const isViewMode = this.router.url.includes('/view');
+
+  //   this.inventoryService.getPODataForGRN(id).subscribe({
+  //     next: (res) => {
+  //       this.grnForm.patchValue({
+  //         grnNumber: res.grnNumber || 'AUTO-GEN',
+  //         poNumber: res.poNumber,
+  //         supplierName: res.supplierName
+  //       });
+
+  //       this.supplierId = res.supplierId;
+
+  //       if (this.isFromPopup) {
+  //         this.inventoryService.getPOItemsForGRN(id).subscribe({
+  //           next: (popupItems) => {
+  //             this.mapItems(popupItems);
+
+  //             // TABLE LOCK LOGIC
+  //             if (isViewMode) {
+  //               this.grnForm.disable(); // Header lock
+  //               (this.grnForm.get('items') as FormArray)?.disable(); // Table raw lock
+  //             }
+
+  //             this.cdr.detectChanges();
+  //           }
+  //         });
+  //       } else {
+  //         this.mapItems(res.items);
+
+  //         // TABLE LOCK LOGIC
+  //         if (isViewMode) {
+  //           this.grnForm.disable(); // Header lock
+  //           (this.grnForm.get('items') as FormArray)?.disable(); // Table raw lock
+  //         }
+
+  //         this.cdr.detectChanges();
+  //       }
+  //     },
+  //     error: (err) => console.error("API Error in loadPOData:", err)
+  //   });
+  // }
+
   loadPOData(id: number) {
+    const isViewMode = this.router.url.includes('/view');
+
     this.inventoryService.getPODataForGRN(id).subscribe({
       next: (res) => {
         this.grnForm.patchValue({
+          grnNumber: res.grnNumber || 'AUTO-GEN',
           poNumber: res.poNumber,
           supplierName: res.supplierName
         });
-        this.supplierId = res.supplierId;
-        this.items = res.items.map((item: any) => ({
-          ...item,
-          receivedQty: item.pendingQty, 
-          total: Number(item.pendingQty) * Number(item.unitRate)
-        }));
+
+        // Flow check: Popup se ya Direct Grid se
+        const itemObservable = this.isFromPopup
+          ? this.inventoryService.getPOItemsForGRN(id)
+          : of({ items: res.items }); // Simple wrapper agar data pehle se hai
+
+        // Hum ensure karenge ki mapItems poora ho jaye
+        if (this.isFromPopup) {
+          this.inventoryService.getPOItemsForGRN(id).subscribe(popupItems => {
+            this.mapItems(popupItems);
+            this.forceLockTable(isViewMode); // Yahan lock trigger hoga
+          });
+        } else {
+          this.mapItems(res.items);
+          this.forceLockTable(isViewMode); // Yahan lock trigger hoga
+        }
       }
     });
   }
 
-  // FIXED: Row level calculation with explicit Number conversion
+  // Ye naya function table ko "Zabardasti" lock karega
+  forceLockTable(isViewMode: boolean) {
+    if (isViewMode) {
+      this.grnForm.disable(); // Header lock karein
+
+      // Sabse zaruri step: Items array ko explicitly lock karein
+      const items = this.grnForm.get('items') as FormArray;
+      if (items) {
+        items.disable(); // Ab table ke andar ke saare white boxes grey ho jayenge
+      }
+
+      this.cdr.detectChanges(); // UI refresh
+    }
+  }
+
+  mapItems(incomingItems: any[]) {
+    this.items = incomingItems.map((item: any) => {
+      // Case-sensitivity fix: Dono handle karein (Capital and Small)
+      const ordered = Number(item.OrderedQty || item.orderedQty || 0);
+      const received = Number(item.AlreadyReceivedQty || item.alreadyReceivedQty || 0);
+      const rate = Number(item.UnitPrice || item.unitPrice || item.unitRate || 0);
+      const pending = ordered - received;
+
+      return {
+        ...item,
+        productId: item.ProductId || item.productId, //
+        productName: item.ProductName || item.productName,
+        orderedQty: ordered,
+        pendingQty: pending,
+        receivedQty: pending,
+        unitRate: rate,
+        total: pending * rate
+      };
+    });
+    this.calculateGrandTotal();
+    this.cdr.detectChanges();
+  }
   onQtyChange(item: any) {
-    const enteredQty = Number(item.receivedQty); // String to Number
+    const enteredQty = Number(item.receivedQty);
     const pendingQty = Number(item.pendingQty);
     const unitRate = Number(item.unitRate);
 
-    // Validation: Check if entered qty is more than pending
     if (enteredQty > pendingQty) {
-      item.receivedQty = pendingQty; // Reset to max
-      
+      item.receivedQty = pendingQty;
+
       this.dialog.open(StatusDialogComponent, {
         width: '350px',
         data: {
@@ -90,10 +216,7 @@ goBack() {
       });
     }
 
-    // Amount Reflection: Update total for this row
     item.total = Number(item.receivedQty) * unitRate;
-    
-    // Global Update: Calculate Grand Total
     this.calculateGrandTotal();
   }
 
@@ -103,7 +226,7 @@ goBack() {
 
   saveGRN() {
     if (this.grnForm.invalid || this.items.length === 0) return;
-
+    const currentUserId = localStorage.getItem('userId') || '00000000-0000-0000-0000-000000000000';
     const grnData = {
       poHeaderId: this.poId,
       supplierId: this.supplierId,
@@ -111,10 +234,11 @@ goBack() {
       remarks: this.grnForm.value.remarks,
       totalAmount: this.calculateGrandTotal(),
       status: 'Received',
+      createdBy: currentUserId,
       items: this.items.map(item => ({
         productId: item.productId,
-        orderedQty: item.orderedQty,
-        receivedQty: Number(item.receivedQty), // Ensure number
+        orderedQty: item.orderedQty || item.qty,
+        receivedQty: Number(item.receivedQty),
         unitRate: Number(item.unitRate)
       }))
     };

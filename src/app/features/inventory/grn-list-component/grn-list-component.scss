@@ -10,12 +10,12 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px; /* Bahut kam gap grid se */
+  margin-bottom: 12px;
 }
 
 .title-section h1 {
   margin: 0;
-  font-size: 18px; /* Professional small header */
+  font-size: 18px;
   font-weight: 600;
   color: #333;
 }
@@ -32,40 +32,37 @@
 /* Search Box: Dense look [cite: 2026-01-22] */
 .search-box {
   width: 240px;
-  transform: scale(0.9); /* Slightly smaller scale */
+  transform: scale(0.9);
   transform-origin: right center;
 }
 
 .add-button {
-  height: 32px !important; /* Fixed compact height */
+  height: 32px !important;
   padding: 0 12px !important;
   font-size: 12px !important;
   border-radius: 4px !important;
 }
 
-/* TABLE COMPACT DESIGN (The "Professional" Fix) [cite: 2026-01-22] */
-
-/* Header: Gray background, very small padding [cite: 2026-01-22] */
+/* TABLE COMPACT DESIGN [cite: 2026-01-22] */
 .mat-mdc-header-row {
-  height: 36px !important; /* Fixed small height */
-  background-color: #eaeff5;
+  height: 36px !important;
+  background-color: #eaeff5 !important;
 }
 
 .mat-mdc-header-cell {
-  padding: 0 8px !important; /* Minimum padding */
+  padding: 0 8px !important;
   font-size: 11px !important;
   font-weight: 700 !important;
   color: #444 !important;
   border-bottom: 2px solid #dee2e6 !important;
 }
 
-/* Rows: Extreme compact padding [cite: 2026-01-22] */
 .mat-mdc-row {
-  height: 34px !important; /* Bahut hi compact height */
+  height: 34px !important;
 }
 
 .mat-mdc-cell {
-  padding: 0 8px !important; /* Sirf 8px padding left-right */
+  padding: 0 8px !important;
   font-size: 12px !important;
   border-bottom: 1px solid #f0f0f0 !important;
 }
@@ -79,7 +76,7 @@
   letter-spacing: 0.3px;
 }
 
-/* Action Icons: Smaller [cite: 2026-01-22] */
+/* Action Icons [cite: 2026-01-22] */
 .mat-icon-button {
   width: 28px !important;
   height: 28px !important;
@@ -90,94 +87,76 @@
   font-size: 18px !important;
 }
 
-/* Paginator: Compact [cite: 2026-01-22] */
+/* Paginator [cite: 2026-01-22] */
 .mat-mdc-paginator-container {
   min-height: 40px !important;
   padding: 0 8px !important;
 }
 
-/* 1. Row Hover Effect [cite: 2026-01-22] */
+/* Row Hover Effects [cite: 2026-01-22] */
 .mat-mdc-row:hover {
-  background-color: #f0f4ff !important; /* Halka blueish tint hover par */
+  background-color: #f0f4ff !important;
   cursor: pointer;
   transition: background-color 0.15s ease-in-out;
+  box-shadow: inset 2px 0 0 #3f51b5;
 }
 
-/* 2. Text highlighting on hover [cite: 2026-01-22] */
 .mat-mdc-row:hover .mat-mdc-cell {
-  color: #1a237e !important; /* Hover karne par text thoda dark ho jayega */
+  color: #1a237e !important;
   font-weight: 500;
 }
 
-/* 3. Border highlight for better separation [cite: 2026-01-22] */
-.mat-mdc-row:hover {
-  box-shadow: inset 2px 0 0 #3f51b5; /* Row ke left mein ek patli blue line dikhegi */
+/* LOADER CENTERING & TABLE CARD [cite: 2026-01-22] */
+.table-card {
+  position: relative; 
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* 4. Active/Click state (Optional but professional) [cite: 2026-01-22] */
-.mat-mdc-row:active {
-  background-color: #e0e7ff !important;
+/* Loader Centralized Fix [cite: 2026-01-22] */
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 100; /* Table se hamesha upar */
+  display: flex;
+  align-items: center; /* Vertical Center */
+  justify-content: center; /* Horizontal Center */
 }
 
-/* */
-.grn-form-container {
-  padding: 10px;
-  max-width: 100%;
-  overflow-x: hidden; // Taaki screen ke bahar na jaye
+/* Sticky Header & Scroll Logic [cite: 2026-01-22] */
+.table-responsive {
+  max-height: calc(100vh - 250px); 
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Responsiveness for Mobile [cite: 2026-01-22] */
+@media (max-width: 600px) {
+  .header-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .action-section {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .search-box {
+    width: 100%;
+    transform: scale(1); /* Mobile par full size */
+  }
 
   .table-responsive {
-    overflow-x: auto; // Mobile par table scrollable rahegi
-    -webkit-overflow-scrolling: touch;
+    max-height: calc(100vh - 320px);
   }
-
-  @media (max-width: 600px) {
-    .header-grid {
-      grid-template-columns: 1fr !important; // Mobile par stack ho jayenge inputs
-    }
-    
-    .header-buttons {
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-  }
-}
-
-.table-card {
-    position: relative; // Loader positioning ke liye
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-
-    .loading-shade {
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 56px; // Paginator height chhod kar
-        right: 0;
-        background: rgba(255, 255, 255, 0.7);
-        z-index: 10; // Table ke upar dikhega
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .table-responsive {
-        // Sticky Header ke liye max-height zaroori hai [cite: 2026-01-22]
-        max-height: calc(100vh - 300px); 
-        overflow: auto;
-    }
-}
-
-// Background color for sticky header taaki scroll ke waqt transparent na dikhe
-.mat-mdc-header-row {
-    background-color: #f5f5f5 !important; 
-}
-
-/* Responsiveness [cite: 2026-01-22] */
-@media (max-width: 600px) {
-    .table-responsive {
-        max-height: calc(100vh - 350px);
-    }
 }

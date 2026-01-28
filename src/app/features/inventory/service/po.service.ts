@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { POHeaderDetailsDto } from '../models/poheader-details-dto';
 
 @Injectable({ providedIn: 'root' })
 export class POService {
@@ -15,10 +16,13 @@ export class POService {
 
   // Update karne ke liye
   update(id: any, payload: any): Observable<any> {
-    console.log('payload', id+ payload)
+    console.log('payload', id + payload)
     // Ensure id is present to avoid 'undefined' in URL
     return this.http.put(`${this.apiUrl}/purchaseorders/${id}`, payload);
   }
+  getPOHeaderDetails(lastPoId: number): Observable<POHeaderDetailsDto> {
+    // Yahan '33' pass hoga
+    return this.http.get<POHeaderDetailsDto>(`${this.apiUrl}/PurchaseOrders/header-details/${lastPoId}`);
+  }
 
-  
 }

@@ -16,7 +16,8 @@ export const INVENTORY_ROUTES: Routes = [
     children: [
       { path: '', loadComponent: () => import('../features/inventory/grn-list-component/grn-list-component').then(m => m.GrnListComponent) },
       { path: 'add', loadComponent: () => import('../features/inventory/grn-form-component/grn-form-component').then(m => m.GrnFormComponent) },
-      { path: 'edit/:id', loadComponent: () => import('../features/inventory/grn-form-component/grn-form-component').then(m => m.GrnFormComponent) }
+      { path: 'edit/:id', loadComponent: () => import('../features/inventory/grn-form-component/grn-form-component').then(m => m.GrnFormComponent) },
+      { path: 'view/:id', loadComponent: () => import('../features/inventory/grn-form-component/grn-form-component').then(m => m.GrnFormComponent) }
     ]
   },
   {

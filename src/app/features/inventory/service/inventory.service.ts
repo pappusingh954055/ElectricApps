@@ -175,6 +175,6 @@ export class InventoryService {
     }
 
     getPOItemsForGRN(poId: number): Observable<any[]> {
-  return this.http.get<any[]>(`${this.apiUrl}/PurchaseOrders/po-items/${poId}`);
-}
+        return this.http.get<any[]>(`${this.apiUrl}/PurchaseOrders/po-items/${poId}`);
+    }
 }

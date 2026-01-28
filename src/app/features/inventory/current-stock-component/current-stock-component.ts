@@ -8,6 +8,7 @@ import { InventoryService } from '../service/inventory.service';
 import { Router } from '@angular/router';
 import { merge, of } from 'rxjs';
 import { startWith, switchMap, map, catchError } from 'rxjs/operators';
+import { SelectionModel } from '@angular/cdk/collections';
 
 @Component({
   selector: 'app-current-stock-component',
@@ -17,10 +18,10 @@ import { startWith, switchMap, map, catchError } from 'rxjs/operators';
   styleUrl: './current-stock-component.scss',
 })
 export class CurrentStockComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['productName', 'totalReceived', 'availableStock', 'unitRate'];
+  displayedColumns: string[] = ['select','productName', 'totalReceived', 'availableStock', 'unitRate', 'actions'];
   stockDataSource = new MatTableDataSource<any>([]);
 
-  // ViewChilds for server-side logic [cite: 2026-01-22]
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -29,23 +30,22 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
   lowStockCount: number = 0;
   totalInventoryValue: number = 0;
   searchValue: string = '';
-
+  lastpurchaseOrderId!: number;
   constructor(private inventoryService: InventoryService, private router: Router) { }
+
+  selection = new SelectionModel<any>(true, []);
 
   ngOnInit() {
 
   }
 
   ngAfterViewInit() {
-    // Jab bhi sorting badle, paginator ko wapas pehle page par le jayein
     this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
-
     merge(this.sort.sortChange, this.paginator.page)
       .pipe(
         startWith({}),
         switchMap(() => {
           this.isLoadingResults = true;
-          // Backend API call with dynamic params
           return this.inventoryService.getCurrentStock(
             this.sort.active,       // sortField
             this.sort.direction,    // sortOrder
@@ -61,29 +61,25 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
         }),
         map(data => {
           this.isLoadingResults = false;
-
-          // Agar data null hai toh khali array return karein
           if (!data) return [];
-
-          // Backend ke TotalCount ko paginator length mein assign karein
           this.resultsLength = data.totalCount;
-
-          // Sirf items array return karein subscribe block ke liye
           return data.items;
         })
       ).subscribe(items => {
         if (items) {
-          // Data mapping for table display
+          if (items.length > 0) {
+            this.lastpurchaseOrderId = items[0].lastPurchaseOrderId;
+            console.log('items', items);
+          }
           const mappedData = items.map((item: any) => ({
+    
             productName: item.productName,
-            totalQty: item.totalReceived, // Aapke repository se 'totalReceived' hi aa raha hai
+            totalQty: item.totalReceived,
             unit: item.unit,
             lastRate: item.lastRate
           }));
 
           this.stockDataSource.data = mappedData;
-
-          // Page summary update karein (Low stock alert aur total value)
           this.updateSummary(mappedData);
         }
       });
@@ -96,8 +92,8 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
 
   applyFilter(event: Event) {
     this.searchValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
-    this.paginator.pageIndex = 0; // Search karte hi first page par jayein [cite: 2026-01-22]
-    this.sort.sortChange.emit(); // Manually trigger update
+    this.paginator.pageIndex = 0;
+    this.sort.sortChange.emit();
   }
 
   navigateToPO() {
@@ -105,4 +101,49 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
       if (!success) console.error("Navigation failed!");
     });
   }
+
+  onRefillNow(item: any) {
+    this.router.navigate(['/app/inventory/polist/add'], {
+      state: {
+        refillData: {
+          productId: item.productId,
+          productName: item.productName,
+          unit: item.unit || 'PCS',
+          rate: item.lastRate || 0,
+          suggestedQty: 10,
+          lastpurchaseOrderId: this.lastpurchaseOrderId
+        }
+      }
+    });
+  }
+
+  // Checkbox functions
+  isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const numRows = this.stockDataSource.data.length;
+    return numSelected === numRows;
+  }
+
+  masterToggle() {
+    this.isAllSelected() ?
+      this.selection.clear() :
+      this.stockDataSource.data.forEach(row => this.selection.select(row));
+  }
+
+  onBulkRefill() {
+    if (!this.selection.hasValue()) return;
+
+    const refillItems = this.selection.selected.map(item => ({
+      productId: item.productId,
+      productName: item.productName,
+      lastRate: item.lastRate,
+      unit: item.unit,
+      lastPurchaseOrderId: item.lastPurchaseOrderId
+    }));
+
+    this.router.navigate(['/app/inventory/polist/add'], {
+      state: { refillItems: refillItems }
+    });
+  }
+  
 }

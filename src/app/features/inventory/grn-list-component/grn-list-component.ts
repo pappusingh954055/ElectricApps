@@ -96,7 +96,8 @@ export class GrnListComponent implements OnInit, AfterViewInit {
   }
   // Navigation Logic
   viewGRN(id: number) {
-    this.router.navigate(['/app/inventory/grn-list/edit', id]);
+
+    this.router.navigate(['/app/inventory/grn-list/view', id]);
   }
 
 
@@ -122,26 +123,4 @@ export class GrnListComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // receiveNewStock() {
-  //   // 1. Dialog Open karein
-  //   const dialogRef = this.dialog.open(PoSelectionDialog, {
-  //     width: '800px', // Thoda bada rakha hai taaki table sahi dikhe
-  //     disableClose: false,
-  //     panelClass: 'custom-dialog-container'
-  //   });
-
-  //   // 2. Dialog close hone ka wait karein
-  //   dialogRef.afterClosed().subscribe(selectedPO => {
-  //     if (selectedPO) {
-  //       // Agar PO select hua hai, toh use GRN Form par bhej dein
-  //       // Hum Query Params ke zariye ID bhej rahe hain
-  //       this.router.navigate(['/app/inventory/grn-form'], {
-  //         queryParams: {
-  //           poId: selectedPO.id,
-  //           poNumber: selectedPO.poNumber
-  //         }
-  //       });
-  //     }
-  //   });
-  // }
 }
