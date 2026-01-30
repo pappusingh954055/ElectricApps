@@ -10,11 +10,13 @@ import { GridRequest } from '../../../../shared/models/grid-request.model';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
+import { PricelistForm } from '../pricelist-form/pricelist-form';
+import { MatDrawer } from '@angular/material/sidenav';
 
 @Component({
   selector: 'app-pricelist-list',
   standalone: true, // Ensure standalone if used
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, RouterLink, ServerDatagridComponent],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule, ServerDatagridComponent, PricelistForm],
   providers: [DatePipe],
   templateUrl: './pricelist-list.html',
   styleUrl: './pricelist-list.scss',
@@ -57,6 +59,9 @@ export class PricelistList implements OnInit {
     private datePipe: DatePipe,
     private cdr: ChangeDetectorRef) { }
 
+  @ViewChild('drawer') drawer!: MatDrawer; // Drawer ka access lene ke liye
+  selectedId: string | null = null; // ID store karne ke liye
+
   ngOnInit(): void {
     this.loadPriceLists({
       pageNumber: 1,
@@ -88,10 +93,6 @@ export class PricelistList implements OnInit {
     });
   }
 
-  onEdit(row: any): void {
-    // Navigating to form in edit mode with ID
-    this.router.navigate(['/app/master/pricelists/edit', row.id]);
-  }
 
   deletePriceList(row: any): void {
     this.dialog.open(ConfirmDialogComponent, {
@@ -151,5 +152,29 @@ export class PricelistList implements OnInit {
 
   onSelectionChange(rows: any[]) {
     this.selectedRows = rows;
+  }
+
+  // Jab Grid mein Edit click hoga [cite: 2026-01-22]
+  onEditClicked(event: any) {
+    console.log("Edit Event Received:", event);
+
+    // 1. Row ki ID save karein [cite: 2026-01-22]
+    this.selectedId = event.id || event.data?.id;
+
+    // 2. Drawer ko open karein [cite: 2026-01-22]
+    if (this.drawer) {
+      this.drawer.open();
+    }
+  }
+
+  // Jab Naya banana ho [cite: 2026-01-22]
+  openCreateDrawer() {
+    this.selectedId = null; // ID khali kar di (Naya entry)
+    this.drawer.open();
+  }
+
+  handleFormAction(event: any) {
+    // Isko abhi khali chhod do, pehle drawer check karo [cite: 2026-01-22]
+    this.drawer.close();
   }
 }

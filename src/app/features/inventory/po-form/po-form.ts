@@ -15,6 +15,8 @@ import { POService } from '../service/po.service';
 import { DateHelper } from '../../../shared/models/date-helper';
 import { NotificationService } from '../../shared/notification.service';
 import { POHeaderDetailsDto } from '../models/poheader-details-dto';
+import { PriceListItemDto } from '../models/price-list-item.dto';
+import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 
 @Component({
   selector: 'app-po-form',
@@ -58,7 +60,7 @@ export class PoForm implements OnInit, OnDestroy {
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras.state) {
       this.refillData = navigation.extras.state['refillData'];
-      console.log('Refill Data Captured in Constructor:', this.refillData);
+      // console.log('Refill Data Captured in Constructor:', this.refillData);
     }
   }
 
@@ -80,12 +82,7 @@ export class PoForm implements OnInit, OnDestroy {
       this.isEditMode = false;
       this.loadNextPoNumber();
 
-      // 1. Header Details fetch karein (Supplier, PriceList, etc.)
-      if (this.refillData.lastpurchaseOrderId) {
-        this.isEditMode = false;
-        this.loadHeaderDetails(this.refillData.lastpurchaseOrderId);
-        this.cdr.detectChanges();
-      }
+
 
       // 2. Table Row add karein (Product, Rate, Unit)
       this.addRefillRow(this.refillData);
@@ -100,25 +97,6 @@ export class PoForm implements OnInit, OnDestroy {
   }
 
 
-  loadHeaderDetails(id: number) {
-    this.poService.getPOHeaderDetails(id).subscribe({
-      next: (res: POHeaderDetailsDto) => {
-        this.poForm.patchValue({
-          supplierId: res.supplierId,
-          priceListId: res.priceListId,
-          remarks: res.remarks,
-          poDate: new Date(),
-          expectedDelivery: new Date(new Date().setDate(new Date().getDate() + 1))
-        });
-
-        this.onSupplierChange(res.supplierId);
-        this.poForm.markAsDirty();
-        this.poForm.updateValueAndValidity();
-        this.cdr.detectChanges();
-      },
-      error: (err) => console.error('Error fetching PO header', err)
-    });
-  }
   // NEW METHOD: Handle automatic refill from dashboard
   private addRefillRow(data: any) {
     const index = this.items.length;
@@ -526,4 +504,70 @@ export class PoForm implements OnInit, OnDestroy {
       }
     });
   }
+
+  // po-form.component.ts
+
+onPriceListChange(priceListId: string) {
+    if (!priceListId || this.items.length === 0) return;
+
+    this.inventoryService.getPriceListItems(priceListId).subscribe({
+      next: (validItems: any[]) => {
+        console.log(">>>> 1. API RESPONSE (Price List Items):", validItems);
+
+        const itemsArray = this.items;
+        let removedItems: string[] = [];
+
+        for (let i = itemsArray.length - 1; i >= 0; i--) {
+          const row = itemsArray.at(i);
+          const rawId = row.get('productId')?.value;
+          const currentProdId = rawId?.toString().toLowerCase().trim();
+
+          console.log(`>>>> 2. ROW [${i}] CHECK:`);
+          console.log(`   - Raw ID from Form: "${rawId}" (Length: ${rawId?.length})`);
+          console.log(`   - Normalized ID: "${currentProdId}" (Length: ${currentProdId?.length})`);
+
+          // Pure validItems array mein se matching ID dhundo [cite: 2026-01-22]
+          const matchingItem = validItems.find(x => {
+            const apiId = x.productId?.toString().toLowerCase().trim();
+            const isMatch = apiId === currentProdId;
+            
+            // Sirf match hone wali ya suspicious IDs ke liye log [cite: 2026-01-22]
+            if (isMatch) console.log(`   ✅ MATCH FOUND: API ID "${apiId}" matches Form ID "${currentProdId}"`);
+            return isMatch;
+          });
+
+          if (!matchingItem) {
+            console.error(`   ❌ NO MATCH: ID "${currentProdId}" not found in current Price List response.`);
+            const searchVal = row.get('productSearch')?.value;
+            const displayName = typeof searchVal === 'object' ? searchVal.productName || searchVal.name : searchVal;
+            
+            removedItems.push(displayName || 'Selected Product');
+            this.items.removeAt(i); 
+          } else {
+            row.patchValue({
+              price: matchingItem.rate,
+              unit: matchingItem.unit || row.get('unit')?.value,
+              gstPercent: matchingItem.gstPercent || row.get('gstPercent')?.value
+            }, { emitEvent: false });
+            this.updateTotal(i);
+          }
+        }
+
+        if (removedItems.length > 0) {
+          this.dialog.open(StatusDialogComponent, {
+            width: '650px',
+            panelClass: 'wide-dialog-panel',
+            data: {
+              isSuccess: false,
+              message: `The following products are not available in the selected Price List and have been removed: ${removedItems.join(', ')}`
+            }
+          });
+        }
+
+        this.poForm.updateValueAndValidity();
+        this.calculateGrandTotal();
+        this.cdr.detectChanges();
+      }
+    });
+}
 }

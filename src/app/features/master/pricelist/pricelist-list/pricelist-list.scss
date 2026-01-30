@@ -30,3 +30,61 @@ table {
     gap: 8px;
   }
 }
+.list-container {
+  /* Calculate height to fit in viewport: 100vh - (Toolbar + Breadcrumb + Footer + Padding/Buffer)
+     Increased buffer to 220px to strictly prevent outer scrollbar */
+  height: calc(100vh - 220px);
+  width: 100%;
+}
+
+.side-drawer {
+  width: 650px;
+  background-color: #ffffff;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+}
+
+.drawer-header {
+  padding: 15px 20px;
+  background: #f8f9fa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+}
+
+/* Ensure internal scrolling only happens within the grid if needed */
+.drawer-body {
+  height: 100%;
+  padding: 16px;
+  box-sizing: border-box;
+  overflow: hidden; /* Critical: Hide overflow on the content wrapper itself */
+  display: flex !important; /* Force flex layout */
+  flex-direction: column;
+}
+
+/* Target element directly in case class is missed or overridden */
+mat-drawer-content {
+  overflow: hidden !important;
+}
+
+.action-bar {
+  margin-bottom: 16px;
+  flex: 0 0 auto;
+}
+
+.grid-wrapper {
+  flex: 1 1 auto;
+  overflow: auto; /* Allow grid to scroll */
+  display: flex;
+  flex-direction: column;
+  /* Fix for flex item scrolling issues */
+  min-height: 0;
+}
+
+/* Mobile Responsiveness [cite: 2026-01-22] */
+@media (max-width: 600px) {
+  .side-drawer {
+    width: 100vw; /* Mobile par full screen [cite: 2026-01-22] */
+  }
+}
+

@@ -1,8 +1,6 @@
 .dashboard-container {
-  height: 100vh;      /* Poori screen ki height */
+  height: auto;      /* Layout scroll karega, iski height content ke hisaab se hogi */
   width: 100%;
-  overflow-y: auto;   /* Mouse wheel scrolling yahan enable hogi */
-  overflow-x: hidden; /* Side scroll band */
   padding: 24px;
   box-sizing: border-box;
   background-color: #f4f7fe;

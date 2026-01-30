@@ -1,11 +1,11 @@
-<mat-card>
-  <mat-card-title class="d-flex justify-between">
+<!-- <mat-card> -->
+  <!-- <mat-card-title class="d-flex justify-between">
     <button mat-flat-button class="bg-cyan" routerLink="/app/master/pricelists/add">
       + Create Price List
     </button>
-  </mat-card-title>
+  </mat-card-title> -->
 
-  <app-server-datagrid 
+  <!-- <app-server-datagrid 
     gridKey="pricelist-grid"
     [columns]="columns" 
     [data]="data" 
@@ -16,11 +16,92 @@
     (selectionChange)="onSelectionChange($event)"
     (edit)="onEdit($event)"
     (delete)="deletePriceList($event[0])">
-  </app-server-datagrid>
+  </app-server-datagrid> -->
 
-  <mat-card-actions>
+  <!-- <mat-card-actions>
     <button mat-flat-button class="bg-cyan" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
       Delete Selected
     </button>
   </mat-card-actions>
-</mat-card>
+</mat-card> -->
+
+
+<!-- <mat-drawer-container class="list-container" autosize>
+  
+  <mat-drawer #drawer mode="over" position="end" class="side-drawer">
+    <div class="drawer-header">
+      <h2>Edit Price List</h2>
+      <button mat-icon-button (click)="drawer.close()"><mat-icon>close</mat-icon></button>
+    </div>
+
+    <app-pricelist-form 
+      [editId]="selectedId" 
+      (actionComplete)="handleFormAction($event)">
+    </app-pricelist-form>
+  </mat-drawer>
+
+  <mat-drawer-content>
+    <div class="grid-wrapper">
+    <app-server-datagrid 
+    gridKey="pricelist-grid"
+    [columns]="columns" 
+    [data]="data" 
+    [totalCount]="totalCount" 
+    [loading]="loading"
+    (loadData)="loadPriceLists($event)" 
+    (selectionChange)="onSelectionChange($event)"
+    (delete)="deletePriceList($event[0])"
+    (onEdit)="openEditDrawer($event)">
+  </app-server-datagrid>
+    <mat-card-actions>
+    <button mat-flat-button class="bg-cyan" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
+      Delete Selected
+    </button>
+  </mat-card-actions>
+    </div>
+  </mat-drawer-content>
+
+</mat-drawer-container> -->
+
+<mat-drawer-container class="list-container">
+  
+  <mat-drawer #drawer mode="over" position="end" class="side-drawer">
+    <div class="drawer-header">
+      <h2>{{ selectedId ? 'Edit Price List' : 'Add Price List' }}</h2>
+      <button mat-icon-button (click)="drawer.close()"><mat-icon>close</mat-icon></button>
+    </div>
+
+    <app-pricelist-form
+      [editId]="selectedId" 
+      (actionComplete)="handleFormAction($event)">
+    </app-pricelist-form>
+  </mat-drawer>
+
+  <mat-drawer-content class="drawer-body">
+     <div class="action-bar">
+       <button mat-raised-button color="primary" (click)="openCreateDrawer()">+ New List</button>
+     </div>
+     
+    <div class="grid-wrapper">
+    <app-server-datagrid 
+    gridKey="pricelist-grid"
+    [columns]="columns" 
+    [data]="data" 
+    [totalCount]="totalCount" 
+    [loading]="loading"
+    (loadData)="loadPriceLists($event)" 
+    (selectionChange)="onSelectionChange($event)"
+    (delete)="deletePriceList($event[0])"
+    (editAction)="onEditClicked($event)">
+  </app-server-datagrid>
+    <mat-card-actions>
+    <button style="margin-top: 10px;" mat-flat-button class="bg-azure" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
+      Delete Selected
+    </button>
+  </mat-card-actions>
+    </div>
+
+
+  </mat-drawer-content>
+
+</mat-drawer-container>

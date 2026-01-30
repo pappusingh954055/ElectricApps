@@ -5,6 +5,7 @@ import { environment } from '../../../enviornments/environment';
 import { ApiService } from '../../../shared/api.service';
 import { PurchaseOrderPayload } from '../models/purchaseorder.model';
 import { StockSummary } from '../models/stock-summary.model';
+import { PriceListItemDto } from '../models/price-list-item.dto';
 
 
 
@@ -176,5 +177,10 @@ export class InventoryService {
 
     getPOItemsForGRN(poId: number): Observable<any[]> {
         return this.http.get<any[]>(`${this.apiUrl}/PurchaseOrders/po-items/${poId}`);
+    }
+
+    getPriceListItems(priceListId: string): Observable<PriceListItemDto[]> {
+        // Ye API wahi DTO return karegi jo humne abhi C# mein banaya hai [cite: 2026-01-22]
+        return this.http.get<PriceListItemDto[]>(`${this.apiUrl}/pricelists/price-list-items/${priceListId}`);
     }
 }

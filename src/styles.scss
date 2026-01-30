@@ -1,27 +1,104 @@
 @use '@angular/material' as mat;
 
-// 1. MATERIAL THEME SETUP
+/* =====================================================
+   1. MATERIAL THEME
+===================================================== */
 html {
-  @include mat.theme((color: (primary: mat.$azure-palette,
-        tertiary: mat.$blue-palette,
-      ),
-      typography: Roboto,
-      density: 0,
-    ));
+  @include mat.theme((
+    color: (
+      primary: mat.$azure-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: Roboto,
+    density: 0,
+  ));
 }
 
-// 2. GLOBAL RESET & BASE
+/* =====================================================
+   2. BASE RESET
+===================================================== */
 html,
 body {
   height: 100%;
   margin: 0;
   padding: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
-  overflow-x: hidden; // Horizontal scroll block karne ke liye
-  background-color: #f5f7f9; // Default light background for app
+  background-color: #f5f7f9;
 }
 
-// 3. COLOR PALETTE LOOP
+/* =====================================================
+   3. BODY SCROLL CONTROL
+===================================================== */
+body {
+  height: 100vh;
+  width: 100vw;
+
+  overflow-y: hidden;     /* page vertical disabled */
+  overflow-x: visible;    /* horizontal allowed */
+
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+}
+
+/* =====================================================
+   4. SCROLLBAR BEHAVIOR
+===================================================== */
+
+/* Default behavior: Vertical hidden, Horizontal visible always */
+* {
+  scrollbar-width: thin;          /* Firefox: "auto" or "thin" (cannot hide just one axis easily) - setting thin for consistency */
+  scrollbar-color: #bbb transparent; /* Firefox thumb/track color */
+}
+
+/* WebKit: Hide vertical, show horizontal */
+*::-webkit-scrollbar {
+  width: 0px;      /* Vertical hidden independently */
+  height: 8px;     /* Horizontal visible */
+}
+
+/* Track (Background) */
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Thumb (The moving part) */
+*::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 4px;
+  border: 2px solid transparent; /* Creates padding effect */
+  background-clip: content-box;
+}
+
+/* Hover state for thumb */
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #999;
+}
+
+/* Ensure horizontal bar has dimension */
+*::-webkit-scrollbar-horizontal {
+  height: 8px;
+}
+
+/* Ensure vertical bar is strictly hidden */
+*::-webkit-scrollbar-vertical {
+  width: 0px;
+  display: none;
+}
+
+/* Specific fix for Material Drawer to hide vertical scrollbar but allow scrolling */
+.mat-drawer-inner-container {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+  
+  &::-webkit-scrollbar {
+    width: 0px;
+    display: none;
+  }
+}
+
+/* =====================================================
+   5. COLOR PALETTE LOOP
+===================================================== */
 $my-palettes: (
   "red": mat.$red-palette,
   "green": mat.$green-palette,
@@ -39,44 +116,31 @@ $my-palettes: (
 
 @each $name, $palette in $my-palettes {
   .bg-#{$name} {
-    background-color: mat.get-theme-color(mat.define-theme((color: (primary: $palette))), primary) !important;
+    background-color: mat.get-theme-color(
+      mat.define-theme((color: (primary: $palette))),
+      primary
+    ) !important;
     color: white !important;
   }
 
   .text-#{$name} {
-    color: mat.get-theme-color(mat.define-theme((color: (primary: $palette))), primary) !important;
+    color: mat.get-theme-color(
+      mat.define-theme((color: (primary: $palette))),
+      primary
+    ) !important;
   }
 
   .border-#{$name} {
-    border: 1px solid mat.get-theme-color(mat.define-theme((color: (primary: $palette))), primary) !important;
+    border: 1px solid mat.get-theme-color(
+      mat.define-theme((color: (primary: $palette))),
+      primary
+    ) !important;
   }
 }
 
-// 2. Global Body Styling
-body {
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden; // Browser ka vertical scroll puri tarah band
-  font-family: Roboto, "Helvetica Neue", sans-serif;
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-}
-
-/* Mouse wheel se scroll hoga par dandi (scrollbar) nahi dikhegi */
-*::-webkit-scrollbar {
-  display: none;
-}
-
-* {
-  -ms-overflow-style: none;
-  /* IE and Edge */
-  scrollbar-width: none;
-  /* Firefox */
-}
-
-
+/* =====================================================
+   6. LAYOUT
+===================================================== */
 .mat-sidenav-container {
   height: 100vh;
 }
@@ -85,51 +149,40 @@ body {
   padding: 16px;
 }
 
-/* You can add global styles to this file, and also import other style files */
-
-/* ================================
-   CDK OVERLAY POSITION FIX
-   ================================ */
-
+/* =====================================================
+   7. CDK OVERLAY FIX
+===================================================== */
 .cdk-overlay-connected-position-bounding-box {
   overflow: visible !important;
 }
 
-/* Keep dropdown inside viewport */
 .mat-select-panel {
   max-height: 280px !important;
   overflow-y: auto !important;
 }
 
-/* Mobile safety */
 @media (max-width: 768px) {
   .mat-select-panel {
     max-height: 200px !important;
   }
 }
 
-
-
-/* ===============================
-   GLOBAL MATERIAL DIALOG FIXES
-   =============================== */
-
-/* Dialog container */
+/* =====================================================
+   8. DIALOG FIXES
+===================================================== */
 .mat-mdc-dialog-container {
   padding: 0 !important;
   border-radius: 14px !important;
   overflow: hidden !important;
 }
 
-/* Dialog surface */
 .mat-mdc-dialog-surface {
   border-radius: 14px !important;
 }
 
-/* ===============================
-   API RESULT DIALOG
-   =============================== */
-
+/* =====================================================
+   9. API RESULT DIALOG
+===================================================== */
 .api-result-dialog {
   min-width: 360px;
   max-width: 420px;
@@ -137,7 +190,6 @@ body {
   text-align: center;
 }
 
-/* Header */
 .api-result-dialog .dialog-header {
   display: flex;
   align-items: center;
@@ -146,90 +198,75 @@ body {
   margin-bottom: 12px;
 }
 
-/* Icons */
 .api-result-dialog .dialog-header mat-icon {
   font-size: 28px;
   width: 28px;
   height: 28px;
 }
 
-/* Success icon */
 .api-result-dialog.success mat-icon {
   color: #1976d2;
-  /* Material blue */
 }
 
-/* Error icon */
 .api-result-dialog.error mat-icon {
   color: #d32f2f;
-  /* Material red */
 }
 
-/* Title */
 .api-result-dialog h2 {
   margin: 0;
   font-size: 20px;
   font-weight: 600;
 }
 
-/* Message */
 .api-result-dialog .message {
   margin: 12px 0 24px;
   font-size: 15px;
   line-height: 1.5;
   color: #444;
-  word-break: break-word;
 }
 
-/* Actions */
 .api-result-dialog .actions {
   display: flex;
   justify-content: center;
 }
 
-/* OK Button */
 .api-result-dialog button {
   min-width: 96px;
   border-radius: 20px;
   font-weight: 600;
 }
 
-/* ===============================
-   REMOVE UNWANTED SCROLLBAR
-   =============================== */
-
+/* =====================================================
+   10. DIALOG CONTENT
+===================================================== */
 .mat-mdc-dialog-content {
   overflow: visible !important;
   max-height: unset !important;
 }
 
-/* Only show scrollbar if content is really large */
 .mat-mdc-dialog-content.long-message {
   max-height: 300px;
   overflow-y: auto;
 }
 
-/* ===============================
-   BACKDROP SOFTENING
-   =============================== */
-
+/* =====================================================
+   11. BACKDROP
+===================================================== */
 .cdk-overlay-backdrop {
   background: rgba(0, 0, 0, 0.35) !important;
 }
 
-/* Dialog Responsive Behavior [cite: 2026-01-22] */
 .mat-mdc-dialog-container .mdc-dialog__surface {
   border-radius: 12px !important;
-  max-width: 95vw !important; /* Mobile par 95% width lega [cite: 2026-01-22] */
+  max-width: 95vw !important;
 }
 
 @media (max-width: 600px) {
   .mat-mdc-dialog-content {
     padding: 15px !important;
-    font-size: 14px; /* Text size chota karein taaki cut na ho [cite: 2026-01-22] */
+    font-size: 14px;
   }
-  
-  /* Buttons ko full width karein mobile par [cite: 2026-01-22] */
+
   .mat-mdc-dialog-actions button {
     width: 100%;
     height: 44px;

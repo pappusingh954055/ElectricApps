@@ -18,7 +18,7 @@ import { SelectionModel } from '@angular/cdk/collections';
   styleUrl: './current-stock-component.scss',
 })
 export class CurrentStockComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['select','productName', 'totalReceived', 'availableStock', 'unitRate', 'actions'];
+  displayedColumns: string[] = ['select', 'productName', 'totalReceived', 'availableStock', 'unitRate', 'actions'];
   stockDataSource = new MatTableDataSource<any>([]);
 
 
@@ -72,7 +72,7 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
             console.log('items', items);
           }
           const mappedData = items.map((item: any) => ({
-    
+
             productName: item.productName,
             totalQty: item.totalReceived,
             unit: item.unit,
@@ -136,14 +136,14 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
     const refillItems = this.selection.selected.map(item => ({
       productId: item.productId,
       productName: item.productName,
-      lastRate: item.lastRate,
-      unit: item.unit,
-      lastPurchaseOrderId: item.lastPurchaseOrderId
+      // lastRate: item.lastRate,
+      // unit: item.unit,
+      //lastPurchaseOrderId: item.lastPurchaseOrderId
     }));
 
     this.router.navigate(['/app/inventory/polist/add'], {
       state: { refillItems: refillItems }
     });
   }
-  
+
 }

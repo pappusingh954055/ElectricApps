@@ -26,6 +26,7 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   @Output() delete = new EventEmitter<any[]>();
   @Output() selectionChange = new EventEmitter<any[]>();
   @Output() rowClick = new EventEmitter<any>();
+  @Output() editAction = new EventEmitter<any>();
 
   selection = new Set<any>();
   private readonly STORAGE_KEY = 'grid-settings-state';
@@ -263,10 +264,10 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   }
 
 
- toggleColumn(col: GridColumn, visible: boolean): void {
-  col.visible = visible;
-  this.updateDisplayedColumns(); // ✅ persists + refreshes menu
-}
+  toggleColumn(col: GridColumn, visible: boolean): void {
+    col.visible = visible;
+    this.updateDisplayedColumns(); // ✅ persists + refreshes menu
+  }
 
 
   selectAllColumns(): void {
@@ -281,5 +282,8 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
     this.filteredColumns = [...this.columns]; // ✅ reflect immediately
     this.updateDisplayedColumns();
   }
-
+  
+  onEditClick(row: any) {
+    this.editAction.emit(row); // Ye event parent ko signal bhejega
+  }
 }

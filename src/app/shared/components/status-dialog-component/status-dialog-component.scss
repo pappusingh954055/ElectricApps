@@ -1,109 +1,98 @@
+/* Container styling [cite: 2026-01-22] */
 .dialog-container {
-  padding: 16px; // Padding thodi badhayi hai balance ke liye
-  position: relative;
+  padding: 24px;
+  /* Width badha di gayi hai taaki lamba message fit ho sake [cite: 2026-01-22] */
+  min-width: 550px; 
+  max-width: 700px;
+  background: #fff;
   
-  // Dynamic Borders (Left ki jagah Top border zyada modern lagta hai)
-  &.success-border { border-top: 6px solid #2e7d32; }
-  &.error-border { border-top: 6px solid #d32f2f; }
+  /* Standard Side Border [cite: 2026-01-22] */
+  &.success-border { border-left: 10px solid #2e7d32; }
+  &.error-border { border-left: 10px solid #d32f2f; }
 
-  h2[mat-dialog-title] {
+  .dialog-header {
     display: flex;
     align-items: center;
-    gap: 12px;
-    font-weight: 600;
-    margin: 0 0 16px 0;
-    padding: 0;
-    font-size: 1.4rem;
+    gap: 18px;
+    margin-bottom: 16px;
 
     mat-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
-  }
-
-  .status-msg {
-    font-size: 1.05rem;
-    line-height: 1.6;
-    color: #555;
-    word-wrap: break-word;
-    margin-bottom: 20px;
-    display: block;
-  }
-}
-
-// Global class support (Agar container par direct na lage)
-::ng-deep .success-border { border-top: 6px solid #2e7d32 !important; }
-::ng-deep .error-border { border-top: 6px solid #d32f2f !important; }
-
-/* Mobile Optimizations */
-@media (max-width: 480px) {
-  .dialog-container {
-    padding: 12px;
 
     h2[mat-dialog-title] {
-      font-size: 1.2rem;
-      mat-icon {
-        font-size: 24px;
-        width: 24px;
-        height: 24px;
-      }
-    }
-
-    .status-msg {
-      font-size: 0.95rem;
-    }
-
-    mat-dialog-actions {
+      margin: 0;
       padding: 0;
-      button {
-        width: 100%; // Mobile par full width button
-        height: 45px;
-      }
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #222;
+      letter-spacing: -0.5px;
+    }
+  }
+
+  mat-dialog-content {
+    /* Alignment icon ke text ke saath match karne ke liye [cite: 2026-01-22] */
+    padding: 0 0 0 58px !important; 
+    margin: 0;
+    overflow: hidden;
+
+    .message-text {
+      font-size: 1.15rem;
+      line-height: 1.6;
+      color: #444;
+      white-space: normal;
+      word-break: break-word; /* Safe wrapping [cite: 2026-01-22] */
+      margin: 0;
+    }
+  }
+
+  mat-dialog-actions {
+    padding: 20px 0 0 0;
+    margin-bottom: -8px;
+    
+    button {
+      padding: 0 24px;
+      height: 44px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      border-radius: 4px;
     }
   }
 }
 
-/* Status Dialog Container [cite: 2026-01-22] */
-.dialog-container {
-  min-width: 320px; /* Minimum width set karein taaki message break na ho [cite: 2026-01-22] */
-  max-width: 450px;
-  padding: 10px;
+/* CRITICAL: Overriding Angular Material's internal panel width [cite: 2026-01-22] */
+::ng-deep .mat-mdc-dialog-panel {
+  max-width: none !important; /* Default restrictor hataya */
+  min-width: fit-content !important;
 }
 
-/* Message text styling [cite: 2026-01-22] */
-mat-dialog-content p {
-  font-size: 16px;
-  line-height: 1.5;
-  margin: 15px 0;
-  white-space: normal; /* Text ko wrap karne ke liye [cite: 2026-01-22] */
-  word-break: break-word; 
-  text-align: center;
-  color: #555;
-}
-/* Status Dialog layout [cite: 2026-01-22] */
-.dialog-container {
-  min-width: 350px; /* Thodi zyada width taaki text break na ho */
-  padding: 20px;
-}
-
-mat-dialog-content p {
-  word-wrap: break-word;
-  white-space: normal;
-  text-align: center;
-  font-size: 1.1rem;
-  line-height: 1.6;
-}
-
+/* Mobile Fix: Choti screen par width control [cite: 2026-01-22] */
 @media (max-width: 600px) {
   .dialog-container {
-    min-width: 90vw; /* Mobile par width adjust hogi */
-    padding: 15px;
-  }
-}
-/* Mobile Responsiveness [cite: 2026-01-22] */
-@media (max-width: 600px) {
-  .dialog-container {
-    min-width: 85vw; /* Mobile par width automatically adjust hogi [cite: 2026-01-22] */
+    min-width: 95vw;
+    padding: 16px;
+    border-left: 6px solid #d32f2f;
+
+    .dialog-header {
+      gap: 10px;
+      h2[mat-dialog-title] { font-size: 1.3rem; }
+    }
+
+    mat-dialog-content {
+      padding: 0 !important;
+      text-align: left;
+    }
+    
+    mat-dialog-actions {
+      justify-content: center;
+      button { width: 100%; }
+    }
   }
 }
