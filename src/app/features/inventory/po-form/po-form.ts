@@ -14,9 +14,7 @@ import { ProductService } from '../../master/product/service/product.service';
 import { POService } from '../service/po.service';
 import { DateHelper } from '../../../shared/models/date-helper';
 import { NotificationService } from '../../shared/notification.service';
-import { POHeaderDetailsDto } from '../models/poheader-details-dto';
-import { PriceListItemDto } from '../models/price-list-item.dto';
-import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+
 
 @Component({
   selector: 'app-po-form',
@@ -60,13 +58,13 @@ export class PoForm implements OnInit, OnDestroy {
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras.state) {
       this.refillData = navigation.extras.state['refillData'];
-      // console.log('Refill Data Captured in Constructor:', this.refillData);
+
     }
   }
 
 
   ngOnInit(): void {
-    const navigation = this.router.getCurrentNavigation();
+
     const id = this.route.snapshot.paramMap.get('id');
     this.initForm();
     this.loadSuppliers();
@@ -259,7 +257,7 @@ export class PoForm implements OnInit, OnDestroy {
     const product = event.option.value;
     const row = this.items.at(index);
     const priceListId = this.poForm.get('priceListId')?.value;
-
+ 
     if (!product) return;
 
     const displayName = product.productName || product.name || 'Unknown Product';
@@ -291,6 +289,7 @@ export class PoForm implements OnInit, OnDestroy {
     });
 
     if (product.id) {
+      console.log('Product ID:', product.id, 'Price List ID:', priceListId); 
       this.inventoryService.getProductRate(product.id, priceListId).subscribe({
         next: (res: any) => {
           if (res) {
@@ -504,70 +503,4 @@ export class PoForm implements OnInit, OnDestroy {
       }
     });
   }
-
-  // po-form.component.ts
-
-onPriceListChange(priceListId: string) {
-    if (!priceListId || this.items.length === 0) return;
-
-    this.inventoryService.getPriceListItems(priceListId).subscribe({
-      next: (validItems: any[]) => {
-        console.log(">>>> 1. API RESPONSE (Price List Items):", validItems);
-
-        const itemsArray = this.items;
-        let removedItems: string[] = [];
-
-        for (let i = itemsArray.length - 1; i >= 0; i--) {
-          const row = itemsArray.at(i);
-          const rawId = row.get('productId')?.value;
-          const currentProdId = rawId?.toString().toLowerCase().trim();
-
-          console.log(`>>>> 2. ROW [${i}] CHECK:`);
-          console.log(`   - Raw ID from Form: "${rawId}" (Length: ${rawId?.length})`);
-          console.log(`   - Normalized ID: "${currentProdId}" (Length: ${currentProdId?.length})`);
-
-          // Pure validItems array mein se matching ID dhundo [cite: 2026-01-22]
-          const matchingItem = validItems.find(x => {
-            const apiId = x.productId?.toString().toLowerCase().trim();
-            const isMatch = apiId === currentProdId;
-            
-            // Sirf match hone wali ya suspicious IDs ke liye log [cite: 2026-01-22]
-            if (isMatch) console.log(`   ✅ MATCH FOUND: API ID "${apiId}" matches Form ID "${currentProdId}"`);
-            return isMatch;
-          });
-
-          if (!matchingItem) {
-            console.error(`   ❌ NO MATCH: ID "${currentProdId}" not found in current Price List response.`);
-            const searchVal = row.get('productSearch')?.value;
-            const displayName = typeof searchVal === 'object' ? searchVal.productName || searchVal.name : searchVal;
-            
-            removedItems.push(displayName || 'Selected Product');
-            this.items.removeAt(i); 
-          } else {
-            row.patchValue({
-              price: matchingItem.rate,
-              unit: matchingItem.unit || row.get('unit')?.value,
-              gstPercent: matchingItem.gstPercent || row.get('gstPercent')?.value
-            }, { emitEvent: false });
-            this.updateTotal(i);
-          }
-        }
-
-        if (removedItems.length > 0) {
-          this.dialog.open(StatusDialogComponent, {
-            width: '650px',
-            panelClass: 'wide-dialog-panel',
-            data: {
-              isSuccess: false,
-              message: `The following products are not available in the selected Price List and have been removed: ${removedItems.join(', ')}`
-            }
-          });
-        }
-
-        this.poForm.updateValueAndValidity();
-        this.calculateGrandTotal();
-        this.cdr.detectChanges();
-      }
-    });
-}
 }

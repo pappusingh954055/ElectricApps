@@ -16,7 +16,7 @@
       <div class="field-item">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Applicable Price List</mat-label>
-          <mat-select formControlName="priceListId" (selectionChange)="onPriceListChange($event.value)">
+          <mat-select formControlName="priceListId">
             <mat-option *ngFor="let pl of priceLists" [value]="pl.id">{{ pl.name }}</mat-option>
           </mat-select>
           <mat-hint *ngIf="isPriceListAutoSelected" style="color: green; font-size: 10px;">Auto-linked from

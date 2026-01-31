@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
@@ -36,6 +36,7 @@ export class GrnListComponent implements OnInit, AfterViewInit {
 
   constructor(
     private router: Router,
+    private cdr: ChangeDetectorRef,
     private inventoryService: InventoryService, private dialog: MatDialog
   ) { }
 
@@ -55,7 +56,10 @@ export class GrnListComponent implements OnInit, AfterViewInit {
     this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
 
     // Merge Sort, Page aur Search events into one stream [cite: 2026-01-22]
-    this.loadGRNData();
+    // Fix NG0100: Wrap in setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
+    setTimeout(() => {
+      this.loadGRNData();
+    });
   }
 
   loadGRNData() {
@@ -65,7 +69,7 @@ export class GrnListComponent implements OnInit, AfterViewInit {
         switchMap(() => {
           // Loader ON: API call start [cite: 2026-01-22]
           this.isLoadingResults = true;
-
+          this.cdr.detectChanges();
           return this.inventoryService.getGRNPagedList(
             this.sort.active,
             this.sort.direction,
@@ -83,7 +87,7 @@ export class GrnListComponent implements OnInit, AfterViewInit {
         map(data => {
           // Loader OFF: Success response aane par
           this.isLoadingResults = false;
-
+          this.cdr.detectChanges();
           if (data === null) return [];
 
           this.resultsLength = data.totalCount; //

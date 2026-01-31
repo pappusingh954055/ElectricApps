@@ -78,8 +78,7 @@ export class PricelistList implements OnInit {
     // Mapping service function to get paged data
     this.service.getPriceLists().subscribe({
       next: (res: any) => {
-        // Agar backend direct array bhej raha hai toh data = res, 
-        // Agar paged object hai toh data = res.items
+
         this.data = res.items || res;
         this.totalCount = res.totalCount || this.data.length;
         this.loading = false;
@@ -156,7 +155,7 @@ export class PricelistList implements OnInit {
 
   // Jab Grid mein Edit click hoga [cite: 2026-01-22]
   onEditClicked(event: any) {
-    console.log("Edit Event Received:", event);
+
 
     // 1. Row ki ID save karein [cite: 2026-01-22]
     this.selectedId = event.id || event.data?.id;
@@ -167,14 +166,14 @@ export class PricelistList implements OnInit {
     }
   }
 
-  // Jab Naya banana ho [cite: 2026-01-22]
+
   openCreateDrawer() {
-    this.selectedId = null; // ID khali kar di (Naya entry)
+    this.selectedId = null;
     this.drawer.open();
   }
 
   handleFormAction(event: any) {
-    // Isko abhi khali chhod do, pehle drawer check karo [cite: 2026-01-22]
+
     this.drawer.close();
   }
 }

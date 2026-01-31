@@ -1,10 +1,10 @@
-import { ChangeDetectorRef, Component, EventEmitter, inject, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, inject, Input, OnInit, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { Validators, FormBuilder, ReactiveFormsModule, FormGroup, FormArray, FormControl } from '@angular/forms';
 import { PriceListService } from '../service/pricelist.service';
 import { ProductService } from '../../product/service/product.service';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
-import { FormFooter } from '../../../shared/form-footer/form-footer';
+
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, finalize, tap } from 'rxjs/operators';
@@ -14,14 +14,23 @@ import { StatusDialogComponent } from '../../../../shared/components/status-dial
 @Component({
   selector: 'app-pricelist-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, FormFooter],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule],
   templateUrl: './pricelist-form.html',
   styleUrl: './pricelist-form.scss',
 })
-export class PricelistForm implements OnInit {
+export class PricelistForm implements OnInit, OnChanges {
   priceListForm!: FormGroup;
   filteredProducts: any[][] = [];
   loadingRowIndex: number | null = null;
+
+  applicableGroups = [
+    { label: 'All', value: 'ALL' },
+    { label: 'Wholesale', value: 'WHOLESALE' },
+    { label: 'Retail', value: 'RETAIL' },
+    { label: 'Dealer', value: 'DEALER' },
+    { label: 'Distributor', value: 'DISTRIBUTOR' },
+    { label: 'Project / Contractor', value: 'PROJECT' }
+  ];
 
   private productService = inject(ProductService);
   private priceListService = inject(PriceListService);
@@ -37,6 +46,20 @@ export class PricelistForm implements OnInit {
   showError = false;
   constructor(private fb: FormBuilder, private dialog: MatDialog) { }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['editId'] && !changes['editId'].firstChange) {
+      const id = changes['editId'].currentValue;
+      if (id) {
+        this.loadPriceList(id);
+      } else {
+        this.isEditMode = false;
+        this.priceListForm.reset();
+        this.initForm();
+        this.addItemRow();
+      }
+    }
+  }
+
   ngOnInit(): void {
     this.initForm();
 
@@ -47,7 +70,7 @@ export class PricelistForm implements OnInit {
       this.loadPriceList(id);
     } else {
       // FIX: Sirf naye entry ke waqt ek row add hogi
-      this.addItemRow(); 
+      this.addItemRow();
     }
 
     // Price Type change listener
@@ -65,7 +88,7 @@ export class PricelistForm implements OnInit {
       code: ['', Validators.required],
       applicableGroup: ['ALL'],
       currency: ['INR'],
-      remarks: [''],
+      description: [''],
       validFrom: [new Date(), Validators.required],
       validTo: [null],
       isActive: [true],
@@ -137,8 +160,10 @@ export class PricelistForm implements OnInit {
   }
 
   onProductSelect(event: any, index: number) {
+    console.log('onProductSelect triggered', event);
     const selectedProduct = event.option.value;
 
+    // 1. Duplicate Product Check
     const isDuplicate = this.items.controls.some((control, i) => {
       return i !== index && control.get('productId')?.value === selectedProduct.id;
     });
@@ -152,6 +177,7 @@ export class PricelistForm implements OnInit {
         }
       });
 
+      // Reset current row
       this.items.at(index).patchValue({
         productId: null,
         productSearch: '',
@@ -161,17 +187,21 @@ export class PricelistForm implements OnInit {
       return;
     }
 
+    // 2. Logic for Default Rate based on Price Type
     const priceType = this.priceListForm.get('priceType')?.value;
     const defaultRate = priceType === 'SALES' ? (selectedProduct.mrp || 0) : (selectedProduct.basePurchasePrice || 0);
 
-    setTimeout(() => {
-      this.items.at(index).patchValue({
-        productId: selectedProduct.id,
-        productSearch: selectedProduct.name,
-        unit: selectedProduct.unit || '-',
-        rate: defaultRate
-      });
+    // 3. Patch Values (Checking for unit or uomName)
+    // NOTE: Agar selectedProduct.unit undefined hai to check karein product object mein key kya hai
+    this.items.at(index).patchValue({
+      productId: selectedProduct.id,
+      productSearch: selectedProduct, // Important: Autocomplete ke liye object hi pass karein agar displayWith hai
+      unit: selectedProduct.unit || selectedProduct.uomName || selectedProduct.uom || '-',
+      rate: defaultRate
+    }, { emitEvent: false }); // Circular loop se bachne ke liye
 
+    // 4. Force UI Update
+    setTimeout(() => {
       this.cdr.markForCheck();
       this.cdr.detectChanges();
     }, 0);
@@ -206,12 +236,14 @@ export class PricelistForm implements OnInit {
     const finalPayload = {
       ...rawValues,
       id: currentId || undefined,
+      remarks: rawValues.description, // Map description back to remarks for backend
       validFrom: new Date(rawValues.validFrom).toISOString(),
       validTo: rawValues.validTo ? new Date(rawValues.validTo).toISOString() : null,
       createdBy: currentUserId,
       priceListItems: rawValues.priceListItems.map((item: any) => ({
+        
         ...item,
-        productSearch: undefined 
+        productSearch: undefined
       }))
     };
 
@@ -231,7 +263,7 @@ export class PricelistForm implements OnInit {
           }
         }).afterClosed().subscribe(() => {
           this.actionComplete.emit(true);
-          if(!this.editId) this.router.navigate(['/app/master/pricelist']);
+          if (!this.editId) this.router.navigate(['/app/master/pricelist']);
         });
       },
       error: (err) => {
@@ -243,9 +275,9 @@ export class PricelistForm implements OnInit {
     });
   }
 
-  onCancel() { 
+  onCancel() {
     this.actionComplete.emit(false);
-    if(!this.editId) this.router.navigate(['/app/master/pricelist']); 
+    if (!this.editId) this.router.navigate(['/app/master/pricelist']);
   }
 
   onFieldFocus(event: FocusEvent, fieldType: string) {
@@ -275,7 +307,7 @@ export class PricelistForm implements OnInit {
         code: data.code,
         applicableGroup: data.applicableGroup,
         currency: data.currency,
-        remarks: data.remarks,
+        description: data.remarks, // Map remarks from backend to description
         validFrom: new Date(data.validFrom),
         validTo: data.validTo ? new Date(data.validTo) : null,
         isActive: data.isActive
@@ -287,6 +319,7 @@ export class PricelistForm implements OnInit {
       const listData = data.items || data.priceListItems || [];
 
       listData.forEach((item: any, index: number) => {
+        console.log('item', item);
         const row = this.fb.group({
           productId: [item.productId, Validators.required],
           productSearch: [item.productName || '', Validators.required],
@@ -305,4 +338,5 @@ export class PricelistForm implements OnInit {
       }
     });
   }
+
 }

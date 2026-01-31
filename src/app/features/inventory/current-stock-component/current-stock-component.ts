@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { CommonModule } from '@angular/common';
 import { MatTableDataSource } from '@angular/material/table';
@@ -31,7 +31,8 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
   totalInventoryValue: number = 0;
   searchValue: string = '';
   lastpurchaseOrderId!: number;
-  constructor(private inventoryService: InventoryService, private router: Router) { }
+  constructor(private inventoryService: InventoryService, private router: Router,
+    private cdr: ChangeDetectorRef) { }
 
   selection = new SelectionModel<any>(true, []);
 
@@ -41,48 +42,51 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
-    merge(this.sort.sortChange, this.paginator.page)
-      .pipe(
-        startWith({}),
-        switchMap(() => {
-          this.isLoadingResults = true;
-          return this.inventoryService.getCurrentStock(
-            this.sort.active,       // sortField
-            this.sort.direction,    // sortOrder
-            this.paginator.pageIndex,
-            this.paginator.pageSize,
-            this.searchValue
-          ).pipe(
-            catchError(() => {
-              this.isLoadingResults = false;
-              return of(null);
-            })
-          );
-        }),
-        map(data => {
-          this.isLoadingResults = false;
-          if (!data) return [];
-          this.resultsLength = data.totalCount;
-          return data.items;
-        })
-      ).subscribe(items => {
-        if (items) {
-          if (items.length > 0) {
-            this.lastpurchaseOrderId = items[0].lastPurchaseOrderId;
-            console.log('items', items);
+    setTimeout(() => {
+      merge(this.sort.sortChange, this.paginator.page)
+        .pipe(
+          startWith({}),
+          switchMap(() => {
+            this.isLoadingResults = true;
+            this.cdr.detectChanges();
+            return this.inventoryService.getCurrentStock(
+              this.sort.active,       // sortField
+              this.sort.direction,    // sortOrder
+              this.paginator.pageIndex,
+              this.paginator.pageSize,
+              this.searchValue
+            ).pipe(
+              catchError(() => {
+                this.isLoadingResults = false;
+                return of(null);
+              })
+            );
+          }),
+          map(data => {
+            this.isLoadingResults = false;
+            if (!data) return [];
+            this.resultsLength = data.totalCount;
+            return data.items;
+          })
+        ).subscribe(items => {
+          if (items) {
+            if (items.length > 0) {
+              this.lastpurchaseOrderId = items[0].lastPurchaseOrderId;
+              console.log('items', items);
+            }
+            const mappedData = items.map((item: any) => ({
+
+              productName: item.productName,
+              totalQty: item.totalReceived,
+              unit: item.unit,
+              lastRate: item.lastRate
+            }));
+            this.cdr.detectChanges();
+            this.stockDataSource.data = mappedData;
+            this.updateSummary(mappedData);
           }
-          const mappedData = items.map((item: any) => ({
-
-            productName: item.productName,
-            totalQty: item.totalReceived,
-            unit: item.unit,
-            lastRate: item.lastRate
-          }));
-
-          this.stockDataSource.data = mappedData;
-          this.updateSummary(mappedData);
-        }
-      });
+        });
+    }, 0);
   }
 
   updateSummary(data: any[]) {
