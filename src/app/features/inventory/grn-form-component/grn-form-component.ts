@@ -86,50 +86,6 @@ export class GrnFormComponent implements OnInit {
 
 
 
-  // loadPOData(id: number) {
-  //   console.log("Fetching data for PO ID:", id);
-  //   const isViewMode = this.router.url.includes('/view');
-
-  //   this.inventoryService.getPODataForGRN(id).subscribe({
-  //     next: (res) => {
-  //       this.grnForm.patchValue({
-  //         grnNumber: res.grnNumber || 'AUTO-GEN',
-  //         poNumber: res.poNumber,
-  //         supplierName: res.supplierName
-  //       });
-
-  //       this.supplierId = res.supplierId;
-
-  //       if (this.isFromPopup) {
-  //         this.inventoryService.getPOItemsForGRN(id).subscribe({
-  //           next: (popupItems) => {
-  //             this.mapItems(popupItems);
-
-  //             // TABLE LOCK LOGIC
-  //             if (isViewMode) {
-  //               this.grnForm.disable(); // Header lock
-  //               (this.grnForm.get('items') as FormArray)?.disable(); // Table raw lock
-  //             }
-
-  //             this.cdr.detectChanges();
-  //           }
-  //         });
-  //       } else {
-  //         this.mapItems(res.items);
-
-  //         // TABLE LOCK LOGIC
-  //         if (isViewMode) {
-  //           this.grnForm.disable(); // Header lock
-  //           (this.grnForm.get('items') as FormArray)?.disable(); // Table raw lock
-  //         }
-
-  //         this.cdr.detectChanges();
-  //       }
-  //     },
-  //     error: (err) => console.error("API Error in loadPOData:", err)
-  //   });
-  // }
-
   loadPOData(id: number) {
     const isViewMode = this.router.url.includes('/view');
 
@@ -185,11 +141,13 @@ export class GrnFormComponent implements OnInit {
 
       return {
         ...item,
-        productId: item.ProductId || item.productId, //
+        productId: item.ProductId || item.productId,
         productName: item.ProductName || item.productName,
         orderedQty: ordered,
         pendingQty: pending,
         receivedQty: pending,
+        rejectedQty: 0,
+        acceptedQty: pending, // Initially all received is accepted
         unitRate: rate,
         total: pending * rate
       };
@@ -197,31 +155,50 @@ export class GrnFormComponent implements OnInit {
     this.calculateGrandTotal();
     this.cdr.detectChanges();
   }
-  onQtyChange(item: any) {
-    const enteredQty = Number(item.receivedQty);
-    const pendingQty = Number(item.pendingQty);
-    const unitRate = Number(item.unitRate);
 
+  onQtyChange(item: any) {
+    const enteredQty = Number(item.receivedQty || 0);
+    const pendingQty = Number(item.pendingQty || 0);
+    const rejectedQty = Number(item.rejectedQty || 0);
+    const unitRate = Number(item.unitRate || 0);
+
+    // Validation 1: Received > Pending
     if (enteredQty > pendingQty) {
       item.receivedQty = pendingQty;
-
-      this.dialog.open(StatusDialogComponent, {
-        width: '350px',
-        data: {
-          title: 'Validation Error',
-          message: `Received quantity cannot exceed the pending quantity (${pendingQty}).`,
-          status: 'error',
-          isSuccess: false
-        }
-      });
+      this.showValidationError(`Received quantity cannot exceed the pending quantity (${pendingQty}).`);
+      return;
     }
 
-    item.total = Number(item.receivedQty) * unitRate;
+    // Validation 2: Rejected > Received
+    if (rejectedQty > enteredQty) {
+      item.rejectedQty = 0; // Reset rejected if invalid
+      this.showValidationError(`Rejected quantity cannot exceed the received quantity (${enteredQty}).`);
+    }
+
+    // Calculate Accepted
+    item.acceptedQty = Math.max(0, item.receivedQty - (item.rejectedQty || 0));
+
+    // Calculate Total (Based on Accepted Qty) [cite: Assumption: Pay for accepted only]
+    item.total = item.acceptedQty * unitRate;
+
     this.calculateGrandTotal();
   }
 
+  showValidationError(message: string) {
+    this.dialog.open(StatusDialogComponent, {
+      width: '350px',
+      data: {
+        title: 'Validation Error',
+        message: message,
+        status: 'error',
+        isSuccess: false
+      }
+    });
+  }
+
   calculateGrandTotal(): number {
-    return this.items.reduce((acc, item) => acc + (Number(item.receivedQty) * Number(item.unitRate)), 0);
+    // Grand Total based on Accepted Qty
+    return this.items.reduce((acc, item) => acc + (Number(item.acceptedQty || 0) * Number(item.unitRate || 0)), 0);
   }
 
   saveGRN() {
@@ -239,6 +216,8 @@ export class GrnFormComponent implements OnInit {
         productId: item.productId,
         orderedQty: item.orderedQty || item.qty,
         receivedQty: Number(item.receivedQty),
+        rejectedQty: Number(item.rejectedQty),
+        acceptedQty: Number(item.acceptedQty),
         unitRate: Number(item.unitRate)
       }))
     };

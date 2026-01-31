@@ -223,21 +223,34 @@ export class PoForm implements OnInit, OnDestroy {
   }
 
   onSupplierChange(supplierId: number): void {
+    if (!supplierId) {
+      this.poForm.patchValue({ priceListId: null });
+      this.isPriceListAutoSelected = false;
+      return;
+    }
+
     this.supplierService.getSupplierById(supplierId).subscribe((res: any) => {
-      const pListId = res.defaultpricelistId;
-      if (pListId) {
-        this.poForm.patchValue({ priceListId: pListId });
+      console.log(res);
+      //const pListId = res.defaultpricelistId;
+
+      console.log('Backend se aayi ID:', res.defaultpricelistId);
+
+      if (res.defaultpricelistId) {
+
+        this.poForm.get('priceListId')?.setValue(res.defaultpricelistId);
         this.isPriceListAutoSelected = true;
-        this.refreshAllItemRates(pListId);
-        this.cdr.detectChanges();
+
+        // Rates refresh logic [cite: 2026-01-22]
+        if (this.refreshAllItemRates) {
+          this.refreshAllItemRates(res.defaultpricelistId);
+        }
       } else {
         this.poForm.patchValue({ priceListId: null });
         this.isPriceListAutoSelected = false;
-        this.cdr.detectChanges();
       }
+      this.cdr.detectChanges();
     });
   }
-
   refreshAllItemRates(priceListId: string) {
     this.items.controls.forEach((control, index) => {
       const prodId = control.get('productId')?.value;
@@ -257,7 +270,7 @@ export class PoForm implements OnInit, OnDestroy {
     const product = event.option.value;
     const row = this.items.at(index);
     const priceListId = this.poForm.get('priceListId')?.value;
- 
+
     if (!product) return;
 
     const displayName = product.productName || product.name || 'Unknown Product';
@@ -289,7 +302,7 @@ export class PoForm implements OnInit, OnDestroy {
     });
 
     if (product.id) {
-      console.log('Product ID:', product.id, 'Price List ID:', priceListId); 
+      console.log('Product ID:', product.id, 'Price List ID:', priceListId);
       this.inventoryService.getProductRate(product.id, priceListId).subscribe({
         next: (res: any) => {
           if (res) {
@@ -424,9 +437,13 @@ export class PoForm implements OnInit, OnDestroy {
   }
 
   loadAllPriceLists() {
-    this.inventoryService.getPriceLists().subscribe(data => this.priceLists = data);
-    this.cdr.detectChanges();
+    this.inventoryService.getPriceLists().subscribe((data: any) => {
+      this.priceLists = data;
+      console.log('priceLists', this.priceLists);
+      this.cdr.detectChanges();
+    });
   }
+
 
   ngOnDestroy(): void {
     this.destroy$.next();

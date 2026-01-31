@@ -2,27 +2,37 @@
   <form [formGroup]="poForm">
     <div class="po-header-grid">
       <div class="field-item">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Select Supplier</mat-label>
-          <mat-select formControlName="supplierId" (selectionChange)="onSupplierChange($event.value)">
-            <mat-option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</mat-option>
-          </mat-select>
-        </mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+  <mat-label>Select Supplier</mat-label>
+  <mat-select formControlName="supplierId" (selectionChange)="onSupplierChange($event.value)">
+    <mat-option [value]="null">Please Select Supplier</mat-option>
+    
+    <mat-option *ngFor="let s of suppliers" [value]="s.id">
+      {{ s.name }}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
         <button mat-icon-button type="button" (click)="openSupplierModal()" color="primary">
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
 
-      <div class="field-item">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Applicable Price List</mat-label>
-          <mat-select formControlName="priceListId">
-            <mat-option *ngFor="let pl of priceLists" [value]="pl.id">{{ pl.name }}</mat-option>
-          </mat-select>
-          <mat-hint *ngIf="isPriceListAutoSelected" style="color: green; font-size: 10px;">Auto-linked from
-            Supplier</mat-hint>
-        </mat-form-field>
-      </div>
+    <div class="field-item">
+  <mat-form-field appearance="outline" subscriptSizing="dynamic">
+    <mat-label>Applicable Price List</mat-label>
+    <mat-select formControlName="priceListId">
+      <mat-option [value]="null">Please Select</mat-option>
+      
+      <mat-option *ngFor="let pl of priceLists" [value]="pl.id">
+        {{ pl.name }}
+      </mat-option>
+    </mat-select>
+    
+    <mat-hint *ngIf="isPriceListAutoSelected" style="color: green; font-size: 10px;">
+      Auto-linked from Supplier
+    </mat-hint>
+  </mat-form-field>
+</div>
 
       <div class="field-item">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">

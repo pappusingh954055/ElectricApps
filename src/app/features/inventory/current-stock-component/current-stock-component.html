@@ -21,7 +21,6 @@
           </span>
         </div>
       </div>
-
       <button mat-flat-button color="warn" class="refill-btn" 
               (click)="onBulkRefill()" 
               [disabled]="!selection.hasValue() && lowStockCount === 0">
@@ -54,8 +53,6 @@
           </td>
         </ng-container>
 
-
-
         <ng-container matColumnDef="productName">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Product Name </th>
           <td mat-cell *matCellDef="let element"> {{element.productName}} </td>
@@ -63,14 +60,23 @@
 
         <ng-container matColumnDef="totalReceived">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> Total Received </th>
-          <td mat-cell *matCellDef="let element"> {{element.totalQty}} </td>
+          <td mat-cell *matCellDef="let element"> {{element.totalReceived}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalRejected">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Rejected </th>
+          <td mat-cell *matCellDef="let element"> 
+            <span [style.color]="element.totalRejected > 0 ? '#dc3545' : '#ccc'" [style.font-weight]="element.totalRejected > 0 ? 'bold' : 'normal'">
+              {{element.totalRejected}}
+            </span>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="availableStock">
-          <th mat-header-cell *matHeaderCellDef> Available Stock </th>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> Available Stock </th>
           <td mat-cell *matCellDef="let element">
-            <span [ngClass]="element.totalQty <= element.minStockLevel ? 'low-stock' : 'good-stock'">
-              {{element.totalQty}} {{element.unit}}
+            <span [ngClass]="element.availableStock <= element.minStockLevel ? 'low-stock' : 'good-stock'">
+              {{element.availableStock}} {{element.unit}}
             </span>
           </td>
         </ng-container>
@@ -91,7 +97,7 @@
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
-            [class.low-stock-row]="row.totalQty <= row.minStockLevel"
+            [class.low-stock-row]="row.availableStock <= row.minStockLevel"
             [class.selected-row]="selection.isSelected(row)"></tr>
 
         <tr class="mat-row" *matNoDataRow>

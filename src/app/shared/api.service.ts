@@ -26,34 +26,6 @@ export class ApiService {
         return this.http.get<T>(`${environment.ApiBaseUrl}/${url}`);
     }
 
-    public toQueryString(request: GridRequest): string {
-        const query: string[] = [];
-
-        query.push(`pageNumber=${request.pageNumber}`);
-        query.push(`pageSize=${request.pageSize}`);
-
-        if (request.search) {
-            query.push(`search=${encodeURIComponent(request.search)}`);
-        }
-
-        if (request.sortBy) {
-            query.push(`sortBy=${request.sortBy}`);
-            query.push(`sortDirection=${request.sortDirection ?? 'desc'}`);
-        }
-
-        // ✅ ADD COLUMN FILTERS
-        if (request.filters) {
-            Object.keys(request.filters).forEach(key => {
-                const value = request.filters![key];
-                if (value !== undefined && value !== null && value !== '') {
-                    query.push(
-                        `filters[${encodeURIComponent(key)}]=${encodeURIComponent(value)}`
-                    );
-                }
-            });
-        }
-
-        return query.join('&');
-    }
+  
 
 }

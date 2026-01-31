@@ -18,7 +18,8 @@ import { SelectionModel } from '@angular/cdk/collections';
   styleUrl: './current-stock-component.scss',
 })
 export class CurrentStockComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['select', 'productName', 'totalReceived', 'availableStock', 'unitRate', 'actions'];
+  // Added 'totalRejected' to the columns array [cite: 2026-01-31]
+  displayedColumns: string[] = ['select', 'productName', 'totalReceived', 'totalRejected', 'availableStock', 'unitRate', 'actions'];
   stockDataSource = new MatTableDataSource<any>([]);
 
 
@@ -74,12 +75,16 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
               this.lastpurchaseOrderId = items[0].lastPurchaseOrderId;
               console.log('items', items);
             }
+           
             const mappedData = items.map((item: any) => ({
-
+              productId: item.productId, 
               productName: item.productName,
-              totalQty: item.totalReceived,
+              totalReceived: item.totalReceived, 
+              totalRejected: item.totalRejected, 
+              availableStock: item.availableStock, 
               unit: item.unit,
-              lastRate: item.lastRate
+              lastRate: item.lastRate,
+              minStockLevel: item.minStockLevel 
             }));
             this.cdr.detectChanges();
             this.stockDataSource.data = mappedData;
@@ -90,8 +95,9 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
   }
 
   updateSummary(data: any[]) {
-    this.lowStockCount = data.filter(item => item.totalQty < 10).length;
-    this.totalInventoryValue = data.reduce((acc, curr) => acc + (curr.totalQty * curr.lastRate), 0);
+    // Low stock count and inventory value now based on availableStock (Accepted Qty) [cite: 2026-01-31]
+    this.lowStockCount = data.filter(item => item.availableStock <= (item.minStockLevel || 10)).length;
+    this.totalInventoryValue = data.reduce((acc, curr) => acc + (curr.availableStock * curr.lastRate), 0);
   }
 
   applyFilter(event: Event) {
@@ -140,9 +146,6 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
     const refillItems = this.selection.selected.map(item => ({
       productId: item.productId,
       productName: item.productName,
-      // lastRate: item.lastRate,
-      // unit: item.unit,
-      //lastPurchaseOrderId: item.lastPurchaseOrderId
     }));
 
     this.router.navigate(['/app/inventory/polist/add'], {

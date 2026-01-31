@@ -47,9 +47,11 @@
           <thead>
             <tr>
               <th>Product Name</th>
-              <th class="text-center">Ordered Qty</th>
+              <th class="text-center">Ordered(PO) Qty</th>
               <th class="text-center">Pending Qty</th>
               <th class="text-center" width="150">Received Qty</th>
+              <th class="text-center" width="150">Rejected Qty</th>
+              <th class="text-center" width="150">Accepted Qty</th>
               <th class="text-right">Unit Rate</th>
               <th class="text-right">Total</th>
             </tr>
@@ -68,6 +70,15 @@
                          min="0">
                 </mat-form-field>
               </td>
+              <td>
+                <mat-form-field appearance="outline" class="dense-input" subscriptSizing="dynamic">
+                  <input matInput type="number" 
+                         [(ngModel)]="item.rejectedQty" 
+                         (ngModelChange)="onQtyChange(item)"
+                         min="0">
+                </mat-form-field>
+              </td>
+              <td class="text-center"><b>{{item.acceptedQty}}</b></td>
               <td class="text-right">{{item.unitRate | currency:'INR'}}</td>
               <td class="text-right"><b>{{item.total | currency:'INR'}}</b></td>
             </tr>

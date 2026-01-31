@@ -48,7 +48,7 @@ export class ProductService {
 
     getPaged(request: GridRequest): Observable<GridResponse<Product>> {
         return this.api.get<GridResponse<Product>>(
-            `products/paged?${this.api.toQueryString(request)}`
+            `products/paged?${this.toQueryString(request)}`
         );
     }
 
@@ -60,4 +60,34 @@ export class ProductService {
     // API call jo product name ya code ke base par search karegi
     return this.api.get<any[]>(`${this.url}/search?term=${term}`);
   }
+
+   public toQueryString(request: GridRequest): string {
+        const query: string[] = [];
+
+        query.push(`pageNumber=${request.pageNumber}`);
+        query.push(`pageSize=${request.pageSize}`);
+
+        if (request.search) {
+            query.push(`search=${encodeURIComponent(request.search)}`);
+        }
+
+        if (request.sortBy) {
+            query.push(`sortBy=${request.sortBy}`);
+            query.push(`sortDirection=${request.sortDirection ?? 'desc'}`);
+        }
+
+        // ✅ ADD COLUMN FILTERS
+        if (request.filters) {
+            Object.keys(request.filters).forEach(key => {
+                const value = request.filters![key];
+                if (value !== undefined && value !== null && value !== '') {
+                    query.push(
+                        `filters[${encodeURIComponent(key)}]=${encodeURIComponent(value)}`
+                    );
+                }
+            });
+        }
+
+        return query.join('&');
+    }
 }
