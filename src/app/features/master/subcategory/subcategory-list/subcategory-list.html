@@ -1,4 +1,4 @@
-<mat-card>
+<!-- <mat-card> -->
 
   <app-server-datagrid [columns]="columns" [data]="data" 
     gridKey="subcategory-grid"
@@ -10,12 +10,12 @@
     (delete)="deleteCategory($event[0])">
   </app-server-datagrid>
 
-  <mat-card-actions>
-    <button mat-flat-button style="margin-right: 10px;" class="bg-azure" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
+  <!-- <mat-card-actions> -->
+    <button mat-flat-button style="margin-right: 10px; margin-top: 10px;" class="bg-azure" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
       Delete Selected
     </button>
-       <button mat-flat-button class="bg-azure"  routerLink="/app/master/subcategories/add">
+       <button mat-flat-button style="margin-top: 10px;" class="bg-azure"  routerLink="/app/master/subcategories/add">
       + Add Subcategory
     </button>
-  </mat-card-actions>
-</mat-card>
+  <!-- </mat-card-actions>
+</mat-card> -->

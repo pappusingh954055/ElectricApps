@@ -1,4 +1,4 @@
-<mat-card>
+<!-- <mat-card> -->
 
 
   <app-server-datagrid 
@@ -14,12 +14,12 @@
     (delete)="deleteCategory($event[0])">
   </app-server-datagrid>
 
-  <mat-card-actions>
-     <button style="margin-right: 10px;" mat-flat-button class="bg-azure" routerLink="/app/master/categories/add">
+  <!-- <mat-card-actions> -->
+     <button style="margin-right: 10px; margin-top: 10px;" mat-flat-button class="bg-azure" routerLink="/app/master/categories/add">
       + Add Category
     </button>
-    <button mat-flat-button class="bg-azure" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
+    <button style="margin-top: 10px;" mat-flat-button class="bg-azure" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
       Delete Selected
     </button>
-  </mat-card-actions>
-</mat-card>
+  <!-- </mat-card-actions> -->
+<!-- </mat-card> -->
