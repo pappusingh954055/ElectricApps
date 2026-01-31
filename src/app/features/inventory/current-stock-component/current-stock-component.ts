@@ -38,7 +38,7 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  resultsLength = 0; 
+  resultsLength = 0;
   isLoadingResults = true;
   lowStockCount: number = 0;
   totalInventoryValue: number = 0;
@@ -86,14 +86,14 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
               this.lastpurchaseOrderId = items[0].lastPurchaseOrderId;
               console.log('items', items);
             }
-            
+
             // Map including the new history from backend [cite: 2026-01-31]
             const mappedData = items.map((item: any) => ({
-              productId: item.productId, 
+              productId: item.productId,
               productName: item.productName,
-              totalReceived: item.totalReceived, 
-              totalRejected: item.totalRejected, 
-              availableStock: item.availableStock, 
+              totalReceived: item.totalReceived,
+              totalRejected: item.totalRejected,
+              availableStock: item.availableStock,
               unit: item.unit,
               lastRate: item.lastRate,
               minStockLevel: item.minStockLevel,
@@ -116,12 +116,14 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
   updateSummary(data: any[]) {
     this.lowStockCount = data.filter(item => item.availableStock <= (item.minStockLevel || 10)).length;
     this.totalInventoryValue = data.reduce((acc, curr) => acc + (curr.availableStock * curr.lastRate), 0);
+    this.cdr.detectChanges();
   }
 
   applyFilter(event: Event) {
     this.searchValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
     this.paginator.pageIndex = 0;
     this.sort.sortChange.emit();
+    this.cdr.detectChanges();
   }
 
   navigateToPO() {
@@ -155,6 +157,7 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
     this.isAllSelected() ?
       this.selection.clear() :
       this.stockDataSource.data.forEach(row => this.selection.select(row));
+    this.cdr.detectChanges();
   }
 
   onBulkRefill() {
@@ -164,6 +167,7 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
       productId: item.productId,
       productName: item.productName,
     }));
+    this.cdr.detectChanges();
 
     this.router.navigate(['/app/inventory/polist/add'], {
       state: { refillItems: refillItems }
