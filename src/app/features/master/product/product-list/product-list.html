@@ -1,19 +1,16 @@
 <mat-card>
 
-  <mat-card-title>
-    <button mat-flat-button class="bg-cyan" routerLink="/app/master/products/add">
-      + Add Product
-    </button>
-  </mat-card-title>
-
   <app-server-datagrid [columns]="columns" [data]="data" [totalCount]="totalCount" [loading]="loading" gridKey="subcategory-grid"
     (loadData)="loadPriceLists($event)"(rowClick)="onEdit($event)" (selectionChange)="onSelectionChange($event)" (edit)="onEdit($event)"
     (delete)="deleteProduct($event[0])">
   </app-server-datagrid>
 
   <mat-card-actions>
-    <button mat-flat-button class="bg-cyan" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
+    <button mat-flat-button class="bg-azure" style="margin-right: 10px;" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
       Delete Selected
+    </button>
+    <button mat-flat-button class="bg-azure" routerLink="/app/master/products/add">
+      + Add Product
     </button>
   </mat-card-actions>
 

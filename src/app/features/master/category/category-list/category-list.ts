@@ -26,7 +26,8 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 })
 export class CategoryList implements OnInit {
 
-  constructor(private cdr: ChangeDetectorRef, private router: Router, private dialog: MatDialog) { }
+  constructor(private cdr: ChangeDetectorRef,
+    private router: Router, private dialog: MatDialog) { }
 
   readonly categoryService = inject(CategoryService)
 
@@ -76,10 +77,12 @@ export class CategoryList implements OnInit {
         this.data = res.items;
         this.totalCount = res.totalCount;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: err => {
         console.error(err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -102,7 +105,7 @@ export class CategoryList implements OnInit {
         if (!confirm) return;
 
         this.loading = true;
-
+        this.cdr.detectChanges();
         this.categoryService.delete(category.id).subscribe({
           next: res => {
             this.loading = false;
@@ -121,6 +124,7 @@ export class CategoryList implements OnInit {
 
             const message =
               err?.error?.message || 'Unable to delete category';
+             this.cdr.detectChanges();
 
             this.dialog.open(ApiResultDialog, {
               data: {
@@ -154,6 +158,7 @@ export class CategoryList implements OnInit {
       const ids = this.selectedRows.map(x => x.id);
 
       this.loading = true;
+      
 
       this.categoryService.deleteMany(ids).subscribe({
         next: (res) => {
@@ -172,6 +177,7 @@ export class CategoryList implements OnInit {
           });
 
           this.loading = false;
+           this.cdr.detectChanges();
         },
         error: err => {
           console.error(err);
@@ -185,6 +191,7 @@ export class CategoryList implements OnInit {
               message
             }
           });
+          this.cdr.detectChanges();
         }
       });
     });

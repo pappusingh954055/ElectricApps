@@ -81,10 +81,12 @@ export class SubcategoryList implements OnInit, OnChanges {
         console.log(this.data);
         this.totalCount = res.totalCount;
         this.loading = false;
+        this.cdr.detectChanges();
       },
       error: err => {
         console.error(err);
         this.loading = false;
+        this.cdr.detectChanges();
       }
     });
   }
@@ -111,7 +113,7 @@ export class SubcategoryList implements OnInit, OnChanges {
         this.subCategoryService.delete(category.id).subscribe({
           next: res => {
             this.loading = false;
-
+            this.cdr.detectChanges();
             this.dialog.open(ApiResultDialog, {
               data: {
                 success: true,
@@ -123,7 +125,7 @@ export class SubcategoryList implements OnInit, OnChanges {
           },
           error: err => {
             this.loading = false;
-
+            this.cdr.detectChanges();
             const message =
               err?.error?.message || 'Unable to delete sub category';
 
@@ -166,6 +168,7 @@ export class SubcategoryList implements OnInit, OnChanges {
         next: (res) => {
           // 🔄 Reload grid
           this.loadSubCategories(this.lastRequest);
+          this.cdr.detectChanges();
 
           // 🧹 Clear selection via grid reference
           this.grid.clearSelection();
@@ -192,6 +195,7 @@ export class SubcategoryList implements OnInit, OnChanges {
               message
             }
           });
+          this.cdr.detectChanges();
         }
       });
     });
