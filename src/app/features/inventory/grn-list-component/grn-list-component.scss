@@ -1,8 +1,19 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px); /* Vertical balance for all views */
+  overflow: hidden;
+}
+
 /* Container: Tight layout [cite: 2026-01-22] */
 .grn-main-wrapper {
   padding: 12px 20px;
   background-color: #f4f6f9;
-  min-height: calc(100vh - 64px);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
 }
 
 /* Header Section: Reduced margins [cite: 2026-01-22] */
@@ -11,6 +22,7 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 12px;
+  flex-shrink: 0; /* Header size fixed */
 }
 
 .title-section h1 {
@@ -115,6 +127,7 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  flex: 1; /* Fills remaining space */
 }
 
 /* Loader Centralized Fix [cite: 2026-01-22] */
@@ -133,7 +146,7 @@
 
 /* Sticky Header & Scroll Logic [cite: 2026-01-22] */
 .table-responsive {
-  max-height: calc(100vh - 250px); 
+  flex: 1; /* Grid expands within the card */
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
