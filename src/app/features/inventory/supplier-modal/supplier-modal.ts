@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -19,8 +19,10 @@ export class SupplierModalComponent implements OnInit {
   private dialogRef = inject(MatDialogRef<SupplierComponent>);
   private supplierService = inject(SupplierService);
   private pricelistService = inject(PriceListService);
+  private cdr = inject(ChangeDetectorRef);
 
   supplierForm!: FormGroup;
+  loading = false;
 
   priceLists: any[] = [];
 
@@ -42,21 +44,28 @@ export class SupplierModalComponent implements OnInit {
   }
 
   loadPriceLists(): void {
+    this.loading = true;
     this.pricelistService.getPriceLists().subscribe({
       next: (res) => {
         this.priceLists = res;
+        this.loading = false;
+        this.cdr.detectChanges();
         console.log("Price Lists loaded in modal:", res);
       },
-      error: (err) => console.error("Error loading price lists", err)
+      error: (err) => console.error("Error loading price lists", err),
+      complete: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
 
   onSave() {
+    this.loading = true;
+    this.cdr.detectChanges();
     if (this.supplierForm.valid) {
       const currentUserId = localStorage.getItem('userId') || '';
-
-      // 1. Form values ke saath defaultPriceListId aur createdBy merge karein
       const supplierData = {
         ...this.supplierForm.value,
         createdBy: currentUserId
@@ -64,8 +73,7 @@ export class SupplierModalComponent implements OnInit {
 
       this.supplierService.addSupplier(supplierData).subscribe({
         next: (newId) => {
-          // 2. Modal band karte waqt defaultPriceListId bhi bhejein 
-          // taaki PO Form use bina API call kiye auto-select kar sake
+
           const newlyCreatedSupplier = {
             id: newId,
             name: this.supplierForm.value.name,
@@ -77,10 +85,13 @@ export class SupplierModalComponent implements OnInit {
           };
 
           this.dialogRef.close(newlyCreatedSupplier);
+          this.loading = false;
+          this.cdr.detectChanges();
         },
         error: (err) => {
           console.error("Supplier save failed:", err);
-          // Yahan aap Toastr ya alert dikha sakte hain
+          this.loading = false;
+          this.cdr.detectChanges();
         }
       });
     }

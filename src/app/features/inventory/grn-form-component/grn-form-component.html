@@ -4,11 +4,11 @@
       <!-- <button mat-icon-button (click)="goBack()" matTooltip="Go Back">
         <mat-icon>arrow_back</mat-icon>
       </button> -->
-      <h2 class="mat-h2">Create New GRN</h2>
+      <h2 class="mat-h2">{{ isViewMode ? 'View GRN' : 'Create New GRN' }}</h2>
     </div>
     <div class="header-buttons">
       <button mat-stroked-button color="warn" (click)="onCancel()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="saveGRN()" [disabled]="!grnForm.valid">
+      <button mat-flat-button color="primary" (click)="saveGRN()" [disabled]="!grnForm.valid || isViewMode">
         <mat-icon>save</mat-icon> Save & Update Stock
       </button>
     </div>
@@ -25,7 +25,7 @@
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Received Date</mat-label>
           <input matInput [matDatepicker]="picker" formControlName="receivedDate">
-          <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker-toggle matSuffix [for]="picker" [disabled]="isViewMode"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
 
@@ -67,6 +67,7 @@
                          [(ngModel)]="item.receivedQty" 
                          (ngModelChange)="onQtyChange(item)"
                          [max]="item.pendingQty"
+                         [disabled]="isViewMode"
                          min="0">
                 </mat-form-field>
               </td>
@@ -75,6 +76,7 @@
                   <input matInput type="number" 
                          [(ngModel)]="item.rejectedQty" 
                          (ngModelChange)="onQtyChange(item)"
+                         [disabled]="isViewMode"
                          min="0">
                 </mat-form-field>
               </td>

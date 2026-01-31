@@ -65,8 +65,9 @@
 
   <mat-dialog-actions align="end" class="modal-footer">
     <button mat-stroked-button color="warn" (click)="onCancel()" type="button">Cancel</button>
-    <button mat-flat-button color="primary" [disabled]="supplierForm.invalid" (click)="onSave()"
+    <button mat-flat-button color="primary" [disabled]="supplierForm.invalid || loading" (click)="onSave()"
       class="ms-2 px-4 save-btn">
+      <mat-spinner diameter="20" *ngIf="loading" class="me-2 d-inline-block"></mat-spinner>
       Save Supplier
     </button>
   </mat-dialog-actions>

@@ -21,55 +21,55 @@ export class PriceListService {
 
     create(payload: PriceListModel): Observable<any> {
         console.log('payload', payload)
-        return this.http.post('pricelists', payload);
+        return this.http.post(this.apiUrl + 'pricelists', payload);
     }
 
     update(id: string, payload: PriceListModel): Observable<any> {
-        return this.http.put(`pricelists/${id}`, payload);
+        return this.http.put(this.apiUrl + `pricelists/${id}`, payload);
     }
 
     delete(id: string): Observable<any> {
-        return this.http.delete(`pricelists/${id}`);
+        return this.http.delete(this.apiUrl + `pricelists/${id}`);
     }
 
     deletePriceList(id: string): Observable<any> {
-        return this.http.delete<any>(`pricelists/${id}`);
+        return this.http.delete<any>(this.apiUrl + `pricelists/${id}`);
     }
 
     getAll(): Observable<PriceListModel[]> {
-        return this.http.get<PriceListModel[]>('pricelists');
+        return this.http.get<PriceListModel[]>(this.apiUrl + 'pricelists');
     }
 
-    getPriceLists(): Observable<any[]> {
-        return this.http.get<any[]>('pricelists');
+    getPriceLists(): Observable<PriceListModel[]> {
+        return this.http.get<PriceListModel[]>(this.apiUrl + 'pricelists');
     }
 
 
 
     getPaged(request: GridRequest): Observable<GridResponse<PriceListModel>> {
         return this.http.get<GridResponse<PriceListModel>>(
-            `pricelists/paged?${this.toQueryString(request)}`
+            this.apiUrl + `pricelists/paged?${this.toQueryString(request)}`
         );
     }
 
     // 🔹 Bulk delete (THIS IS WHAT YOU ASKED)
     deleteMany(ids: string[]): Observable<any> {
-        return this.http.post<any>(`pricelists/bulk-delete`, ids);
+        return this.http.post<any>(this.apiUrl + `pricelists/bulk-delete`, ids);
     }
 
     createPriceList(payload: any): Observable<any> {
         console.log('Creating Price List with payload:', payload);
         // Dhan rakhein ki URL aapke backend controller se match kare
-        return this.http.post('pricelists', payload);
+        return this.http.post(this.apiUrl + 'pricelists', payload);
     }
 
     // 4. Existing Price List ko update karne ke liye
     updatePriceList(id: string, payload: any): Observable<any> {
-        return this.http.put<any>(`pricelists/${id}`, payload);
+        return this.http.put<any>(this.apiUrl + `pricelists/${id}`, payload);
     }
 
     getPriceListById(id: string): Observable<any> {
-        return this.http.get<any>(`pricelists/${id}`);
+        return this.http.get<any>(this.apiUrl + `pricelists/${id}`);
     }
 
     public toQueryString(request: GridRequest): string {

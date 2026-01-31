@@ -62,6 +62,14 @@
       border-radius: 8px;
       height: 40px;
       font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      .d-inline-block {
+        display: inline-block;
+        vertical-align: middle;
+      }
     }
   }
 }

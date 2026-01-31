@@ -1,12 +1,10 @@
 <div class="table-container mat-elevation-z8">
-  <!-- Modern Loading Overlay -->
   <div class="loading-shade" *ngIf="isLoadingResults">
     <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
   </div>
 
   <table mat-table [dataSource]="stockDataSource" matSort multiTemplateDataRows aria-label="Current Stock Table">
     
-    <!-- Checkbox Column -->
     <ng-container matColumnDef="select">
       <th mat-header-cell *matHeaderCellDef>
         <mat-checkbox (change)="$event ? masterToggle() : null"
@@ -24,7 +22,6 @@
       </td>
     </ng-container>
 
-    <!-- Product Name Column -->
     <ng-container matColumnDef="productName">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Product </th>
       <td mat-cell *matCellDef="let element"> 
@@ -34,13 +31,11 @@
       </td>
     </ng-container>
 
-    <!-- Total Received Column -->
     <ng-container matColumnDef="totalReceived">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Total Received </th>
       <td mat-cell *matCellDef="let element"> {{element.totalReceived | number}} </td>
     </ng-container>
 
-    <!-- Rejected Column -->
     <ng-container matColumnDef="totalRejected">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Rejected </th>
       <td mat-cell *matCellDef="let element"> 
@@ -51,7 +46,6 @@
       </td>
     </ng-container>
 
-    <!-- Available Stock Column -->
     <ng-container matColumnDef="availableStock">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Current Stock </th>
       <td mat-cell *matCellDef="let element">
@@ -61,7 +55,6 @@
       </td>
     </ng-container>
 
-    <!-- Valued At Column -->
     <ng-container matColumnDef="unitRate">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Value (Avg) </th>
       <td mat-cell *matCellDef="let element"> 
@@ -69,7 +62,6 @@
       </td>
     </ng-container>
 
-    <!-- Actions Column -->
     <ng-container matColumnDef="actions">
       <th mat-header-cell *matHeaderCellDef> </th>
       <td mat-cell *matCellDef="let element">
@@ -80,7 +72,6 @@
       </td>
     </ng-container>
 
-    <!-- Expanded Content -->
     <ng-container matColumnDef="expandedDetail">
       <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns.length">
         <div class="element-detail"
@@ -97,7 +88,7 @@
                 <tr>
                   <th>Date</th>
                   <th>PO Reference</th>
-                  <th>Supplier Source</th>
+                  <th>Product</th> <th>Supplier Source</th>
                   <th>Received</th>
                   <th>Rejected</th>
                 </tr>
@@ -106,7 +97,7 @@
                 <tr *ngFor="let h of element.history">
                   <td>{{h.receivedDate | date:'mediumDate'}}</td>
                   <td><span class="po-link">#{{h.poNumber}}</span></td>
-                  <td>{{h.supplierName}}</td>
+                  <td>{{h.productName}}</td> <td>{{h.supplierName}}</td>
                   <td class="font-600">{{h.receivedQty}}</td>
                   <td>
                     <span [class.text-danger]="h.rejectedQty > 0" [class.text-muted]="h.rejectedQty === 0">
@@ -115,8 +106,7 @@
                   </td>
                 </tr>
                 <tr *ngIf="!element.history || element.history.length === 0">
-                  <td colspan="5" class="no-data-cell">
-                    <div class="empty-history">
+                  <td colspan="6" class="no-data-cell"> <div class="empty-history">
                        <mat-icon>info_outline</mat-icon>
                        <span>No transaction history found for this item.</span>
                     </div>
@@ -129,7 +119,6 @@
       </td>
     </ng-container>
 
-    <!-- Row Definitions -->
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let element; columns: displayedColumns;"
         class="element-row"
@@ -138,7 +127,6 @@
     </tr>
     <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
 
-    <!-- No Data Row -->
     <tr class="mat-row" *matNoDataRow>
       <td class="mat-cell" colspan="100" style="text-align: center; padding: 40px !important;">
         <mat-icon style="font-size: 48px; width: 48px; height: 48px; color: #cbd5e1; margin-bottom: 16px;">inventory_2</mat-icon>

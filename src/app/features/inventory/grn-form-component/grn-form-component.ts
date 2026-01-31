@@ -21,6 +21,7 @@ export class GrnFormComponent implements OnInit {
   poId: number = 0;
   supplierId: number = 0;
   isFromPopup: boolean = false; // Source track karne ke liye [cite: 2026-01-22]
+  isViewMode: boolean = false;
   private dialog = inject(MatDialog);
 
   constructor(
@@ -33,6 +34,9 @@ export class GrnFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Robust detection: URL segment check or breadcrumb check
+    this.isViewMode = this.router.url.includes('/view');
+
     // 1. Grid Flow: Jab aap list se 'Edit' ya 'View' karke aate hain
     this.route.params.subscribe(params => {
       if (params['id']) {
@@ -87,7 +91,9 @@ export class GrnFormComponent implements OnInit {
 
 
   loadPOData(id: number) {
-    const isViewMode = this.router.url.includes('/view');
+    if (this.isViewMode) {
+      this.grnForm.disable();
+    }
 
     this.inventoryService.getPODataForGRN(id).subscribe({
       next: (res) => {
@@ -106,27 +112,20 @@ export class GrnFormComponent implements OnInit {
         if (this.isFromPopup) {
           this.inventoryService.getPOItemsForGRN(id).subscribe(popupItems => {
             this.mapItems(popupItems);
-            this.forceLockTable(isViewMode); // Yahan lock trigger hoga
+            this.forceLockTable(); // Yahan lock trigger hoga
           });
         } else {
           this.mapItems(res.items);
-          this.forceLockTable(isViewMode); // Yahan lock trigger hoga
+          this.forceLockTable(); // Yahan lock trigger hoga
         }
       }
     });
   }
 
   // Ye naya function table ko "Zabardasti" lock karega
-  forceLockTable(isViewMode: boolean) {
-    if (isViewMode) {
+  forceLockTable() {
+    if (this.isViewMode) {
       this.grnForm.disable(); // Header lock karein
-
-      // Sabse zaruri step: Items array ko explicitly lock karein
-      const items = this.grnForm.get('items') as FormArray;
-      if (items) {
-        items.disable(); // Ab table ke andar ke saare white boxes grey ho jayenge
-      }
-
       this.cdr.detectChanges(); // UI refresh
     }
   }
