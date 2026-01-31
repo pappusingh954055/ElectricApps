@@ -11,6 +11,7 @@ import { merge, of } from 'rxjs';
 import { startWith, switchMap, map, catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { PoSelectionDialog } from '../po-selection-dialog/po-selection-dialog';
 import { MatDialog } from '@angular/material/dialog';
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
   selector: 'app-grn-list-component',
@@ -18,18 +19,27 @@ import { MatDialog } from '@angular/material/dialog';
   imports: [CommonModule, MaterialModule, ReactiveFormsModule],
   templateUrl: './grn-list-component.html',
   styleUrl: './grn-list-component.scss',
+
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0', display: 'none' })),
+      state('expanded', style({ height: '*' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
 })
 export class GrnListComponent implements OnInit, AfterViewInit {
   // Columns matching Backend DTO
   displayedColumns: string[] = ['grnNo', 'refPO', 'supplierName', 'receivedDate', 'status', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
 
+  // Expansion variable jo HTML ko chahiye
+  expandedElement: any | null;
+
   // Search and Pagination states
   resultsLength = 0;
   isLoadingResults = true;
   searchControl = new FormControl('');
-
-
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -37,7 +47,8 @@ export class GrnListComponent implements OnInit, AfterViewInit {
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
-    private inventoryService: InventoryService, private dialog: MatDialog
+    private inventoryService: InventoryService,
+    private dialog: MatDialog
   ) { }
 
   ngOnInit(): void {
@@ -90,24 +101,29 @@ export class GrnListComponent implements OnInit, AfterViewInit {
           this.cdr.detectChanges();
           if (data === null) return [];
 
-          this.resultsLength = data.totalCount; //
-          return data.items;
+          this.resultsLength = data.totalCount;
+
+          // Har row ke liye totalRejected calculate kar rahe hain taaki status badge sahi dikhe
+          return data.items.map((item: any) => ({
+            ...item,
+            totalRejected: item.items?.reduce((acc: number, curr: any) => acc + (curr.rejectedQty || 0), 0) || 0
+          }));
         })
       ).subscribe(data => {
         this.dataSource.data = data;
         console.log('GRN Data Loaded:', data);
       });
   }
+
   // Navigation Logic
   viewGRN(id: number) {
-
     this.router.navigate(['/app/inventory/grn-list/view', id]);
   }
-
 
   printGRN(grn: any) {
     console.log("Printing GRN:", grn.grnNumber);
   }
+
   applyFilter(event: any) { }
 
   openPOSearchDialog() {
@@ -126,5 +142,4 @@ export class GrnListComponent implements OnInit, AfterViewInit {
       }
     });
   }
-
 }

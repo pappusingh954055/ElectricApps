@@ -81,12 +81,17 @@
 
 /* Status Badges: Small & Flat [cite: 2026-01-22] */
 .status-badge {
-  padding: 2px 6px;
+  padding: 2px 8px;
   border-radius: 3px;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.3px;
+  text-transform: uppercase;
 }
+
+/* Added: Dynamic Status Colors */
+.received-status { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+.rejected-status { background: #ffebee; color: #c62828; border: 1px solid #ffcdd2; }
 
 /* Action Icons [cite: 2026-01-22] */
 .mat-icon-button {
@@ -99,6 +104,65 @@
   font-size: 18px !important;
 }
 
+/* EXPANSION ROW DESIGN */
+.element-row td { border-bottom-width: 0 !important; }
+
+.detail-row {
+  height: 0 !important; /* Fix for extra space */
+}
+
+.expanded-row {
+  background: #f8faff !important;
+}
+
+.row-detail-container {
+  overflow: hidden;
+  background: #ffffff;
+  margin: 0 15px 15px 15px;
+  border: 1px solid #e0e4e9;
+  border-radius: 6px;
+}
+
+.grn-detail-summary {
+  padding: 12px;
+
+  .summary-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+    color: #3f51b5;
+    font-size: 12px;
+    font-weight: 600;
+    
+    mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  }
+}
+
+/* Inner Table: Compact & Clean */
+.inner-table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th {
+    text-align: left;
+    padding: 6px 10px;
+    font-size: 10px;
+    color: #555;
+    background: #f1f3f5;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  td {
+    padding: 6px 10px;
+    font-size: 11px;
+    color: #333;
+    border-bottom: 1px solid #f8f9fa;
+  }
+
+  .text-danger { color: #d32f2f; font-weight: 600; }
+}
+
 /* Paginator [cite: 2026-01-22] */
 .mat-mdc-paginator-container {
   min-height: 40px !important;
@@ -106,19 +170,26 @@
 }
 
 /* Row Hover Effects [cite: 2026-01-22] */
-.mat-mdc-row:hover {
+.element-row:hover {
   background-color: #f0f4ff !important;
   cursor: pointer;
   transition: background-color 0.15s ease-in-out;
   box-shadow: inset 2px 0 0 #3f51b5;
 }
 
-.mat-mdc-row:hover .mat-mdc-cell {
+.element-row:hover .mat-mdc-cell {
   color: #1a237e !important;
   font-weight: 500;
 }
 
-/* LOADER CENTERING & TABLE CARD [cite: 2026-01-22] */
+.po-link {
+  color: #1976d2;
+  font-weight: 600;
+  text-decoration: none;
+  &:hover { text-decoration: underline; }
+}
+
+/* LOADER & TABLE CARD [cite: 2026-01-22] */
 .table-card {
   position: relative; 
   overflow: hidden;
@@ -127,10 +198,9 @@
   background: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-  flex: 1; /* Fills remaining space */
+  flex: 1;
 }
 
-/* Loader Centralized Fix [cite: 2026-01-22] */
 .loading-shade {
   position: absolute;
   top: 0;
@@ -138,15 +208,15 @@
   bottom: 0;
   right: 0;
   background: rgba(255, 255, 255, 0.7);
-  z-index: 100; /* Table se hamesha upar */
+  z-index: 100;
   display: flex;
-  align-items: center; /* Vertical Center */
-  justify-content: center; /* Horizontal Center */
+  align-items: center;
+  justify-content: center;
 }
 
 /* Sticky Header & Scroll Logic [cite: 2026-01-22] */
 .table-responsive {
-  flex: 1; /* Grid expands within the card */
+  flex: 1;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -166,7 +236,7 @@
 
   .search-box {
     width: 100%;
-    transform: scale(1); /* Mobile par full size */
+    transform: scale(1);
   }
 
   .table-responsive {
