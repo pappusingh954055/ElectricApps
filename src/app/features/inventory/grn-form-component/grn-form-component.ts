@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { MaterialModule } from '../../../shared/material/material/material-module';
-import { FormGroup, FormBuilder, Validators, ReactiveFormsModule, FormsModule, FormArray } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { InventoryService } from '../service/inventory.service';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
@@ -20,57 +20,54 @@ export class GrnFormComponent implements OnInit {
   items: any[] = [];
   poId: number = 0;
   supplierId: number = 0;
-  isFromPopup: boolean = false; // Source track karne ke liye [cite: 2026-01-22]
+  isFromPopup: boolean = false;
   isViewMode: boolean = false;
   private dialog = inject(MatDialog);
 
   constructor(
     private fb: FormBuilder,
     private route: ActivatedRoute,
-    private router: Router, private cdr: ChangeDetectorRef,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
     private inventoryService: InventoryService
   ) {
     this.initForm();
   }
 
   ngOnInit(): void {
-    // Robust detection: URL segment check or breadcrumb check
     this.isViewMode = this.router.url.includes('/view');
 
-    // 1. Grid Flow: Jab aap list se 'Edit' ya 'View' karke aate hain
     this.route.params.subscribe(params => {
       if (params['id']) {
-        this.resetFormBeforeLoad(); // Purana data saaf karein
+        this.resetFormBeforeLoad();
         this.poId = +params['id'];
         this.isFromPopup = false;
-        this.loadPOData(this.poId);
+        
+        // Logic Update: View mode mein id ko grnHeaderId ki tarah treat karein
+        if (this.isViewMode) {
+          this.loadPOData(0, this.poId); 
+        } else {
+          this.loadPOData(this.poId);
+        }
       }
     });
 
-    // 2. Popup Flow: Jab selection popup band hota hai
     this.route.queryParams.subscribe(params => {
       if (params['poId']) {
-        this.resetFormBeforeLoad(); // Items list ko saaf karein taaki glitch na ho
+        this.resetFormBeforeLoad();
         this.poId = +params['poId'];
         this.isFromPopup = true;
 
-        // Header data agar URL mein hai toh turant fill karein
         if (params['poNo']) {
           this.grnForm.patchValue({ poNumber: params['poNo'] });
         }
-
         this.loadPOData(this.poId);
-        this.cdr.detectChanges();
       }
     });
   }
 
-
-
-
-
   private resetFormBeforeLoad() {
-    this.items = []; // Items table khali karein
+    this.items = [];
     this.grnForm.patchValue({ supplierName: '', poNumber: '' });
   }
 
@@ -84,100 +81,95 @@ export class GrnFormComponent implements OnInit {
     });
   }
 
-  goBack() {
-    this.router.navigate(['/app/inventory/grn-list']);
-  }
-
-
-
-  loadPOData(id: number) {
-    if (this.isViewMode) {
-      this.grnForm.disable();
-    }
-
-    this.inventoryService.getPODataForGRN(id).subscribe({
+  // Logic Update: Parameter handle for View vs Add mode
+  loadPOData(id: number, grnHeaderId: number | null = null) {
+    this.inventoryService.getPODataForGRN(id, grnHeaderId).subscribe({
       next: (res) => {
+        if (!res) return;
+
         this.grnForm.patchValue({
           grnNumber: res.grnNumber || 'AUTO-GEN',
           poNumber: res.poNumber,
-          supplierName: res.supplierName
+          supplierName: res.supplierName,
+          remarks: res.remarks || '' 
         });
 
-        // Flow check: Popup se ya Direct Grid se
-        const itemObservable = this.isFromPopup
-          ? this.inventoryService.getPOItemsForGRN(id)
-          : of({ items: res.items }); // Simple wrapper agar data pehle se hai
-
-        // Hum ensure karenge ki mapItems poora ho jaye
-        if (this.isFromPopup) {
+        if (res.items && res.items.length > 0) {
+          this.mapItems(res.items);
+        } else if (this.isFromPopup) {
           this.inventoryService.getPOItemsForGRN(id).subscribe(popupItems => {
             this.mapItems(popupItems);
-            this.forceLockTable(); // Yahan lock trigger hoga
           });
-        } else {
-          this.mapItems(res.items);
-          this.forceLockTable(); // Yahan lock trigger hoga
         }
+
+        this.forceLockTable();
       }
     });
   }
 
-  // Ye naya function table ko "Zabardasti" lock karega
   forceLockTable() {
     if (this.isViewMode) {
-      this.grnForm.disable(); // Header lock karein
-      this.cdr.detectChanges(); // UI refresh
+      this.grnForm.disable();
+      this.cdr.detectChanges();
     }
   }
 
   mapItems(incomingItems: any[]) {
     this.items = incomingItems.map((item: any) => {
-      // Case-sensitivity fix: Dono handle karein (Capital and Small)
-      const ordered = Number(item.OrderedQty || item.orderedQty || 0);
-      const received = Number(item.AlreadyReceivedQty || item.alreadyReceivedQty || 0);
-      const rate = Number(item.UnitPrice || item.unitPrice || item.unitRate || 0);
-      const pending = ordered - received;
+      const ordered = Number(item.orderedQty || item.OrderedQty || 0);
+      const pending = Number(item.pendingQty || item.PendingQty || 0);
+      const rate = Number(item.unitRate || item.unitPrice || item.UnitPrice || 0);
+
+      const received = this.isViewMode
+        ? Number(item.receivedQty || item.ReceivedQty || 0)
+        : pending;
+
+      const rejected = Number(item.rejectedQty || item.RejectedQty || 0);
+
+      const accepted = this.isViewMode
+        ? Number(item.acceptedQty || item.AcceptedQty || (received - rejected))
+        : (received - rejected);
 
       return {
         ...item,
-        productId: item.ProductId || item.productId,
-        productName: item.ProductName || item.productName,
+        productId: item.productId || item.ProductId,
+        productName: item.productName || item.ProductName,
         orderedQty: ordered,
         pendingQty: pending,
-        receivedQty: pending,
-        rejectedQty: 0,
-        acceptedQty: pending, // Initially all received is accepted
+        receivedQty: received,
+        rejectedQty: rejected,
+        acceptedQty: accepted,
         unitRate: rate,
-        total: pending * rate
+        total: accepted * rate
       };
     });
     this.calculateGrandTotal();
-    this.cdr.detectChanges();
+    this.cdr.detectChanges(); 
   }
 
   onQtyChange(item: any) {
+    if (this.isViewMode) return; 
+
     const enteredQty = Number(item.receivedQty || 0);
     const pendingQty = Number(item.pendingQty || 0);
     const rejectedQty = Number(item.rejectedQty || 0);
     const unitRate = Number(item.unitRate || 0);
 
-    // Validation 1: Received > Pending
     if (enteredQty > pendingQty) {
       item.receivedQty = pendingQty;
       this.showValidationError(`Received quantity cannot exceed the pending quantity (${pendingQty}).`);
+      this.onQtyChange(item);
       return;
     }
 
-    // Validation 2: Rejected > Received
     if (rejectedQty > enteredQty) {
-      item.rejectedQty = 0; // Reset rejected if invalid
+      item.rejectedQty = 0;
       this.showValidationError(`Rejected quantity cannot exceed the received quantity (${enteredQty}).`);
+      this.onQtyChange(item);
+      return;
     }
 
-    // Calculate Accepted
-    item.acceptedQty = Math.max(0, item.receivedQty - (item.rejectedQty || 0));
-
-    // Calculate Total (Based on Accepted Qty) [cite: Assumption: Pay for accepted only]
+    item.acceptedQty = Math.max(0, enteredQty - rejectedQty);
     item.total = item.acceptedQty * unitRate;
 
     this.calculateGrandTotal();
@@ -186,26 +178,20 @@ export class GrnFormComponent implements OnInit {
   showValidationError(message: string) {
     this.dialog.open(StatusDialogComponent, {
       width: '350px',
-      data: {
-        title: 'Validation Error',
-        message: message,
-        status: 'error',
-        isSuccess: false
-      }
+      data: { title: 'Validation Error', message: message, status: 'error', isSuccess: false }
     });
   }
 
   calculateGrandTotal(): number {
-    // Grand Total based on Accepted Qty
     return this.items.reduce((acc, item) => acc + (Number(item.acceptedQty || 0) * Number(item.unitRate || 0)), 0);
   }
 
   saveGRN() {
-    if (this.grnForm.invalid || this.items.length === 0) return;
+    if (this.grnForm.invalid || this.items.length === 0 || this.isViewMode) return;
     const currentUserId = localStorage.getItem('userId') || '00000000-0000-0000-0000-000000000000';
+
     const grnData = {
       poHeaderId: this.poId,
-      supplierId: this.supplierId,
       receivedDate: this.grnForm.getRawValue().receivedDate,
       remarks: this.grnForm.value.remarks,
       totalAmount: this.calculateGrandTotal(),
@@ -213,7 +199,6 @@ export class GrnFormComponent implements OnInit {
       createdBy: currentUserId,
       items: this.items.map(item => ({
         productId: item.productId,
-        orderedQty: item.orderedQty || item.qty,
         receivedQty: Number(item.receivedQty),
         rejectedQty: Number(item.rejectedQty),
         acceptedQty: Number(item.acceptedQty),
@@ -233,5 +218,6 @@ export class GrnFormComponent implements OnInit {
     });
   }
 
-  onCancel() { this.router.navigate(['/app/inventory/grn-list']); }
+  goBack() { this.router.navigate(['/app/inventory/grn-list']); }
+  onCancel() { this.goBack(); }
 }

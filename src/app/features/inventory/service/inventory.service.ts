@@ -121,10 +121,17 @@ export class InventoryService {
     }
 
     // PO Data pick karne ke liye
-    getPODataForGRN(poId: number): Observable<any> {
-        return this.http.get(`${this.apiUrl}/GRN/GetPOData/${poId}`);
-    }
+    // Thoda aur safe version
+    getPODataForGRN(poId: number, grnHeaderId: number | null = null): Observable<any> {
+        console.log(`Calling API with PO: ${poId}, GRN: ${grnHeaderId}`);
+        let url = `${this.apiUrl}/GRN/GetPOData/${poId}`;
 
+        // Explicit null/undefined check
+        if (grnHeaderId !== null && grnHeaderId !== undefined) {
+            url += `?grnHeaderId=${grnHeaderId}`;
+        }
+        return this.http.get(url);
+    }
     // GRN save aur stock update ke liye (CQRS Command)
     saveGRN(payload: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/GRN/Save`, payload);
