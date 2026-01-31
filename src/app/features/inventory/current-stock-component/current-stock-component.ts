@@ -9,6 +9,8 @@ import { Router } from '@angular/router';
 import { merge, of } from 'rxjs';
 import { startWith, switchMap, map, catchError } from 'rxjs/operators';
 import { SelectionModel } from '@angular/cdk/collections';
+// Animation imports for smooth expansion [cite: 2026-01-31]
+import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
   selector: 'app-current-stock-component',
@@ -16,30 +18,39 @@ import { SelectionModel } from '@angular/cdk/collections';
   imports: [MaterialModule, CommonModule],
   templateUrl: './current-stock-component.html',
   styleUrl: './current-stock-component.scss',
+  // Added row expansion animation [cite: 2026-01-31]
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0' })),
+      state('expanded', style({ height: '*' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
+    ]),
+  ],
 })
 export class CurrentStockComponent implements OnInit, AfterViewInit {
-  // Added 'totalRejected' to the columns array [cite: 2026-01-31]
+  // Column definitions kept as per your logic [cite: 2026-01-31]
   displayedColumns: string[] = ['select', 'productName', 'totalReceived', 'totalRejected', 'availableStock', 'unitRate', 'actions'];
   stockDataSource = new MatTableDataSource<any>([]);
 
+  // State to track which row is expanded [cite: 2026-01-31]
+  expandedElement: any | null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  resultsLength = 0; // Total count from backend
+  resultsLength = 0; 
   isLoadingResults = true;
   lowStockCount: number = 0;
   totalInventoryValue: number = 0;
   searchValue: string = '';
   lastpurchaseOrderId!: number;
+
   constructor(private inventoryService: InventoryService, private router: Router,
     private cdr: ChangeDetectorRef) { }
 
   selection = new SelectionModel<any>(true, []);
 
-  ngOnInit() {
-
-  }
+  ngOnInit() { }
 
   ngAfterViewInit() {
     this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
@@ -75,7 +86,8 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
               this.lastpurchaseOrderId = items[0].lastPurchaseOrderId;
               console.log('items', items);
             }
-           
+            
+            // Map including the new history from backend [cite: 2026-01-31]
             const mappedData = items.map((item: any) => ({
               productId: item.productId, 
               productName: item.productName,
@@ -84,7 +96,8 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
               availableStock: item.availableStock, 
               unit: item.unit,
               lastRate: item.lastRate,
-              minStockLevel: item.minStockLevel 
+              minStockLevel: item.minStockLevel,
+              history: item.history // Traceability data linked here [cite: 2026-01-31]
             }));
             this.cdr.detectChanges();
             this.stockDataSource.data = mappedData;
@@ -94,8 +107,13 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
     }, 0);
   }
 
+  // Row toggle helper [cite: 2026-01-31]
+  toggleRow(element: any) {
+    this.expandedElement = (this.expandedElement === element) ? null : element;
+    this.cdr.detectChanges();
+  }
+
   updateSummary(data: any[]) {
-    // Low stock count and inventory value now based on availableStock (Accepted Qty) [cite: 2026-01-31]
     this.lowStockCount = data.filter(item => item.availableStock <= (item.minStockLevel || 10)).length;
     this.totalInventoryValue = data.reduce((acc, curr) => acc + (curr.availableStock * curr.lastRate), 0);
   }
@@ -127,7 +145,6 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
     });
   }
 
-  // Checkbox functions
   isAllSelected() {
     const numSelected = this.selection.selected.length;
     const numRows = this.stockDataSource.data.length;
@@ -152,5 +169,4 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
       state: { refillItems: refillItems }
     });
   }
-
 }

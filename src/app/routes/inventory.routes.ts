@@ -4,27 +4,30 @@ export const INVENTORY_ROUTES: Routes = [
 
   {
     path: 'polist',
+    data: { breadcrumb: 'Purchase Orders' },
     children: [
-      { path: '', loadComponent: () => import('./../features/inventory/po-list/po-list').then(m => m.PoList) },
-      { path: 'add', loadComponent: () => import('./../features/inventory/po-form/po-form').then(m => m.PoForm) },
-      { path: 'edit/:id', loadComponent: () => import('./../features/inventory/po-form/po-form').then(m => m.PoForm) }
+      { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('./../features/inventory/po-list/po-list').then(m => m.PoList) },
+      { path: 'add', data: { breadcrumb: 'Add New' }, loadComponent: () => import('./../features/inventory/po-form/po-form').then(m => m.PoForm) },
+      { path: 'edit/:id', data: { breadcrumb: 'Edit' }, loadComponent: () => import('./../features/inventory/po-form/po-form').then(m => m.PoForm) }
     ]
   },
 
   {
     path: 'grn-list',
+    data: { breadcrumb: 'GRN' },
     children: [
-      { path: '', loadComponent: () => import('../features/inventory/grn-list-component/grn-list-component').then(m => m.GrnListComponent) },
-      { path: 'add', loadComponent: () => import('../features/inventory/grn-form-component/grn-form-component').then(m => m.GrnFormComponent) },
-      { path: 'edit/:id', loadComponent: () => import('../features/inventory/grn-form-component/grn-form-component').then(m => m.GrnFormComponent) },
-      { path: 'view/:id', loadComponent: () => import('../features/inventory/grn-form-component/grn-form-component').then(m => m.GrnFormComponent) }
+      { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('../features/inventory/grn-list-component/grn-list-component').then(m => m.GrnListComponent) },
+      { path: 'add', data: { breadcrumb: 'Add New' }, loadComponent: () => import('../features/inventory/grn-form-component/grn-form-component').then(m => m.GrnFormComponent) },
+      { path: 'edit/:id', data: { breadcrumb: 'Edit' }, loadComponent: () => import('../features/inventory/grn-form-component/grn-form-component').then(m => m.GrnFormComponent) },
+      { path: 'view/:id', data: { breadcrumb: 'View' }, loadComponent: () => import('../features/inventory/grn-form-component/grn-form-component').then(m => m.GrnFormComponent) }
     ]
   },
   {
     path: 'current-stock',
+    data: { breadcrumb: 'Current Stock' },
     children: [
-      { path: '', loadComponent: () => import('../features/inventory/current-stock-component/current-stock-component').then(m => m.CurrentStockComponent) },
-     
+      { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('../features/inventory/current-stock-component/current-stock-component').then(m => m.CurrentStockComponent) },
+
     ]
   },
 

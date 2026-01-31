@@ -28,6 +28,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @NgModule({
     imports: [MatToolbarModule,
@@ -61,7 +62,8 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
         MatSlideToggleModule,
         MatChipsModule,
         MatTooltipModule,
-       MatAutocompleteModule
+        MatAutocompleteModule,
+        DragDropModule,
     ],
     exports: [
         MatToolbarModule,
@@ -94,7 +96,12 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
         MatCheckboxModule,
         MatSlideToggleModule,
         MatChipsModule,
-        MatTooltipModule,MatAutocompleteModule
+        MatTooltipModule,
+        MatAutocompleteModule,
+        DragDropModule,
+        MatTableModule,
+        MatSortModule,
+        MatPaginatorModule,
     ]
 })
 export class MaterialModule { }

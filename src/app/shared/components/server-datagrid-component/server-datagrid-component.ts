@@ -88,7 +88,11 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['data']) { this.selection.clear(); this.emitSelection(); }
+    if (changes['data']) {
+      this.selection.clear();
+      // Delay emission to avoid ExpressionChangedAfterItHasBeenCheckedError
+      Promise.resolve().then(() => this.emitSelection());
+    }
   }
 
   emitRequest() {
@@ -282,7 +286,7 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
     this.filteredColumns = [...this.columns]; // ✅ reflect immediately
     this.updateDisplayedColumns();
   }
-  
+
   onEditClick(row: any) {
     this.editAction.emit(row); // Ye event parent ko signal bhejega
   }

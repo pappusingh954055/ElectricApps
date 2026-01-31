@@ -1,11 +1,5 @@
 <mat-card>
 
-  <mat-card-title class="d-flex justify-between">
-    <button mat-flat-button class="bg-cyan"  routerLink="/app/master/subcategories/add">
-      + Add Subcategory
-    </button>
-  </mat-card-title>
-
   <app-server-datagrid [columns]="columns" [data]="data" 
     gridKey="subcategory-grid"
     [totalCount]="totalCount" [loading]="loading"
@@ -17,8 +11,11 @@
   </app-server-datagrid>
 
   <mat-card-actions>
-    <button mat-flat-button class="bg-cyan" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
+    <button mat-flat-button style="margin-right: 10px;" class="bg-azure" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
       Delete Selected
+    </button>
+       <button mat-flat-button class="bg-azure"  routerLink="/app/master/subcategories/add">
+      + Add Subcategory
     </button>
   </mat-card-actions>
 </mat-card>

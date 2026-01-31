@@ -13,6 +13,7 @@ export const routes: Routes = [
   {
     path: 'app',
     canActivate: [authGuard],
+    data: { breadcrumb: 'Home' },
     loadComponent: () =>
       import('./layout/main-layout-component/main-layout-component')
         .then(m => m.MainLayoutComponent),
@@ -20,6 +21,7 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
+        data: { breadcrumb: 'Dashboard' },
         loadChildren: () =>
           import('./routes/dashboard.routes')
             .then(m => m.DASHBOARD_ROUTES)
@@ -44,6 +46,7 @@ export const routes: Routes = [
       },
       {
         path: 'inventory',
+        data: { breadcrumb: 'Inventory' },
         loadChildren: () =>
           import('./routes/inventory.routes')
             .then(m => m.INVENTORY_ROUTES)

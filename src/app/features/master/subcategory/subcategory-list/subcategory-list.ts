@@ -74,7 +74,6 @@ export class SubcategoryList implements OnInit, OnChanges {
   loadSubCategories(request: GridRequest): void {
     this.lastRequest = request; // ✅ store last state
     this.loading = true;
-    this.cdr.detectChanges();
 
     this.subCategoryService.getPaged(request).subscribe({
       next: res => {
@@ -82,12 +81,10 @@ export class SubcategoryList implements OnInit, OnChanges {
         console.log(this.data);
         this.totalCount = res.totalCount;
         this.loading = false;
-        this.cdr.detectChanges();
       },
       error: err => {
         console.error(err);
         this.loading = false;
-        this.cdr.detectChanges();
       }
     });
   }
@@ -181,7 +178,7 @@ export class SubcategoryList implements OnInit, OnChanges {
             }
           });
 
-          this.cdr.detectChanges();
+          this.loading = false;
         },
         error: err => {
           console.error(err);
@@ -195,7 +192,6 @@ export class SubcategoryList implements OnInit, OnChanges {
               message
             }
           });
-          this.cdr.detectChanges();
         }
       });
     });

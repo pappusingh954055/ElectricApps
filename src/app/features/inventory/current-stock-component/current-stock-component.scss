@@ -1,448 +1,240 @@
-/* CSS Variables for Professional Theme */
-$primary-blue: #2b6cb0;
-$alert-red: #e53e3e;
-$success-green: #38a169;
-
-.stock-container {
-  padding: 12px;
-  background-color: #f4f7fe;
-  // min-height: 100vh;
+/* Enterprise Professional Theme Configuration */
+:host {
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --bg-main: #f8fafc;
+  --card-bg: #ffffff;
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --glass-bg: rgba(255, 255, 255, 0.8);
 }
 
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #ffffff;
-  padding: 10px 16px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  border: 1px solid #e2e8f0;
-
-  h2 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #333;
-  }
-}
-
-.search-box {
-  width: 280px;
-}
-
-/* Alert Widget Styles [cite: 2026-01-22] */
-.alert-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  border-radius: 8px;
-  background: #fff5f5;
-  border-left: 4px solid $alert-red;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-/* Missing Wrapper Added for proper icon-text alignment [cite: 2026-01-22] */
-.alert-info-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  mat-icon {
-    color: $alert-red;
-    margin: 0 !important;
-    /* Wrapper handles gap */
-  }
-}
-
-.alert-content {
-  flex-grow: 1;
-
-  .alert-title {
-    display: block;
-    font-weight: 700;
-    color: #c53030;
-    font-size: 0.85rem;
-  }
-
-  .alert-desc {
-    color: #742a2a;
-    font-size: 0.8rem;
-  }
-}
-
-/* Refill Button Styling [cite: 2026-01-22] */
-.refill-btn {
-  display: inline-flex !important;
-  align-items: center;
-  background-color: $alert-red !important;
-  color: white !important;
-  font-weight: 700;
-  letter-spacing: 1px;
-  border-radius: 6px;
-  margin-left: 15px;
-
-  mat-icon {
-    margin-right: 5px;
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
-}
-
-/* Table Design */
-.table-responsive {
-  background: #ffffff;
-  border-radius: 8px;
+.table-container {
+  margin: 20px;
+  background: var(--card-bg);
+  border-radius: 16px;
   overflow: hidden;
-}
-
-.mat-mdc-row {
-  height: 40px !important;
-  transition: background-color 0.2s ease;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #f1f5f9 !important;
-  }
-}
-
-.mat-column-productName {
-  font-weight: 600;
-  color: $primary-blue;
-}
-
-.low-stock,
-.good-stock {
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 4px;
-}
-
-.low-stock {
-  background: #fff5f5;
-  color: $alert-red;
-}
-
-.good-stock {
-  background: #f0fff4;
-  color: $success-green;
-}
-
-/* SMART RESPONSIVE LOGIC [cite: 2026-01-22] */
-@media (max-width: 650px) {
-  .header-section {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .search-box {
-    width: 100% !important;
-  }
-
-  /* Table overlap fix */
-  .mat-column-totalReceived,
-  .mat-column-unitRate {
-    display: none !important;
-  }
-
-  /* Alert Card stacking [cite: 2026-01-22] */
-  .alert-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .alert-info-wrapper {
-    width: 100%;
-  }
-
-  .refill-btn {
-    width: 100%;
-    margin-left: 0;
-  }
-}
-
-$primary-blue: #2b6cb0;
-$alert-red: #e53e3e;
-$success-green: #38a169;
-
-.stock-container {
-  padding: 12px;
-  background-color: #f4f7fe;
-  // min-height: 100vh;
-}
-
-/* Header & Search */
-.header-section {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background: #ffffff;
-  padding: 10px 16px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  border: 1px solid #e2e8f0;
-
-  h2 {
-    margin: 0;
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #333;
-  }
-}
-
-.search-box {
-  width: 280px;
-}
-
-/* Alert Widget [cite: 2026-01-22] */
-.alert-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 20px;
-  border-radius: 8px;
-  background: #fff5f5;
-  border-left: 4px solid $alert-red;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.alert-info-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-
-  mat-icon {
-    color: $alert-red;
-    margin: 0 !important;
-  }
-}
-
-.refill-btn {
-  display: inline-flex !important;
-  align-items: center;
-  background-color: $alert-red !important;
-  color: white !important;
-  font-weight: 700;
-  border-radius: 6px;
-}
-
-/* Table Design */
-.table-responsive {
-  background: #ffffff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-}
-
-.mat-mdc-row {
-  height: 40px !important;
-
-  &:hover {
-    background-color: #f1f5f9 !important;
-  }
-}
-
-/* NEW: Summary Footer Styling [cite: 2026-01-22] */
-.summary-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 15px;
-}
-
-.summary-card {
-  background: white;
-  padding: 12px 24px;
-  border-radius: 8px;
-  border-right: 5px solid $primary-blue;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  text-align: right;
-
-  .summary-label {
-    font-size: 0.75rem;
-    color: #718096;
-    text-transform: uppercase;
-    font-weight: 600;
-  }
-
-  .summary-value {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: $primary-blue;
-  }
-}
-
-.table-responsive {
-  position: relative; // Ye zaroori hai loader ko container ke andar lock karne ke liye
-  background: #ffffff;
-  border-radius: 8px;
-  overflow: hidden;
-  min-height: 200px; // Empty state mein bhi loader center mein dikhega
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--border-color);
+  position: relative;
+  transition: all 0.3s ease;
 }
 
 .loading-shade {
   position: absolute;
   top: 0;
   left: 0;
-  bottom: 0; // Paginator ke upar tak cover karega
+  bottom: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.7);
-  z-index: 1000; // Sabse upar dikhne ke liye
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 10;
   display: flex;
-  align-items: center; // Vertical center
-  justify-content: center; // Horizontal center
+  align-items: center;
+  justify-content: center;
 }
 
-/* Loader ka color aapke theme ke hisaab se */
-::ng-deep .mat-mdc-progress-spinner .mdc-circular-progress__draw-svg {
-  stroke: $primary-blue !important;
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
-/* SMART RESPONSIVE */
-@media (max-width: 650px) {
-  .header-section {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
-  }
-
-  .search-box {
-    width: 100% !important;
-  }
-
-  .mat-column-totalReceived,
-  .mat-column-unitRate {
-    display: none !important;
-  }
-
-  .alert-card {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .refill-btn {
-    width: 100%;
-    margin-left: 0;
-  }
-
-  .summary-footer {
-    justify-content: stretch;
-  }
-
-  .summary-card {
-    width: 100%;
-    text-align: center;
-    border-right: none;
-    border-top: 4px solid $primary-blue;
-  }
+/* Header Cells */
+th.mat-mdc-header-cell {
+  background: #f1f5f9;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  padding: 12px 16px !important;
+  border-bottom: 2px solid var(--border-color);
 }
 
-/* Low Stock Row Styling [cite: 2026-01-22] */
-.low-stock-row {
-  background-color: #fff1f0 !important; // Light Red Background
-  
+/* Body Cells */
+td.mat-mdc-cell {
+  padding: 8px 16px !important;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+/* Row Interactivity */
+tr.element-row {
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
   &:hover {
-    background-color: #ffa39e !important; // Thoda dark on hover
+    background-color: #f8fafc !important;
+    transform: scale(1.002);
+  }
+
+  &:active {
+    background-color: #f1f5f9;
+  }
+}
+
+.expanded-row {
+  background-color: #f8fafc;
+  
+  td {
+    border-bottom: none !important;
+  }
+}
+
+/* Detail Row Animation */
+.detail-row {
+  height: 0;
+  overflow: hidden;
+  
+  td {
+    padding: 0 !important;
+    border-bottom: none !important;
+  }
+}
+
+.element-detail {
+  overflow: hidden;
+  display: flex;
+  padding: 0 24px 24px 72px; // Adjusted for better alignment with content
+  background: #f8fafc;
+}
+
+.history-card {
+  width: 100%;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.history-header {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Child Table Aesthetics */
+.child-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    padding: 10px 20px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    background: #fafafa;
+    border-bottom: 1px solid var(--border-color);
   }
 
   td {
-    color: #cf1322 !important; // Dark Red Text
-    font-weight: 500;
+    padding: 12px 20px;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #f1f5f9;
   }
 
-  /* Pehle column mein red indicator [cite: 2026-01-22] */
-  td.mat-column-productName {
-    border-left: 4px solid #f5222d;
-  }
-}
-
-/* Good Stock Badge (Existing logic for reference) */
-.good-stock {
-  background-color: #f6ffed;
-  color: #389e0d;
-  padding: 2px 8px;
-  border-radius: 4px;
-  border: 1px solid #b7eb8f;
-}
-
-/* Low Stock Badge */
-.low-stock {
-  background-color: #fff1f0;
-  color: #cf1322;
-  padding: 2px 8px;
-  border-radius: 4px;
-  border: 1px solid #ffa39e;
-}
-
-/* Footer amount ko wapas dikhane ke liye [cite: 2026-01-22] */
-.summary-footer {
-  display: flex;
-  justify-content: flex-end;
-  padding: 15px;
-  background: #fff;
-  border-top: 1px solid #eee;
-  margin-top: 10px;
-}
-
-.summary-card {
-  text-align: right;
-  min-width: 200px; /* Amount ke liye space reserve karein */
-}
-
-.summary-value {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #1976d2; /* Blue color highlight ke liye */
-  display: block !important; /* Force display */
-}
-
-/* Mobile par ensure karein ki amount kate nahi [cite: 2026-01-22] */
-@media (max-width: 600px) {
-  .summary-card {
-    width: 100%;
-    text-align: center;
+  tbody tr {
+    transition: background-color 0.2s;
+    
+    &:hover {
+      background-color: #f1f5f9;
+    }
   }
 }
 
-/* Table Styles */
-.low-stock-row {
-  background-color: #fff1f0 !important; /* Light Red */
+/* Badges & Indicators */
+.rejected-badge {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-weight: 600;
+  font-size: 0.75rem;
+  border: 1px solid #fee2e2;
 }
 
-.selected-row {
-  background-color: #e6f7ff !important; /* Light Blue for selection */
+.stock-badge {
+  background: #f0fdf4;
+  color: #16a34a;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #dcfce7;
+
+  &.low-stock {
+    background: #fffbeb;
+    color: #d97706;
+    border-color: #fef3c7;
+  }
 }
 
-.low-stock {
-  color: #f44336;
-  font-weight: bold;
+.po-link {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+  }
 }
 
-.good-stock {
-  color: #4caf50;
+.text-danger {
+  color: var(--danger);
+  font-weight: 700;
 }
 
-/* Checkbox Column Width [cite: 2026-01-22] */
-.mat-column-select {
-  width: 48px;
-  padding-right: 8px !important;
+/* Actions Column */
+.mat-column-actions {
+  width: 80px;
+  text-align: center;
+  
+  button {
+    transition: transform 0.2s;
+    &:hover {
+      transform: translateY(-2px);
+      color: var(--primary-hover) !important;
+    }
+  }
 }
 
-/* Bulk Mode Alert */
-.bulk-mode {
-  border-left: 5px solid #2196f3 !important;
-  background-color: #f0f7ff !important;
+/* Paginator Styling */
+.mat-mdc-paginator {
+  background: #f1f5f9 !important;
+  border-top: 1px solid var(--border-color);
 }
 
+/* Responsive Overrides */
 @media (max-width: 768px) {
-  .mat-column-select, .mat-column-unitRate {
-    display: none; /* Mobile par hide karein for better fit [cite: 2026-01-22] */
+  .element-detail {
+    padding: 0 12px 16px 12px;
+  }
+  
+  .history-card {
+    margin: 0;
+  }
+
+  .mat-column-select, 
+  .mat-column-totalReceived, 
+  .mat-column-unitRate {
+    display: none;
   }
 }

@@ -5,8 +5,7 @@
         <app-search-input [value]="globalSearchQuery" (onSearch)="onGlobalSearch($event)"></app-search-input>
         <button *ngIf="globalSearchQuery" mat-icon-button (click)="globalSearchQuery=''; triggerDataLoad()"
           style="position: absolute; right: 8px;">
-         
-        </button>
+         </button>
       </div>
 
       <mat-form-field appearance="outline" class="modern-datepicker">

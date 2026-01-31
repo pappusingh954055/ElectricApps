@@ -18,7 +18,8 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 
 @Component({
   selector: 'app-category-list',
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, RouterLink, ServerDatagridComponent
+  imports: [CommonModule,
+    ReactiveFormsModule, MaterialModule, ServerDatagridComponent, RouterLink,
   ],
   templateUrl: './category-list.html',
   styleUrl: './category-list.scss',
@@ -69,19 +70,16 @@ export class CategoryList implements OnInit {
   loadCategories(request: GridRequest): void {
     this.lastRequest = request; // ✅ store last state
     this.loading = true;
-    this.cdr.detectChanges();
 
     this.categoryService.getPaged(request).subscribe({
       next: res => {
         this.data = res.items;
         this.totalCount = res.totalCount;
         this.loading = false;
-        this.cdr.detectChanges();
       },
       error: err => {
         console.error(err);
         this.loading = false;
-        this.cdr.detectChanges();
       }
     });
   }
@@ -173,7 +171,7 @@ export class CategoryList implements OnInit {
             }
           });
 
-          this.cdr.detectChanges();
+          this.loading = false;
         },
         error: err => {
           console.error(err);
@@ -187,7 +185,6 @@ export class CategoryList implements OnInit {
               message
             }
           });
-          this.cdr.detectChanges();
         }
       });
     });
