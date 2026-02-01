@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { finalize } from 'rxjs';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from '../../shared/material/material/material-module';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { LoginDto } from '../../core/models/user.model';
+import { MatDialog } from '@angular/material/dialog';
+import { StatusDialogComponent } from '../../shared/components/status-dialog-component/status-dialog-component';
 
 @Component({
   selector: 'app-login',
@@ -17,7 +20,10 @@ export class LoginComponent {
   loading = false;
   errorMessage = '';
 
-  LoginDto!: LoginDto;
+
+  private dialog = inject(MatDialog);
+  private cdr = inject(ChangeDetectorRef);
+
 
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
     this.loginForm = this.fb.group({
@@ -36,13 +42,21 @@ export class LoginComponent {
     this.loading = true;
     this.errorMessage = '';
 
-    this.LoginDto = {
+    const loginData: LoginDto = {
       Email: this.loginForm.value.Email,
       Password: this.loginForm.value.Password
     };
 
-    this.auth.login(this.LoginDto).subscribe({
-
+    this.auth.login(loginData).pipe(
+      finalize(() => {
+        // Use timeout to ensure any state changes happen outside the current check cycle
+        // and after the observable has finished emitting.
+        setTimeout(() => {
+          this.loading = false;
+          this.cdr.markForCheck();
+        });
+      })
+    ).subscribe({
       next: (res) => {
         localStorage.setItem('userId', res.userId);
         if (res.userName) localStorage.setItem('userName', res.userName);
@@ -50,15 +64,27 @@ export class LoginComponent {
         localStorage.setItem('refreshToken', res.refreshToken);
         localStorage.setItem('roles', JSON.stringify(res.roles));
         localStorage.setItem('email', res.email);
-        console.log('res', res);
-        this.loading = false;
+
+        console.log('Login successful:', res);
         this.router.navigate(['/app/dashboard']); // ✅ IMPORTANT
       },
       error: err => {
-        console.error(err);
-        this.errorMessage = err?.error?.message || 'Login failed';
-        this.loading = false;
+        console.error('Login error:', err);
+        const msg = err?.error?.message || 'Invalid credentials or server error. Please try again.';
+
+        // Small delay for the dialog to ensure the button loading state animation can finish
+        setTimeout(() => {
+          this.showErrorDialog(msg);
+        }, 150);
       }
+    });
+  }
+
+  private showErrorDialog(message: string) {
+    this.dialog.open(StatusDialogComponent, {
+      data: { isSuccess: false, message: message },
+      width: '400px',
+      disableClose: true
     });
   }
 }

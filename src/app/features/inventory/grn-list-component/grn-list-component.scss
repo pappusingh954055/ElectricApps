@@ -217,7 +217,8 @@
 /* Sticky Header & Scroll Logic [cite: 2026-01-22] */
 .table-responsive {
   flex: 1;
-  overflow: auto;
+  overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
 }
 
