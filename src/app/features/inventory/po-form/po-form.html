@@ -2,37 +2,34 @@
   <form [formGroup]="poForm">
     <div class="po-header-grid">
       <div class="field-item">
-    <mat-form-field appearance="outline" subscriptSizing="dynamic">
-  <mat-label>Select Supplier</mat-label>
-  <mat-select formControlName="supplierId" (selectionChange)="onSupplierChange($event.value)">
-    <mat-option [value]="null">Please Select Supplier</mat-option>
-    
-    <mat-option *ngFor="let s of suppliers" [value]="s.id">
-      {{ s.name }}
-    </mat-option>
-  </mat-select>
-</mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Select Supplier</mat-label>
+          <mat-select formControlName="supplierId" (selectionChange)="onSupplierChange($event.value)">
+            <mat-option [value]="null">Please Select Supplier</mat-option>
+            <mat-option *ngFor="let s of suppliers" [value]="s.id">
+              {{ s.name }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
         <button mat-icon-button type="button" (click)="openSupplierModal()" color="primary">
           <mat-icon>add_circle</mat-icon>
         </button>
       </div>
 
-    <div class="field-item">
-  <mat-form-field appearance="outline" subscriptSizing="dynamic">
-    <mat-label>Applicable Price List</mat-label>
-    <mat-select formControlName="priceListId">
-      <mat-option [value]="null">Please Select</mat-option>
-      
-      <mat-option *ngFor="let pl of priceLists" [value]="pl.id">
-        {{ pl.name }}
-      </mat-option>
-    </mat-select>
-    
-    <mat-hint *ngIf="isPriceListAutoSelected" style="color: green; font-size: 10px;">
-      Auto-linked from Supplier
-    </mat-hint>
-  </mat-form-field>
-</div>
+      <div class="field-item">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Applicable Price List</mat-label>
+          <mat-select formControlName="priceListId" (selectionChange)="refreshAllItemRates($event.value)">
+            <mat-option [value]="null">Please Select</mat-option>
+            <mat-option *ngFor="let pl of priceLists" [value]="pl.id">
+              {{ pl.name }}
+            </mat-option>
+          </mat-select>
+          <mat-hint *ngIf="isPriceListAutoSelected" style="color: green; font-size: 10px;">
+            Auto-linked from Supplier
+          </mat-hint>
+        </mat-form-field>
+      </div>
 
       <div class="field-item">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -64,23 +61,18 @@
       <button mat-flat-button color="primary" type="button" (click)="addRow()">
         <mat-icon>add</mat-icon> Add Item
       </button>
-      <span class="text-muted" style="font-size: 12px;">&nbsp;Prices will be fetched from the selected Price
-        List.</span>
+      <span class="text-muted" style="font-size: 12px;">&nbsp;Prices will be fetched from the selected Price List.</span>
     </div>
 
     <div formArrayName="items" class="items-section mt-3">
       <div class="item-row" *ngFor="let row of items.controls; let i = index" [formGroupName]="i">
-
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Search Product</mat-label>
           <input type="text" matInput formControlName="productSearch" [matAutocomplete]="auto">
-
           <div matSuffix *ngIf="isProductLoading[i]" style="display: flex; align-items: center; padding-right: 8px;">
             <mat-spinner diameter="18"></mat-spinner>
           </div>
-
-          <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayProductFn"
-            (optionSelected)="onProductChange(i, $event)">
+          <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayProductFn" (optionSelected)="onProductChange(i, $event)">
             <mat-option *ngFor="let product of filteredProducts[i] | async" [value]="product">
               <span>{{product.name}}</span> - <small>{{product.sku}}</small>
             </mat-option>
@@ -156,7 +148,6 @@
 
           <div class="button-row">
             <button mat-flat-button class="bg-azure" (click)="saveDraft()" [disabled]="poForm.invalid || isLoading">
-              <!-- <mat-icon *ngIf="!isLoading">save</mat-icon> -->
               @if (isLoading) {
               <div class="loader-overlay">
                 <mat-spinner diameter="60"></mat-spinner>

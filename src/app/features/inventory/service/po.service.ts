@@ -24,5 +24,11 @@ export class POService {
     // Yahan '33' pass hoga
     return this.http.get<POHeaderDetailsDto>(`${this.apiUrl}/PurchaseOrders/header-details/${lastPoId}`);
   }
-
+  // purchase.service.ts
+  // inventory.service.ts
+  getProductRate(productId: string, priceListId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/PurchaseOrders/get-product-rate`, {
+      params: { productId, priceListId }
+    });
+  }
 }
