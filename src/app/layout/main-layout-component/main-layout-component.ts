@@ -29,8 +29,10 @@ export class MainLayoutComponent implements OnInit {
 
   isMobile = false;
   menuItems: MenuItem[] = [];
+  userEmail: string | null = null;
 
   ngOnInit(): void {
+    this.userEmail = localStorage.getItem('email');
     this.menuItems = this.menuService.getMenu();
 
     this.breakpointObserver

@@ -7,6 +7,16 @@
       📦 Electronic Inventory
     </div>
 
+    <!-- User Info section (Sidenav - Mobile only) -->
+    <div *ngIf="isMobile && userEmail" class="sidenav-user-info">
+      <mat-icon class="user-avatar">account_circle</mat-icon>
+      <div class="user-details">
+        <span class="user-label">Logged in as</span>
+        <span class="user-email">{{ userEmail }}</span>
+      </div>
+      <mat-divider></mat-divider>
+    </div>
+
     <mat-accordion multi>
 
       <ng-container *ngFor="let item of menuItems">
@@ -68,6 +78,7 @@
       <span class="spacer"></span>
 
       <div class="nav-actions">
+        <span *ngIf="userEmail" class="welcome-text">Welcome, {{ userEmail }}</span>
         <button mat-icon-button matTooltip="Notifications" class="nav-icon">
           <mat-icon matBadge="5" matBadgeColor="warn">notifications</mat-icon>
         </button>
@@ -78,6 +89,11 @@
       </div>
 
       <mat-menu #userMenu="matMenu" xPosition="before">
+        <div class="menu-user-header" *ngIf="userEmail">
+          <span class="menu-email-label">Account</span>
+          <span class="menu-email-value">{{ userEmail }}</span>
+        </div>
+        <mat-divider *ngIf="userEmail"></mat-divider>
         <button mat-menu-item (click)="openProfile()">
           <mat-icon>person</mat-icon>
           <span>Profile</span>

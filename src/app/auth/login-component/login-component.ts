@@ -44,12 +44,13 @@ export class LoginComponent {
     this.auth.login(this.LoginDto).subscribe({
 
       next: (res) => {
-        console.log('Login successful', res);
         localStorage.setItem('userId', res.userId);
         if (res.userName) localStorage.setItem('userName', res.userName);
         localStorage.setItem('accessToken', res.accessToken);
         localStorage.setItem('refreshToken', res.refreshToken);
         localStorage.setItem('roles', JSON.stringify(res.roles));
+        localStorage.setItem('email', res.email);
+        console.log('res', res);
         this.loading = false;
         this.router.navigate(['/app/dashboard']); // ✅ IMPORTANT
       },

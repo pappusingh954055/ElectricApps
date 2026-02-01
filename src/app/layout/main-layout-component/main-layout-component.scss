@@ -172,16 +172,83 @@ mat-list-item {
   margin-left: 4px;
 }
 
+.welcome-text {
+  font-size: 14px;
+  margin-right: 12px;
+  opacity: 0.9;
+  font-weight: 400;
+  display: inline-block;
+  white-space: nowrap;
+}
+
 /* ================= RESPONSIVE BREAKPOINTS ================= */
 
 /* Tablets ke liye (max-width: 768px) */
 @media (max-width: 768px) {
+  .welcome-text {
+    display: none; /* Hide on small screens to save space */
+  }
   .toolbar-title {
     font-size: 16px; /* Font thoda chhota kiya */
   }
   
   .nav-icon {
     margin-left: 0; /* Space kam ki */
+  }
+}
+
+/* 🔹 Sidenav User Info (Mobile) */
+.sidenav-user-info {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #f8f9fa;
+  
+  .user-avatar {
+    font-size: 40px;
+    width: 40px;
+    height: 40px;
+    color: #3f51b5;
+  }
+  
+  .user-details {
+    display: flex;
+    flex-direction: column;
+    
+    .user-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #666;
+    }
+    
+    .user-email {
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      word-break: break-all;
+    }
+  }
+}
+
+/* 🔹 User Menu Header */
+.menu-user-header {
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  pointer-events: none; /* Non-clickable */
+  
+  .menu-email-label {
+    font-size: 10px;
+    color: #888;
+    text-transform: uppercase;
+  }
+  
+  .menu-email-value {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
   }
 }
 
