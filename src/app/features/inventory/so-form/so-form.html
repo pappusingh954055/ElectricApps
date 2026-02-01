@@ -1,81 +1,127 @@
-<mat-card>
-  <form [formGroup]="soForm">
-    <div class="form-grid">
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Customer *</mat-label>
-        <input matInput formControlName="customerId">
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>SO Date</mat-label>
-        <input matInput type="date" formControlName="date">
-      </mat-form-field>
+<div class="container-fluid p-3">
+  <mat-card>
+    <div class="card-header mb-3">
+      <h2 class="m-0 text-primary font-weight-bold">Create Sale Order</h2>
     </div>
 
-    <div class="add-item-container">
-      <button mat-flat-button class="bg-cyan" type="button" (click)="addRow()">
-        <mat-icon>add</mat-icon>
-        Add Item
-      </button>
-    </div>
-
-    <div formArrayName="items" class="items-section">
-      <div class="item-row" *ngFor="let row of items.controls; let i = index" [formGroupName]="i">
-        
+    <form [formGroup]="soForm">
+      <div class="form-grid">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Product</mat-label>
-          <mat-select formControlName="productId" (selectionChange)="onProductChange(i)">
-            <mat-option *ngFor="let p of products" [value]="p.id">{{ p.name }}</mat-option>
+          <mat-label>Customer *</mat-label>
+          <mat-select formControlName="customerId">
+            <mat-option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</mat-option>
           </mat-select>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Qty</mat-label>
-          <input matInput type="number" formControlName="qty" (input)="updateTotal(i)">
-        </mat-form-field>
+        <div class="header-right-grid">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>SO Date</mat-label>
+            <input matInput [matDatepicker]="soPicker" formControlName="soDate">
+            <mat-datepicker-toggle matSuffix [for]="soPicker"></mat-datepicker-toggle>
+            <mat-datepicker #soPicker></mat-datepicker>
+          </mat-form-field>
 
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Unit</mat-label>
-          <input matInput formControlName="unit" readonly>
-        </mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Expected Delivery</mat-label>
+            <input matInput [matDatepicker]="delPicker" formControlName="expectedDeliveryDate">
+            <mat-datepicker-toggle matSuffix [for]="delPicker"></mat-datepicker-toggle>
+            <mat-datepicker #delPicker></mat-datepicker>
+          </mat-form-field>
+        </div>
+      </div>
 
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Price</mat-label>
-          <input matInput formControlName="price" readonly>
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Disc %</mat-label>
-          <input matInput type="number" formControlName="discountPercent" (input)="updateTotal(i)">
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>GST %</mat-label>
-          <input matInput type="number" formControlName="gstPercent" (input)="updateTotal(i)">
-        </mat-form-field>
-
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Total</mat-label>
-          <input matInput formControlName="total" readonly>
-        </mat-form-field>
-
-        <button mat-icon-button type="button" class="bg-rose delete-btn" (click)="removeItem(i)">
-          <mat-icon>delete</mat-icon>
+      <div class="my-3">
+        <button mat-flat-button style="margin-bottom: 10px;" class="bg-azure add-item-btn" type="button" (click)="addRow()">
+          <mat-icon>add</mat-icon> Add Item
         </button>
       </div>
-    </div>
 
-    <div class="po-footer" *ngIf="items.length">
-      <div class="po-grand-total">Grand Total: ₹ {{ grandTotal }}</div>     
-        <button mat-flat-button class="bg-spring-green" type="button" (click)="SaveDraft()">
-          <mat-icon>save</mat-icon>
-          Save Draft
-        </button>
-        
-        <button mat-flat-button class="bg-cyan" type="button" (click)="SaveSo()">
-          <mat-icon>check_circle</mat-icon>
-          Save SO
-        </button>   
-    </div>
-  </form>
-</mat-card>
+      <div formArrayName="items" class="items-section">
+        <div class="item-row" *ngFor="let row of items.controls; let i = index" [formGroupName]="i">
+          
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="product-field">
+            <mat-label>Search Product</mat-label>
+            <input matInput formControlName="productSearch" [matAutocomplete]="auto">
+            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayProductFn" (optionSelected)="onProductChange(i, $event)">
+              <mat-option *ngFor="let p of filteredProducts[i] | async" [value]="p">
+                {{ p.name }} (Stock: {{p.currentStock}})
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Qty</mat-label>
+            <input matInput type="number" formControlName="qty" (input)="updateTotal(i)">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Unit</mat-label>
+            <input matInput formControlName="unit" readonly>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Rate</mat-label>
+            <input matInput type="number" formControlName="rate" (input)="updateTotal(i)">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Disc %</mat-label>
+            <input matInput type="number" formControlName="discountPercent" (input)="updateTotal(i)">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>GST %</mat-label>
+            <input matInput type="number" formControlName="gstPercent" (input)="updateTotal(i)">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Tax Amt</mat-label>
+            <input matInput formControlName="taxAmount" readonly class="bg-light-gray">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Total</mat-label>
+            <input matInput formControlName="total" readonly class="font-weight-bold">
+          </mat-form-field>
+
+          <button mat-icon-button type="button" class="bg-rose delete-btn" (click)="removeItem(i)">
+            <mat-icon>delete</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <div class="remarks-container mt-3">
+        <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+          <mat-label>Remarks / Payment Terms</mat-label>
+          <textarea matInput formControlName="remarks" rows="2"></textarea>
+        </mat-form-field>
+      </div>
+
+      <div class="po-footer" *ngIf="items.length">
+        <div class="summary-area">
+          <div class="summary-line">
+            <span>Sub-Total:</span>
+            <span>₹ {{ subTotal | number:'1.2-2' }}</span>
+          </div>
+          <div class="summary-line border-bottom pb-1">
+            <span>Total Tax:</span>
+            <span class="text-danger">+ ₹ {{ totalTax | number:'1.2-2' }}</span>
+          </div>
+          <div class="po-grand-total">
+             Grand Total: ₹ {{ grandTotal | number:'1.2-2' }}
+          </div>
+        </div>
+
+        <div class="footer-actions mt-3">
+          <button mat-flat-button class="bg-azure" type="button" (click)="saveOrder('Draft')">
+            <mat-icon>save</mat-icon> Save Draft
+          </button>
+          
+          <button mat-flat-button color="primary" type="button" (click)="saveOrder('Confirmed')">
+            <mat-icon>check_circle</mat-icon> Confirm SO
+          </button>
+        </div>
+      </div>
+    </form>
+  </mat-card>
+</div>

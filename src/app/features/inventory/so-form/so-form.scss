@@ -1,103 +1,96 @@
-/* ================= CARD ================= */
 mat-card {
-  padding: 24px;
+  padding: 20px;
   border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
 }
 
-/* ================= HEADER ================= */
+.bg-azure { background-color: #007bff !important; color: white !important; }
+.bg-rose { background-color: #f8d7da !important; color: #dc3545 !important; }
+
 .form-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr;
+  grid-template-columns: 1.5fr 2fr;
   gap: 20px;
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
-/* ================= ADD ITEM CONTAINER (LEFT ALIGN) ================= */
-.add-item-container {
-  display: flex;
-  justify-content: flex-start; /* Button ko left mein shift kar diya */
-  margin-bottom: 15px;
+.header-right-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
 }
 
-/* Global Button Style (Add Item & Footer Buttons) */
-.add-item-btn, .footer-actions button {
-  height: 40px !important;
-  padding: 0 16px !important;
-  border-radius: 20px !important;
-  font-weight: 600 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  
-  mat-icon {
-    margin-right: 6px;
-    font-size: 18px;
-    width: 18px;
-    height: 18px;
-  }
-}
-
-/* ================= ITEM ROW ================= */
 .item-row {
   display: grid;
-  grid-template-columns: 2fr 0.8fr 0.8fr 1fr 0.9fr 0.9fr 1.1fr 45px;
+  // Updated grid for 9 columns (Tax Amount included)
+  grid-template-columns: 2fr 0.6fr 0.6fr 0.8fr 0.6fr 0.6fr 0.7fr 1.1fr 45px;
   gap: 12px;
   align-items: center;
-  background: #fafafa;
+  background: #f8f9fa;
   padding: 12px;
   border-radius: 10px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #e9ecef;
 
-  mat-form-field {
-    width: 100%;
-  }
-
+  .product-field { width: 100%; }
+  
   .delete-btn {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 50% !important;
     margin-top: 4px;
+    &:hover { background-color: #dc3545 !important; color: white !important; }
   }
 }
 
-/* ================= FOOTER (COMPACT & RIGHT ALIGN) ================= */
+.remarks-container {
+  width: 100%;
+  margin-bottom: 5px;
+  .w-100 { width: 100% !important; }
+}
+
 .po-footer {
   display: flex;
-  justify-content: flex-end; 
-  align-items: center;
-  gap: 12px; /* Grand Total aur Buttons ke beech compact gap */
+  flex-direction: column;
+  align-items: flex-end; 
+  gap: 15px;
   margin-top: 24px;
   padding-top: 18px;
-  border-top: 1px solid #e0e0e0;
+  border-top: 2px solid #f1f1f1;
+
+  .summary-area {
+    width: 300px;
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+      font-size: 15px;
+      font-weight: 500;
+    }
+  }
 
   .footer-actions {
     display: flex;
-    gap: 6px; /* Dono save buttons ke beech minimum gap */
+    gap: 10px;
   }
 }
 
 .po-grand-total {
-  font-size: 18px;
-  font-weight: 700;
-  white-space: nowrap;
+  font-size: 24px;
+  font-weight: 800;
   color: #2c3e50;
+  border-top: 1px solid #ccc;
+  margin-top: 10px;
+  padding-top: 5px;
 }
 
-.footer-actions button {
-  height: 38px !important; // Footer buttons slightly more compact
-  font-size: 14px !important;
+@media (max-width: 1024px) {
+  .item-row { grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; }
+  .form-grid { grid-template-columns: 1fr; }
 }
 
-/* ================= RESPONSIVE ================= */
-@media (max-width: 768px) {
-  .po-footer {
-    flex-direction: column;
-    gap: 15px;
-    .footer-actions {
-      width: 100%;
-      button { width: 100%; }
-    }
+@media (max-width: 600px) {
+  .item-row {
+    display: block;
+    mat-form-field { width: 100%; margin-bottom: 8px; }
+    .delete-btn { width: 100% !important; border-radius: 4px !important; }
   }
+  .po-footer { align-items: stretch; .summary-area { width: 100%; } .footer-actions { flex-direction: column; } }
 }
