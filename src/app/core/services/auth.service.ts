@@ -23,15 +23,26 @@ export class AuthService {
       dto: data
     };
 
-    console.log('[AuthService] login payload:', payload);
+    //console.log('[AuthService] login payload:', payload);
 
-    return this.http.post<LoginDto>(`${this.baseUrl}/login`, payload).pipe(
+    return this.http.post<any>(`${this.baseUrl}/login`, payload).pipe(
+      tap(res => this.storeTokens(res))
+    );
+  }
+
+  // 🔄 REFRESH TOKENS
+  refreshTokens(): Observable<any> {
+    const payload = {
+      accessToken: this.getAccessToken(),
+      refreshToken: this.getRefreshToken()
+    };
+    return this.http.post<any>(`${this.baseUrl}/refresh`, payload).pipe(
       tap(res => this.storeTokens(res))
     );
   }
 
   // 💾 STORE TOKENS
-  private storeTokens(res: any): void {
+  storeTokens(res: any): void {
     if (!res) return;
 
     console.log('[AuthService] saving tokens');
@@ -63,9 +74,8 @@ export class AuthService {
     const roles = localStorage.getItem('roles');
     if (roles) {
       const parsedRoles = JSON.parse(roles);
-      // Agar array hai ["User"], toh pehla element dein, warna string dein
       return Array.isArray(parsedRoles) ? parsedRoles[0] : parsedRoles;
     }
-    return 'User'; // Default role agar kuch na mile
+    return 'User';
   }
 }
