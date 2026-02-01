@@ -277,28 +277,26 @@ tr.expanded-row + tr.detail-row {
 /* Filter Header Layout */
 .filter-header-row {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: flex-start; /* Unified flow from left */
+  align-items: flex-end; /* Align bottom to match button and inputs */
   padding: 16px;
   background-color: #ffffff;
   border-bottom: 1px solid #e2e8f0;
   gap: 15px;
-  flex-wrap: wrap; /* Tablet/Mobile responsive ke liye */
+  flex-wrap: nowrap; /* Force single line on desktop */
 }
 
 /* Search Box Container */
 .search-container {
-  flex: 1;
-  min-width: 250px;
-  max-width: 400px;
+  flex: 0 1 300px; /* Fixed but flexible growth */
 }
 
 /* Date Range Container */
 .date-range-container {
   display: flex;
-  align-items: center;
+  align-items: flex-end; /* Align with search box and button */
   gap: 12px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 /* Material Form Field Customization */
@@ -323,16 +321,29 @@ tr.expanded-row + tr.detail-row {
   .filter-header-row {
     flex-direction: column;
     align-items: stretch;
+    gap: 12px;
+    padding: 12px;
   }
 
   .search-container, 
   .date-range-container {
     max-width: 100%;
     width: 100%;
+    flex: none !important; /* Reset flex-basis (height in column) */
+    margin-bottom: 0 !important;
   }
 
   .date-range-container {
     flex-direction: column;
+    gap: 8px; /* Reduced gap from 12px */
+  }
+
+  ::ng-deep .filter-header-row .mat-mdc-form-field {
+    margin-bottom: 0 !important;
+  }
+
+  ::ng-deep .filter-header-row .mat-mdc-form-field-subscript-wrapper {
+    display: none !important; /* Completely remove subscript space in mobile */
   }
 
   .filter-btn {

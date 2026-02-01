@@ -57,7 +57,7 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
-    
+
     // Initializing data stream with filters
     setTimeout(() => {
       merge(this.sort.sortChange, this.paginator.page)
