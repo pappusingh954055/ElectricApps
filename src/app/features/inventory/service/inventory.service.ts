@@ -136,15 +136,16 @@ export class InventoryService {
     saveGRN(payload: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/GRN/Save`, payload);
     }
-
     getCurrentStock(
         sortField: string = '',
         sortOrder: string = '',
         pageIndex: number = 0,
         pageSize: number = 10,
-        search: string = ''
+        search: string = '',
+        startDate: Date | null = null, // Naya Parameter
+        endDate: Date | null = null    // Naya Parameter
     ): Observable<any> {
-        // Query parameters build karein [cite: 2026-01-22]
+        // 1. Query parameters build karein
         let params = new HttpParams()
             .set('sortField', sortField)
             .set('sortOrder', sortOrder)
@@ -152,10 +153,18 @@ export class InventoryService {
             .set('pageSize', pageSize.toString())
             .set('search', search);
 
-        // Note: Ab return type StockSummary[] se badal kar 'any' ya ek specific Paged DTO hoga [cite: 2026-01-22]
+        // 2. Date filters add karein agar user ne select kiye hain
+        if (startDate) {
+            // ISO string format (YYYY-MM-DD) bhej rahe hain taaki C# easily parse kar le
+            params = params.set('startDate', startDate.toISOString());
+        }
+        if (endDate) {
+            params = params.set('endDate', endDate.toISOString());
+        }
+
+        // 3. API call [cite: 2026-01-22]
         return this.http.get<any>(`${this.apiUrl}/stock/current-stock`, { params });
     }
-
     /**
    * GRN List fetch karne ke liye (with Paging, Sorting, Searching)
    *
@@ -189,5 +198,13 @@ export class InventoryService {
     getPriceListItems(priceListId: string): Observable<PriceListItemDto[]> {
         // Ye API wahi DTO return karegi jo humne abhi C# mein banaya hai [cite: 2026-01-22]
         return this.http.get<PriceListItemDto[]>(`${this.apiUrl}/pricelists/price-list-items/${priceListId}`);
+    }
+
+    downloadStockReport(productIds: string[]): Observable<Blob> {
+        const url = `${this.apiUrl}/Stock/ExportExcel`;
+
+        return this.http.post(url, productIds, {
+            responseType: 'blob' // Yeh bilkul sahi hai file download ke liye
+        });
     }
 }

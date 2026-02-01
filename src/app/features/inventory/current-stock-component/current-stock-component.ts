@@ -9,16 +9,16 @@ import { Router } from '@angular/router';
 import { merge, of } from 'rxjs';
 import { startWith, switchMap, map, catchError } from 'rxjs/operators';
 import { SelectionModel } from '@angular/cdk/collections';
-// Animation imports for smooth expansion [cite: 2026-01-31]
+// Animation imports for smooth expansion
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-current-stock-component',
   standalone: true,
-  imports: [MaterialModule, CommonModule],
+  imports: [MaterialModule, CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './current-stock-component.html',
   styleUrl: './current-stock-component.scss',
-  // Added row expansion animation [cite: 2026-01-31]
   animations: [
     trigger('detailExpand', [
       state('collapsed', style({ height: '0px', minHeight: '0' })),
@@ -28,11 +28,10 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
   ],
 })
 export class CurrentStockComponent implements OnInit, AfterViewInit {
-  // Column definitions kept as per your logic [cite: 2026-01-31]
   displayedColumns: string[] = ['select', 'productName', 'totalReceived', 'totalRejected', 'availableStock', 'unitRate', 'actions'];
   stockDataSource = new MatTableDataSource<any>([]);
 
-  // State to track which row is expanded [cite: 2026-01-31]
+  selectedProductIds: number[] = [];
   expandedElement: any | null;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -45,6 +44,10 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
   searchValue: string = '';
   lastpurchaseOrderId!: number;
 
+  searchTerm: string = '';
+  startDate: Date | null = null;
+  endDate: Date | null = null;
+
   constructor(private inventoryService: InventoryService, private router: Router,
     private cdr: ChangeDetectorRef) { }
 
@@ -54,25 +57,14 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
+    
+    // Initializing data stream with filters
     setTimeout(() => {
       merge(this.sort.sortChange, this.paginator.page)
         .pipe(
           startWith({}),
           switchMap(() => {
-            this.isLoadingResults = true;
-            this.cdr.detectChanges();
-            return this.inventoryService.getCurrentStock(
-              this.sort.active,       // sortField
-              this.sort.direction,    // sortOrder
-              this.paginator.pageIndex,
-              this.paginator.pageSize,
-              this.searchValue
-            ).pipe(
-              catchError(() => {
-                this.isLoadingResults = false;
-                return of(null);
-              })
-            );
+            return this.fetchDataStream();
           }),
           map(data => {
             this.isLoadingResults = false;
@@ -81,33 +73,65 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
             return data.items;
           })
         ).subscribe(items => {
-          if (items) {
-            if (items.length > 0) {
-              this.lastpurchaseOrderId = items[0].lastPurchaseOrderId;
-              console.log('items', items);
-            }
-
-            // Map including the new history from backend [cite: 2026-01-31]
-            const mappedData = items.map((item: any) => ({
-              productId: item.productId,
-              productName: item.productName,
-              totalReceived: item.totalReceived,
-              totalRejected: item.totalRejected,
-              availableStock: item.availableStock,
-              unit: item.unit,
-              lastRate: item.lastRate,
-              minStockLevel: item.minStockLevel,
-              history: item.history // Traceability data linked here [cite: 2026-01-31]
-            }));
-            this.cdr.detectChanges();
-            this.stockDataSource.data = mappedData;
-            this.updateSummary(mappedData);
-          }
+          this.handleDataUpdate(items);
         });
     }, 0);
   }
 
-  // Row toggle helper [cite: 2026-01-31]
+  // Helper to fetch data using all current filters
+  private fetchDataStream() {
+    this.isLoadingResults = true;
+    this.cdr.detectChanges();
+    return this.inventoryService.getCurrentStock(
+      this.sort.active,
+      this.sort.direction,
+      this.paginator.pageIndex,
+      this.paginator.pageSize,
+      this.searchValue, // Current Global Search
+      this.startDate,   // New Date Filter
+      this.endDate      // New Date Filter
+    ).pipe(
+      catchError(() => {
+        this.isLoadingResults = false;
+        return of(null);
+      })
+    );
+  }
+
+  // Unified data handler to keep code clean
+  private handleDataUpdate(items: any) {
+    if (items) {
+      if (items.length > 0) {
+        this.lastpurchaseOrderId = items[0].lastPurchaseOrderId;
+      }
+      const mappedData = items.map((item: any) => ({
+        productId: item.productId,
+        productName: item.productName,
+        totalReceived: item.totalReceived,
+        totalRejected: item.totalRejected,
+        availableStock: item.availableStock,
+        unit: item.unit,
+        lastRate: item.lastRate,
+        minStockLevel: item.minStockLevel,
+        history: item.history
+      }));
+      this.stockDataSource.data = mappedData;
+      this.updateSummary(mappedData);
+    }
+    this.cdr.detectChanges();
+  }
+
+  // Triggered from HTML Apply Button
+  applyDateFilter() {
+    this.paginator.pageIndex = 0;
+    this.fetchDataStream().subscribe(data => {
+      if (data) {
+        this.resultsLength = data.totalCount;
+        this.handleDataUpdate(data.items);
+      }
+    });
+  }
+
   toggleRow(element: any) {
     this.expandedElement = (this.expandedElement === element) ? null : element;
     this.cdr.detectChanges();
@@ -162,15 +186,45 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
 
   onBulkRefill() {
     if (!this.selection.hasValue()) return;
-
     const refillItems = this.selection.selected.map(item => ({
       productId: item.productId,
       productName: item.productName,
     }));
     this.cdr.detectChanges();
-
     this.router.navigate(['/app/inventory/polist/add'], {
       state: { refillItems: refillItems }
+    });
+  }
+
+  onCheckboxChange(productId: number, event: any) {
+    if (event.checked) {
+      this.selectedProductIds.push(productId);
+    } else {
+      this.selectedProductIds = this.selectedProductIds.filter(id => id !== productId);
+    }
+  }
+
+  exportSelected() {
+    const selectedIds = this.selection.selected.map(row => row.productId);
+    if (selectedIds.length === 0) {
+      console.warn("No items selected for export");
+      return;
+    }
+    this.inventoryService.downloadStockReport(selectedIds).subscribe({
+      next: (blob) => {
+        const objectUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = objectUrl;
+        const dateStr = new Date().toISOString().split('T')[0];
+        a.download = `Stock_Report_${dateStr}.xlsx`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(objectUrl);
+      },
+      error: (err) => {
+        console.error("Download failed:", err);
+      }
     });
   }
 }
