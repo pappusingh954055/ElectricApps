@@ -227,4 +227,10 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
       }
     });
   }
+
+  isLowStock(element: any): boolean {
+    // Agar backend value 0 hai ya null, toh default 5 pics par alert trigger hoga
+    const threshold = element.minStockLevel > 0 ? element.minStockLevel : 5;
+    return element.availableStock <= threshold;
+  }
 }

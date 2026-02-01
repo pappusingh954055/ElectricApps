@@ -153,6 +153,7 @@ tr.expanded-row + tr.detail-row {
   font-size: 11px;
   border: 1px solid #dcfce7;
   display: inline-block;
+  white-space: nowrap; /* Mobile par text break nahi hoga */
 
   &.low-stock {
     background: #fffbeb;
@@ -357,4 +358,19 @@ tr.expanded-row + tr.detail-row {
   border-left: 4px solid #3f51b5;
   margin: 10px 16px;
   border-radius: 4px;
+}
+
+.stock-badge.low-stock {
+ background: #fee2e2 !important; 
+  color: #dc2626 !important;     
+  border: 1px solid #fecaca !important;
+  cursor: help; /* Mouse le jane par question mark dikhega */
+}
+
+/* Tooltip style customisation (Optional) */
+::ng-deep .mat-mdc-tooltip .mdc-tooltip__surface {
+  background-color: #334155 !important;
+  color: #ffffff !important;
+  font-size: 12px !important;
+  padding: 8px 12px !important;
 }

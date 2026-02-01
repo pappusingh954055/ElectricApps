@@ -89,14 +89,17 @@
       </td>
     </ng-container>
 
-    <ng-container matColumnDef="availableStock">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header> Current Stock </th>
-      <td mat-cell *matCellDef="let element">
-        <span class="stock-badge" [class.low-stock]="element.availableStock <= element.minStockLevel">
-          {{element.availableStock}} {{element.unit}}
-        </span>
-      </td>
-    </ng-container>
+  <ng-container matColumnDef="availableStock">
+  <th mat-header-cell *matHeaderCellDef mat-sort-header> Current Stock </th>
+  <td mat-cell *matCellDef="let element">
+    <span class="stock-badge" 
+          [class.low-stock]="isLowStock(element)"
+          [matTooltip]="isLowStock(element) ? 'Critical: Low Stock Level! Please Refill.' : 'Stock Level Normal'"
+          matTooltipPosition="above">
+      {{element.availableStock}} {{element.unit}}
+    </span>
+  </td>
+</ng-container>
 
     <ng-container matColumnDef="unitRate">
       <th mat-header-cell *matHeaderCellDef mat-sort-header> Value (Avg) </th>
