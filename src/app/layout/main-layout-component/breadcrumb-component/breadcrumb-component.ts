@@ -36,7 +36,8 @@ export class BreadcrumbComponent {
     const child = children[0];
     const label = child.snapshot.data['breadcrumb'];
 
-    if (label) {
+    // 🛡️ Prevent duplicate labels (common in nested routes without own breadcrumbs)
+    if (label && crumbs[crumbs.length - 1] !== label) {
       crumbs.push(label);
     }
 

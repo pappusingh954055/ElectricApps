@@ -26,7 +26,7 @@ export class MenuService {
             route: '/app/inventory/solist/add'
           },
           {
-            label: 'GRN LIST',
+            label: 'GRN List',
             icon: 'list',
             route: '/app/inventory/grn-list'
           },
