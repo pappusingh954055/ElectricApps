@@ -16,49 +16,68 @@
   box-sizing: border-box;
 }
 
-/* Header Section: Reduced margins [cite: 2026-01-22] */
+/* Header Section: Improved Spacing */
 .header-container {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  flex-shrink: 0; /* Header size fixed */
+  align-items: flex-end;
+  padding: 8px 0;
+  margin-bottom: 24px;
+  flex-shrink: 0;
 }
 
 .title-section h1 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #333;
+  margin: 0 0 4px 0;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
 }
 
-.text-muted { font-size: 11px; color: #777; margin: 0; }
+.text-muted { 
+  font-size: 13px; 
+  color: #64748b; 
+  margin: 0; 
+}
 
-/* Action Group Alignment [cite: 2026-01-22] */
+/* Action Group Alignment */
 .action-section {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-/* Search Box: Dense look [cite: 2026-01-22] */
-.search-box {
-  width: 240px;
-  transform: scale(0.9);
-  transform-origin: right center;
+/* Search Box: Standardized Height */
+::ng-deep .search-box {
+  width: 320px;
+  
+  .mat-mdc-form-field-wrapper {
+    padding-bottom: 0 !important;
+  }
+  
+  .mat-mdc-form-field-subscript-wrapper {
+    display: none !important;
+  }
+
+  .mat-mdc-text-field-wrapper {
+    height: 48px !important;
+    background-color: #ffffff !important;
+  }
 }
 
 .add-button {
-  height: 32px !important;
-  padding: 0 12px !important;
-  font-size: 12px !important;
-  border-radius: 4px !important;
+  height: 48px !important;
+  padding: 0 24px !important;
+  margin-top: 2px; /* Small nudge to align with search field baseline */
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
 }
 
-/* TABLE COMPACT DESIGN [cite: 2026-01-22] */
+/* TABLE COMPACT DESIGN */
 .mat-mdc-header-row {
-  height: 36px !important;
-  background-color: #eaeff5 !important;
+  height: 44px !important;
+  background-color: #f8fafc !important;
 }
 
 .mat-mdc-header-cell {
