@@ -52,16 +52,20 @@ export class ProductService {
         );
     }
 
+    getById(id: string): Observable<Product> {
+        return this.api.get<Product>(`products/${id}`);
+    }
+
     deleteMany(ids: string[]): Observable<any> {
         return this.api.post<any>(`products/bulk-delete`, ids);
     }
 
     searchProductsData(term: string): Observable<any[]> {
-    // API call jo product name ya code ke base par search karegi
-    return this.api.get<any[]>(`${this.url}/search?term=${term}`);
-  }
+        // API call jo product name ya code ke base par search karegi
+        return this.api.get<any[]>(`${this.url}/search?term=${term}`);
+    }
 
-   public toQueryString(request: GridRequest): string {
+    public toQueryString(request: GridRequest): string {
         const query: string[] = [];
 
         query.push(`pageNumber=${request.pageNumber}`);

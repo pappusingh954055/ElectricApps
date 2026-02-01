@@ -16,6 +16,7 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 import { GridColumn } from '../../../../shared/models/grid-column.model';
 import { GridRequest } from '../../../../shared/models/grid-request.model';
 import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
+import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 
 
 
@@ -115,9 +116,9 @@ export class SubcategoryList implements OnInit, OnChanges {
           next: res => {
             this.loading = false;
             this.cdr.detectChanges();
-            this.dialog.open(ApiResultDialog, {
+            this.dialog.open(StatusDialogComponent, {
               data: {
-                success: true,
+                isSuccess: true,
                 message: res.message
               }
             });
@@ -130,9 +131,9 @@ export class SubcategoryList implements OnInit, OnChanges {
             const message =
               err?.error?.message || 'Unable to delete sub category';
 
-            this.dialog.open(ApiResultDialog, {
+            this.dialog.open(StatusDialogComponent, {
               data: {
-                success: false,
+                isSuccess: false,
                 message
               }
             });
@@ -175,9 +176,9 @@ export class SubcategoryList implements OnInit, OnChanges {
           this.grid.clearSelection();
 
           this.loading = false;
-          this.dialog.open(ApiResultDialog, {
+          this.dialog.open(StatusDialogComponent, {
             data: {
-              success: true,
+              isSuccess: true,
               message: res.message
             }
           });
@@ -190,9 +191,9 @@ export class SubcategoryList implements OnInit, OnChanges {
           const message =
             err?.error?.message || 'Unable to delete price list';
 
-          this.dialog.open(ApiResultDialog, {
+          this.dialog.open(StatusDialogComponent, {
             data: {
-              success: false,
+              isSuccess: false,
               message
             }
           });

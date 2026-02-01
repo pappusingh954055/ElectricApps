@@ -11,6 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { GridRequest } from '../../../../shared/models/grid-request.model';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
+import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 
 
 @Component({
@@ -47,20 +48,20 @@ export class ProductList implements OnInit {
     { field: 'subcategoryName', header: 'Subcategory', sortable: true, width: 140, visible: true },
     { field: 'productName', header: 'Product', sortable: true, width: 150, visible: true },
     { field: 'sku', header: 'SKU', sortable: true, width: 75, visible: true },
-    { field: 'unit', header: 'Unit',sortable: true, width: 75, visible: true },
+    { field: 'unit', header: 'Unit', sortable: true, width: 75, visible: true },
 
-    { field: 'defaultGst', header: 'GST %',sortable: true, width: 75, visible: true },
+    { field: 'defaultGst', header: 'GST %', sortable: true, width: 75, visible: true },
     { field: 'hsnCode', header: 'HSN Code', sortable: true, width: 80, visible: true },
-    { field: 'minStock', header: 'Min Stock',sortable: true, width: 80, visible: true },
+    { field: 'minStock', header: 'Min Stock', sortable: true, width: 80, visible: true },
 
-    { field: 'trackinventory',sortable: true, width: 75, visible: true, header: 'Status', cell: (row: any) => row.trackinventory ? 'Yes' : 'No' },
+    { field: 'trackInventory', sortable: true, width: 75, visible: true, header: 'Track Inv', cell: (row: any) => row.trackInventory ? 'Yes' : 'No' },
     {
-      field: 'createdOn',
+      field: 'createdAt',
       header: 'Created On',
       sortable: true, width: 120, visible: true,
       cell: (row: any) =>
-        row.createdOn ?
-          this.datePipe.transform(row.createdOn, 'dd-MMM-yyyy') : '-'
+        row.createdAt ?
+          this.datePipe.transform(row.createdAt, 'dd-MMM-yyyy') : '-'
     }
   ];
 
@@ -117,9 +118,9 @@ export class ProductList implements OnInit {
           next: res => {
             this.loading = false;
 
-            this.dialog.open(ApiResultDialog, {
+            this.dialog.open(StatusDialogComponent, {
               data: {
-                success: true,
+                isSuccess: true,
                 message: res.message
               }
             });
@@ -132,9 +133,9 @@ export class ProductList implements OnInit {
             const message =
               err?.error?.message || 'Unable to delete Price list';
 
-            this.dialog.open(ApiResultDialog, {
+            this.dialog.open(StatusDialogComponent, {
               data: {
-                success: false,
+                isSuccess: false,
                 message
               }
             });
@@ -174,9 +175,9 @@ export class ProductList implements OnInit {
           this.grid.clearSelection();
 
           this.loading = false;
-          this.dialog.open(ApiResultDialog, {
+          this.dialog.open(StatusDialogComponent, {
             data: {
-              success: true,
+              isSuccess: true,
               message: res.message
             }
           });
@@ -189,9 +190,9 @@ export class ProductList implements OnInit {
           const message =
             err?.error?.message || 'Unable to delete product list';
 
-          this.dialog.open(ApiResultDialog, {
+          this.dialog.open(StatusDialogComponent, {
             data: {
-              success: false,
+              isSuccess: false,
               message
             }
           });

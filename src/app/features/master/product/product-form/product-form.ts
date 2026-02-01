@@ -6,7 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../service/product.service';
 import { ProductLookUpService } from '../service/product.lookup.sercice';
 import { FormFooter } from '../../../shared/form-footer/form-footer';
-import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
+import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { Product } from '../model/product.model';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -29,7 +29,7 @@ export class ProductForm implements OnInit {
   productsForm!: FormGroup;
   loading = false;
   isEditMode = false;
-  productId!: number;
+  productId: string | null = null;
 
   categories: any[] = [];
   subcategories: any[] = []; // Yeh dynamic filter hogi category ke base par
@@ -37,6 +37,56 @@ export class ProductForm implements OnInit {
   ngOnInit() {
     this.createForm();
     this.loadInitialLookups();
+
+    this.productId = this.route.snapshot.paramMap.get('id');
+    if (this.productId) {
+      this.isEditMode = true;
+      this.loadProduct();
+    }
+  }
+
+  loadProduct() {
+    if (!this.productId) return;
+    this.loading = true;
+    this.productService.getById(this.productId!).subscribe({
+      next: (res: any) => {
+        // Load subcategories first, then patch form
+        this.productLukupService
+          .getSubcategoriesByCategory(res.categoryId.toString())
+          .subscribe({
+            next: (data: any) => {
+              this.subcategories = data;
+              this.productsForm.patchValue({
+                categoryId: res.categoryId,
+                subcategoryId: res.subcategoryId,
+                productName: res.name || res.productName,
+                sku: res.code || res.sku,
+                brand: res.brand,
+                unit: res.unit,
+                hsnCode: res.hsnCode,
+                basePurchasePrice: res.basePurchasePrice,
+                mrp: res.mrp,
+                defaultGst: res.defaultGst,
+                trackInventory: res.trackInventory,
+                isActive: res.isActive,
+                minStock: res.minStock,
+                description: res.description
+              });
+              this.loading = false;
+              this.cdr.detectChanges();
+            },
+            error: err => {
+              this.loading = false;
+              console.error('Failed to load subcategories for product', err);
+            }
+          });
+      },
+      error: (err) => {
+        this.loading = false;
+        this.cdr.detectChanges();
+        console.error('Failed to load product', err);
+      }
+    });
   }
 
   createForm() {
@@ -73,7 +123,7 @@ export class ProductForm implements OnInit {
   onCategoryChange(categoryId: number): void {
     // Purana selection aur list clear karo
     this.subcategories = [];
-    this.productsForm.get('subcategoryid')?.setValue(null);
+    this.productsForm.get('subcategoryId')?.setValue(null);
 
     if (!categoryId) return;
 
@@ -102,26 +152,32 @@ export class ProductForm implements OnInit {
     this.loading = true;
 
     const currentUserId = localStorage.getItem('userId') || '';
-    const productsData = { ...this.productsForm.value, createdby: currentUserId };
+    const productsData = this.mapToProducts(this.productsForm.value);
 
-    //const payload = this.mapToProducts(productsData);
+    if (this.isEditMode && this.productId) {
+      productsData.id = this.productId;
+      productsData.updatedby = currentUserId; // Required for updates
+    } else {
+      productsData.createdby = currentUserId; // Required for creation
+    }
 
-    console.log('Payload to be sent:', productsData);
+    const request = this.isEditMode && this.productId
+      ? this.productService.update(this.productId, productsData)
+      : this.productService.create(productsData);
 
-    this.productService.create(productsData)
-      .subscribe({
-        next: (res) => {
-          this.showDialog(true, res.message || 'Product saved successfully');
-        },
-        error: (err) => {
-          this.showDialog(false, err.error?.message ?? 'Something went wrong');
-        }
-      });
+    request.subscribe({
+      next: (res) => {
+        this.showDialog(true, res.message || (this.isEditMode ? 'Product updated successfully' : 'Product saved successfully'));
+      },
+      error: (err) => {
+        this.showDialog(false, err.error?.message ?? 'Something went wrong');
+      }
+    });
   }
 
   private showDialog(isSuccess: boolean, msg: string) {
-    this.dialog.open(ApiResultDialog, {
-      data: { success: isSuccess, message: msg }
+    this.dialog.open(StatusDialogComponent, {
+      data: { isSuccess: isSuccess, message: msg }
     }).afterClosed().subscribe(() => {
       this.loading = false;
       if (isSuccess) {
@@ -136,22 +192,20 @@ export class ProductForm implements OnInit {
   }
 
   // 🔹 Step 3: Complete Mapping for Backend
-  private mapToProducts(formValue: any): Product {
-
+  private mapToProducts(formValue: any): any {
     return {
-
-      categoryId: formValue.categoryid,
-      subcategoryId: formValue.subcategoryid,
-      productName: formValue.productname?.trim(),
-      sku: formValue.sku?.trim(),
+      categoryId: formValue.categoryId,
+      subcategoryId: formValue.subcategoryId,
+      productName: formValue.productName?.trim(), // Backend expects productName
+      sku: formValue.sku?.trim(),                // Backend expects sku
       brand: formValue.brand?.trim(),
       unit: formValue.unit,
-      hsnCode: formValue.hsncode?.trim(),
-      basePurchasePrice: Number(formValue.basepurchaseprice),
+      hsnCode: formValue.hsnCode?.trim(),
+      basePurchasePrice: Number(formValue.basePurchasePrice),
       mrp: Number(formValue.mrp),
-      defaultGst: Number(formValue.defaultgst),
-      minStock: Number(formValue.minstock),
-      trackInventory: Boolean(formValue.tracknventory),
+      defaultGst: Number(formValue.defaultGst),
+      minStock: Number(formValue.minStock),
+      trackInventory: Boolean(formValue.trackInventory),
       isActive: Boolean(formValue.isActive),
       description: formValue.description?.trim(),
     };

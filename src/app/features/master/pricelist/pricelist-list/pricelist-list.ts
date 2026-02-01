@@ -12,6 +12,7 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
 import { PricelistForm } from '../pricelist-form/pricelist-form';
 import { MatDrawer } from '@angular/material/sidenav';
+import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 
 @Component({
   selector: 'app-pricelist-list',
@@ -106,15 +107,15 @@ export class PricelistList implements OnInit {
       this.service.deletePriceList(row.id).subscribe({
         next: (res) => {
           this.loading = false;
-          this.dialog.open(ApiResultDialog, {
-            data: { success: true, message: 'Price list deleted successfully' }
+          this.dialog.open(StatusDialogComponent, {
+            data: { isSuccess: true, message: 'Price list deleted successfully' }
           });
           this.loadPriceLists(this.lastRequest);
         },
         error: err => {
           this.loading = false;
-          this.dialog.open(ApiResultDialog, {
-            data: { success: false, message: err?.error?.message || 'Delete failed' }
+          this.dialog.open(StatusDialogComponent, {
+            data: { isSuccess: false, message: err?.error?.message || 'Delete failed' }
           });
         }
       });
