@@ -33,7 +33,7 @@ export class CategoryService {
 
     getAll(): Observable<Category[]> {
         return this.api.get('categories');
-    }   
+    }
 
     // getPaged(request: GridRequest): Observable<GridResponse<CategoryGridDto>> {
     //     return this.api.get<GridResponse<CategoryGridDto>>(
@@ -41,9 +41,13 @@ export class CategoryService {
     //     );
     // }
 
-      getPaged(request: GridRequest): Observable<GridResponse<CategoryGridDto>> {
-            return this.api.post<GridResponse<CategoryGridDto>>(
-                `categories/paged`, request
-            );
-        }
+    getPaged(request: GridRequest): Observable<GridResponse<CategoryGridDto>> {
+        return this.api.post<GridResponse<CategoryGridDto>>(
+            `categories/paged`, request
+        );
+    }
+
+    getById(id: string): Observable<Category> {
+        return this.api.get<Category>(`categories/${id}`);
+    }
 }

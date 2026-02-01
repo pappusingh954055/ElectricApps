@@ -25,7 +25,7 @@ export class SubCategoryService {
     delete(id: string): Observable<any> {
         return this.api.delete(`subcategories/${id}`);
     }
-   // 🔹 Bulk delete (THIS IS WHAT YOU ASKED)
+    // 🔹 Bulk delete (THIS IS WHAT YOU ASKED)
     deleteMany(ids: string[]): Observable<any> {
         return this.api.post<any>(`subcategories/bulk-delete`, ids);
     }
@@ -39,12 +39,10 @@ export class SubCategoryService {
             `subcategories/paged`, request
         );
     }
-    
-     //its also good but better is above 
-    // getPaged(request: GridRequest): Observable<GridResponse<SubCategory>> {
-    // return this.api.get<GridResponse<SubCategory>>(
-    //     `subcategories/paged?${this.api.toQueryString(request)}`
-    // );
+
+    getById(id: string): Observable<SubCategory> {
+        return this.api.get<SubCategory>(`subcategories/${id}`);
+    }
 }
 
 

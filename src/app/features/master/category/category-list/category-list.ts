@@ -47,6 +47,7 @@ export class CategoryList implements OnInit {
     { field: 'categoryName', header: 'Category', sortable: true, width: 300, visible: true },
     { field: 'categoryCode', header: 'Code', sortable: true, width: 250, visible: true },
     { field: 'defaultGst', header: 'GST %', sortable: true, width: 150, visible: true },
+    { field: 'description', header: 'Description', sortable: true, width: 200, visible: true },
     {
       field: 'isActive',
       header: 'Status',

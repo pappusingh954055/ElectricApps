@@ -1,21 +1,18 @@
-<!-- <mat-card> -->
+
 
   <app-server-datagrid [columns]="columns" [data]="data" 
     gridKey="subcategory-grid"
     [totalCount]="totalCount" [loading]="loading"
-    (rowClick)="onEdit($event)"
     (loadData)="loadSubCategories($event)" 
     (selectionChange)="onSelectionChange($event)" 
-    (edit)="onEdit($event)"
+    (editAction)="onEdit($event)"
     (delete)="deleteCategory($event[0])">
   </app-server-datagrid>
 
-  <!-- <mat-card-actions> -->
+
     <button mat-flat-button style="margin-right: 10px; margin-top: 10px;" class="bg-azure" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
       Delete Selected
     </button>
        <button mat-flat-button style="margin-top: 10px;" class="bg-azure"  routerLink="/app/master/subcategories/add">
       + Add Subcategory
     </button>
-  <!-- </mat-card-actions>
-</mat-card> -->

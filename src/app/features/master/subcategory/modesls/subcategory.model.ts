@@ -1,10 +1,10 @@
 export interface SubCategory {
-  id?: number;
-  categoryid?: string;          // optional for create
-  categoryName?: string;          // optional for create
-  subcategorycode: string;
-  subcategoryname: string;
-  defaultgst: number;
+  id?: string;
+  categoryId?: string;
+  categoryName?: string;
+  subcategoryCode: string;
+  subcategoryName: string;
+  defaultGst: number;
   description?: string;
-  isactive: boolean;
+  isActive: boolean;
 }

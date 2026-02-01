@@ -10,7 +10,8 @@ import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-di
 import { Category } from '../models/category.model';
 
 import { FormFooter } from '../../../shared/form-footer/form-footer';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 
 
 @Component({
@@ -22,18 +23,20 @@ import { Router } from '@angular/router';
 export class CategoryForm implements OnInit {
   categoryForm!: FormGroup;
   loading = false;
-
-  mapToCategory!: Category;
+  categoryId: string | null = null;
 
   constructor(private fb: FormBuilder, private dialog: MatDialog,
-    private cdr: ChangeDetectorRef, private zone: NgZone) { }
+    private cdr: ChangeDetectorRef, private zone: NgZone,
+    private route: ActivatedRoute, private router: Router) { }
 
   readonly categorySvc = inject(CategoryService)
 
-  readonly router = inject(Router);
-
   ngOnInit(): void {
     this.createForm();
+    this.categoryId = this.route.snapshot.paramMap.get('id');
+    if (this.categoryId) {
+      this.loadCategory();
+    }
   }
 
   createForm() {
@@ -47,61 +50,66 @@ export class CategoryForm implements OnInit {
     this.cdr.detectChanges();
   }
 
+  loadCategory() {
+    if (!this.categoryId) return;
+    this.loading = true;
+    this.categorySvc.getById(this.categoryId).subscribe({
+      next: (res) => {
+        this.categoryForm.patchValue(res);
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
   onSave(): void {
     if (this.categoryForm.invalid) return;
 
     this.loading = true;
 
-    this.mapToCategory = {
-      categoryName: this.categoryForm.value.categoryName,
-      categoryCode: this.categoryForm.value.categoryCode,
-      defaultGst: this.categoryForm.value.defaultGst,
-      description: this.categoryForm.value.description,
-      isActive: this.categoryForm.value.isActive
+    const payload: Category = {
+      ...this.categoryForm.value,
+      id: this.categoryId
     };
 
-    this.categorySvc.create(this.mapToCategory)
-      .subscribe({
-        next: (res) => {
+    const request = this.categoryId
+      ? this.categorySvc.update(this.categoryId, payload)
+      : this.categorySvc.create(payload);
+
+    request.subscribe({
+      next: (res) => {
+        this.loading = false;
+        this.dialog.open(StatusDialogComponent, {
+          data: {
+            isSuccess: true,
+            message: res.message
+          }
+        }).afterClosed().subscribe(() => {
+          this.cdr.detectChanges();
+          this.router.navigate(['/app/master/categories']);
+        });
+      },
+      error: (err) => {
+        this.dialog.open(StatusDialogComponent, {
+          data: {
+            isSuccess: false,
+            message: err.error?.message ?? 'Something went wrong'
+          }
+        }).afterClosed().subscribe(() => {
           this.loading = false;
-          this.dialog.open(ApiResultDialog, {
-            data: {
-              success: true,
-              message: res.message
-            }
-          }).afterClosed().subscribe(() => {
-            this.cdr.detectChanges();
-            this.router.navigate(['/app/master/categories']);
-          });
-        },
-        error: (err) => {
-          this.dialog.open(ApiResultDialog, {
-            data: {
-              success: false,
-              message: err.error?.message ?? 'Something went wrong'
-            }
-          }).afterClosed().subscribe(() => {
-            this.loading = false;
-            this.cdr.detectChanges();
-          });
-        }
-      });
+          this.cdr.detectChanges();
+        });
+      }
+    });
   }
 
 
   onCancel() {
     this.router.navigate(['/app/master/categories']);
-  }
-
-  // 🔹 SINGLE RESPONSIBILITY: MAPPING
-  private mapToCategories(formValue: any): Category {
-    return {
-      categoryName: formValue.CategoryName,
-      categoryCode: formValue.CategoryCode,
-      defaultGst: Number(formValue.DefaultGst),
-      description: formValue.Description?.trim(),
-      isActive: Boolean(formValue.IsActive)
-    };
   }
 
 }

@@ -1,5 +1,5 @@
 <mat-card>
-  <mat-card-title>Category</mat-card-title>
+  <mat-card-title>{{ categoryId ? 'Edit' : 'Add' }} Category</mat-card-title>
 
   <mat-card-content>
 
@@ -33,7 +33,7 @@
   </mat-card-content>
 
   <!-- ✅ FOOTER -->
-  <form-footer [loading]="loading" (save)="onSave()" (cancel)="onCancel()">
+  <form-footer [loading]="loading" [saveLabel]="categoryId ? 'Update' : 'Save'" (save)="onSave()" (cancel)="onCancel()">
   </form-footer>
 
 </mat-card>

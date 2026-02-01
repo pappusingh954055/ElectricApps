@@ -10,10 +10,11 @@ import { MatDialog } from '@angular/material/dialog';
 import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
 
 import { CategoryService } from '../../category/services/category.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SubCategoryService } from '../services/subcategory.service';
 import { FormFooter } from '../../../shared/form-footer/form-footer';
 import { Category, CategoryDropdown } from '../../category/models/category.model';
+import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 
 
 
@@ -31,8 +32,12 @@ export class SubcategoryForm implements OnInit {
 
   mapToSubCategory!: SubCategory;
 
+  isEditMode = false;
+  subCategoryId: string | null = null;
+
   constructor(private fb: FormBuilder, private dialog: MatDialog,
-    private cdr: ChangeDetectorRef, private zone: NgZone) { }
+    private cdr: ChangeDetectorRef, private zone: NgZone,
+    private route: ActivatedRoute) { }
 
   readonly subcategorySvc = inject(SubCategoryService)
 
@@ -45,14 +50,52 @@ export class SubcategoryForm implements OnInit {
 
 
   ngOnInit(): void {
+    this.detectMode();
     this.loadCategories();
+    this.initForm();
+  }
+
+  private detectMode(): void {
+    this.subCategoryId = this.route.snapshot.paramMap.get('id');
+    this.isEditMode = !!this.subCategoryId;
+  }
+
+  private initForm(): void {
     this.subcategoryForm = this.fb.group({
-      categoryid: ['', Validators.required],
-      subcategoryname: ['', Validators.required],
-      subcategorycode: [''],
-      defaultgst: [0, [Validators.min(0), Validators.max(100)]],
+      categoryId: ['', Validators.required],
+      subcategoryName: ['', Validators.required],
+      subcategoryCode: [''],
+      defaultGst: [0, [Validators.min(0), Validators.max(100)]],
       description: [''],
-      isactive: [true]
+      isActive: [true]
+    });
+
+    if (this.isEditMode && this.subCategoryId) {
+      this.loadSubCategory(this.subCategoryId);
+    }
+  }
+
+  private loadSubCategory(id: string): void {
+    this.loading = true;
+    this.subcategorySvc.getById(id).subscribe({
+      next: (data) => {
+        console.log('Subcategory loaded for edit:', data);
+        this.subcategoryForm.patchValue({
+          categoryId: data.categoryId,
+          subcategoryName: data.subcategoryName,
+          subcategoryCode: data.subcategoryCode,
+          defaultGst: data.defaultGst,
+          description: data.description,
+          isActive: data.isActive
+        });
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading subcategory:', err);
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -62,33 +105,40 @@ export class SubcategoryForm implements OnInit {
     if (this.subcategoryForm.invalid) return;
 
     this.loading = true;
+    const payload = this.mapToSubCategories(this.subcategoryForm.value);
+    if (this.isEditMode && this.subCategoryId) {
+      payload.id = this.subCategoryId;
+    }
 
-    this.subcategorySvc.create(this.mapToSubCategories(this.subcategoryForm.value))
-      .subscribe({
-        next: (res) => {
-          this.dialog.open(ApiResultDialog, {
-            data: {
-              success: true,
-              message: res.message
-            }
-          }).afterClosed().subscribe(() => {
-            this.loading = false;
-            this.cdr.detectChanges();
-            this.router.navigate(['/app/master/subcategories']);
-          });
-        },
-        error: (err) => {
-          this.dialog.open(ApiResultDialog, {
-            data: {
-              success: false,
-              message: err.error?.message ?? 'Something went wrong'
-            }
-          }).afterClosed().subscribe(() => {
-            this.loading = false;
-            this.cdr.detectChanges();
-          });
-        }
-      });
+    const request = this.isEditMode && this.subCategoryId
+      ? this.subcategorySvc.update(this.subCategoryId, payload)
+      : this.subcategorySvc.create(payload);
+
+    request.subscribe({
+      next: (res) => {
+        this.dialog.open(StatusDialogComponent, {
+          data: {
+            isSuccess: true,
+            message: res.message
+          }
+        }).afterClosed().subscribe(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+          this.router.navigate(['/app/master/subcategories']);
+        });
+      },
+      error: (err) => {
+        this.dialog.open(StatusDialogComponent, {
+          data: {
+            isSuccess: false,
+            message: err.error?.message ?? 'Something went wrong'
+          }
+        }).afterClosed().subscribe(() => {
+          this.loading = false;
+          this.cdr.detectChanges();
+        });
+      }
+    });
   }
 
 
@@ -98,14 +148,14 @@ export class SubcategoryForm implements OnInit {
 
 
   // 🔹 SINGLE RESPONSIBILITY: MAPPING
-  private mapToSubCategories(formValue: any): SubCategory {
+  private mapToSubCategories(formValue: any): any {
     return {
-      categoryid: formValue.categoryid,
-      subcategoryname: formValue.subcategoryname,
-      subcategorycode: formValue.subcategorycode,
-      defaultgst: Number(formValue.defaultgst),
+      categoryId: formValue.categoryId,
+      name: formValue.subcategoryName, // API expects 'name' for save/update
+      code: formValue.subcategoryCode, // API expects 'code' for save/update
+      defaultGst: Number(formValue.defaultGst),
       description: formValue.description?.trim(),
-      isactive: Boolean(formValue.isactive)
+      isActive: Boolean(formValue.isActive)
     };
   }
 
@@ -118,15 +168,15 @@ export class SubcategoryForm implements OnInit {
     this.categoryService.getAll().subscribe({
       next: (data) => {
         this.categories = data;
-        console.log('Categories loaded:',this.categories);
+        console.log('Categories loaded:', this.categories);
         console.log(this.categories);
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        this.dialog.open(ApiResultDialog, {
+        this.dialog.open(StatusDialogComponent, {
           data: {
-            success: false,
+            isSuccess: false,
             message: err.error?.message ?? 'Something went wrong'
           }
         }).afterClosed().subscribe(() => {

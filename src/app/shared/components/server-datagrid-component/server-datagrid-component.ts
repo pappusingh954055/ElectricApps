@@ -22,7 +22,7 @@ export class ServerDatagridComponent<T> implements OnChanges, OnInit, OnDestroy 
   @Input() loading = false;
 
   @Output() loadData = new EventEmitter<GridRequest>();
-  @Output() edit = new EventEmitter<any>();
+
   @Output() delete = new EventEmitter<any[]>();
   @Output() selectionChange = new EventEmitter<any[]>();
   @Output() rowClick = new EventEmitter<any>();

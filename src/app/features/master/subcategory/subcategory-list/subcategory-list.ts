@@ -53,6 +53,7 @@ export class SubcategoryList implements OnInit, OnChanges {
     { field: 'subcategoryName', header: 'Subcategory', sortable: true, width: 300, visible: true },
     { field: 'subcategoryCode', header: 'Code', sortable: true, width: 150, visible: true },
     { field: 'defaultGst', header: 'GST %', sortable: true, width: 150, visible: true },
+    { field: 'description', header: 'Description', sortable: true, width: 150, visible: true },
     {
       field: 'isActive',
       header: 'Status',
