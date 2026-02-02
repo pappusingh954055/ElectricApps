@@ -168,4 +168,7 @@ export class SoForm implements OnInit {
       }
     });
   }
+  getStockForProduct(index: number) {
+
+  }
 }

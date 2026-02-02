@@ -52,6 +52,9 @@
                 {{ p.name }} (Stock: {{p.currentStock}})
               </mat-option>
             </mat-autocomplete>
+            <mat-hint *ngIf="items.at(i).get('productId')?.value" class="text-success font-weight-bold">
+    Available Stock: {{ getStockForProduct(i) }}
+  </mat-hint>
           </mat-form-field>
 
           <mat-form-field appearance="outline" subscriptSizing="dynamic">
