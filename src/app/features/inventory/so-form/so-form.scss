@@ -14,6 +14,32 @@ mat-card {
   margin-bottom: 12px;
 }
 
+.customer-field-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  mat-form-field {
+    flex: 1;
+  }
+  
+  .add-customer-btn {
+    margin-top: -8px;
+    color: #007bff;
+    
+    &:hover {
+      color: #0056b3;
+      background-color: rgba(0, 123, 255, 0.1);
+    }
+    
+    mat-icon {
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+  }
+}
+
 .header-right-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -81,16 +107,174 @@ mat-card {
   padding-top: 5px;
 }
 
-@media (max-width: 1024px) {
-  .item-row { grid-template-columns: 2fr 1fr 1fr 1fr; gap: 10px; }
-  .form-grid { grid-template-columns: 1fr; }
+// Tablet landscape and smaller
+@media (max-width: 1200px) {
+  .item-row {
+    grid-template-columns: 2fr 0.7fr 0.7fr 0.9fr 0.7fr 0.7fr 0.8fr 1.2fr 45px;
+    gap: 10px;
+  }
 }
 
+// Tablet portrait
+@media (max-width: 1024px) {
+  mat-card {
+    padding: 16px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .header-right-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .item-row {
+    grid-template-columns: 2fr 0.8fr 0.8fr 1fr 0.8fr 0.8fr 1fr 1.2fr 45px;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .po-footer {
+    .summary-area {
+      width: 100%;
+      max-width: 400px;
+    }
+  }
+}
+
+// Mobile landscape and smaller tablets
+@media (max-width: 768px) {
+  mat-card {
+    padding: 12px;
+  }
+
+  .customer-field-container {
+    .add-customer-btn {
+      mat-icon {
+        font-size: 24px;
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
+
+  .item-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 12px;
+
+    .product-field {
+      grid-column: 1 / -1;
+    }
+
+    .delete-btn {
+      grid-column: 1 / -1;
+      width: 100%;
+      border-radius: 4px !important;
+    }
+  }
+
+  .po-footer {
+    align-items: stretch;
+
+    .summary-area {
+      width: 100%;
+    }
+
+    .footer-actions {
+      flex-direction: column;
+      gap: 8px;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+}
+
+// Mobile portrait
 @media (max-width: 600px) {
+  mat-card {
+    padding: 10px;
+    border-radius: 8px;
+  }
+
+  .form-grid {
+    gap: 12px;
+  }
+
+  .customer-field-container {
+    gap: 6px;
+
+    .add-customer-btn {
+      margin-top: -6px;
+    }
+  }
+
+  .header-right-grid {
+    gap: 10px;
+  }
+
   .item-row {
     display: block;
-    mat-form-field { width: 100%; margin-bottom: 8px; }
-    .delete-btn { width: 100% !important; border-radius: 4px !important; }
+    padding: 10px;
+
+    mat-form-field {
+      width: 100%;
+      margin-bottom: 8px;
+    }
+
+    .delete-btn {
+      width: 100%;
+      margin-top: 8px;
+    }
   }
-  .po-footer { align-items: stretch; .summary-area { width: 100%; } .footer-actions { flex-direction: column; } }
+
+  .remarks-container {
+    margin-bottom: 10px;
+  }
+
+  .po-footer {
+    margin-top: 16px;
+    padding-top: 16px;
+    gap: 12px;
+  }
+
+  .po-grand-total {
+    font-size: 20px;
+  }
+}
+
+// Very small screens
+@media (max-width: 400px) {
+  mat-card {
+    padding: 8px;
+  }
+
+  .form-grid {
+    gap: 10px;
+  }
+
+  .item-row {
+    padding: 8px;
+
+    mat-form-field {
+      margin-bottom: 6px;
+    }
+  }
+
+  .po-grand-total {
+    font-size: 18px;
+  }
+
+  .footer-actions {
+    button {
+      font-size: 14px;
+      padding: 8px 16px;
+    }
+  }
 }

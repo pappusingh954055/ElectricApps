@@ -1,3 +1,38 @@
+mat-card {
+  padding: 0;
+  box-shadow: none !important;
+}
+
+mat-card-title {
+  padding: 20px 24px;
+  margin: 0;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 20px;
+  font-weight: 500;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  .close-btn {
+    color: #dc3545;
+    margin-right: -8px;
+    
+    &:hover {
+      background-color: rgba(220, 53, 69, 0.1);
+    }
+    
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+}
+
+form {
+  padding: 24px;
+}
+
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -9,18 +44,83 @@
 }
 
 .actions {
-  margin-top: 16px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
   display: flex;
   justify-content: flex-end;
   gap: 12px;
 }
 
-@media (max-width: 768px) {
+// Tablet and smaller screens
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .full {
+    grid-column: span 2;
+  }
+}
+
+// Mobile screens
+@media (max-width: 600px) {
+  mat-card {
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  mat-card-title {
+    padding: 16px;
+    font-size: 18px;
+    flex-shrink: 0;
+    
+    .close-btn {
+      margin-right: -4px;
+    }
+  }
+
+  form {
+    padding: 16px;
+    overflow-y: auto;
+    flex: 1;
+    min-height: 0;
+  }
+
   .grid {
     grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .full {
     grid-column: span 1;
+  }
+
+  .actions {
+    margin-top: 16px;
+    padding-top: 16px;
+    flex-direction: column-reverse;
+    
+    button {
+      width: 100%;
+    }
+  }
+}
+
+// Very small screens
+@media (max-width: 400px) {
+  mat-card-title {
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  form {
+    padding: 12px;
+  }
+
+  .grid {
+    gap: 10px;
   }
 }

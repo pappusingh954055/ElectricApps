@@ -4,6 +4,8 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } fr
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { Observable, of } from 'rxjs';
 import { startWith, map } from 'rxjs/operators';
+import { MatDialog } from '@angular/material/dialog';
+import { CustomerComponent } from '../../master/customer-component/customer-component';
 
 @Component({
   selector: 'app-so-form',
@@ -15,6 +17,7 @@ import { startWith, map } from 'rxjs/operators';
 export class SoForm implements OnInit {
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
 
   soForm!: FormGroup;
   isLoading = false;
@@ -140,5 +143,29 @@ export class SoForm implements OnInit {
   saveOrder(status: string) {
     if (this.soForm.invalid) return alert('Invalid Form');
     console.log('Final SO Payload:', { ...this.soForm.getRawValue(), status, grandTotal: this.grandTotal });
+  }
+
+  openAddCustomerDialog() {
+    const dialogRef = this.dialog.open(CustomerComponent, {
+      width: '90vw',
+      maxWidth: '600px',
+      disableClose: false,
+      autoFocus: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        // Add the new customer to the list
+        const newCustomer = {
+          id: this.customers.length + 1,
+          name: result.customerName
+        };
+        this.customers.push(newCustomer);
+
+        // Auto-select the newly added customer
+        this.soForm.patchValue({ customerId: newCustomer.id });
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

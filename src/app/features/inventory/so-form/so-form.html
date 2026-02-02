@@ -6,12 +6,17 @@
 
     <form [formGroup]="soForm">
       <div class="form-grid">
-        <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Customer *</mat-label>
-          <mat-select formControlName="customerId">
-            <mat-option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</mat-option>
-          </mat-select>
-        </mat-form-field>
+        <div class="customer-field-container">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Customer *</mat-label>
+            <mat-select formControlName="customerId">
+              <mat-option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <button mat-icon-button type="button" class="add-customer-btn" (click)="openAddCustomerDialog()" matTooltip="Add New Customer">
+            <mat-icon>add_circle</mat-icon>
+          </button>
+        </div>
 
         <div class="header-right-grid">
           <mat-form-field appearance="outline" subscriptSizing="dynamic">

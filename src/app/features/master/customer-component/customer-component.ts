@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, Optional } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { Router, ActivatedRoute } from '@angular/router';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-customer-component',
@@ -14,6 +15,7 @@ export class CustomerComponent {
   readonly fb = inject(FormBuilder);
   readonly router = inject(Router);
   readonly route = inject(ActivatedRoute);
+  readonly dialogRef = inject(MatDialogRef<CustomerComponent>, { optional: true });
 
   isEdit = false;
 
@@ -41,6 +43,23 @@ export class CustomerComponent {
     if (this.customerForm.invalid) return;
 
     console.log('CUSTOMER:', this.customerForm.value);
-    this.router.navigate(['/app/master/customers']);
+
+    // If opened in dialog, close with data
+    if (this.dialogRef) {
+      this.dialogRef.close(this.customerForm.value);
+    } else {
+      // If opened as a page, navigate back
+      this.router.navigate(['/app/master/customers']);
+    }
+  }
+
+  cancel() {
+    // If opened in dialog, close without data
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    } else {
+      // If opened as a page, navigate back
+      this.router.navigate(['/app/master/customers']);
+    }
   }
 }
