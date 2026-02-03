@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, ViewChild, ElementRef, Renderer2 } from '@angular/core';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { CommonModule } from '@angular/common';
 import { MatTableDataSource } from '@angular/material/table';
@@ -13,6 +13,7 @@ import { SaleOrderDetailDialog } from '../sale-order-detail-dialog/sale-order-de
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 import { SaleOrderService } from '../service/saleorder.service';
 import { SelectionModel } from '@angular/cdk/collections';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-so-list',
@@ -39,7 +40,9 @@ export class SoList implements OnInit {
     private inventoryService: InventoryService,
     private saleOrderService: SaleOrderService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private elementRef: ElementRef,
+    private renderer: Renderer2
   ) { }
 
   ngOnInit() {
@@ -240,5 +243,53 @@ export class SoList implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // --- Drag & Drop ---
+  drop(event: CdkDragDrop<string[]>) {
+    moveItemInArray(this.displayedColumns, event.previousIndex, event.currentIndex);
+    // Reassign to trigger change detection
+    this.displayedColumns = [...this.displayedColumns];
+  }
+
+  // --- Column Resizing ---
+  private resizingColumn: string | null = null;
+  private startX: number = 0;
+  private startWidth: number = 0;
+  private mouseMoveListener: (() => void) | null = null;
+  private mouseUpListener: (() => void) | null = null;
+
+  onResizeStart(event: MouseEvent, column: string) {
+    event.preventDefault();
+    this.resizingColumn = column;
+    this.startX = event.clientX;
+
+    // Get current width of the header cell
+    const headerCell = (event.target as HTMLElement).closest('th');
+    if (headerCell) {
+      this.startWidth = headerCell.clientWidth;
+    }
+
+    // Add global listeners
+    this.mouseMoveListener = this.renderer.listen('document', 'mousemove', (e) => this.onResize(e));
+    this.mouseUpListener = this.renderer.listen('document', 'mouseup', () => this.onResizeEnd());
+  }
+
+  onResize(event: MouseEvent) {
+    if (!this.resizingColumn) return;
+
+    const delta = event.clientX - this.startX;
+    const newWidth = Math.max(50, this.startWidth + delta); // Min width 50
+
+    // Set CSS Variable for this column
+    this.renderer.setStyle(this.elementRef.nativeElement, `--col-${this.resizingColumn}-width`, `${newWidth}px`);
+  }
+
+  onResizeEnd() {
+    this.resizingColumn = null;
+    if (this.mouseMoveListener) this.mouseMoveListener();
+    if (this.mouseUpListener) this.mouseUpListener();
+    this.mouseMoveListener = null;
+    this.mouseUpListener = null;
   }
 }
