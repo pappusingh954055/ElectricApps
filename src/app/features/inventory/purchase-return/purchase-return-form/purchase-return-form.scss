@@ -29,62 +29,83 @@ mat-card {
 // Material Table Styling
 table.mat-table {
   width: 100%;
-  
+  border-spacing: 0 8px; /* Optional: adds space between rows if we want card style, but usually 0 for grid */
+  border-collapse: collapse; 
+
   th.mat-header-cell {
-    background-color: #f8fafd;
-    color: #4a5568;
+    background-color: #f8fafc;
+    color: #64748b;
     font-weight: 700;
     font-size: 11px;
-    text-transform: uppercase;
     letter-spacing: 0.05em;
+    text-transform: uppercase;
     padding: 12px 16px;
     border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
   }
   
   td.mat-cell {
-    padding: 12px 16px;
-    color: #2d3748;
-    border-bottom: 1px solid #edf2f7;
+    padding: 8px 16px;
+    color: #334155;
+    border-bottom: 1px solid #f1f5f9;
     font-size: 14px;
+    vertical-align: middle;
+  }
+
+  tr.mat-row {
+    height: 56px; /* Comfortable height */
+    transition: background-color 0.2s ease;
   }
 
   tr.mat-row:hover {
-    background-color: #f7fafc;
+    background-color: #f1f5f9 !important; /* Visible hover */
   }
 }
 
-// Badge Styling
-.badge-rejected {
-  display: inline-block;
-  background-color: #fff5f5;
-  color: #c53030;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 12px;
-  font-weight: 600;
-  border: 1px solid #fed7d7;
-}
-
-// Qty Input Field
+// Qty Input Field - Smooth Look
 .qty-input {
-  width: 100px;
-  font-size: 14px;
+  width: 80px;
 
   ::ng-deep .mat-mdc-text-field-wrapper {
+    height: 34px !important;
+    padding: 0 8px !important;
     background-color: #fff;
-    padding: 0 8px; 
-    height: 40px; /* Compact height */
   }
 
-  ::ng-deep .mat-mdc-form-field-flex {
-    height: 40px;
-    align-items: center;
+  // Force Vertical Center by modifying the Infix
+  ::ng-deep .mat-mdc-form-field-infix {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    min-height: 34px !important;
+    height: 34px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
   }
-
-  input {
-    text-align: center;
+  
+  // Center the input text
+  ::ng-deep input.mat-mdc-input-element {
+    text-align: center !important;
     font-weight: 600;
-    color: #2b6cb0;
+    color: #2563eb; 
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  // Soften borders
+  ::ng-deep .mat-mdc-notched-outline__leading,
+  ::ng-deep .mat-mdc-notched-outline__notch, 
+  ::ng-deep .mat-mdc-notched-outline__trailing {
+    border-color: #cbd5e1;
+  }
+
+  ::ng-deep .mdc-text-field--focused {
+     .mat-mdc-notched-outline__leading,
+     .mat-mdc-notched-outline__notch,
+     .mat-mdc-notched-outline__trailing {
+       border-color: #2563eb !important;
+       border-width: 1px !important;
+     }
   }
 }
 

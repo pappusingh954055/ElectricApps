@@ -34,39 +34,48 @@
           <div class="table-responsive">
             <table mat-table [dataSource]="tableDataSource" class="w-100">
               
+              <!-- Product Column -->
               <ng-container matColumnDef="product">
-                <th mat-header-cell *matHeaderCellDef> Product Details </th>
-                <td mat-cell *matCellDef="let element">
-                  <div class="fw-bold">{{element.value.productName}}</div>
+                <th mat-header-cell *matHeaderCellDef class="ps-4"> Product Details </th>
+                <td mat-cell *matCellDef="let element" class="ps-4">
+                  <div class="fw-bold text-dark">{{element.value.productName}}</div>
                   <div class="text-muted small">GRN: {{element.value.grnRef}}</div>
                 </td>
               </ng-container>
 
+              <!-- Rejected Qty Column -->
               <ng-container matColumnDef="rejectedQty">
-                <th mat-header-cell *matHeaderCellDef> Rejected </th>
-                <td mat-cell *matCellDef="let element">
-                  <span class="text-danger fw-bold">{{element.value.maxQty}}</span>
+                <th mat-header-cell *matHeaderCellDef class="text-center"> Rejected </th>
+                <td mat-cell *matCellDef="let element" class="text-center">
+                  <span class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill mb-0 fw-bold border border-danger border-opacity-25">
+                    {{element.value.maxQty}}
+                  </span>
                 </td>
               </ng-container>
 
+              <!-- Return Qty Column -->
               <ng-container matColumnDef="returnQty">
-                <th mat-header-cell *matHeaderCellDef> Return Qty </th>
-                <td mat-cell *matCellDef="let element; let i = index">
-                  <mat-form-field appearance="outline" subscriptSizing="dynamic" style="width: 100px;">
-                    <input matInput type="number" [formControl]="element.get('returnQty')" (input)="calculateTotal(i)">
+                <th mat-header-cell *matHeaderCellDef class="text-center"> Return Qty </th>
+                <td mat-cell *matCellDef="let element; let i = index" class="text-center">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic" class="qty-input d-inline-block">
+                    <input matInput type="number" [formControl]="element.get('returnQty')" (input)="calculateTotal(i)" class="text-center fw-bold">
                   </mat-form-field>
                 </td>
               </ng-container>
 
+              <!-- Rate Column -->
               <ng-container matColumnDef="rate">
-                <th mat-header-cell *matHeaderCellDef> Rate </th>
-                <td mat-cell *matCellDef="let element"> {{element.value.rate | currency:'INR'}} </td>
+                <th mat-header-cell *matHeaderCellDef class="text-end"> Rate </th>
+                <td mat-cell *matCellDef="let element" class="text-end text-muted fw-medium"> 
+                  {{element.value.rate | currency:'INR'}} 
+                </td>
               </ng-container>
 
+              <!-- Total Column -->
               <ng-container matColumnDef="total">
-                <th mat-header-cell *matHeaderCellDef> Total </th>
-                <td mat-cell *matCellDef="let element"> 
-                  <span class="fw-bold text-success">{{element.value.total | currency:'INR'}}</span> 
+                <th mat-header-cell *matHeaderCellDef class="text-end pe-4"> Total </th>
+                <td mat-cell *matCellDef="let element" class="pe-4 text-end"> 
+                  <span class="fw-bold text-primary">{{element.value.total | currency:'INR'}}</span> 
                 </td>
               </ng-container>
 
