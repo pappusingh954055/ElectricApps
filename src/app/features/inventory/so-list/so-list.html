@@ -138,7 +138,10 @@
         <div (click)="$event.stopPropagation()" class="filter-container">
           <mat-form-field appearance="outline" class="w-100 compact-filter-input" subscriptSizing="dynamic">
             <mat-icon matPrefix>search</mat-icon>
-            <input matInput (keyup)="applySearch($event)" placeholder="{{placeholder}}" (click)="$event.stopPropagation()">
+            <input matInput (keyup)="applySearch($event)" [value]="searchKey" placeholder="{{placeholder}}" (click)="$event.stopPropagation()">
+            <button mat-icon-button matSuffix *ngIf="searchKey" (click)="clearSearch(); $event.stopPropagation()" style="width: 24px; height: 24px; line-height: 24px;">
+               <mat-icon style="font-size: 16px;">close</mat-icon>
+            </button>
           </mat-form-field>
         </div>
       </ng-template>

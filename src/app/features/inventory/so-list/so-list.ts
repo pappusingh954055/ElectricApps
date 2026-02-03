@@ -102,6 +102,12 @@ export class SoList implements OnInit {
     this.loadOrders();
   }
 
+  clearSearch() {
+    this.searchKey = "";
+    this.paginator.pageIndex = 0;
+    this.loadOrders();
+  }
+
   confirmOrder(order: any) {
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',

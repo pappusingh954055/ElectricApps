@@ -211,7 +211,8 @@ button[mat-icon-button] {
   .mat-mdc-text-field-wrapper, .mat-mdc-form-field-flex {
     height: 40px !important;
     padding-top: 0 !important;
-    padding-bottom: 0 !important; 
+    padding-bottom: 0 !important;
+    padding-right: 12px !important; /* Proper spacing for suffix */
     align-items: center !important;
     background-color: white !important;
   }
@@ -233,7 +234,30 @@ button[mat-icon-button] {
   
   mat-icon {
     font-size: 20px;
-    margin-right: 8px;
     color: #9ca3af;
+  }
+
+  mat-icon[matPrefix] {
+    margin-right: 8px;
+  }
+  
+  /* Fix Close Button Layout */
+  button[matSuffix] {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    padding: 0 !important;
+    line-height: 0 !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    
+    mat-icon {
+       font-size: 16px !important;
+       width: 16px !important;
+       height: 16px !important;
+       margin: 0 !important;
+       color: #6b7280;
+    }
   }
 }
