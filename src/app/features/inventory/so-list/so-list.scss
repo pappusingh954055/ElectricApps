@@ -75,6 +75,33 @@ th.mat-header-cell, th.mat-mdc-header-cell {
   }
 }
 
+.header-with-filter {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+
+  .small-filter-btn {
+    width: 24px !important;
+    height: 24px !important;
+    line-height: 0 !important;
+    min-width: 24px !important;
+    padding: 0 !important;
+    
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    
+    mat-icon {
+      font-size: 16px !important;
+      width: 16px !important;
+      height: 16px !important;
+      line-height: 16px !important; // Ensure minimal height
+    }
+  }
+}
+
 /* Data Rows */
 tr.mat-row, tr.mat-mdc-row {
   height: 44px; /* Ultra Reduced Height */
@@ -158,5 +185,55 @@ button[mat-icon-button] {
   
   td.mat-cell, th.mat-header-cell {
       padding: 0 16px;
+  }
+}
+
+/* --- Filter Menu Styling --- */
+::ng-deep .filter-menu-panel {
+  min-width: 260px !important;
+  max-width: 300px !important;
+  border-radius: 12px !important;
+  margin-top: 8px !important; /* Slight gap from header */
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+
+  .mat-mdc-menu-content {
+    padding: 0 !important;
+  }
+}
+
+.filter-container {
+  padding: 12px;
+  background-color: white;
+}
+
+.compact-filter-input {
+  /* Compact Form Field */
+  .mat-mdc-text-field-wrapper, .mat-mdc-form-field-flex {
+    height: 40px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important; 
+    align-items: center !important;
+    background-color: white !important;
+  }
+  
+  .mat-mdc-form-field-outline {
+     background-color: white;
+  }
+  
+  .mat-mdc-form-field-infix {
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+    min-height: 40px !important;
+    border-top: 0 !important;
+  }
+  
+  input.mat-mdc-input-element {
+    margin-top: -4px; /* Centering */
+  }
+  
+  mat-icon {
+    font-size: 20px;
+    margin-right: 8px;
+    color: #9ca3af;
   }
 }
