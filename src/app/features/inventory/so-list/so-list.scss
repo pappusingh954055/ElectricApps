@@ -262,49 +262,70 @@ button[mat-icon-button] {
   }
 }
 
-/* --- Drag & Drop & Resize Styles --- */
-th.mat-mdc-header-cell {
-  position: relative;
-  
-  .resize-handle {
-    position: absolute;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 12px;
-    cursor: col-resize;
-    z-index: 100;
-    &:hover {
-      background: rgba(0,0,0,0.1);
-    }
-  }
-}
-
-/* Drag Preview */
-.cdk-drag-preview {
-  box-sizing: border-box;
+/* --- Drag & Drop Styles --- */
+/* Drag Preview (Global for Overlay) */
+::ng-deep .cdk-drag-preview {
+  display: flex !important;
+  box-sizing: border-box !important;
   border-radius: 4px;
   box-shadow: 0 5px 5px -3px rgba(0,0,0,0.2),
               0 8px 10px 1px rgba(0,0,0,0.14),
               0 3px 14px 2px rgba(0,0,0,0.12);
-  background-color: white;
-  display: flex;
+  background-color: white !important;
   align-items: center;
   padding-left: 16px;
+  padding-right: 16px;
   font-family: Roboto, "Helvetica Neue", sans-serif;
   font-size: 14px;
   font-weight: 500;
   color: rgba(0,0,0,0.87);
+  z-index: 9999 !important;
+  height: 56px;
+  overflow: hidden;
 }
-.cdk-drag-placeholder { opacity: 0; }
-.cdk-drag-animating { transition: transform 250ms cubic-bezier(0, 0, 0.2, 1); }
+
+/* Placeholder (Ghost Header) Styling */
+::ng-deep .cdk-drag-placeholder {
+  opacity: 0.3 !important; /* Visible ghost */
+  background-color: #e0e0e0 !important;
+  color: inherit !important; /* Show text */
+  border: 1px dashed #999;
+  display: table-cell; /* Maintain layout */
+}
+/* Ensure children (text, icons) are visible */
+::ng-deep .cdk-drag-placeholder * {
+  visibility: visible !important;
+  opacity: 1 !important; 
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
 .cdk-drop-list-dragging th:not(.cdk-drag-placeholder) {
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
-/* Resizable Columns Defaults by CSS Variables */
-.mat-column-soNumber { flex: none !important; width: var(--col-soNumber-width, 140px); }
-.mat-column-soDate { flex: none !important; width: var(--col-soDate-width, 140px); }
-.mat-column-customerName { flex: none !important; width: var(--col-customerName-width, 200px); }
-.mat-column-grandTotal { flex: none !important; width: var(--col-grandTotal-width, 150px); }
-.mat-column-status { flex: none !important; width: var(--col-status-width, 120px); }
+/* Resizable Columns Defaults by CSS Variables - strict ::ng-deep */
+::ng-deep {
+  /* General Cell Styles for overflow */
+  .mat-mdc-cell, .mat-mdc-header-cell {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+    box-sizing: border-box;
+  }
+
+  /* Specific Column Widths */
+  .mat-column-select { width: 48px; min-width: 48px; max-width: 48px; }
+  
+  .mat-column-soNumber { width: var(--col-soNumber-width, 140px); min-width: var(--col-soNumber-width, 140px); max-width: var(--col-soNumber-width, 140px); }
+  .mat-column-soDate { width: var(--col-soDate-width, 140px); min-width: var(--col-soDate-width, 140px); max-width: var(--col-soDate-width, 140px); }
+  .mat-column-customerName { width: var(--col-customerName-width, 200px); min-width: var(--col-customerName-width, 200px); max-width: var(--col-customerName-width, 200px); }
+  .mat-column-grandTotal { width: var(--col-grandTotal-width, 150px); min-width: var(--col-grandTotal-width, 150px); max-width: var(--col-grandTotal-width, 150px); }
+  .mat-column-status { width: var(--col-status-width, 120px); min-width: var(--col-status-width, 120px); max-width: var(--col-status-width, 120px); }
+  
+  .mat-column-actions { width: 120px; min-width: 120px; }
+}
