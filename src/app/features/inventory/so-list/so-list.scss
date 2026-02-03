@@ -1,32 +1,43 @@
-/* --- Layout Containers --- */
-.container {
-  padding: 24px;
-  
-  .header-section {
-    margin-bottom: 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* --- Fixed Layout Fix --- */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
 
-    h2 { 
-      color: #111827; 
-      font-weight: 700; 
-      font-size: 1.5rem;
-      letter-spacing: -0.025em; 
-    }
+/* --- Layout Containers --- */
+.container-fluid {
+  padding: 24px;
+  display: flex;            /* Flex layout */
+  flex-direction: column;   /* Stack children */
+  height: 100%;             /* Full height */
+  overflow: hidden;         /* No double scroll */
+  
+  .header-section, .d-flex.justify-content-between {
+    flex-shrink: 0; /* Don't shrink header */
+    margin-bottom: 16px; /* Adjust spacing */
   }
+
+
 }
 
 /* --- Professional Table Styling --- */
 .responsive-table-container {
   position: relative;
-  min-height: 200px;
+  flex: 1;                  /* Fill remaining space */
   width: 100%;
-  overflow-x: auto;
+  overflow: auto;           /* Internal Scrollbar */
   background: white;
-  border-radius: 12px; /* Modern rounded corners */
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Soft shadow */
+  border-radius: 12px; 
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); 
   border: 1px solid #e5e7eb;
+
+  /* Hide Scrollbar Visually */
+  scrollbar-width: none; 
+  &::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 table {
@@ -36,12 +47,18 @@ table {
 }
 
 /* Header Row */
+/* Header Row */
 tr.mat-header-row, tr.mat-mdc-header-row {
   height: 44px; /* Ultra Compact Header */
-  background-color: #f9fafb;
+  /* Sticky moves to cells for better support */
 }
 
 th.mat-header-cell, th.mat-mdc-header-cell {
+  position: sticky !important; /* Force sticky */
+  top: 0 !important;
+  z-index: 100;
+  background-color: #f9fafb !important; /* Opaque background */
+  
   font-size: 0.75rem;
   text-transform: uppercase;
   font-weight: 600;

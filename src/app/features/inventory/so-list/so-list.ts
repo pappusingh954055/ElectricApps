@@ -33,7 +33,8 @@ export class SoList implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   selection = new SelectionModel<any>(true, []);
-
+  totalRecords: number = 0;
+  searchKey: string = "";
   constructor(
     private inventoryService: InventoryService,
     private saleOrderService: SaleOrderService,
@@ -69,24 +70,36 @@ export class SoList implements OnInit {
     const role = localStorage.getItem('userRole');
     this.isAdmin = role === 'Admin' || role === 'Manager';
   }
-
   loadOrders() {
     this.isLoading = true;
-    this.saleOrderService.getSaleOrders().subscribe({
-      next: (data) => {
-        this.dataSource.data = data;
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
+
+    const pageIndex = this.paginator ? this.paginator.pageIndex + 1 : 1;
+    const pageSize = this.paginator ? this.paginator.pageSize : 10;
+    const sortField = this.sort ? this.sort.active : 'soDate';
+    const sortDir = this.sort ? this.sort.direction : 'desc';
+
+    this.saleOrderService.getSaleOrders(pageIndex, pageSize, sortField, sortDir, this.searchKey).subscribe({
+      next: (res) => {
+        // FIX: Backend se aane wala 'totalCount' yahan update karein
+        this.dataSource.data = res.data;
+        this.totalRecords = res.totalCount;
+
         this.isLoading = false;
-        this.selection.clear(); // Clear selection on reload
         this.cdr.detectChanges();
       },
       error: (err) => {
         this.isLoading = false;
-        this.snackBar.open("Failed to load orders", "Close", { duration: 3000 });
         this.cdr.detectChanges();
       }
     });
+  }
+
+  // Search bar ke liye function
+  applySearch(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.searchKey = filterValue.trim().toLowerCase();
+    this.paginator.pageIndex = 0; // Search par hamesha page 1 par jayein
+    this.loadOrders();
   }
 
   confirmOrder(order: any) {

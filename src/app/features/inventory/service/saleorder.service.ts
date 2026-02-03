@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { POHeaderDetailsDto } from '../models/poheader-details-dto';
 
@@ -22,9 +22,17 @@ export class SaleOrderService {
     }
 
 
-    getSaleOrders(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/saleorder`);
-    }
+   // SaleOrderService mein params pass karne ke liye update [cite: 2026-02-03]
+getSaleOrders(page: number, size: number, sort: string, order: string, search: string): Observable<any> {
+  let params = new HttpParams()
+    .set('pageNumber', page.toString())
+    .set('pageSize', size.toString())
+    .set('sortBy', sort)
+    .set('sortOrder', order)
+    .set('searchTerm', search);
+
+  return this.http.get<any>(`${this.apiUrl}/saleorder`, { params });
+}
 
 
     updateSaleOrderStatus(id: number, status: string): Observable<any> {

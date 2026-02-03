@@ -4,11 +4,11 @@
     <div class="d-flex gap-2">
       <button mat-raised-button color="accent" 
               (click)="selection.hasValue() ? DownloadMultipleOrders(getSelectedIds()) : exportOrders()" 
-              style="margin-bottom: 10px; margin-right: 10px;">
+              style="height: 40px; margin-right: 12px;">
         <mat-icon>download</mat-icon> 
         {{ selection.hasValue() ? 'Export Selected (' + selection.selected.length + ')' : 'Export Excel' }}
       </button>
-      <button mat-raised-button color="primary" (click)="createNewOrder()" style="margin-bottom: 10px;">
+      <button mat-raised-button color="primary" (click)="createNewOrder()" style="height: 40px;">
         <mat-icon>add</mat-icon> New Sale Order
       </button>
     </div>
@@ -19,7 +19,7 @@
       <mat-spinner diameter="40"></mat-spinner>
     </div>
 
-    <table mat-table [dataSource]="dataSource" matSort>
+    <table mat-table [dataSource]="dataSource" matSort (matSortChange)="loadOrders()">
       
       <ng-container matColumnDef="select">
         <th mat-header-cell *matHeaderCellDef>
@@ -91,6 +91,10 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="selection.toggle(row)"></tr>
     </table>
 
-    <mat-paginator [pageSizeOptions]="[5, 10, 25]"></mat-paginator>
+  <mat-paginator [length]="totalRecords" 
+               [pageSize]="10"
+               [pageSizeOptions]="[5, 10, 25]" 
+               (page)="loadOrders()">
+</mat-paginator>
   </div>
 </div>
