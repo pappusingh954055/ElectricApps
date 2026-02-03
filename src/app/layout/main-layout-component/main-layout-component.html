@@ -11,7 +11,7 @@
     </div>
 
     <!-- User Info section (Sidenav - Mobile only) -->
-    <div *ngIf="isMobile && userEmail" class="sidenav-user-info">
+    <div *ngIf="isMobile && userEmail" class="sidenav-user-info" [matMenuTriggerFor]="userMenu" style="cursor: pointer;">
       <mat-icon class="user-avatar">account_circle</mat-icon>
       <div class="user-details">
         <span class="user-label">Logged in as</span>

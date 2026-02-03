@@ -1,3 +1,15 @@
+:host {
+  display: block;
+  height: 100%;
+  overflow-y: auto; /* Internal scroll */
+  overflow-x: hidden;
+}
+
+/* Ensure container fits */
+.container-fluid {
+  min-height: 100%;
+}
+
 /* --- Material Design Redesign --- */
 
 /* Base Card */
@@ -219,4 +231,22 @@ mat-card.so-card {
       align-items: flex-start;
       gap: 16px;
     }
+}
+
+/* --- Mobile Layout Fixes --- */
+@media (max-width: 768px) {
+  /* Force vertical spacing between stacked header fields */
+  form > .row > div[class*="col-"] {
+    margin-bottom: 24px !important;
+  }
+  
+  /* Ensure customer field container has space */
+  .customer-field-container {
+    margin-bottom: 8px;
+  }
+
+  /* Prevent label collisions by ensuring sufficient height */
+  .mat-mdc-form-field {
+    margin-bottom: 8px;
+  }
 }

@@ -24,18 +24,14 @@ body {
   padding: 0;
   font-family: Roboto, "Helvetica Neue", sans-serif;
   background-color: #f5f7f9;
+  overflow: hidden; /* Strict lock */
 }
 
 /* =====================================================
    3. BODY SCROLL CONTROL
 ===================================================== */
 body {
-  height: 100vh;
-  width: 100vw;
-
-  overflow-y: hidden;     /* page vertical disabled */
-  overflow-x: visible;    /* horizontal allowed */
-
+  width: 100%;
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
 }
