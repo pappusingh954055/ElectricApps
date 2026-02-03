@@ -1,93 +1,145 @@
+/* --- Layout Containers --- */
 .container {
-  padding: 20px;
+  padding: 24px;
   
   .header-section {
-    margin-bottom: 20px;
-    h2 { color: #333; font-weight: 500; }
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h2 { 
+      color: #111827; 
+      font-weight: 700; 
+      font-size: 1.5rem;
+      letter-spacing: -0.025em; 
+    }
   }
 }
 
-.responsive-table {
+/* --- Professional Table Styling --- */
+.responsive-table-container {
+  position: relative;
+  min-height: 200px;
   width: 100%;
-  overflow-x: auto; // Mobile scrolling
+  overflow-x: auto;
   background: white;
-  border-radius: 8px;
+  border-radius: 12px; /* Modern rounded corners */
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* Soft shadow */
+  border: 1px solid #e5e7eb;
 }
 
 table {
   width: 100%;
+  border-collapse: separate; /* For rounded corners if needed */
+  border-spacing: 0;
 }
 
-// Status Badge Styling
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 15px;
-  font-size: 12px;
-  font-weight: bold;
+/* Header Row */
+tr.mat-header-row, tr.mat-mdc-header-row {
+  height: 44px; /* Ultra Compact Header */
+  background-color: #f9fafb;
+}
+
+th.mat-header-cell, th.mat-mdc-header-cell {
+  font-size: 0.75rem;
   text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0 16px; 
+  
+  &:first-of-type {
+    padding-left: 20px;
+  }
+  &:last-of-type {
+    padding-right: 20px;
+  }
+}
 
+/* Data Rows */
+tr.mat-row, tr.mat-mdc-row {
+  height: 44px; /* Ultra Reduced Height */
+  transition: background-color 0.2s ease;
+  cursor: pointer; 
+  
+  &:hover {
+    background-color: #e2e8f0 !important; /* Stronger Hover */
+  }
+}
+
+td.mat-cell, td.mat-mdc-cell {
+  font-size: 0.875rem;
+  color: #1f2937;
+  border-bottom: 1px solid #f3f4f6;
+  padding: 0 16px; /* Reduced Padding */
+
+  /* Order Number Highlight */
+  &.mat-column-soNumber {
+    font-weight: 500;
+    color: #3b82f6; 
+  }
+}
+
+/* --- Status Badges (Pill Design) --- */
+.status-badge {
+  padding: 6px 16px;
+  border-radius: 9999px; /* Pill shape */
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-block;
+  min-width: 80px;
+  text-align: center;
+  
   &.draft {
-    background-color: #f5f5f5;
-    color: #757575; // Grey for Draft
-  }
-
-  &.confirmed {
-    background-color: #e8f5e9;
-    color: #2e7d32; // Green for Confirmed
-  }
-}
-
-// Action Buttons
-.action-buttons {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-
-  .btn-text {
-    margin-left: 5px;
-  }
-}
-
-// Mobile Responsiveness
-@media (max-width: 600px) {
-  .btn-text {
-    display: none; // Hide text on small screens, keep icons
+    background-color: #f3f4f6;
+    color: #4b5563;
+    border: 1px solid #e5e7eb;
   }
   
-  .mat-column-soDate {
-    display: none; // Hide date on mobile to save space
+  &.confirmed {
+    background-color: #dcfce7; /* Soft Green */
+    color: #15803d; /* Dark Green Text */
+    border: 1px solid #bbf7d0;
   }
 }
 
-.responsive-table {
-  position: relative; // Taaki loader table ke upar align ho sake
-  min-height: 200px; // Jab data na ho tab bhi spinner dikhe
-  width: 100%;
-  overflow-x: auto;
-  background: white;
-  border-radius: 8px;
+/* --- Action Buttons --- */
+button[mat-icon-button] {
+  color: #9ca3af;
+  transition: all 0.2s;
+  
+  &:hover {
+    color: #3b82f6;
+    background-color: #eff6ff;
+  }
 }
 
-.loading-shade {
+/* --- Loading Overlay (Preserved Fix) --- */
+.loading-overlay {
   position: absolute;
   top: 0;
   left: 0;
-  bottom: 56px; // Paginator ki height chor kar center karne ke liye
+  bottom: 0; 
   right: 0;
-  background: rgba(255, 255, 255, 0.7); // Light transparent background
-  z-index: 10; // Table ke upar dikhne ke liye
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(2px); /* Modern blur effect */
+  z-index: 50;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-/* Status Badges Styling [cite: 2026-01-22] */
-.status-badge {
-  padding: 4px 12px;
-  border-radius: 15px;
-  font-size: 12px;
-  font-weight: 500;
+/* --- Mobile Adjustments --- */
+@media (max-width: 600px) {
+  .mat-column-soDate {
+    display: none;
+  }
   
-  &.draft { background: #eeeeee; color: #616161; }
-  &.confirmed { background: #e8f5e9; color: #2e7d32; }
+  td.mat-cell, th.mat-header-cell {
+      padding: 0 16px;
+  }
 }

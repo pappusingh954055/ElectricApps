@@ -1,0 +1,64 @@
+<div class="dialog-container">
+  <div class="header-p border-bottom">
+    <h2>
+      <mat-icon class="vertical-align-middle text-primary">receipt_long</mat-icon>
+      Order Details: {{data.soNumber}}
+    </h2>
+    <button mat-icon-button mat-dialog-close class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content class="p-4">
+    <div class="row mb-4">
+      <div class="col-md-6 mb-3">
+        <div class="info-label">CUSTOMER NAME</div>
+        <div class="info-value fs-5 text-dark fw-bold">{{data.customerName || 'N/A'}}</div>
+      </div>
+      <div class="col-md-3 mb-3">
+        <div class="info-label">ORDER DATE</div>
+        <div class="info-value">{{data.soDate | date:'mediumDate'}}</div>
+      </div>
+      <div class="col-md-3 mb-3 text-md-end">
+        <div class="info-label">CURRENT STATUS</div>
+        <span class="status-badge" [ngClass]="data.status?.toLowerCase()">{{data.status}}</span>
+      </div>
+    </div>
+
+    <div class="divider mb-3"><span>Items Ordered</span></div>
+
+    <div class="table-responsive">
+      <table class="table table-borderless align-middle m-0">
+        <thead>
+          <tr>
+            <th class="ps-3 text-start">#</th>
+            <th class="text-start">Product Name</th>
+            <th class="text-start">Quantity</th>
+            <th class="text-start">Rate</th>
+            <th class="text-start">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of data.items; let i = index">
+            <td class="ps-3 text-muted text-start">{{i + 1}}</td>
+            <td class="fw-medium text-dark text-start">{{item.productName}}</td>
+            <td class="text-start">{{item.qty}}</td>
+            <td class="text-start">{{item.rate | currency:'INR'}}</td>
+            <td class="text-start fw-bold text-dark">{{(item.qty * item.rate) | currency:'INR'}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grand-total-section">
+      <div class="total-box">
+        <span class="total-label">Grand Total:</span>
+        <span class="total-amount">{{data.grandTotal | currency:'INR'}}</span>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end" class="p-3 bg-light border-top">
+    <button mat-button mat-dialog-close class="px-4 border bg-white">Close Window</button>
+  </mat-dialog-actions>
+</div>

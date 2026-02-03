@@ -13,4 +13,31 @@ export class SaleOrderService {
     saveSaleOrder(orderData: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/SaleOrder/save`, orderData);
     }
+
+    exportSaleOrderList(): Observable<Blob> {
+        // Bina IDs ke call
+        return this.http.get(`${this.apiUrl}/saleorder/export-list`, {
+            responseType: 'blob'
+        });
+    }
+
+
+    getSaleOrders(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/saleorder`);
+    }
+
+
+    updateSaleOrderStatus(id: number, status: string): Observable<any> {
+        // Fix: PATCH use karein taaki backend se sync ho jaye
+        return this.http.patch(`${this.apiUrl}/saleorder/${id}/status`, { status: status });
+    }
+
+
+    getSaleOrderById(id: number): Observable<any> {
+        return this.http.get<any>(`${this.apiUrl}/saleorder/${id}`);
+    }
+
+    SaleOrderReportDownload(productIds: string[]) {
+        return this.http.post(`${this.apiUrl}/saleorder/export`, productIds, { responseType: 'blob' });
+    }
 }

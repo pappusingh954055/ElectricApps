@@ -1,0 +1,157 @@
+/* Parent Container: Responsive Width Fix */
+.dialog-container {
+  width: 100%; // Default for mobile
+  max-width: 900px;
+  min-width: unset; // Remove fixed min-width for mobile
+  overflow-x: hidden;
+
+  /* Desktop View (> 768px) mein purani width wapas */
+  @media (min-width: 768px) {
+    min-width: 750px;
+  }
+}
+
+/* Header Section: Mobile pe padding kam */
+.header-p {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #3f51b5;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center; 
+  justify-content: space-between; 
+  
+  h2 {
+    font-size: 1.1rem; // Mobile pe thoda chota
+    font-weight: 600;
+    color: #333;
+    margin: 0; 
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    @media (min-width: 768px) {
+      font-size: 1.2rem;
+    }
+  }
+
+  .close-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &:hover { background: rgba(0,0,0,0.05); }
+  }
+}
+
+/* Info Section: Labels & Values */
+.info-label {
+  font-size: 10px;
+  color: #757575;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.info-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #212121;
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  &.draft { background: #fff4e5; color: #ff9800; border: 1px solid #ffe0b2; }
+  &.confirmed { background: #e8f5e9; color: #2e7d32; border: 1px solid #c8e6c9; }
+}
+
+.divider {
+  border-bottom: 1px solid #e0e0e0;
+  margin: 12px 0;
+  span {
+    background: #fff;
+    padding-right: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #5c6bc0;
+  }
+}
+
+/* Table Responsive: Horizontal Scroll enable for mobile */
+.table-responsive {
+  margin-top: 10px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  overflow-x: auto; // Mobile pe table scroll hoga
+}
+
+.table {
+  width: 100%;
+  min-width: 600px; // Mobile pe table ka structure maintain rahega scroll ke saath
+  border-collapse: collapse;
+  
+  thead th {
+    background-color: #f5f7ff;
+    color: #555;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 10px;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  tbody td {
+    padding: 10px;
+    font-size: 13px;
+    border-bottom: 1px solid #f1f1f1;
+  }
+
+  .text-start { text-align: left !important; }
+}
+
+/* Grand Total Alignment */
+.grand-total-section {
+  display: flex;
+  justify-content: flex-end;
+  padding: 15px 0 5px 0;
+}
+
+.total-box {
+  text-align: right;
+  .total-label {
+    font-size: 13px;
+    color: #666;
+    margin-right: 10px;
+    font-weight: 500;
+  }
+  .total-amount {
+    font-size: 1.4rem; // Mobile pe thoda chota
+    font-weight: 700;
+    color: #3f51b5;
+
+    @media (min-width: 768px) {
+      font-size: 1.8rem;
+    }
+  }
+}
+
+/* Action Buttons */
+mat-dialog-actions { 
+  padding: 12px 16px !important; 
+  background-color: #fafafa;
+
+  button {
+    width: 100%; // Mobile pe buttons full width
+    @media (min-width: 768px) {
+      width: auto;
+    }
+  }
+}
+
+.vertical-align-middle { vertical-align: middle; }

@@ -235,18 +235,33 @@ mat-card.so-card {
 
 /* --- Mobile Layout Fixes --- */
 @media (max-width: 768px) {
-  /* Force vertical spacing between stacked header fields */
-  form > .row > div[class*="col-"] {
+  /* BRUTE FORCE STACKING: Handles both Grid and Flex scenarios */
+  
+  /* If inside a Grid, span all columns */
+  form > div > mat-form-field,
+  form > div > .customer-field-container,
+  form > div > div[class*="col-"] {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
     margin-bottom: 24px !important;
   }
-  
-  /* Ensure customer field container has space */
+
+  /* Specific adjustments for Customer Container */
   .customer-field-container {
-    margin-bottom: 8px;
+      display: flex !important;
+      flex-direction: row !important; /* Keep button next to input */
+      align-items: center !important;
+      gap: 8px !important;
+  }
+  
+  /* Ensure Reset of any colliding flex properties */
+  form > div {
+      flex-wrap: wrap !important; 
   }
 
-  /* Prevent label collisions by ensuring sufficient height */
+  /* Prevent label collisions */
   .mat-mdc-form-field {
-    margin-bottom: 8px;
+    margin-bottom: 8px; 
+    width: 100% !important;
   }
 }
