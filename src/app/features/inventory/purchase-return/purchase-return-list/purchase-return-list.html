@@ -1,0 +1,82 @@
+<div class="container-fluid">
+  <!-- Page Header -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="page-title m-0">Purchase Return (Debit Note)</h2>
+    <div class="d-flex">
+      <button mat-raised-button class="export-btn me-3">
+        <mat-icon>download</mat-icon> Export Excel
+      </button>
+      <button mat-raised-button color="primary" (click)="navigateToCreate()">
+        <mat-icon>add</mat-icon> New Return
+      </button>
+    </div>
+  </div>
+
+  <!-- Content Card -->
+  <mat-card class="content-card mat-elevation-z0">
+    <!-- Filter Header -->
+    <div class="filter-section p-3 border-bottom d-flex align-items-center bg-white">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field dense-form-field">
+        <mat-label>Search Returns</mat-label>
+        <mat-icon matPrefix class="text-secondary ms-2 me-2">search</mat-icon>
+        <input matInput (keyup)="applySearch($event)" placeholder="Search by # or Supplier">
+        <button mat-icon-button matSuffix *ngIf="searchKey" (click)="searchKey=''; loadReturns()">
+           <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+      <table mat-table [dataSource]="dataSource" matSort (matSortChange)="loadReturns()">
+        
+        <ng-container matColumnDef="returnNumber">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> RETURN # </th>
+          <td mat-cell *matCellDef="let row" class="text-primary fw-bold"> {{row.returnNumber}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="returnDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> DATE </th>
+          <td mat-cell *matCellDef="let row"> {{row.returnDate | date:'mediumDate'}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="supplierName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> SUPPLIER </th>
+          <td mat-cell *matCellDef="let row"> {{row.supplierName}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="grnRef">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> GRN REF </th>
+          <td mat-cell *matCellDef="let row"> {{row.grnRef}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalAmount">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> AMOUNT </th>
+          <td mat-cell *matCellDef="let row"> {{row.totalAmount | currency:'INR'}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header> STATUS </th>
+          <td mat-cell *matCellDef="let row">
+            <span class="status-badge" [ngClass]="row.status?.toLowerCase()">
+              {{row.status}}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef class="text-end pe-3"> ACTIONS </th>
+          <td mat-cell *matCellDef="let row" class="text-end pe-3">
+            <button mat-icon-button color="primary" title="View Details"><mat-icon>visibility</mat-icon></button>
+            <button mat-icon-button color="warn" title="Print/Download"><mat-icon>print</mat-icon></button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <mat-paginator [length]="totalRecords" [pageSize]="10" [pageSizeOptions]="[5, 10, 25]" (page)="loadReturns()"></mat-paginator>
+    </div>
+  </mat-card>
+</div>

@@ -1,0 +1,121 @@
+/* Page Layout */
+.container-fluid {
+  padding: 20px;
+  /* Removed min-height: 100vh to fix vertical scrollbar issue */
+  box-sizing: border-box;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+}
+
+/* Header Buttons */
+.export-btn {
+  background-color: #e91e63 !important;
+  color: white !important;
+  margin-right: 16px;
+}
+
+/* Content Card */
+.content-card {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden; /* Contains headers */
+  background: white;
+  margin-top: 20px;
+}
+
+/* Filter Section */
+.search-field {
+  width: 320px;
+  font-size: 14px;
+
+  /* Dense styling for cleaner look */
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    background-color: white;
+    padding-left: 0;
+  }
+}
+
+/* Table container */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate; /* Allows border-radius on rows if needed later */
+  border-spacing: 0;
+
+  th.mat-header-cell {
+    background-color: #f8f9fa;
+    color: #5f6368;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 10px 16px;
+    border-bottom: 1px solid #dadce0;
+    white-space: nowrap;
+  }
+
+  td.mat-cell {
+    padding: 8px 16px; /* Reduced padding for compact look */
+    font-size: 13px;
+    font-weight: 400;
+    color: #3c4043;
+    border-bottom: 1px solid #f1f3f4;
+  }
+
+  tr.mat-row {
+    height: 48px; /* Standard dense height */
+    transition: background-color 0.15s ease-in-out;
+  }
+
+  tr.mat-row:hover {
+    background-color: #f5f6f7 !important; /* Distinct hover gray */
+    cursor: pointer;
+  }
+  
+  /* Remove border from last row */
+  tr.mat-row:last-child td {
+    border-bottom: none;
+  }
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  /* Status Colors */
+  &.confirmed {
+    background-color: #e6f4ea;
+    color: #1e8e3e;
+  }
+
+  &.draft {
+    background-color: #feefc3;
+    color: #f9ab00; /* Darker yellow for text */
+  }
+
+  &.cancelled {
+    background-color: #fce8e6;
+    color: #d93025;
+  }
+}
+
+/* Paginator */
+::ng-deep .mat-paginator {
+  background-color: transparent;
+  border-top: 1px solid #e0e0e0;
+}

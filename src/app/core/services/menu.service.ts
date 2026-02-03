@@ -35,6 +35,11 @@ export class MenuService {
             icon: 'shopping_cart',
             route: '/app/inventory/current-stock'
           },
+          {
+            label: 'Purchase Return (Debit Note)',
+            icon: 'assignment_return',
+            route: '/app/inventory/purchase-return'
+          },
         ]
       },
 

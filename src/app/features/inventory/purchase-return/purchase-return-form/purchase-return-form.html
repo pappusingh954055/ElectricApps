@@ -1,0 +1,81 @@
+<div class="container-fluid p-4">
+  <form [formGroup]="returnForm">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold m-0 text-primary">Create Purchase Return</h2>
+      <button mat-raised-button color="primary" style="margin-bottom: 10px;"
+              [disabled]="!returnForm.valid || items.length === 0" (click)="onSubmit()">
+        Confirm & Generate Debit Note
+      </button>
+    </div>
+
+    <div class="row">
+      <div class="col-md-4">
+        <mat-card class="p-4 shadow-sm">
+          <mat-form-field appearance="outline" class="w-100 mb-2">
+            <mat-label>Supplier</mat-label>
+            <mat-select formControlName="supplierId" (selectionChange)="onSupplierChange($event.value)">
+              <mat-option *ngFor="let s of suppliers" [value]="s.id">{{s.name}}</mat-option>
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="w-100 mb-2">
+            <mat-label>Return Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="returnDate">
+            <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </mat-card>
+      </div>
+
+      <div class="col-md-8">
+        <mat-card class="shadow-sm">
+          <div class="bg-light p-3 fw-bold border-bottom">
+            Rejected Items Found: {{items.length}}
+          </div>
+          <div class="table-responsive">
+            <table mat-table [dataSource]="tableDataSource" class="w-100">
+              
+              <ng-container matColumnDef="product">
+                <th mat-header-cell *matHeaderCellDef> Product Details </th>
+                <td mat-cell *matCellDef="let element">
+                  <div class="fw-bold">{{element.value.productName}}</div>
+                  <div class="text-muted small">GRN: {{element.value.grnRef}}</div>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="rejectedQty">
+                <th mat-header-cell *matHeaderCellDef> Rejected </th>
+                <td mat-cell *matCellDef="let element">
+                  <span class="text-danger fw-bold">{{element.value.maxQty}}</span>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="returnQty">
+                <th mat-header-cell *matHeaderCellDef> Return Qty </th>
+                <td mat-cell *matCellDef="let element; let i = index">
+                  <mat-form-field appearance="outline" subscriptSizing="dynamic" style="width: 100px;">
+                    <input matInput type="number" [formControl]="element.get('returnQty')" (input)="calculateTotal(i)">
+                  </mat-form-field>
+                </td>
+              </ng-container>
+
+              <ng-container matColumnDef="rate">
+                <th mat-header-cell *matHeaderCellDef> Rate </th>
+                <td mat-cell *matCellDef="let element"> {{element.value.rate | currency:'INR'}} </td>
+              </ng-container>
+
+              <ng-container matColumnDef="total">
+                <th mat-header-cell *matHeaderCellDef> Total </th>
+                <td mat-cell *matCellDef="let element"> 
+                  <span class="fw-bold text-success">{{element.value.total | currency:'INR'}}</span> 
+                </td>
+              </ng-container>
+
+              <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+          </div>
+        </mat-card>
+      </div>
+    </div>
+  </form>
+</div>
