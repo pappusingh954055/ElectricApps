@@ -23,7 +23,7 @@ export class MenuService {
           {
             label: 'Sale Order',
             icon: 'description',
-            route: '/app/inventory/solist/add'
+            route: '/app/inventory/solist'
           },
           {
             label: 'GRN List',

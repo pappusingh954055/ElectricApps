@@ -1,11 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
-import { Observable, of } from 'rxjs';
-import { startWith, map } from 'rxjs/operators';
+import { Observable, of, Subject } from 'rxjs';
+import { startWith, map, catchError, debounceTime, distinctUntilChanged, finalize, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { CustomerComponent } from '../../master/customer-component/customer-component';
+import { Customer } from '../../master/customer-component/customer';
+import { ProductService } from '../../master/product/service/product.service';
+import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { SaleOrderService } from '../service/saleorder.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-so-form',
@@ -14,30 +19,37 @@ import { CustomerComponent } from '../../master/customer-component/customer-comp
   templateUrl: './so-form.html',
   styleUrl: './so-form.scss',
 })
-export class SoForm implements OnInit {
+export class SoForm implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
+  private customerService = inject(Customer);
+  private productService = inject(ProductService);
+  private soService = inject(SaleOrderService);
+  private destroy$ = new Subject<void>();
+  private router = inject(Router);
 
   soForm!: FormGroup;
   isLoading = false;
   filteredProducts: Observable<any[]>[] = [];
+  isProductLoading: boolean[] = [];
 
-  // Totals
   subTotal = 0;
-  totalTaxAmount = 0;
+  totalTax = 0;
   grandTotal = 0;
-  totalTax: number = 0;
-  // Mock Data
-  products = [
-    { id: 1, name: 'Laptop', unit: 'PCS', rate: 50000, currentStock: 10, gst: 18 },
-    { id: 2, name: 'Mouse', unit: 'PCS', rate: 500, currentStock: 50, gst: 12 }
-  ];
-  customers = [{ id: 1, name: 'Walking Customer' }, { id: 2, name: 'ABC Solutions' }];
+
+  customers: any = [];
+  public generatedSoNumber: string = 'NEW ORDER'; 
 
   ngOnInit(): void {
     this.initForm();
-    this.addRow();
+    this.loadCustomers();
+    this.addRow(); 
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   initForm() {
@@ -46,7 +58,25 @@ export class SoForm implements OnInit {
       soDate: [new Date(), Validators.required],
       expectedDeliveryDate: [null],
       remarks: [''],
+      status: ['Draft'],
+      subTotal: [0], 
+      totalTax: [0], 
+      grandTotal: [0], 
       items: this.fb.array([])
+    });
+  }
+
+  loadCustomers(): void {
+    this.isLoading = true;
+    this.customerService.getAllCustomers().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
+        this.customers = res;
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.isLoading = false;
+      }
     });
   }
 
@@ -59,27 +89,36 @@ export class SoForm implements OnInit {
       productSearch: ['', Validators.required],
       productId: [null, Validators.required],
       qty: [1, [Validators.required, Validators.min(1)]],
-      unit: [{ value: '', disabled: true }],
-      rate: [0, [Validators.required, Validators.min(1)]],
+      unit: [''], // Note: Isse disabled mat rakhein, getRawValue handle kar lega
+      rate: [0, [Validators.required, Validators.min(0.01)]], 
       discountPercent: [0],
       gstPercent: [0],
-      taxAmount: [0], // For internal calculation
-      total: [{ value: 0, disabled: true }]
+      taxAmount: [0], 
+      total: [{ value: 0, disabled: true }], 
+      availableStock: [0], 
     });
 
     this.items.push(row);
     this.setupFilter(this.items.length - 1);
   }
 
-  setupFilter(index: number): void {
+  private setupFilter(index: number): void {
     const control = this.items.at(index).get('productSearch');
-    if (control) {
-      this.filteredProducts[index] = control.valueChanges.pipe(
-        startWith(''),
-        map(v => typeof v === 'string' ? v : v?.name),
-        map(name => name ? this.products.filter(p => p.name.toLowerCase().includes(name.toLowerCase())) : this.products.slice())
-      );
-    }
+    if (!control) return;
+
+    this.filteredProducts[index] = control.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      switchMap(value => {
+        if (typeof value !== 'string' || value.length < 2) return of([]);
+        this.isProductLoading[index] = true;
+        return this.productService.searchProducts(value).pipe(
+          finalize(() => this.isProductLoading[index] = false),
+          catchError(() => of([]))
+        );
+      }),
+      takeUntil(this.destroy$)
+    );
   }
 
   displayProductFn(p: any): string { return p?.name || ''; }
@@ -87,11 +126,13 @@ export class SoForm implements OnInit {
   onProductChange(index: number, event: any): void {
     const p = event.option.value;
     if (p) {
-      this.items.at(index).patchValue({
+      const row = this.items.at(index);
+      row.patchValue({
         productId: p.id,
-        unit: p.unit,
-        price: p.price,
-        gstPercent: p.gst || 0
+        unit: p.unit || 'PCS', // Ensure unit is patched
+        rate: p.saleRate || 0,
+        gstPercent: p.defaultGst || 0,
+        availableStock: p.currentStock || 0
       });
       this.updateTotal(index);
     }
@@ -100,17 +141,18 @@ export class SoForm implements OnInit {
   updateTotal(index: number): void {
     const row = this.items.at(index);
     const qty = +row.get('qty')?.value || 0;
-    const price = +row.get('price')?.value || 0;
+    const rate = +row.get('rate')?.value || 0; 
     const disc = +row.get('discountPercent')?.value || 0;
     const gst = +row.get('gstPercent')?.value || 0;
 
-    const amount = qty * price;
-    const taxable = amount - (amount * (disc / 100));
+    const amount = qty * rate;
+    const discountAmount = amount * (disc / 100);
+    const taxable = amount - discountAmount;
     const tax = taxable * (gst / 100);
     const total = taxable + tax;
 
     row.patchValue({
-      taxAmount: tax,
+      taxAmount: tax.toFixed(2),
       total: total.toFixed(2)
     }, { emitEvent: false });
 
@@ -118,7 +160,9 @@ export class SoForm implements OnInit {
   }
 
   calculateGrandTotal(): void {
-    let sub = 0; let tax = 0; let grand = 0;
+    let sub = 0;
+    let tax = 0;
+    let grand = 0;
 
     this.items.controls.forEach(c => {
       const rowTotal = +c.get('total')?.value || 0;
@@ -128,8 +172,15 @@ export class SoForm implements OnInit {
     });
 
     this.grandTotal = grand;
-    this.totalTaxAmount = tax;
-    this.subTotal = grand - tax;
+    this.totalTax = tax; 
+    this.subTotal = grand - tax; 
+
+    this.soForm.patchValue({
+        subTotal: this.subTotal.toFixed(2),
+        totalTax: this.totalTax.toFixed(2),
+        grandTotal: this.grandTotal.toFixed(2)
+    }, { emitEvent: false });
+
     this.cdr.detectChanges();
   }
 
@@ -140,35 +191,83 @@ export class SoForm implements OnInit {
     }
   }
 
-  saveOrder(status: string) {
-    if (this.soForm.invalid) return alert('Invalid Form');
-    console.log('Final SO Payload:', { ...this.soForm.getRawValue(), status, grandTotal: this.grandTotal });
+  getStockForProduct(index: number): number {
+    return this.items.at(index).get('availableStock')?.value || 0;
   }
 
   openAddCustomerDialog() {
-    const dialogRef = this.dialog.open(CustomerComponent, {
-      width: '90vw',
-      maxWidth: '600px',
-      disableClose: false,
-      autoFocus: true
-    });
+    const dialogRef = this.dialog.open(CustomerComponent, { width: '600px', disableClose: true });
+    dialogRef.afterClosed().subscribe(result => { if (result) this.loadCustomers(); });
+  }
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        // Add the new customer to the list
-        const newCustomer = {
-          id: this.customers.length + 1,
-          name: result.customerName
+  Save(): void {
+    if (this.soForm.invalid) {
+      this.soForm.markAllAsTouched();
+      return;
+    }
+
+    const formValues = this.soForm.getRawValue();
+    const userId = localStorage.getItem('email') || 'admin@admin.com'; // Default user handle
+    const currentStatus = formValues.status;
+
+    const successMessageText = currentStatus === 'Confirmed'
+      ? 'Sale Order saved and inventory adjusted successfully.'
+      : 'Sale Order saved as Draft. Inventory was not affected.';
+
+    const payload = {
+      customerId: formValues.customerId,
+      status: currentStatus,
+      soDate: formValues.soDate,
+      expectedDeliveryDate: formValues.expectedDeliveryDate,
+      remarks: formValues.remarks || '',
+      subTotal: Number(formValues.subTotal) || 0,
+      totalTax: Number(formValues.totalTax) || 0,
+      grandTotal: Number(formValues.grandTotal) || 0,
+      createdBy: userId,
+      items: this.items.controls.map(item => {
+        const val = (item as FormGroup).getRawValue();
+        return {
+          productId: val.productId,
+          productName: val.productSearch?.name || val.productSearch || '',
+          qty: Number(val.qty),
+          unit: val.unit || 'PCS', // Ensure unit is not null
+          rate: Number(val.rate), 
+          discountPercent: Number(val.discountPercent) || 0,
+          gstPercent: Number(val.gstPercent) || 0,
+          taxAmount: Number(val.taxAmount) || 0,
+          total: Number(val.total) || 0
         };
-        this.customers.push(newCustomer);
+      })
+    };
 
-        // Auto-select the newly added customer
-        this.soForm.patchValue({ customerId: newCustomer.id });
-        this.cdr.detectChanges();
+    this.soService.saveSaleOrder(payload).subscribe({
+      next: (res: any) => {
+        // ✅ Order Number Display Fix
+        const orderNo = res.soNumber || res.SONumber || 'N/A';
+        this.generatedSoNumber = orderNo; 
+
+        this.dialog.open(StatusDialogComponent, {
+          width: '400px',
+          data: {
+            isSuccess: true,
+            title: 'Order Saved!',
+            message: `Order #${orderNo}: ${successMessageText}`
+          }
+        }).afterClosed().subscribe(() => {
+          this.router.navigate(['/inventory/solist']);
+        });
+      },
+      error: (err) => {
+        // Detailed error handling based on Network response
+        console.error("Save Error:", err);
+        this.dialog.open(StatusDialogComponent, {
+          width: '350px',
+          data: { isSuccess: false, title: 'Action Failed', message: 'Check if all fields (Unit/Rate) are valid.' }
+        });
       }
     });
   }
-  getStockForProduct(index: number) {
-
+  goBack(){
+    this.router.navigate(['/app/inventory/solist']);
   }
 }

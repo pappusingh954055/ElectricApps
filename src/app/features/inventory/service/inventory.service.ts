@@ -30,19 +30,7 @@ export class InventoryService {
         return this.http.post(`${this.apiUrl}/PurchaseOrders/save-po`, payload);
     }
 
-    // Paged aur Sorted Data fetch karne ke liye
-    // getOrders(state: any): Observable<any> {
-    //     // Backend record ke parameters Case-Sensitive ho sakte hain
-    //     const params = new HttpParams()
-    //         .set('PageIndex', state.pageIndex.toString())
-    //         .set('PageSize', state.pageSize.toString())
-    //         .set('SortField', state.sortField || 'PoDate')
-    //         .set('SortOrder', state.sortOrder || 'desc')
-    //         .set('Filter', state.filter || ''); // Ensure empty string, null nahi
-
-    //     return this.http.get<any>(`${this.apiUrl}/purchaseorders`, { params });
-    // }
-
+ 
     // 1. Saari active Price Lists load karne ke liye
     getPriceLists(): Observable<any[]> {
         return this.http.get<any[]>(`${this.apiUrl}/pricelists`);
@@ -206,5 +194,37 @@ export class InventoryService {
         return this.http.post(url, productIds, {
             responseType: 'blob' // Yeh bilkul sahi hai file download ke liye
         });
+    }
+
+
+    StockReportDownload(productIds: number[]): Observable<Blob> {
+        return this.http.post(`${this.apiUrl}/export`, productIds, { responseType: 'blob' });
+    }
+
+    // --- New Sale Order Methods ---
+
+    /**
+     * Sale Orders ki list fetch karne ke liye
+     */
+    getSaleOrders(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/saleorders`);
+    }
+
+    /**
+     * Status update karne ke liye (Draft -> Confirmed)
+     * Is action se inventory backend mein affect hogi
+     */
+    updateSaleOrderStatus(id: number, status: string): Observable<any> {
+      
+        return this.http.patch(`${this.apiUrl}/saleorders/${id}/status`, JSON.stringify(status), {
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
+    /**
+     * Single Sale Order details dekhne ke liye
+     */
+    getSaleOrderById(id: number): Observable<any> {
+        return this.http.get<any>(`${this.apiUrl}/saleorders/${id}`);
     }
 }

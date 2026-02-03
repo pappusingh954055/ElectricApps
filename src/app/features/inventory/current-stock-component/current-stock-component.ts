@@ -28,7 +28,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
   ],
 })
 export class CurrentStockComponent implements OnInit, AfterViewInit {
-  displayedColumns: string[] = ['select', 'productName', 'totalReceived', 'totalRejected', 'availableStock', 'unitRate', 'actions'];
+  // ✅ Updated: Added 'totalSold' in correct sequence for the table
+  displayedColumns: string[] = ['select', 'productName', 'totalReceived', 'totalRejected', 'totalSold', 'availableStock', 'unitRate', 'actions'];
   stockDataSource = new MatTableDataSource<any>([]);
 
   selectedProductIds: number[] = [];
@@ -109,6 +110,8 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
         productName: item.productName,
         totalReceived: item.totalReceived,
         totalRejected: item.totalRejected,
+        // ✅ Updated: Mapping totalSold from Backend DTO
+        totalSold: item.totalSold || 0, 
         availableStock: item.availableStock,
         unit: item.unit,
         lastRate: item.lastRate,

@@ -63,6 +63,7 @@ export class ProductForm implements OnInit {
                 sku: res.code || res.sku,
                 brand: res.brand,
                 unit: res.unit,
+                saleRate: res.saleRate,
                 hsnCode: res.hsnCode,
                 basePurchasePrice: res.basePurchasePrice,
                 mrp: res.mrp,
@@ -104,7 +105,8 @@ export class ProductForm implements OnInit {
       trackInventory: [true],
       isActive: [true],
       minStock: [0, [Validators.min(0)]],
-      description: [null]
+      description: [null],
+      saleRate: [0, [Validators.min(0)]],
     });
   }
 
@@ -151,7 +153,7 @@ export class ProductForm implements OnInit {
 
     this.loading = true;
 
-    const currentUserId = localStorage.getItem('userId') || '';
+    const currentUserId = localStorage.getItem('email') || '';
     const productsData = this.mapToProducts(this.productsForm.value);
 
     if (this.isEditMode && this.productId) {
@@ -196,8 +198,8 @@ export class ProductForm implements OnInit {
     return {
       categoryId: formValue.categoryId,
       subcategoryId: formValue.subcategoryId,
-      productName: formValue.productName?.trim(), // Backend expects productName
-      sku: formValue.sku?.trim(),                // Backend expects sku
+      productName: formValue.productName?.trim(), 
+      sku: formValue.sku?.trim(),             
       brand: formValue.brand?.trim(),
       unit: formValue.unit,
       hsnCode: formValue.hsnCode?.trim(),
@@ -208,6 +210,7 @@ export class ProductForm implements OnInit {
       trackInventory: Boolean(formValue.trackInventory),
       isActive: Boolean(formValue.isActive),
       description: formValue.description?.trim(),
+      saleRate: Number(formValue.saleRate),
     };
   }
 }

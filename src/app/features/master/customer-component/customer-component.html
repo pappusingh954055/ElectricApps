@@ -19,6 +19,7 @@
       <mat-form-field appearance="outline">
         <mat-label>Customer Type</mat-label>
         <mat-select formControlName="customerType">
+          <mat-option [value]="null">Customer Type</mat-option>
           <mat-option value="Retail">Retail</mat-option>
           <mat-option value="Wholesale">Wholesale</mat-option>
         </mat-select>
@@ -56,7 +57,8 @@
 
       <mat-form-field appearance="outline">
         <mat-label>Status</mat-label>
-        <mat-select formControlName="status">
+        <mat-select formControlName="customerStatus">
+           <mat-option [value]="null">Select</mat-option>
           <mat-option value="Active">Active</mat-option>
           <mat-option value="Inactive">Inactive</mat-option>
         </mat-select>
@@ -65,7 +67,10 @@
     </div>
 
     <div class="actions">
-      <button mat-raised-button color="primary" (click)="save()">Save</button>
+     <button mat-raised-button color="primary" (click)="onSave()" [disabled]="loading">
+  <mat-spinner *ngIf="loading" diameter="18"></mat-spinner>
+  <span *ngIf="!loading">Save</span>
+</button>
       <button mat-button (click)="cancel()">Cancel</button>
     </div>
 

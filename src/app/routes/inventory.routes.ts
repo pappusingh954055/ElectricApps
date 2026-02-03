@@ -33,8 +33,11 @@ export const INVENTORY_ROUTES: Routes = [
 
   {
     path: 'solist',
+    data: { breadcrumb: 'Sale Orders' },
     children: [
-      { path: 'add', loadComponent: () => import('./../features/inventory/so-form/so-form').then(m => m.SoForm) }
+      { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('./../features/inventory/so-list/so-list').then(m => m.SoList) },
+      { path: 'add', data: { breadcrumb: 'Add New' }, loadComponent: () => import('./../features/inventory/so-form/so-form').then(m => m.SoForm) },
+      { path: 'edit/:id', data: { breadcrumb: 'Edit' }, loadComponent: () => import('./../features/inventory/so-form/so-form').then(m => m.SoForm) }
     ]
   }
 ];

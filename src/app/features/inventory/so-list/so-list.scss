@@ -1,0 +1,93 @@
+.container {
+  padding: 20px;
+  
+  .header-section {
+    margin-bottom: 20px;
+    h2 { color: #333; font-weight: 500; }
+  }
+}
+
+.responsive-table {
+  width: 100%;
+  overflow-x: auto; // Mobile scrolling
+  background: white;
+  border-radius: 8px;
+}
+
+table {
+  width: 100%;
+}
+
+// Status Badge Styling
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+
+  &.draft {
+    background-color: #f5f5f5;
+    color: #757575; // Grey for Draft
+  }
+
+  &.confirmed {
+    background-color: #e8f5e9;
+    color: #2e7d32; // Green for Confirmed
+  }
+}
+
+// Action Buttons
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  .btn-text {
+    margin-left: 5px;
+  }
+}
+
+// Mobile Responsiveness
+@media (max-width: 600px) {
+  .btn-text {
+    display: none; // Hide text on small screens, keep icons
+  }
+  
+  .mat-column-soDate {
+    display: none; // Hide date on mobile to save space
+  }
+}
+
+.responsive-table {
+  position: relative; // Taaki loader table ke upar align ho sake
+  min-height: 200px; // Jab data na ho tab bhi spinner dikhe
+  width: 100%;
+  overflow-x: auto;
+  background: white;
+  border-radius: 8px;
+}
+
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 56px; // Paginator ki height chor kar center karne ke liye
+  right: 0;
+  background: rgba(255, 255, 255, 0.7); // Light transparent background
+  z-index: 10; // Table ke upar dikhne ke liye
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Status Badges Styling [cite: 2026-01-22] */
+.status-badge {
+  padding: 4px 12px;
+  border-radius: 15px;
+  font-size: 12px;
+  font-weight: 500;
+  
+  &.draft { background: #eeeeee; color: #616161; }
+  &.confirmed { background: #e8f5e9; color: #2e7d32; }
+}

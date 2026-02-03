@@ -1,280 +1,222 @@
-mat-card {
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05) !important;
+/* --- Material Design Redesign --- */
+
+/* Base Card */
+mat-card.so-card {
+  padding: 32px;
+  border-radius: 8px; /* Material standard rounded corners */
+  box-shadow: 0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12) !important;
+  background-color: #ffffff;
+  font-family: 'Roboto', 'Helvetica Neue', sans-serif;
 }
 
-.bg-azure { background-color: #007bff !important; color: white !important; }
-.bg-rose { background-color: #f8d7da !important; color: #dc3545 !important; }
-
-.form-grid {
-  display: grid;
-  grid-template-columns: 1.5fr 2fr;
-  gap: 20px;
-  margin-bottom: 12px;
+/* Header Section */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 0; /* Removed border reliance */
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 400; /* Regular weight for Material headers */
+    color: rgba(0, 0, 0, 0.87);
+    letter-spacing: 0.01em;
+    
+    small {
+      color: #3f51b5; /* Primary accent color */
+      font-weight: 500;
+      font-size: 0.7em;
+      margin-left: 8px;
+    }
+  }
 }
 
+/* --- Form Grid & Inputs --- */
+
+/* Ensure form fields have consistent spacing */
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+/* Customer Field & Button Wrapper */
 .customer-field-container {
   display: flex;
   align-items: center;
-  gap: 8px;
-  
+  gap: 8px; /* Material standard gap */
+  width: 100%;
+
   mat-form-field {
     flex: 1;
   }
-  
+
   .add-customer-btn {
-    margin-top: -8px;
-    color: #007bff;
-    
-    &:hover {
-      color: #0056b3;
-      background-color: rgba(0, 123, 255, 0.1);
-    }
+    height: 48px; /* Match form field height */
+    width: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s;
     
     mat-icon {
-      font-size: 28px;
-      width: 28px;
-      height: 28px;
+      font-size: 24px;
+      color: #3f51b5;
+    }
+
+    &:hover {
+      background-color: rgba(63, 81, 181, 0.04);
     }
   }
 }
 
-.header-right-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 15px;
+/* --- Items List Section --- */
+
+.items-section {
+  background: transparent !important; /* Remove grey bg */
+  border: none !important;
+  box-shadow: none !important; /* Flatten for clean look */
+  padding: 0 !important;
+  margin-top: 16px;
 }
 
 .item-row {
   display: grid;
-  // Updated grid for 9 columns (Tax Amount included)
-  grid-template-columns: 2fr 0.6fr 0.6fr 0.8fr 0.6fr 0.6fr 0.7fr 1.1fr 45px;
-  gap: 12px;
-  align-items: center;
-  background: #f8f9fa;
-  padding: 12px;
-  border-radius: 10px;
+  grid-template-columns: 2.5fr 0.7fr 0.6fr 0.8fr 0.6fr 0.6fr 0.8fr 1.1fr 48px;
+  gap: 16px; /* Increased breathing room */
+  align-items: start;
+  background: white;
+  padding: 16px 8px; /* Less horizontal padding, more vertical */
   margin-bottom: 8px;
-  border: 1px solid #e9ecef;
+  border-bottom: 1px solid rgba(0,0,0,0.08); /* Divider style instead of box */
+  transition: background-color 0.2s;
 
-  .product-field { width: 100%; }
-  
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    background-color: #fafafa; /* Very subtle hover state */
+  }
+
+  /* Compact inputs for tables */
+  mat-form-field {
+    font-size: 14px;
+    
+    .mat-mdc-form-field-subscript-wrapper {
+        height: 1.5em; /* Prevent layout jumping on errors */
+    }
+  }
+
   .delete-btn {
-    margin-top: 4px;
-    &:hover { background-color: #dc3545 !important; color: white !important; }
+    margin-top: 4px; /* Center align with inputs */
+    color: rgba(0,0,0,0.54);
+    
+    &:hover {
+      color: #f44336; /* Material Error Red */
+      background-color: rgba(244, 67, 54, 0.04);
+    }
   }
 }
 
+/* Stock Availability Hint */
+.stock-hint {
+  font-size: 12px;
+  color: rgba(0,0,0,0.6);
+  margin-top: 4px;
+  
+  strong {
+    color: #2e7d32; /* Material Green */
+    font-weight: 500;
+  }
+}
+
+/* --- Footer Section --- */
+
 .remarks-container {
-  width: 100%;
-  margin-bottom: 5px;
-  .w-100 { width: 100% !important; }
+  margin-top: 24px;
 }
 
 .po-footer {
   display: flex;
   flex-direction: column;
-  align-items: flex-end; 
-  gap: 15px;
-  margin-top: 24px;
-  padding-top: 18px;
-  border-top: 2px solid #f1f1f1;
+  align-items: flex-end;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0,0,0,0.12);
 
   .summary-area {
-    width: 300px;
+    min-width: 300px;
+    
     .summary-line {
       display: flex;
       justify-content: space-between;
-      margin-bottom: 5px;
+      margin-bottom: 12px;
       font-size: 15px;
+      color: rgba(0,0,0,0.87);
+      
+      .text-muted {
+        color: rgba(0,0,0,0.6);
+      }
+    }
+
+    .po-grand-total {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(0,0,0,0.12);
+      
+      h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 500;
+        color: #3f51b5;
+      }
+    }
+  }
+
+  .footer-actions {
+    margin-top: 24px;
+    display: flex;
+    gap: 16px;
+    
+    button {
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
       font-weight: 500;
     }
   }
-
-  .footer-actions {
-    display: flex;
-    gap: 10px;
-  }
 }
 
-.po-grand-total {
-  font-size: 24px;
-  font-weight: 800;
-  color: #2c3e50;
-  border-top: 1px solid #ccc;
-  margin-top: 10px;
-  padding-top: 5px;
+/* --- Responsive Adjustments --- */
+@media (max-width: 1280px) {
+    .item-row {
+        grid-template-columns: 2fr 0.7fr 0.7fr 0.8fr 0.6fr 0.6fr 0.8fr 1fr 40px;
+        gap: 12px;
+    }
 }
 
-// Tablet landscape and smaller
-@media (max-width: 1200px) {
-  .item-row {
-    grid-template-columns: 2fr 0.7fr 0.7fr 0.9fr 0.7fr 0.7fr 0.8fr 1.2fr 45px;
-    gap: 10px;
-  }
-}
-
-// Tablet portrait
-@media (max-width: 1024px) {
-  mat-card {
-    padding: 16px;
-  }
-
-  .form-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-
-  .header-right-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .item-row {
-    grid-template-columns: 2fr 0.8fr 0.8fr 1fr 0.8fr 0.8fr 1fr 1.2fr 45px;
-    gap: 8px;
-    padding: 10px;
-  }
-
-  .po-footer {
-    .summary-area {
-      width: 100%;
-      max-width: 400px;
-    }
-  }
-}
-
-// Mobile landscape and smaller tablets
-@media (max-width: 768px) {
-  mat-card {
-    padding: 12px;
-  }
-
-  .customer-field-container {
-    .add-customer-btn {
-      mat-icon {
-        font-size: 24px;
-        width: 24px;
-        height: 24px;
-      }
-    }
-  }
-
-  .item-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    padding: 12px;
-
-    .product-field {
-      grid-column: 1 / -1;
+@media (max-width: 960px) {
+    .item-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        border: 1px solid rgba(0,0,0,0.12);
+        padding: 16px;
+        border-radius: 4px;
+        
+        .product-field { grid-column: 1 / -1; }
+        .tax-field, .total-field { grid-column: span 1; }
+        .delete-btn { 
+            grid-column: 1 / -1; 
+            justify-self: end;
+        }
     }
 
-    .delete-btn {
-      grid-column: 1 / -1;
-      width: 100%;
-      border-radius: 4px !important;
-    }
-  }
-
-  .po-footer {
-    align-items: stretch;
-
-    .summary-area {
-      width: 100%;
-    }
-
-    .footer-actions {
+    .card-header {
       flex-direction: column;
-      gap: 8px;
-
-      button {
-        width: 100%;
-      }
+      align-items: flex-start;
+      gap: 16px;
     }
-  }
-}
-
-// Mobile portrait
-@media (max-width: 600px) {
-  mat-card {
-    padding: 10px;
-    border-radius: 8px;
-  }
-
-  .form-grid {
-    gap: 12px;
-  }
-
-  .customer-field-container {
-    gap: 6px;
-
-    .add-customer-btn {
-      margin-top: -6px;
-    }
-  }
-
-  .header-right-grid {
-    gap: 10px;
-  }
-
-  .item-row {
-    display: block;
-    padding: 10px;
-
-    mat-form-field {
-      width: 100%;
-      margin-bottom: 8px;
-    }
-
-    .delete-btn {
-      width: 100%;
-      margin-top: 8px;
-    }
-  }
-
-  .remarks-container {
-    margin-bottom: 10px;
-  }
-
-  .po-footer {
-    margin-top: 16px;
-    padding-top: 16px;
-    gap: 12px;
-  }
-
-  .po-grand-total {
-    font-size: 20px;
-  }
-}
-
-// Very small screens
-@media (max-width: 400px) {
-  mat-card {
-    padding: 8px;
-  }
-
-  .form-grid {
-    gap: 10px;
-  }
-
-  .item-row {
-    padding: 8px;
-
-    mat-form-field {
-      margin-bottom: 6px;
-    }
-  }
-
-  .po-grand-total {
-    font-size: 18px;
-  }
-
-  .footer-actions {
-    button {
-      font-size: 14px;
-      padding: 8px 16px;
-    }
-  }
 }

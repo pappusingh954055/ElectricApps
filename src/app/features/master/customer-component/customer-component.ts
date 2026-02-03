@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, Optional } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatDialogRef } from '@angular/material/dialog';
+import { Customer } from './customer';
 
 @Component({
   selector: 'app-customer-component',
@@ -12,12 +13,18 @@ import { MatDialogRef } from '@angular/material/dialog';
   styleUrl: './customer-component.scss',
 })
 export class CustomerComponent {
+
   readonly fb = inject(FormBuilder);
   readonly router = inject(Router);
   readonly route = inject(ActivatedRoute);
   readonly dialogRef = inject(MatDialogRef<CustomerComponent>, { optional: true });
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  // ⚠ keeping same service name as you used
+  private readonly customerService = inject(Customer);
 
   isEdit = false;
+  loading = false;
 
   customerForm = this.fb.group({
     customerName: ['', Validators.required],
@@ -28,38 +35,72 @@ export class CustomerComponent {
     creditLimit: [0],
     billingAddress: ['', Validators.required],
     shippingAddress: [''],
-    status: ['Active']
+    customerStatus: ['']
   });
 
   constructor() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.isEdit = true;
-      // Later → load customer by id
+      // Future: load customer by id
     }
   }
 
-  save() {
-    if (this.customerForm.invalid) return;
-
-    console.log('CUSTOMER:', this.customerForm.value);
-
-    // If opened in dialog, close with data
-    if (this.dialogRef) {
-      this.dialogRef.close(this.customerForm.value);
-    } else {
-      // If opened as a page, navigate back
-      this.router.navigate(['/app/master/customers']);
+  // ================= SAVE =================
+  onSave() {
+    if (this.customerForm.invalid) {
+      this.customerForm.markAllAsTouched();
+      return;
     }
+    const currentUserId = localStorage.getItem('email') || '';
+    this.loading = true;
+    this.cdr.detectChanges();
+    const payload = {
+      customerName: this.customerForm.value.customerName,
+      customerType: this.customerForm.value.customerType,
+      phone: this.customerForm.value.phone,
+      email: this.customerForm.value.email,
+      gstNumber: this.customerForm.value.gst,
+      creditLimit: this.customerForm.value.creditLimit,
+      billingAddress: this.customerForm.value.billingAddress,
+      shippingAddress: this.customerForm.value.shippingAddress,
+      customerStatus: this.customerForm.value.customerStatus,
+      createdBy: currentUserId
+    };
+
+    this.customerService
+      .addCustomer(payload)
+      .subscribe((res: any) => {
+
+        this.loading = false;
+        this.cdr.detectChanges();
+
+        // Close popup with data
+        if (this.dialogRef) {
+          this.dialogRef.close({
+            id: res.id,
+            ...payload
+          });
+        } else {
+
+        }
+
+      }, (err) => {
+
+        console.error('Customer save failed', err);
+        this.loading = false;
+        this.cdr.detectChanges();
+      });
   }
 
+
+  // ================= CANCEL =================
   cancel() {
-    // If opened in dialog, close without data
     if (this.dialogRef) {
       this.dialogRef.close();
     } else {
-      // If opened as a page, navigate back
       this.router.navigate(['/app/master/customers']);
     }
   }
+
 }

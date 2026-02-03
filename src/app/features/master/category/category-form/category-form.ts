@@ -25,6 +25,8 @@ export class CategoryForm implements OnInit {
   loading = false;
   categoryId: string | null = null;
 
+
+
   constructor(private fb: FormBuilder, private dialog: MatDialog,
     private cdr: ChangeDetectorRef, private zone: NgZone,
     private route: ActivatedRoute, private router: Router) { }

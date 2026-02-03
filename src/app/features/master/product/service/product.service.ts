@@ -94,4 +94,8 @@ export class ProductService {
 
         return query.join('&');
     }
+
+//     searchProducts(term: string): Observable<any[]> {
+//   return this.http.get<any[]>(`${this.apiUrl}/products/search?term=${term}`);
+// }
 }

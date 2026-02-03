@@ -151,8 +151,8 @@ export class SubcategoryForm implements OnInit {
   private mapToSubCategories(formValue: any): any {
     return {
       categoryId: formValue.categoryId,
-      name: formValue.subcategoryName, // API expects 'name' for save/update
-      code: formValue.subcategoryCode, // API expects 'code' for save/update
+      subCategoryName: formValue.subcategoryName,
+      subCategoryCode: formValue.subcategoryCode,
       defaultGst: Number(formValue.defaultGst),
       description: formValue.description?.trim(),
       isActive: Boolean(formValue.isActive)
