@@ -2,7 +2,7 @@
 
 /* Base Card */
 mat-card.so-card {
-  padding: 32px;
+  padding: 16px;
   border-radius: 8px; /* Material standard rounded corners */
   box-shadow: 0 3px 1px -2px rgba(0,0,0,0.2), 0 2px 2px 0 rgba(0,0,0,0.14), 0 1px 5px 0 rgba(0,0,0,0.12) !important;
   background-color: #ffffff;
@@ -88,7 +88,7 @@ mat-card.so-card {
   background: white;
   padding: 16px 8px; /* Less horizontal padding, more vertical */
   margin-bottom: 8px;
-  border-bottom: 1px solid rgba(0,0,0,0.08); /* Divider style instead of box */
+
   transition: background-color 0.2s;
 
   &:last-child {
@@ -143,7 +143,7 @@ mat-card.so-card {
   align-items: flex-end;
   margin-top: 32px;
   padding-top: 24px;
-  border-top: 1px solid rgba(0,0,0,0.12);
+
 
   .summary-area {
     min-width: 300px;

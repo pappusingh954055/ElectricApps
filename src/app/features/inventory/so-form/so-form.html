@@ -1,57 +1,58 @@
-<div class="container-fluid p-3">
+<div class="container-fluid p-2">
   <mat-card class="so-card">
     <mat-card-content class="pt-4">
-      <button mat-icon-button (click)="goBack()" class="mr-2" matTooltip="Back to List">
-      <mat-icon>arrow_back</mat-icon>
-    </button>  
+      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 8px; min-height: 48px;">
+        <button mat-icon-button (click)="goBack()" matTooltip="Back to List">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <button mat-flat-button color="primary" (click)="Save()" [disabled]="soForm.invalid">
+          <mat-icon>save</mat-icon> Save Sale Order
+        </button>
+      </div>  
 
       <form [formGroup]="soForm">
-        <div class="row">
-          <div class="col-md-3">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; align-items: start; margin-bottom: 24px;">
+          <!-- Order Status -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-100">
+            <mat-label>Order Status</mat-label>
+            <mat-select formControlName="status">
+              <mat-option value="Draft">Save as Draft</mat-option>
+              <mat-option value="Confirmed">Confirm & Reduce Stock</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <!-- Customer -->
+          <div class="customer-field-container">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-100">
-              <mat-label>Order Status</mat-label>
-              <mat-select formControlName="status">
-                <mat-option value="Draft">Save as Draft</mat-option>
-                <mat-option value="Confirmed">Confirm & Reduce Stock</mat-option>
+              <mat-label>Customer *</mat-label>
+              <mat-select formControlName="customerId">
+                <mat-option *ngFor="let c of customers" [value]="c.id">{{ c.customerName }}</mat-option>
               </mat-select>
             </mat-form-field>
+            <button mat-icon-button type="button" class="add-customer-btn flex-shrink-0" (click)="openAddCustomerDialog()" matTooltip="Add New Customer">
+              <mat-icon color="primary">add_circle</mat-icon>
+            </button>
           </div>
 
-          <div class="col-md-3">
-            <div class="d-flex align-items-center gap-2">
-              <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-100">
-                <mat-label>Customer *</mat-label>
-                <mat-select formControlName="customerId">
-                  <mat-option *ngFor="let c of customers" [value]="c.id">{{ c.customerName }}</mat-option>
-                </mat-select>
-              </mat-form-field>
-              <button mat-icon-button type="button" class="add-customer-btn flex-shrink-0" (click)="openAddCustomerDialog()" matTooltip="Add New Customer">
-                <mat-icon color="primary">add_circle</mat-icon>
-              </button>
-            </div>
-          </div>
+          <!-- SO Date -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-100">
+            <mat-label>SO Date</mat-label>
+            <input matInput [matDatepicker]="soPicker" formControlName="soDate">
+            <mat-datepicker-toggle matSuffix [for]="soPicker"></mat-datepicker-toggle>
+            <mat-datepicker #soPicker></mat-datepicker>
+          </mat-form-field>
 
-          <div class="col-md-3">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-100">
-              <mat-label>SO Date</mat-label>
-              <input matInput [matDatepicker]="soPicker" formControlName="soDate">
-              <mat-datepicker-toggle matSuffix [for]="soPicker"></mat-datepicker-toggle>
-              <mat-datepicker #soPicker></mat-datepicker>
-            </mat-form-field>
-          </div>
-
-          <div class="col-md-3">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-100">
-              <mat-label>Expected Delivery</mat-label>
-              <input matInput [matDatepicker]="delPicker" formControlName="expectedDeliveryDate">
-              <mat-datepicker-toggle matSuffix [for]="delPicker"></mat-datepicker-toggle>
-              <mat-datepicker #delPicker></mat-datepicker>
-            </mat-form-field>
-          </div>
+          <!-- Expected Delivery -->
+          <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-100">
+            <mat-label>Expected Delivery</mat-label>
+            <input matInput [matDatepicker]="delPicker" formControlName="expectedDeliveryDate">
+            <mat-datepicker-toggle matSuffix [for]="delPicker"></mat-datepicker-toggle>
+            <mat-datepicker #delPicker></mat-datepicker>
+          </mat-form-field>
         </div>
 
-        <div class="mb-3">
-          <button mat-flat-button color="accent" style="margin-bottom: 10px;" class="add-item-btn" type="button" (click)="addRow()">
+        <div class="mb-2">
+          <button mat-flat-button color="accent" class="add-item-btn" type="button" (click)="addRow()">
             <mat-icon>add</mat-icon> Add Item
           </button>
         </div>
@@ -112,32 +113,31 @@
           </div>
         </div>
 
-        <div class="remarks-container mt-4">
-          <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
-            <mat-label>Remarks / Payment Terms</mat-label>
-            <textarea matInput formControlName="remarks" rows="2" placeholder="Enter terms or special instructions..."></textarea>
-          </mat-form-field>
-        </div>
-
-        <div class="po-footer mt-4 p-3 border-top bg-white rounded" *ngIf="items.length">
-          <div class="summary-area text-end">
-            <div class="summary-line mb-1">
-              <span class="text-muted">Sub-Total:</span>
-              <span class="ms-3 fw-bold">₹ {{ soForm.get('subTotal')?.value | number:'1.2-2' }}</span>
-            </div>
-            <div class="summary-line mb-1">
-              <span class="text-muted">Total Tax:</span>
-              <span class="ms-3 text-danger fw-bold">+ ₹ {{ soForm.get('totalTax')?.value | number:'1.2-2' }}</span>
-            </div>
-            <div class="po-grand-total mt-2 border-top pt-2">
-               <h3 class="m-0 text-primary">Grand Total: ₹ {{ soForm.get('grandTotal')?.value | number:'1.2-2' }}</h3>
-            </div>
+        <div class="d-flex justify-content-between align-items-end mt-4">
+          <!-- Left: Remarks -->
+          <div class="remarks-container" style="flex: 1; max-width: 50%; padding-right: 20px; margin-top: 0;">
+            <mat-form-field appearance="outline" class="w-100" subscriptSizing="dynamic">
+              <mat-label>Remarks / Payment Terms</mat-label>
+              <textarea matInput formControlName="remarks" rows="1" placeholder="Enter terms or special instructions..."></textarea>
+            </mat-form-field>
           </div>
 
-          <div class="footer-actions mt-3 text-end">       
-           <button mat-flat-button color="primary" (click)="Save()" [disabled]="soForm.invalid">
-            <mat-icon>save</mat-icon> Save Sale Order
-          </button>
+          <!-- Right: Totals -->
+          <div class="po-footer p-3 bg-white rounded" style="margin-top: 0; margin-bottom: 12px;" *ngIf="items.length">
+            <div class="summary-area text-end">
+              <div class="summary-line mb-1">
+                <span class="text-muted">Sub-Total:</span>
+                <span class="ms-3 fw-bold">₹ {{ soForm.get('subTotal')?.value | number:'1.2-2' }}</span>
+              </div>
+              <div class="summary-line mb-1">
+                <span class="text-muted">Total Tax:</span>
+                <span class="ms-3 text-danger fw-bold">+ ₹ {{ soForm.get('totalTax')?.value | number:'1.2-2' }}</span>
+              </div>
+              <div class="po-grand-total mt-2 border-top pt-2">
+                 <span class="text-primary fw-bold h5 m-0">Grand Total:</span>
+                 <span class="ms-3 text-danger fw-bold h3 m-0">₹ {{ soForm.get('grandTotal')?.value | number:'1.2-2' }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </form>
