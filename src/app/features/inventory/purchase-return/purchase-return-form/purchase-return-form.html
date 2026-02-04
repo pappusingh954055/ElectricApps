@@ -97,7 +97,13 @@
             <th mat-header-cell *matHeaderCellDef class="text-center"> Return </th>
             <td mat-cell *matCellDef="let element; let i = index" class="text-center">
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="qty-input compact-input d-inline-block">
-                <input matInput type="number" [formControl]="element.get('returnQty')" (input)="calculateTotal(i)" class="text-center fw-bold">
+                <input matInput type="number" min="0" [max]="element.value.maxQty" [formControl]="element.get('returnQty')" (input)="calculateTotal(i)" class="text-center fw-bold">
+                <mat-error *ngIf="element.get('returnQty').hasError('max')" style="font-size: 9px; white-space: nowrap;">
+                  Max: {{element.value.maxQty}}
+                </mat-error>
+                <mat-error *ngIf="element.get('returnQty').hasError('min')" style="font-size: 9px; white-space: nowrap;">
+                  Min: 0
+                </mat-error>
               </mat-form-field>
             </td>
           </ng-container>

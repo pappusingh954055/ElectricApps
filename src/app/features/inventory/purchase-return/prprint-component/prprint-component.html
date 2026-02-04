@@ -50,7 +50,7 @@
     </div>
     <div class="calculations">
       <p>Sub Total: <span>{{subTotal | currency:'INR'}}</span></p>
-      <p>GST (0%): <span>{{gstAmount | currency:'INR'}}</span></p>
+      <p>GST ({{gstPercentage}}%): <span>{{taxAmount | currency:'INR'}}</span></p>
       <hr>
       <p class="grand-total">Grand Total: <span>{{grandTotal | currency:'INR'}}</span></p>
     </div>

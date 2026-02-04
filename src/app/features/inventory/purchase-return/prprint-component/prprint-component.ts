@@ -5,6 +5,7 @@ import { MaterialModule } from '../../../../shared/material/material/material-mo
 
 @Component({
   selector: 'app-prprint-component',
+  standalone: true, // Agar aap standalone use kar rahe hain
   imports: [CommonModule, MaterialModule],
   templateUrl: './prprint-component.html',
   styleUrl: './prprint-component.scss',
@@ -14,15 +15,24 @@ export class PRPrintComponent {
   isLoading = false;
 
   @Input() selectedReturn: any = null;
+
+  // Console ke hisab se subTotal
   get subTotal(): number {
-    return this.selectedReturn?.items?.reduce((sum: number, item: any) => sum + ((item.returnQty || 0) * (item.rate || 0)), 0) || 0;
+    return this.selectedReturn?.subTotal || 0;
   }
 
-  get gstAmount(): number {
-    return this.selectedReturn?.gstAmount || 0;
+  // Console mein taxAmount field hai
+  get taxAmount(): number {
+    return this.selectedReturn?.taxAmount || 0;
   }
 
+  // Items array se GST % uthane ke liye
+  get gstPercentage(): number {
+    return this.selectedReturn?.items?.[0]?.gstPercent || 0;
+  }
+
+  // Console mein grandTotal field hai
   get grandTotal(): number {
-    return this.selectedReturn?.totalAmount || (this.subTotal + this.gstAmount);
+    return this.selectedReturn?.grandTotal || 0;
   }
 }

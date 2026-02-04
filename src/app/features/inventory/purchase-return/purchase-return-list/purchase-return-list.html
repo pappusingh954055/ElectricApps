@@ -1,9 +1,14 @@
 <div class="container-fluid">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="page-title m-0">Purchase Return (Debit Note)</h2>
-    <div class="d-flex">
-      <button mat-raised-button class="export-btn me-3">
-        <mat-icon>download</mat-icon> Export Excel
+    <div class="d-flex gap-2">
+      <button mat-raised-button 
+        color="accent" 
+        (click)="exportToExcel()" 
+        [disabled]="isExportLoading || dataSource.data.length === 0">
+        <mat-icon *ngIf="!isExportLoading">download</mat-icon>
+        <mat-spinner diameter="20" *ngIf="isExportLoading" class="me-2"></mat-spinner>
+        Export Excel
       </button>
       <button mat-raised-button color="primary" (click)="navigateToCreate()">
         <mat-icon>add</mat-icon> New Return
@@ -13,23 +18,37 @@
 
   <mat-card class="content-card mat-elevation-z0" style="position: relative; min-height: 400px;">
     
-    <div *ngIf="isLoading" class="loader-overlay">
+    <div *ngIf="isTableLoading" class="loader-overlay">
       <mat-spinner diameter="50"></mat-spinner>
-      <p class="mt-2">Fetching returns...</p>
+      <p class="mt-2">Processing...</p>
     </div>
 
-    <div class="filter-section p-3 border-bottom d-flex align-items-center bg-white">
+    <div class="filter-section p-3 border-bottom d-flex align-items-center bg-white gap-3 flex-wrap">
       <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field dense-form-field">
         <mat-label>Search Returns</mat-label>
         <mat-icon matPrefix class="text-secondary ms-2 me-2">search</mat-icon>
-        <input matInput (keyup)="applySearch($event)" [value]="searchKey" placeholder="Search by # or Supplier">
+        <input matInput (keyup)="applySearch($event)" [(ngModel)]="searchKey" placeholder="Search by # or Supplier">
         <button mat-icon-button matSuffix *ngIf="searchKey" (click)="searchKey=''; loadReturns()">
            <mat-icon>close</mat-icon>
         </button>
       </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-form-field">
+        <mat-label>Enter a date range</mat-label>
+        <mat-date-range-input [rangePicker]="picker">
+          <input matStartDate placeholder="Start date" [(ngModel)]="fromDate">
+          <input matEndDate placeholder="End date" [(ngModel)]="toDate">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker></mat-date-range-picker>
+      </mat-form-field>
+
+      <button mat-flat-button color="primary" style="height: 40px;" (click)="loadReturns()">
+        Apply
+      </button>
     </div>
 
-    <div class="table-responsive" [style.visibility]="isLoading ? 'hidden' : 'visible'">
+    <div class="table-responsive" [style.visibility]="isTableLoading ? 'hidden' : 'visible'">
       <table mat-table [dataSource]="dataSource" matSort (matSortChange)="loadReturns()">
         
         <ng-container matColumnDef="returnNumber">
@@ -54,7 +73,7 @@
 
         <ng-container matColumnDef="totalAmount">
           <th mat-header-cell *matHeaderCellDef mat-sort-header> AMOUNT </th>
-          <td mat-cell *matCellDef="let row"> {{row.totalAmount | currency:'INR'}} </td>
+          <td mat-cell *matCellDef="let row"> {{row.grandTotal | currency:'INR'}} </td>
         </ng-container>
 
         <ng-container matColumnDef="status">
@@ -69,8 +88,12 @@
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef class="text-end pe-3"> ACTIONS </th>
           <td mat-cell *matCellDef="let row" class="text-end pe-3">
-            <button mat-icon-button color="primary" title="View Details"><mat-icon>visibility</mat-icon></button>
-            <button mat-icon-button color="warn" title="Print/Download" (click)="printReturn(row)"><mat-icon>print</mat-icon></button>
+            <button mat-icon-button color="primary" title="View Details" (click)="viewDetails(row)">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" title="Print/Download" (click)="printReturn(row)">
+              <mat-icon>print</mat-icon>
+            </button>
           </td>
         </ng-container>
 
@@ -78,7 +101,11 @@
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
 
-      <mat-paginator [length]="totalRecords" [pageSize]="10" [pageSizeOptions]="[5, 10, 25]" (page)="loadReturns($event)"></mat-paginator>
+      <mat-paginator [length]="totalRecords" 
+                     [pageSize]="pageSize" 
+                     [pageSizeOptions]="[5, 10, 25]" 
+                     (page)="onPageChange($event)">
+      </mat-paginator>
     </div>
   </mat-card>
 </div>

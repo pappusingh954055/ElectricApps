@@ -42,10 +42,10 @@ export class GrnFormComponent implements OnInit {
         this.resetFormBeforeLoad();
         this.poId = +params['id'];
         this.isFromPopup = false;
-        
+
         // Logic Update: View mode mein id ko grnHeaderId ki tarah treat karein
         if (this.isViewMode) {
-          this.loadPOData(0, this.poId); 
+          this.loadPOData(0, this.poId);
         } else {
           this.loadPOData(this.poId);
         }
@@ -91,7 +91,7 @@ export class GrnFormComponent implements OnInit {
           grnNumber: res.grnNumber || 'AUTO-GEN',
           poNumber: res.poNumber,
           supplierName: res.supplierName,
-          remarks: res.remarks || '' 
+          remarks: res.remarks || ''
         });
 
         if (res.items && res.items.length > 0) {
@@ -144,11 +144,11 @@ export class GrnFormComponent implements OnInit {
       };
     });
     this.calculateGrandTotal();
-    this.cdr.detectChanges(); 
+    this.cdr.detectChanges();
   }
 
   onQtyChange(item: any) {
-    if (this.isViewMode) return; 
+    if (this.isViewMode) return;
 
     const enteredQty = Number(item.receivedQty || 0);
     const pendingQty = Number(item.pendingQty || 0);
@@ -188,10 +188,12 @@ export class GrnFormComponent implements OnInit {
 
   saveGRN() {
     if (this.grnForm.invalid || this.items.length === 0 || this.isViewMode) return;
-    const currentUserId = localStorage.getItem('userId') || '00000000-0000-0000-0000-000000000000';
+
+    const currentUserId = localStorage.getItem('email') || '';
 
     const grnData = {
       poHeaderId: this.poId,
+      supplierId: this.supplierId,
       receivedDate: this.grnForm.getRawValue().receivedDate,
       remarks: this.grnForm.value.remarks,
       totalAmount: this.calculateGrandTotal(),
