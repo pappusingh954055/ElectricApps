@@ -362,6 +362,21 @@ export class PoForm implements OnInit, OnDestroy {
   saveDraft() {
     const formValue = this.poForm.getRawValue();
 
+    // Date Validation: Delivery Date >= PO Date
+    if (formValue.expectedDeliveryDate) {
+      const poDate = new Date(formValue.poDate);
+      const deliveryDate = new Date(formValue.expectedDeliveryDate);
+
+      // Reset time to ensure we only subtract dates
+      poDate.setHours(0, 0, 0, 0);
+      deliveryDate.setHours(0, 0, 0, 0);
+
+      if (deliveryDate < poDate) {
+        this.notification.showStatus(false, 'Expected Delivery Date must be greater than or equal to PO Date.');
+        return;
+      }
+    }
+
     // Manual validation check for zero price items
     const hasZeroPrice = formValue.items.some((item: any) => Number(item.price) <= 0);
 

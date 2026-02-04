@@ -39,12 +39,12 @@ export class SoForm implements OnInit, OnDestroy {
   grandTotal = 0;
 
   customers: any = [];
-  public generatedSoNumber: string = 'NEW ORDER'; 
+  public generatedSoNumber: string = 'NEW ORDER';
 
   ngOnInit(): void {
     this.initForm();
     this.loadCustomers();
-    this.addRow(); 
+    this.addRow();
   }
 
   ngOnDestroy(): void {
@@ -59,9 +59,9 @@ export class SoForm implements OnInit, OnDestroy {
       expectedDeliveryDate: [null],
       remarks: [''],
       status: ['Draft'],
-      subTotal: [0], 
-      totalTax: [0], 
-      grandTotal: [0], 
+      subTotal: [0],
+      totalTax: [0],
+      grandTotal: [0],
       items: this.fb.array([])
     });
   }
@@ -90,12 +90,12 @@ export class SoForm implements OnInit, OnDestroy {
       productId: [null, Validators.required],
       qty: [1, [Validators.required, Validators.min(1)]],
       unit: [''], // Note: Isse disabled mat rakhein, getRawValue handle kar lega
-      rate: [0, [Validators.required, Validators.min(0.01)]], 
+      rate: [0, [Validators.required, Validators.min(0.01)]],
       discountPercent: [0],
       gstPercent: [0],
-      taxAmount: [0], 
-      total: [{ value: 0, disabled: true }], 
-      availableStock: [0], 
+      taxAmount: [0],
+      total: [{ value: 0, disabled: true }],
+      availableStock: [0],
     });
 
     this.items.push(row);
@@ -141,7 +141,7 @@ export class SoForm implements OnInit, OnDestroy {
   updateTotal(index: number): void {
     const row = this.items.at(index);
     const qty = +row.get('qty')?.value || 0;
-    const rate = +row.get('rate')?.value || 0; 
+    const rate = +row.get('rate')?.value || 0;
     const disc = +row.get('discountPercent')?.value || 0;
     const gst = +row.get('gstPercent')?.value || 0;
 
@@ -172,13 +172,13 @@ export class SoForm implements OnInit, OnDestroy {
     });
 
     this.grandTotal = grand;
-    this.totalTax = tax; 
-    this.subTotal = grand - tax; 
+    this.totalTax = tax;
+    this.subTotal = grand - tax;
 
     this.soForm.patchValue({
-        subTotal: this.subTotal.toFixed(2),
-        totalTax: this.totalTax.toFixed(2),
-        grandTotal: this.grandTotal.toFixed(2)
+      subTotal: this.subTotal.toFixed(2),
+      totalTax: this.totalTax.toFixed(2),
+      grandTotal: this.grandTotal.toFixed(2)
     }, { emitEvent: false });
 
     this.cdr.detectChanges();
@@ -200,6 +200,19 @@ export class SoForm implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe(result => { if (result) this.loadCustomers(); });
   }
 
+  get hasZeroStockItems(): boolean {
+    return this.items.controls.some(control => {
+      const stock = control.get('availableStock')?.value || 0;
+      const productId = control.get('productId')?.value;
+      const qty = Number(control.get('qty')?.value || 0);
+
+      // Invalid if:
+      // 1. Product is selected but stock is 0 or less (Out of Stock)
+      // 2. Qty entered is greater than available stock
+      return productId && (stock <= 0 || qty > stock);
+    });
+  }
+
   Save(): void {
     if (this.soForm.invalid) {
       this.soForm.markAllAsTouched();
@@ -207,6 +220,29 @@ export class SoForm implements OnInit, OnDestroy {
     }
 
     const formValues = this.soForm.getRawValue();
+
+    // Date Validation: Delivery Date >= SO Date
+    if (formValues.expectedDeliveryDate) {
+      const soDate = new Date(formValues.soDate);
+      const deliveryDate = new Date(formValues.expectedDeliveryDate);
+
+      // Reset time to ensure we only subtract dates
+      soDate.setHours(0, 0, 0, 0);
+      deliveryDate.setHours(0, 0, 0, 0);
+
+      if (deliveryDate < soDate) {
+        this.dialog.open(StatusDialogComponent, {
+          width: '400px',
+          data: {
+            isSuccess: false,
+            title: 'Validation Error',
+            message: 'Expected Delivery Date must be greater than or equal to Sale Order Date.'
+          }
+        });
+        return;
+      }
+    }
+
     const userId = localStorage.getItem('email') || 'admin@admin.com'; // Default user handle
     const currentStatus = formValues.status;
 
@@ -231,7 +267,7 @@ export class SoForm implements OnInit, OnDestroy {
           productName: val.productSearch?.name || val.productSearch || '',
           qty: Number(val.qty),
           unit: val.unit || 'PCS', // Ensure unit is not null
-          rate: Number(val.rate), 
+          rate: Number(val.rate),
           discountPercent: Number(val.discountPercent) || 0,
           gstPercent: Number(val.gstPercent) || 0,
           taxAmount: Number(val.taxAmount) || 0,
@@ -244,7 +280,7 @@ export class SoForm implements OnInit, OnDestroy {
       next: (res: any) => {
         // ✅ Order Number Display Fix
         const orderNo = res.soNumber || res.SONumber || 'N/A';
-        this.generatedSoNumber = orderNo; 
+        this.generatedSoNumber = orderNo;
 
         this.dialog.open(StatusDialogComponent, {
           width: '400px',
@@ -254,7 +290,7 @@ export class SoForm implements OnInit, OnDestroy {
             message: `Order #${orderNo}: ${successMessageText}`
           }
         }).afterClosed().subscribe(() => {
-          this.router.navigate(['/inventory/solist']);
+          this.router.navigate(['/app/inventory/solist']);
         });
       },
       error: (err) => {
@@ -267,7 +303,7 @@ export class SoForm implements OnInit, OnDestroy {
       }
     });
   }
-  goBack(){
+  goBack() {
     this.router.navigate(['/app/inventory/solist']);
   }
 }
