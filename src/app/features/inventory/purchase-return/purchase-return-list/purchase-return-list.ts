@@ -8,6 +8,8 @@ import { MaterialModule } from '../../../../shared/material/material/material-mo
 import { PurchaseReturnService } from '../services/purchase-return.service';
 import { PRPrintComponent } from '../prprint-component/prprint-component';
 import { FormsModule } from '@angular/forms';
+import { PurchaseReturnView } from '../purchase-return-view/purchase-return-view';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-purchase-return-list',
@@ -23,11 +25,11 @@ export class PurchaseReturnList implements OnInit {
 
   dataSource = new MatTableDataSource<any>();
   displayedColumns: string[] = ['returnNumber', 'returnDate', 'supplierName', 'grnRef', 'totalAmount', 'status', 'actions'];
-  
+
   // Separate Loading States [cite: 2026-02-04]
-  isTableLoading = false; 
+  isTableLoading = false;
   isExportLoading = false;
-  
+
   selectedReturn: any;
   searchKey: string = "";
   fromDate: Date | null = null;
@@ -39,6 +41,7 @@ export class PurchaseReturnList implements OnInit {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
+  private dialog = inject(MatDialog);
 
   ngOnInit(): void {
     this.loadReturns();
@@ -52,7 +55,7 @@ export class PurchaseReturnList implements OnInit {
 
     this.prService.getPurchaseReturns(this.searchKey, this.pageIndex, this.pageSize, start, end).subscribe({
       next: (res) => {
-        this.dataSource.data = res.data || res.items; 
+        this.dataSource.data = res.data || res.items;
         this.totalRecords = res.total || res.totalCount;
         this.isTableLoading = false;
         this.cdr.detectChanges();
@@ -74,7 +77,7 @@ export class PurchaseReturnList implements OnInit {
   applySearch(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
     this.searchKey = filterValue.trim().toLowerCase();
-    this.pageIndex = 0; 
+    this.pageIndex = 0;
     this.loadReturns();
   }
 
@@ -83,14 +86,29 @@ export class PurchaseReturnList implements OnInit {
   }
 
   viewDetails(row: any) {
-    this.router.navigate(['/app/inventory/purchase-return/view', row.id]);
+    this.isTableLoading = true;
+    this.prService.getPurchaseReturnById(row.id).subscribe({
+      next: (res) => {
+        console.log('popupdata', res);
+        this.isTableLoading = false;
+        this.dialog.open(PurchaseReturnView, {
+          width: '800px',
+          data: res
+        });
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isTableLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   printReturn(row: any) {
-    this.isTableLoading = true; 
+    this.isTableLoading = true;
     this.prService.getPurchaseReturnById(row.id).subscribe({
       next: (res) => {
-        this.selectedReturn = res; 
+        this.selectedReturn = res;
         this.isTableLoading = false;
         this.cdr.detectChanges();
 

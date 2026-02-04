@@ -37,7 +37,7 @@ export const INVENTORY_ROUTES: Routes = [
     children: [
       { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('../features/inventory/purchase-return/purchase-return-list/purchase-return-list').then(m => m.PurchaseReturnList) },
       { path: 'add', data: { breadcrumb: 'New Purchase Return' }, loadComponent: () => import('../features/inventory/purchase-return/purchase-return-form/purchase-return-form').then(m => m.PurchaseReturnForm) },
-      { path: 'view/:id', data: { breadcrumb: 'Detail' }, loadComponent: () => import('../features/inventory/purchase-return/purchase-return-detail/purchase-return-detail').then(m => m.PurchaseReturnDetail) },
+
       { path: 'debit-note/:id', data: { breadcrumb: 'Debit Note' }, loadComponent: () => import('../features/inventory/purchase-return/debit-note-view/debit-note-view').then(m => m.DebitNoteView) }
     ]
   },

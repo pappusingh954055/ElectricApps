@@ -44,6 +44,8 @@
 .table-responsive {
   width: 100%;
   overflow-x: auto;
+  max-height: 600px; /* Fixed height for sticky header */
+  overflow-y: auto;
 }
 
 table {
@@ -52,6 +54,9 @@ table {
   border-spacing: 0;
 
   th.mat-header-cell {
+    position: sticky;
+    top: 0;
+    z-index: 100;
     background-color: #f8f9fa;
     color: #5f6368;
     font-weight: 700;
@@ -61,6 +66,7 @@ table {
     padding: 10px 16px;
     border-bottom: 1px solid #dadce0;
     white-space: nowrap;
+    box-shadow: 0 2px 4px -2px rgba(0,0,0,0.1); 
   }
 
   td.mat-cell {
@@ -71,18 +77,27 @@ table {
     border-bottom: 1px solid #f1f3f4;
   }
 
-  tr.mat-row {
+  tr.hover-row {
     height: 48px; /* Standard dense height */
-    transition: background-color 0.15s ease-in-out;
-  }
-
-  tr.mat-row:hover {
-    background-color: #f5f6f7 !important; /* Distinct hover gray */
+    transition: all 0.2s ease-in-out;
     cursor: pointer;
+
+    &:hover {
+      background-color: #f1f5f9 !important; // Slate-100
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      z-index: 10;
+      position: relative;
+      
+      td.mat-cell {
+        background-color: #f1f5f9 !important; // Match row hover color
+        border-bottom-color: transparent; 
+      }
+    }
   }
   
   /* Remove border from last row */
-  tr.mat-row:last-child td {
+  tr.hover-row:last-child td {
     border-bottom: none;
   }
 }

@@ -159,6 +159,9 @@ $border-color: #e2e8f0;
 // Table Styling
 .table-container {
   overflow-x: auto;
+  max-height: 500px; // Limit height for sticky header behavior
+  overflow-y: auto;
+  border-radius: 8px; // Smooth corners
 }
 
 table.clean-table {
@@ -167,36 +170,47 @@ table.clean-table {
   border-spacing: 0;
 
   th.mat-header-cell {
-    background-color: $bg-color;
-    color: $text-secondary;
-    font-weight: 600;
-    font-size: 11px;
-    letter-spacing: 0.06em;
+    position: sticky;
+    top: 0;
+    z-index: 100; // Ensure header stays on top
+    background-color: #f1f5f9; // Slightly darker header background
+    color: #475569; // Slate-600
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    padding: 16px;
-    border-bottom: 1px solid $border-color;
+    padding: 16px 24px;
+    border-bottom: 2px solid #e2e8f0; // Thicker bottom border for header
   }
   
   td.mat-cell {
-    padding: 12px 16px;
+    padding: 16px 24px;
     color: #334155;
     border-bottom: 1px solid #f1f5f9;
-    font-size: 14px;
+    font-size: 0.95rem;
     vertical-align: middle;
+    background-color: white; // Ensure default bg is white
   }
 
   .product-name {
-    font-weight: 700;
+    font-weight: 600;
     color: $text-primary;
-    font-size: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
   }
 
   .product-ref {
     color: $text-secondary;
     font-size: 0.8rem;
+    margin-top: 4px;
     
     .monospace {
-      font-family: monospace;
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      background: #f1f5f9;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: #475569;
     }
   }
 
@@ -205,20 +219,26 @@ table.clean-table {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 4px;
-    border-radius: 4px;
-    background-color: rgba(220, 38, 38, 0.1); // Red-100 equivalent
+    padding: 6px 12px;
+    border-radius: 8px;
+    background-color: #fef2f2; // Red-50
+    border: 1px solid #fee2e2; // Red-200
     min-width: 60px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 
     .rejected-value {
       font-weight: 700;
       color: #dc2626; // Red-600
+      font-size: 1.1rem;
+      line-height: 1;
     }
     
     .rejected-label {
-      color: #dc2626;
-      font-size: 10px;
-      line-height: 1;
+      color: #ef4444; // Red-500
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-top: 2px;
     }
   }
   
@@ -228,10 +248,22 @@ table.clean-table {
       font-size: 1rem;
   }
 
+  // Row Styling
   tr.hover-row {
-    transition: background-color 0.15s ease;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer; // Cursor pointer to indicate interactivity
+    
     &:hover {
-      background-color: $bg-color !important;
+      background-color: #f1f5f9 !important; // Slate-100 - more visible than Slate-50
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      z-index: 10;
+      position: relative;
+      
+      td.mat-cell {
+        background-color: #f1f5f9 !important; // Match row hover color
+        border-bottom-color: transparent; 
+      }
     }
   }
 
