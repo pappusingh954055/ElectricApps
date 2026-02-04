@@ -48,16 +48,30 @@ export class PurchaseReturnList implements OnInit {
   }
 
   loadReturns() {
-    this.isTableLoading = true; // Table specific loader [cite: 2026-02-04]
+    this.isTableLoading = true;
 
     const start = this.fromDate ? this.fromDate.toISOString() : undefined;
     const end = this.toDate ? this.toDate.toISOString() : undefined;
 
-    this.prService.getPurchaseReturns(this.searchKey, this.pageIndex, this.pageSize, start, end).subscribe({
+    // IMPORTANT: sortField aur sortOrder pass karna zaruri hai [cite: 2026-02-04]
+    const sortField = this.sort?.active || 'ReturnDate';
+    const sortOrder = this.sort?.direction || 'desc';
+
+    this.prService.getPurchaseReturns(
+      this.searchKey,
+      this.pageIndex,
+      this.pageSize,
+      start,
+      end,
+      sortField,
+      sortOrder
+    ).subscribe({
       next: (res) => {
-        this.dataSource.data = res.data || res.items;
+        // Backend mapping match karein: res.items aur res.totalCount [cite: 2026-02-04]
+        this.dataSource.data = res.items || [];
+        this.totalRecords = res.totalCount || 0;
+
         console.log('Purchase Return List Data:', this.dataSource.data);
-        this.totalRecords = res.total || res.totalCount;
         this.isTableLoading = false;
         this.cdr.detectChanges();
       },

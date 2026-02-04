@@ -36,15 +36,19 @@ export class PurchaseReturnService {
         pageIndex: number = 0,
         pageSize: number = 10,
         fromDate?: string,
-        toDate?: string
+        toDate?: string,
+        sortField: string = 'ReturnDate', // Naya parameter [cite: 2026-02-04]
+        sortOrder: string = 'desc'       // Naya parameter [cite: 2026-02-04]
     ): Observable<any> {
         // 1. HttpParams initialize karein [cite: 2026-02-04]
         let params = new HttpParams()
-            .set('filter', search) // Backend 'filter' expect kar raha hai [cite: 2026-02-04]
+            .set('filter', search)
             .set('pageIndex', pageIndex.toString())
-            .set('pageSize', pageSize.toString());
+            .set('pageSize', pageSize.toString())
+            .set('sortField', sortField) // Backend mapping ke liye [cite: 2026-02-04]
+            .set('sortOrder', sortOrder); // Backend mapping ke liye [cite: 2026-02-04]
 
-        // 2. Optional Date Filters add karein [cite: 2026-02-04]
+        // 2. Optional Date Filters [cite: 2026-02-04]
         if (fromDate) {
             params = params.set('fromDate', fromDate);
         }
@@ -52,7 +56,7 @@ export class PurchaseReturnService {
             params = params.set('toDate', toDate);
         }
 
-        // 3. Backend endpoint call [cite: 2026-02-04]
+        // 3. Backend call (Ensure URL is correct) [cite: 2026-02-04]
         return this.http.get(`${this.apiUrl}/PurchaseReturn/list`, { params });
     }
 

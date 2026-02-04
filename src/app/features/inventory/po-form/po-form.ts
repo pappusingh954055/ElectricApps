@@ -375,7 +375,7 @@ export class PoForm implements OnInit, OnDestroy {
 
     // Identify selected supplier for its name
     const supplier = this.suppliers.find(s => s.id === Number(formValue.supplierId));
-
+    const userId = localStorage.getItem('email') || 'System User';
     this.isLoading = true;
     const payload: any = {
       id: this.isEditMode ? Number(this.poId) : 0,
@@ -385,7 +385,7 @@ export class PoForm implements OnInit, OnDestroy {
       poDate: DateHelper.toLocalISOString(formValue.poDate),
       poNumber: formValue.PoNumber,
       remarks: formValue.remarks || 'No remarks provided', // Required field
-      createdBy: 'System User', // Required field
+      createdBy: userId, // Required field
       grandTotal: this.grandTotal,
       status: 'Draft',
       items: formValue.items.map((item: any) => ({
@@ -394,6 +394,8 @@ export class PoForm implements OnInit, OnDestroy {
         unit: item.unit || 'PCS', // Required field
         rate: Number(item.price),
         gstPercent: Number(item.gstPercent),
+        discountPercent: Number(item.discountPercent),
+        taxAmount: Number(item.taxAmount),
         total: Number(item.total)
       }))
     };
