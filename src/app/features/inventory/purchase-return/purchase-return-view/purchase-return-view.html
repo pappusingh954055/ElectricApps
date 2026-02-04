@@ -11,9 +11,13 @@
     <div class="col-md-6 border-end">
       <div class="detail-row"><span class="label">Supplier:</span> <span class="value">{{data.supplierName}}</span></div>
       <div class="detail-row"><span class="label">Return Date:</span> <span class="value">{{data.returnDate | date:'mediumDate'}}</span></div>
-      <div class="detail-row"><span class="label">Status:</span> 
-        <span class="status-badge" [ngClass]="data.status?.toLowerCase()">{{data.status}}</span>
-      </div>
+      <div class="detail-row">
+  <span class="label">Status:</span> 
+  <span class="status-badge" 
+        [ngClass]="data?.status?.toLowerCase() === 'confirmed' ? 'completed' : data?.status?.toLowerCase()">
+    {{ data?.status === 'Confirmed' ? 'Completed' : data?.status }}
+  </span>
+</div>
     </div>
     <div class="col-md-6 ps-4">
       <div class="detail-row"><span class="label">GRN Reference:</span> <span class="value">{{data.items[0]?.grnRef}}</span></div>

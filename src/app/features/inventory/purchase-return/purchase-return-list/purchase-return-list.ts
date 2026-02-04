@@ -56,6 +56,7 @@ export class PurchaseReturnList implements OnInit {
     this.prService.getPurchaseReturns(this.searchKey, this.pageIndex, this.pageSize, start, end).subscribe({
       next: (res) => {
         this.dataSource.data = res.data || res.items;
+        console.log('Purchase Return List Data:', this.dataSource.data);
         this.totalRecords = res.total || res.totalCount;
         this.isTableLoading = false;
         this.cdr.detectChanges();

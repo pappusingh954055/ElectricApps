@@ -10,7 +10,10 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
   styleUrl: './purchase-return-view.scss',
 })
 export class PurchaseReturnView {
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any) { }
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any) { 
+
+    console.log('dada', data);
+  }
 
   print() {
     window.print();
