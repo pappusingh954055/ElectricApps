@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 
@@ -25,5 +25,22 @@ export class PurchaseReturnService {
     // Naya Return save karne ke liye [cite: 2026-02-03]
     savePurchaseReturn(data: any): Observable<any> {
         return this.http.post<any>(`${this.apiUrl}/PurchaseReturn/create`, data);
+    }
+
+    // getPurchaseReturns(): Observable<any[]> {
+    //     return this.http.get<any[]>(`${this.apiUrl}/PurchaseReturn/list`);
+    // }
+
+    getPurchaseReturns(search: string = '', pageIndex: number = 0, pageSize: number = 10): Observable<any> {
+        let params = new HttpParams()
+            .set('search', search)
+            .set('pageIndex', pageIndex.toString())
+            .set('pageSize', pageSize.toString());
+
+        return this.http.get(`${this.apiUrl}/PurchaseReturn/list`, { params }); // Backend 'list' endpoint [cite: 2026-02-04]
+    }
+
+    getPurchaseReturnById(id: number): Observable<any> {
+        return this.http.get<any>(`${this.apiUrl}/PurchaseReturn/details/${id}`);
     }
 }

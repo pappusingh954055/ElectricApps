@@ -5,6 +5,8 @@ import { MaterialModule } from '../../../../shared/material/material/material-mo
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { PurchaseReturnService } from '../services/purchase-return.service';
+import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-purchase-return-form',
@@ -26,7 +28,8 @@ export class PurchaseReturnForm implements OnInit {
     private fb: FormBuilder,
     private prService: PurchaseReturnService,
     private snackBar: MatSnackBar,
-    public router: Router
+    public router: Router,
+    private dialog: MatDialog,
   ) { }
 
   ngOnInit(): void {
@@ -38,6 +41,7 @@ export class PurchaseReturnForm implements OnInit {
     this.returnForm = this.fb.group({
       supplierId: ['', Validators.required],
       returnDate: [new Date(), Validators.required],
+      remarks: ['', Validators.required],
       items: this.fb.array([])
     });
   }
@@ -49,17 +53,22 @@ export class PurchaseReturnForm implements OnInit {
   loadSuppliersWithRejections() {
     this.prService.getSuppliersWithRejections().subscribe({
       next: (data) => this.suppliers = data,
+    
       complete: () => this.cdr.detectChanges(),
+      
       error: (err) => console.error("Error loading suppliers", err)
     });
+      console.log("Suppliers with rejections:", this.suppliers);
   }
 
   onSupplierChange(supplierId: number) {
+     
     this.items.clear();
     this.tableDataSource = [];
 
     this.prService.getRejectedItems(supplierId).subscribe({
       next: (res) => {
+       
         this.cdr.detectChanges();
         if (res && res.length > 0) {
           setTimeout(() => {
@@ -95,25 +104,52 @@ export class PurchaseReturnForm implements OnInit {
   }
 
   onSubmit() {
-    if (this.returnForm.invalid) {
-      this.snackBar.open("Check limits (Max qty exceeded).", "Close");
+    if (this.returnForm.invalid) return;
+
+    const rawData = this.returnForm.getRawValue();
+    const itemsToReturn = rawData.items.filter((item: any) => item.returnQty > 0);
+
+    if (itemsToReturn.length === 0) {
+
+      this.openDialog(false, 'At least one item must be returned.');
       return;
     }
 
-    const formData = this.returnForm.getRawValue();
-    formData.items = formData.items.filter((i: any) => i.returnQty > 0);
+    const payload = {
+      supplierId: rawData.supplierId,
+      returnDate: rawData.returnDate,
+      remarks: rawData.remarks,
+      items: itemsToReturn
+    };
 
-    if (formData.items.length === 0) {
-      this.snackBar.open("Select at least one item.", "Close");
-      return;
-    }
-
-    this.prService.savePurchaseReturn(formData).subscribe({
+    this.prService.savePurchaseReturn(payload).subscribe({
       next: (res) => {
-        this.snackBar.open("Purchase Return Saved!", "Success");
-        this.router.navigate(['/app/inventory/purchase-return/list']);
+        this.cdr.detectChanges();
+        const dialogRef = this.dialog.open(StatusDialogComponent, {
+          width: '400px',
+          data: {
+            isSuccess: true,
+            message: `Purchase Return ${res.returnNumber} successfully created.`
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(() => {
+          this.router.navigate(['/app/inventory/purchase-return']);
+        });
       },
-      error: (err) => this.snackBar.open("Error saving data", "Error")
+      error: (err) => {
+        this.cdr.detectChanges();
+        this.openDialog(false, err.error?.message || 'An error occurred while saving the data.');
+      }
+    });
+  }
+
+
+  openDialog(isSuccess: boolean, message: string) {
+    this.dialog.open(StatusDialogComponent, {
+      width: '400px',
+      data: { isSuccess, message }
     });
   }
 }
+

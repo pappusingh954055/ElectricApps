@@ -1,7 +1,11 @@
 .breadcrumb {
-  padding: 8px 16px;
-  background: #f1f1f1;
-  font-size: 13px;
+  padding: 12px 32px;
+  background: #f8fafc; // Match the page background for a seamless look, or keep #f1f1f1
+  // Let's use a very light gray that blends well
+  background-color: #ffffff; 
+  font-size: 14px;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .crumb {

@@ -1,0 +1,62 @@
+<div id="print-section" class="debit-note-container" *ngIf="selectedReturn">
+  <div class="header">
+    <div class="company-info">
+      <h1>ELECTRIC INVENTORY</h1>
+      <p>123, Business Park, Patna, Bihar</p>
+      <p>GSTIN: 10AAAAA0000A1Z5</p>
+    </div>
+    <div class="document-title">
+      <h2>DEBIT NOTE</h2>
+      <p><b>Return #:</b> {{selectedReturn?.returnNumber}}</p>
+      <p><b>Date:</b> {{selectedReturn?.returnDate | date:'dd-MMM-yyyy'}}</p>
+    </div>
+  </div>
+
+  <hr>
+
+  <div class="address-section">
+    <div class="bill-to">
+      <p class="label">Return To (Supplier):</p>
+      <p><b>{{selectedReturn?.supplierName}}</b></p>
+    </div>
+  </div>
+
+  <table class="print-table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Product Name</th>
+        <th>GRN Ref</th>
+        <th class="text-end">Qty</th>
+        <th class="text-end">Rate</th>
+        <th class="text-end">Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of selectedReturn?.items; let i = index">
+        <td>{{i + 1}}</td>
+        <td>{{item.productName}}</td>
+        <td>{{item.grnRef}}</td>
+        <td class="text-end">{{item.returnQty}}</td>
+        <td class="text-end">{{item.rate | currency:'INR'}}</td>
+        <td class="text-end">{{(item.returnQty * item.rate) | currency:'INR'}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="total-section">
+    <div class="notes">
+      <p><b>Reason:</b> {{selectedReturn?.remarks || 'Stock Return'}}</p>
+    </div>
+    <div class="calculations">
+      <p>Sub Total: <span>{{subTotal | currency:'INR'}}</span></p>
+      <p>GST (0%): <span>{{gstAmount | currency:'INR'}}</span></p>
+      <hr>
+      <p class="grand-total">Grand Total: <span>{{grandTotal | currency:'INR'}}</span></p>
+    </div>
+  </div>
+
+  <div class="footer-sign">
+    <p>Authorized Signatory</p>
+  </div>
+</div>
