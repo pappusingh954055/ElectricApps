@@ -26,7 +26,7 @@ export class PurchaseReturnForm implements OnInit {
     private fb: FormBuilder,
     private prService: PurchaseReturnService,
     private snackBar: MatSnackBar,
-    private router: Router
+    public router: Router
   ) { }
 
   ngOnInit(): void {
