@@ -1,11 +1,65 @@
-.container-fluid {
-  background-color: #f8fafc; /* Lighter, cooler gray */
-  padding: 32px;
+// Variables
+$bg-color: #f8fafc;
+$text-primary: #0f172a;
+$text-secondary: #64748b;
+$primary-color: #3f51b5;
+$border-color: #e2e8f0;
 
-  h2 {
-    color: #0f172a;
+.page-container {
+  background-color: $bg-color;
+  padding: 32px;
+  min-height: 100vh;
+}
+
+// Header Section
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap; // Responsive wrapping
+  gap: 16px;
+
+  .header-actions {
+    display: flex;
+    gap: 16px; // Explicit gap between buttons
+    align-items: center;
+  }
+
+  .title {
+    color: $text-primary;
     font-size: 24px;
     letter-spacing: -0.5px;
+    margin: 0;
+    position: relative;
+    display: inline-block;
+    font-weight: 700;
+
+    .title-underline {
+      display: block;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 25%;
+      border-bottom: 3px solid $primary-color;
+      margin-bottom: -5px;
+    }
+  }
+
+  .subtitle {
+    color: $text-secondary;
+    margin: 4px 0 0 0;
+    font-size: 0.875rem;
+  }
+
+  .btn-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    .material-icons {
+      font-size: 20px;
+    }
   }
 }
 
@@ -16,17 +70,83 @@
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02) !important;
   background: white;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  overflow: hidden;
+  overflow: visible; // Allow Select dropdowns to flow
+  margin-bottom: 24px;
 
   &:hover {
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.025) !important;
+  }
+
+  .card-header {
+    padding: 16px 24px 8px; /* pt-3 px-4 pb-2 */
+    
+    .header-text {
+      color: $text-secondary;
+      text-transform: uppercase;
+      font-size: 0.75rem; /* small */
+      font-weight: 700;
+      margin: 0;
+    }
+  }
+
+  .card-body {
+    padding: 24px;
+    padding-top: 0;
+  }
+}
+
+// Input Grid - Replaces Bootstrap Row/Col
+.input-grid {
+  display: flex;
+  gap: 24px; /* Space between columns */
+  
+  .input-item {
+     flex: 1; /* flex-grow-1 equivalent */
+     min-width: 0; /* Prevents flex items from overflowing in some browsers */
+  }
+}
+
+// Items Header
+.items-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid $bg-color;
+  background-color: white;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+
+  .items-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    .items-title {
+      margin: 0;
+      font-weight: 700;
+      color: $text-primary;
+      font-size: 1rem;
+    }
+  }
+
+  .items-badge {
+    color: $primary-color;
+    background-color: rgba(63, 81, 181, 0.1);
+    border: 1px solid rgba(63, 81, 181, 0.25);
+    padding: 4px 12px;
+    border-radius: 50rem;
+    font-size: 0.875rem;
+    font-weight: 500;
   }
 }
 
 // Custom Form Fields
 .custom-field {
+  width: 100%;
+  
   ::ng-deep .mat-mdc-text-field-wrapper {
-    background-color: #f8fafc !important;
+    background-color: $bg-color !important;
     border-radius: 8px;
   }
   
@@ -36,20 +156,24 @@
 }
 
 // Table Styling
+.table-container {
+  overflow-x: auto;
+}
+
 table.clean-table {
   width: 100%;
   border-collapse: separate; 
   border-spacing: 0;
 
   th.mat-header-cell {
-    background-color: #f8fafc;
-    color: #64748b;
+    background-color: $bg-color;
+    color: $text-secondary;
     font-weight: 600;
     font-size: 11px;
     letter-spacing: 0.06em;
     text-transform: uppercase;
     padding: 16px;
-    border-bottom: 1px solid #e2e8f0;
+    border-bottom: 1px solid $border-color;
   }
   
   td.mat-cell {
@@ -60,14 +184,56 @@ table.clean-table {
     vertical-align: middle;
   }
 
-  tr.hover-row {
-    transition: background-color 0.15s ease;
-    &:hover {
-      background-color: #f8fafc !important;
+  .product-name {
+    font-weight: 700;
+    color: $text-primary;
+    font-size: 1rem;
+  }
+
+  .product-ref {
+    color: $text-secondary;
+    font-size: 0.8rem;
+    
+    .monospace {
+      font-family: monospace;
     }
   }
 
-  // Last row border fix
+  .rejected-badge {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 4px;
+    background-color: rgba(220, 38, 38, 0.1); // Red-100 equivalent
+    min-width: 60px;
+
+    .rejected-value {
+      font-weight: 700;
+      color: #dc2626; // Red-600
+    }
+    
+    .rejected-label {
+      color: #dc2626;
+      font-size: 10px;
+      line-height: 1;
+    }
+  }
+  
+  .total-text {
+      font-weight: 700;
+      color: $primary-color;
+      font-size: 1rem;
+  }
+
+  tr.hover-row {
+    transition: background-color 0.15s ease;
+    &:hover {
+      background-color: $bg-color !important;
+    }
+  }
+
   tr:last-child td {
     border-bottom: none;
   }
@@ -81,7 +247,7 @@ table.clean-table {
     height: 36px !important;
     padding: 0 8px !important;
     background-color: #fff !important;
-    border: 1px solid #e2e8f0;
+    border: 1px solid $border-color;
     border-radius: 6px;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
@@ -99,12 +265,11 @@ table.clean-table {
   ::ng-deep input.mat-mdc-input-element {
     text-align: center !important;
     font-weight: 600;
-    color: #0f172a; 
+    color: $text-primary; 
     padding: 0 !important;
     margin: 0 !important;
   }
 
-  // Remove default underlines/borders from Material to use custom wrapper border
   ::ng-deep .mat-mdc-notched-outline {
     display: none !important; 
   }
@@ -119,8 +284,18 @@ table.clean-table {
 
 // Media Query
 @media (max-width: 768px) {
-  .col-md-4, .col-md-8 {
-    width: 100%;
-    margin-bottom: 24px;
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .header-actions {
+      width: 100%;
+      justify-content: flex-start;
+    }
+  }
+
+  .input-grid {
+    flex-direction: column;
+    gap: 16px;
   }
 }
