@@ -14,8 +14,10 @@
       <div class="detail-row">
   <span class="label">Status:</span> 
   <span class="status-badge" 
-        [ngClass]="data?.status?.toLowerCase() === 'confirmed' ? 'completed' : data?.status?.toLowerCase()">
-    {{ data?.status === 'Confirmed' ? 'Completed' : data?.status }}
+        [ngClass]="{
+          'completed': data?.status === 'Completed' || data?.status === 'Confirmed'
+        }">
+    {{ data?.status }}
   </span>
 </div>
     </div>
