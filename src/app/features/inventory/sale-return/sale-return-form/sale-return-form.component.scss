@@ -1,6 +1,6 @@
 .form-container {
     padding: 24px;
-    max-width: 1000px;
+    max-width: 95%;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
@@ -148,8 +148,8 @@ input[type=number] {
     }
 }
 .small-input-wide {
-    width: 130px; // Condition dropdown aur Reason input ke liye
-    font-size: 12px;
+    width: 200px;
+    font-size: 13px;
 }
 
 .items-section {
