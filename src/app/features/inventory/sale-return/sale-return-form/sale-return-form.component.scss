@@ -55,17 +55,21 @@
 
     table {
         width: 100%;
-        
+
+        td {
+            vertical-align: top;
+            padding-top: 10px;
+        }
+
         .small-input {
             width: 100px;
             font-size: 13px;
         }
 
+
         /* Remove underline from small inputs to make them look cleaner in table if desired, 
            or keep default material style. */
-        td {
-            vertical-align: middle;
-        }
+
     }
 }
 
@@ -147,8 +151,13 @@ input[type=number] {
         }
     }
 }
-.small-input-wide {
+.condition-input {
     width: 200px;
+    font-size: 13px;
+}
+
+.reason-input {
+    width: 300px;
     font-size: 13px;
 }
 
