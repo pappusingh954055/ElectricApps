@@ -43,6 +43,19 @@
     /* Enable vertical scroll for sticky header to work relative to this container */
     max-height: calc(100vh - 220px); 
     overflow: auto;
+
+    .loading-shade {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.7);
+        z-index: 200;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
     
     table {
         width: 100%;
