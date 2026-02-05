@@ -1,0 +1,101 @@
+<div class="view-container">
+    <div class="no-print actions-bar">
+        <button mat-icon-button (click)="goBack()">
+            <mat-icon>arrow_back</mat-icon>
+        </button>
+        <button mat-raised-button color="primary" (click)="print()">
+            <mat-icon>print</mat-icon> Print Credit Note
+        </button>
+    </div>
+
+    <div class="document-paper" *ngIf="creditNoteData; else loading">
+        <div class="doc-header">
+            <div class="company-info">
+                <h2>Electric Apps Co.</h2>
+                <p>123 Tech Park, Innovation Street</p>
+                <p>Bangalore, KA, 560001</p>
+                <p>GSTIN: 29ABCDE1234F1Z5</p>
+            </div>
+            <div class="doc-title">
+                <h1>CREDIT NOTE</h1>
+                <p>Original for Recipient</p>
+            </div>
+        </div>
+
+        <div class="doc-meta">
+            <div class="meta-left">
+                <p><strong>To:</strong></p>
+                <h3>{{ creditNoteData.customerName }}</h3>
+                <p>{{ creditNoteData.customerAddress }}</p>
+                <p>GSTIN: {{ creditNoteData.customerGst }}</p>
+            </div>
+            <div class="meta-right">
+                <table class="meta-table">
+                    <tr>
+                        <td><strong>CN No:</strong></td>
+                        <td>{{ creditNoteData.returnNumber }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Date:</strong></td>
+                        <td>{{ creditNoteData.returnDate | date:'mediumDate' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ref Invoice:</strong></td>
+                        <td>{{ creditNoteData.soRef }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="doc-body">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Item Description</th>
+                        <th class="text-right">Qty</th>
+                        <th class="text-right">Rate</th>
+                        <th class="text-right">Tax (%)</th>
+                        <th class="text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let item of creditNoteData.items; let i = index">
+                        <td>{{ i + 1 }}</td>
+                        <td>{{ item.productName }}</td>
+                        <td class="text-right">{{ item.returnQuantity }}</td>
+                        <td class="text-right">{{ item.rate | currency:'INR' }}</td>
+                        <td class="text-right">{{ item.taxRate }}%</td>
+                        <td class="text-right">{{ item.amount | currency:'INR' }}</td>
+                    </tr>
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5" class="text-right"><strong>Total Amount:</strong></td>
+                        <td class="text-right"><strong>{{ creditNoteData.totalAmount | currency:'INR' }}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <div class="doc-footer">
+            <div class="terms">
+                <p><strong>Terms & Conditions:</strong></p>
+                <p>1. This credit note is issued against return of goods mentioned above.</p>
+                <p>2. Subject to Bangalore Jurisdiction.</p>
+            </div>
+            <div class="signature">
+                <p>For Electric Apps Co.</p>
+                <br><br>
+                <p>Authorized Signatory</p>
+            </div>
+        </div>
+    </div>
+
+    <ng-template #loading>
+        <div class="loading-state">
+            <mat-spinner diameter="40"></mat-spinner>
+            <p>Loading Credit Note...</p>
+        </div>
+    </ng-template>
+</div>

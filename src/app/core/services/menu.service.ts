@@ -40,6 +40,11 @@ export class MenuService {
             icon: 'assignment_return',
             route: '/app/inventory/purchase-return'
           },
+          {
+            label: 'Sale Return (Credit Note)',
+            icon: 'assignment_return',
+            route: '/app/inventory/sale-return'
+          },
         ]
       },
 

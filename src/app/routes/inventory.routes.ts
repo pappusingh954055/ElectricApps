@@ -50,5 +50,15 @@ export const INVENTORY_ROUTES: Routes = [
       { path: 'add', data: { breadcrumb: 'Add New' }, loadComponent: () => import('./../features/inventory/so-form/so-form').then(m => m.SoForm) },
       { path: 'edit/:id', data: { breadcrumb: 'Edit' }, loadComponent: () => import('./../features/inventory/so-form/so-form').then(m => m.SoForm) }
     ]
+  },
+  {
+    path: 'sale-return',
+    data: { breadcrumb: 'Sale Return' },
+    children: [
+      { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('../features/inventory/sale-return/sale-return-list/sale-return-list.component').then(m => m.SaleReturnListComponent) },
+      { path: 'add', data: { breadcrumb: 'New Return' }, loadComponent: () => import('../features/inventory/sale-return/sale-return-form/sale-return-form.component').then(m => m.SaleReturnFormComponent) },
+      { path: 'edit/:id', data: { breadcrumb: 'Edit Return' }, loadComponent: () => import('../features/inventory/sale-return/sale-return-form/sale-return-form.component').then(m => m.SaleReturnFormComponent) },
+      { path: 'credit-note/:id', data: { breadcrumb: 'Credit Note' }, loadComponent: () => import('../features/inventory/sale-return/credit-note-view/credit-note-view.component').then(m => m.CreditNoteViewComponent) }
+    ]
   }
 ];
