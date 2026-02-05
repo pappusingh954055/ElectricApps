@@ -55,21 +55,35 @@
 
     table {
         width: 100%;
+        border-collapse: collapse; // Clean borders
+
+        th {
+            background-color: #f5f5f5;
+            color: #333;
+            font-weight: 600;
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 2px solid #e0e0e0;
+        }
 
         td {
             vertical-align: top;
-            padding-top: 10px;
+            padding-top: 4px; // Keep as requested
+            padding-bottom: 4px;
+            padding-left: 8px;
+            padding-right: 8px;
+            border-bottom: 1px solid #f0f0f0;
         }
 
+        tr:hover {
+            background-color: #fafafa; // Subtle hover effect
+        }
+
+        // Adjust small inputs if needed inside the new layout
         .small-input {
             width: 100px;
             font-size: 13px;
         }
-
-
-        /* Remove underline from small inputs to make them look cleaner in table if desired, 
-           or keep default material style. */
-
     }
 }
 
