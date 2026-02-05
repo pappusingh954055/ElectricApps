@@ -4,7 +4,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MatDialogRef } from '@angular/material/dialog';
-import { Customer } from './customer';
+import { customerService } from './customer.service';
+
 
 @Component({
   selector: 'app-customer-component',
@@ -21,7 +22,7 @@ export class CustomerComponent {
   private readonly cdr = inject(ChangeDetectorRef);
 
   // ⚠ keeping same service name as you used
-  private readonly customerService = inject(Customer);
+  private readonly customerService = inject(customerService);
 
   isEdit = false;
   loading = false;

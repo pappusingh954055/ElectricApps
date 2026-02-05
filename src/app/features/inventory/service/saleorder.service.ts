@@ -22,17 +22,17 @@ export class SaleOrderService {
     }
 
 
-   // SaleOrderService mein params pass karne ke liye update [cite: 2026-02-03]
-getSaleOrders(page: number, size: number, sort: string, order: string, search: string): Observable<any> {
-  let params = new HttpParams()
-    .set('pageNumber', page.toString())
-    .set('pageSize', size.toString())
-    .set('sortBy', sort)
-    .set('sortOrder', order)
-    .set('searchTerm', search);
+    // SaleOrderService mein params pass karne ke liye update [cite: 2026-02-03]
+    getSaleOrders(page: number, size: number, sort: string, order: string, search: string): Observable<any> {
+        let params = new HttpParams()
+            .set('pageNumber', page.toString())
+            .set('pageSize', size.toString())
+            .set('sortBy', sort)
+            .set('sortOrder', order)
+            .set('searchTerm', search);
 
-  return this.http.get<any>(`${this.apiUrl}/saleorder`, { params });
-}
+        return this.http.get<any>(`${this.apiUrl}/saleorder`, { params });
+    }
 
 
     updateSaleOrderStatus(id: number, status: string): Observable<any> {
@@ -47,5 +47,13 @@ getSaleOrders(page: number, size: number, sort: string, order: string, search: s
 
     SaleOrderReportDownload(productIds: string[]) {
         return this.http.post(`${this.apiUrl}/saleorder/export`, productIds, { responseType: 'blob' });
+    }
+
+    getOrdersByCustomer(customerId: number): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/saleorder/orders-by-customer/${customerId}`);
+    }
+
+    getSaleOrderItems(saleOrderId: number): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}/SaleOrder/grid-items/${saleOrderId}`);
     }
 }

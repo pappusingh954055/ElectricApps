@@ -120,6 +120,48 @@
     border-radius: 8px;
 }
 
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .view-container {
+        padding: 10px;
+    }
+
+    .document-paper {
+        padding: 20px;
+        min-height: auto;
+    }
+
+    .doc-header {
+        flex-direction: column;
+        gap: 20px;
+        text-align: left;
+        
+        .doc-title {
+            text-align: left;
+        }
+    }
+
+    .doc-meta {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .items-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .doc-footer {
+        flex-direction: column;
+        gap: 30px;
+        
+        .signature {
+            align-self: center;
+        }
+    }
+}
+
 /* Print Styles */
 @media print {
     .view-container {

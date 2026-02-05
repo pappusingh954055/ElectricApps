@@ -1,6 +1,6 @@
 <div class="list-container">
     <div class="header-actions">
-        <h1>Sale Returns</h1>
+        <h1>Sale Returns (Credit Notes)</h1>
         <button mat-raised-button color="primary" (click)="navigateToCreate()">
             <mat-icon>add</mat-icon> New Return
         </button>
@@ -41,37 +41,65 @@
 
         <table mat-table [dataSource]="dataSource" matSort>
 
-            <!-- Return Number Column -->
             <ng-container matColumnDef="returnNumber">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Return No. </th>
-                <td mat-cell *matCellDef="let row"> {{row.returnNumber}} </td>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> 
+                    <div class="header-content">
+                        Return No. 
+                        <mat-icon class="filter-icon" [matMenuTriggerFor]="menuReturn" (click)="$event.stopPropagation()">filter_alt</mat-icon>
+                    </div>
+                    <mat-menu #menuReturn="matMenu" class="filter-menu-panel">
+                        <div class="filter-popup" (click)="$event.stopPropagation()">
+                            <mat-form-field appearance="outline" class="small-filter-input">
+                                <mat-label>Filter Return No</mat-label>
+                                <input matInput [(ngModel)]="filterValues.returnNumber" (keyup.enter)="applyColumnFilter('returnNumber', filterValues.returnNumber)">
+                            </mat-form-field>
+                            <div class="filter-actions">
+                                <button mat-button color="warn" (click)="clearColumnFilter('returnNumber')">Clear</button>
+                                <button mat-raised-button color="primary" (click)="applyColumnFilter('returnNumber', filterValues.returnNumber)">Apply</button>
+                            </div>
+                        </div>
+                    </mat-menu>
+                </th>
+                <td mat-cell *matCellDef="let row" class="bold-text"> {{row.returnNumber}} </td>
             </ng-container>
 
-            <!-- Return Date Column -->
             <ng-container matColumnDef="returnDate">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
                 <td mat-cell *matCellDef="let row"> {{row.returnDate | date:'mediumDate'}} </td>
             </ng-container>
 
-            <!-- Customer Column -->
             <ng-container matColumnDef="customerName">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Customer </th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> 
+                    <div class="header-content">
+                        Customer 
+                        <mat-icon class="filter-icon" [matMenuTriggerFor]="menuCustomer" (click)="$event.stopPropagation()">filter_alt</mat-icon>
+                    </div>
+                    <mat-menu #menuCustomer="matMenu" class="filter-menu-panel">
+                        <div class="filter-popup" (click)="$event.stopPropagation()">
+                            <mat-form-field appearance="outline" class="small-filter-input">
+                                <mat-label>Filter Customer</mat-label>
+                                <input matInput [(ngModel)]="filterValues.customerName" (keyup.enter)="applyColumnFilter('customerName', filterValues.customerName)">
+                            </mat-form-field>
+                            <div class="filter-actions">
+                                <button mat-button color="warn" (click)="clearColumnFilter('customerName')">Clear</button>
+                                <button mat-raised-button color="primary" (click)="applyColumnFilter('customerName', filterValues.customerName)">Apply</button>
+                            </div>
+                        </div>
+                    </mat-menu>
+                </th>
                 <td mat-cell *matCellDef="let row"> {{row.customerName}} </td>
             </ng-container>
 
-            <!-- SO Ref Column -->
             <ng-container matColumnDef="soRef">
                 <th mat-header-cell *matHeaderCellDef> SO Ref </th>
                 <td mat-cell *matCellDef="let row"> {{row.soRef}} </td>
             </ng-container>
 
-            <!-- Total Amount Column -->
             <ng-container matColumnDef="totalAmount">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Total </th>
-                <td mat-cell *matCellDef="let row"> {{row.totalAmount | currency:'INR'}} </td>
+                <td mat-cell *matCellDef="let row" class="amount-cell"> {{row.totalAmount | currency:'INR'}} </td>
             </ng-container>
 
-            <!-- Status Column -->
             <ng-container matColumnDef="status">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
                 <td mat-cell *matCellDef="let row">
@@ -81,20 +109,26 @@
                 </td>
             </ng-container>
 
-            <!-- Actions Column -->
             <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef> Actions </th>
                 <td mat-cell *matCellDef="let row">
-                    <button mat-icon-button color="primary" (click)="viewCreditNote(row)" matTooltip="View Credit Note">
-                        <mat-icon>visibility</mat-icon>
-                    </button>
+                    <div class="action-buttons">
+                        <button mat-icon-button color="primary" (click)="viewCreditNote(row)" matTooltip="View Details">
+                            <mat-icon>visibility</mat-icon>
+                        </button>
+                        <button mat-icon-button color="accent" (click)="printCreditNote(row)" matTooltip="Print Credit Note">
+                            <mat-icon>print</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" *ngIf="row.status === 'Draft'" (click)="deleteReturn(row)" matTooltip="Delete Draft">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </div>
                 </td>
             </ng-container>
 
             <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="element-row"></tr>
 
-            <!-- Row shown when there is no matching data. -->
             <tr class="mat-row" *matNoDataRow>
                 <td class="mat-cell" colspan="7" style="text-align: center; padding: 20px;">
                     No data matching the filter "{{input.value}}"

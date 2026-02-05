@@ -35,57 +35,196 @@
 
 .table-container {
     position: relative;
-    border-radius: 8px;
-    overflow: hidden;
     background: white;
+    border-radius: 8px;
+    /* Soft shadow for enterprise feel */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 
-    .loading-shade {
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
-        background: rgba(255, 255, 255, 0.7);
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
+    /* Enable vertical scroll for sticky header to work relative to this container */
+    max-height: calc(100vh - 220px); 
+    overflow: auto;
+    
     table {
         width: 100%;
+        border-collapse: separate; /* Required for sticky header border */
+        border-spacing: 0;
+
+        // NEW: Return Number highlight
+        .bold-text {
+            font-weight: 600;
+            color: #3f51b5;
+        }
     }
 
+    /* Enterprise Header Styling */
     th.mat-header-cell {
         font-weight: 600;
-        background-color: #f5f5f5;
-        color: rgba(0, 0, 0, 0.87);
+        font-size: 13px;
+        color: #37474f; /* Darker grey text */
+        background-color: #f1f3f4; /* Light grey background */
+        border-bottom: 1px solid #cfd8dc;
+        white-space: nowrap;
+        padding: 12px 16px;
+        z-index: 100; /* Ensure header stays on top */
     }
 
-    tr.element-row:hover {
-        background: whitesmoke;
+    /* Filter Icon Styling */
+    ::ng-deep .header-content {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .filter-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        opacity: 0.5;
+        transition: opacity 0.2s;
+        
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    td.mat-cell {
+        font-size: 14px;
+        color: #263238;
+        padding: 10px 16px;
+        border-bottom: 1px solid #eceff1;
+    }
+
+    /* Row Hover Effect */
+    tr.element-row {
+        transition: background-color 0.2s ease;
+        cursor: pointer;
+
+        &:hover {
+            background-color: #e3f2fd; /* Light blue hover */
+        }
+    }
+
+    // NEW: Action buttons alignment
+    .action-buttons {
+        display: flex;
+        gap: 4px;
     }
 }
 
 .status-badge {
-    padding: 4px 8px;
+    padding: 4px 10px; // Slightly wider for better look
     border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 11px; // Compact font for status
+    font-weight: 700; // Bold status
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 
-    &.completed, &.approved {
+    // SYNCED WITH SALE ORDER STATUS
+    &.confirmed, &.completed, &.approved {
         background-color: #e8f5e9;
         color: #2e7d32;
     }
 
-    &.pending {
-        background-color: #fff3e0;
-        color: #ef6c00;
+    &.draft, &.pending {
+        background-color: #f5f5f5; // Neutral for draft
+        color: #616161;
     }
 
     &.cancelled, &.rejected {
         background-color: #ffebee;
         color: #c62828;
+    }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .list-container {
+        padding: 12px;
+        gap: 16px;
+    }
+    
+    .header-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        
+        h1 {
+            font-size: 20px;
+            text-align: left;
+        }
+
+        button {
+            width: 100%;
+            white-space: nowrap;
+        }
+    }
+
+    .filter-section {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        
+        .search-field, mat-form-field {
+            width: 100%;
+            margin-bottom: 0;
+        }
+        
+        mat-form-field {
+            width: 100% !important;
+        }
+
+        button {
+            width: 100%;
+            height: 56px;
+        }
+    }
+
+    .table-container {
+        overflow-x: auto;
+        border: 1px solid #e0e0e0;
+        
+        table {
+            min-width: 800px;
+            
+            th.mat-header-cell, td.mat-cell {
+                padding: 0 8px;
+                font-size: 13px;
+            }
+        }
+    }
+}
+
+/* Filter Popup Styles */
+::ng-deep .filter-popup {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 250px;
+    background: white;
+    overflow: hidden;
+
+    .small-filter-input {
+        width: 100%;
+        font-size: 14px;
+        
+        .mat-mdc-form-field-subscript-wrapper {
+            display: none;
+        }
+    }
+
+    .filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+}
+
+::ng-deep .filter-menu-panel {
+    max-width: none !important;
+    overflow-x: hidden !important; 
+    
+    .mat-mdc-menu-content {
+        padding: 0 !important;
     }
 }

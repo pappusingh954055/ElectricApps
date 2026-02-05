@@ -2,13 +2,14 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
+import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { SaleReturnService } from '../services/sale-return.service';
-import { CreditNoteViewComponent } from '../credit-note-view/credit-note-view.component';
 import { MatDialog } from '@angular/material/dialog';
+import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
+
 
 @Component({
     selector: 'app-sale-return-list',
@@ -37,6 +38,16 @@ export class SaleReturnListComponent implements OnInit {
     pageSize = 10;
     pageIndex = 0;
 
+    // Sorting state initialized for backend sync [cite: 2026-02-05]
+    sortField = 'ReturnDate';
+    sortOrder = 'desc';
+
+    // Existing column filters
+    filterValues: any = {
+        returnNumber: '',
+        customerName: ''
+    };
+
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
 
@@ -44,35 +55,56 @@ export class SaleReturnListComponent implements OnInit {
         this.loadReturns();
     }
 
+    // Existing: Apply column specific filter logic maintained
+    applyColumnFilter(key: string, value: any) {
+        this.filterValues[key] = value;
+        const activeFilters = Object.values(this.filterValues).filter(v => v !== '');
+
+        if (activeFilters.length > 0) {
+            this.searchKey = activeFilters.join(' ');
+        } else {
+            this.searchKey = '';
+        }
+
+        this.pageIndex = 0;
+        this.loadReturns();
+    }
+
+    clearColumnFilter(key: string) {
+        this.filterValues[key] = '';
+        this.applyColumnFilter(key, '');
+    }
+
+    // NEW: Handle Sort Change event from HTML [cite: 2026-02-05]
+    onSortChange(sort: Sort) {
+        this.sortField = sort.active;
+        this.sortOrder = sort.direction || 'desc';
+        this.loadReturns();
+    }
+
     loadReturns() {
-        this.isTableLoading = true;
-
-        const start = this.fromDate ? this.fromDate.toISOString() : undefined;
-        const end = this.toDate ? this.toDate.toISOString() : undefined;
-        const sortField = this.sort?.active || 'ReturnDate';
-        const sortOrder = this.sort?.direction || 'desc';
-
+        this.isTableLoading = true; // Loader dikhane ke liye
         this.srService.getSaleReturns(
             this.searchKey,
             this.pageIndex,
             this.pageSize,
-            start,
-            end,
-            sortField,
-            sortOrder
-        ).subscribe({
-            next: (res) => {
-                this.dataSource.data = res.items || [];
-                this.totalRecords = res.totalCount || 0;
-                this.isTableLoading = false;
-                this.cdr.detectChanges();
-            },
-            error: (err) => {
-                console.error("Load Error:", err);
-                this.isTableLoading = false;
-                this.cdr.detectChanges();
-            }
-        });
+            this.sortField, // Add this
+            this.sortOrder, // Add this
+            this.fromDate || undefined, // Add this
+            this.toDate || undefined    // Add this
+        )
+            .subscribe({
+                next: (res) => {
+                    this.dataSource.data = res.items;
+                    this.totalRecords = res.totalCount;
+                    this.isTableLoading = false;
+                    this.cdr.detectChanges(); // UI refresh ke liye
+                },
+                error: (err) => {
+                    console.error("Error loading returns", err);
+                    this.isTableLoading = false;
+                }
+            });
     }
 
     onPageChange(event: PageEvent) {
@@ -93,8 +125,33 @@ export class SaleReturnListComponent implements OnInit {
     }
 
     viewCreditNote(row: any) {
-        // Navigate to view or open dialog
-        this.router.navigate(['/app/inventory/sale-return/credit-note', row.id]);
+        this.router.navigate(['/app/inventory/sale-return/details', row.id]);
+    }
+
+    // NEW: Print Functionality linked to Service [cite: 2026-02-05]
+    printCreditNote(row: any) {
+        const printUrl = `https://localhost:7052/api/SaleReturn/print/${row.id}`;
+        window.open(printUrl, '_blank');
+    }
+
+    // NEW: Delete Draft Logic with Confirmation [cite: 2026-02-05]
+    deleteReturn(row: any) {
+        const dialogRef = this.dialog.open(StatusDialogComponent, {
+            data: {
+                title: 'Confirm Delete',
+                message: `Are you sure you want to delete ${row.returnNumber}?`,
+                isConfirm: true
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                // Triggering delete through existing service structure
+                this.srService.deleteSaleReturn(row.id).subscribe(() => {
+                    this.loadReturns();
+                });
+            }
+        });
     }
 
     exportToExcel() {

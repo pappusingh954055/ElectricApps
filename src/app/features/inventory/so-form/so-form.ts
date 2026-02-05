@@ -6,11 +6,12 @@ import { Observable, of, Subject } from 'rxjs';
 import { startWith, map, catchError, debounceTime, distinctUntilChanged, finalize, switchMap, takeUntil, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { CustomerComponent } from '../../master/customer-component/customer-component';
-import { Customer } from '../../master/customer-component/customer';
+
 import { ProductService } from '../../master/product/service/product.service';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 import { SaleOrderService } from '../service/saleorder.service';
 import { Router } from '@angular/router';
+import { customerService } from '../../master/customer-component/customer.service';
 
 @Component({
   selector: 'app-so-form',
@@ -23,7 +24,7 @@ export class SoForm implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
-  private customerService = inject(Customer);
+  private customerService = inject(customerService);
   private productService = inject(ProductService);
   private soService = inject(SaleOrderService);
   private destroy$ = new Subject<void>();

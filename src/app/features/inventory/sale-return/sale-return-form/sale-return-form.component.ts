@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { SaleReturnService } from '../services/sale-return.service';
+import { customerService } from '../../../master/customer-component/customer.service';
+import { SaleOrderService } from '../../service/saleorder.service';
 
 @Component({
     selector: 'app-sale-return-form',
@@ -19,17 +21,19 @@ export class SaleReturnFormComponent implements OnInit {
     private router = inject(Router);
     private route = inject(ActivatedRoute);
     private cdr = inject(ChangeDetectorRef);
+    private customerService = inject(customerService);
+    private saleOrderService = inject(SaleOrderService);
 
+    customers: any[] = [];
+    saleOrders: any[] = [];
     returnForm: FormGroup;
     isEditMode = false;
     returnId: number | null = null;
     isLoading = false;
 
-    customers: any[] = [];
-    saleOrders: any[] = [];
-
-    itemsDataSource = new MatTableDataSource<any>();
-    displayedColumns: string[] = ['productName', 'quantity', 'rate', 'returnQty', 'tax', 'total'];
+    itemsDataSource = new MatTableDataSource<AbstractControl>();
+    // Updated to match HTML exactly [cite: 2026-02-05]
+    displayedColumns: string[] = ['productName', 'quantity', 'rate', 'itemCondition', 'reason', 'returnQty', 'tax', 'total'];
 
     constructor() {
         this.returnForm = this.fb.group({
@@ -42,8 +46,7 @@ export class SaleReturnFormComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.loadCustomers();
-
+        this.loadCustomersLookup();
         this.route.params.subscribe(params => {
             if (params['id']) {
                 this.isEditMode = true;
@@ -53,37 +56,81 @@ export class SaleReturnFormComponent implements OnInit {
         });
     }
 
-    loadCustomers() {
-        this.srService.getCustomers().subscribe(res => {
-            this.customers = res;
+    loadCustomersLookup() {
+        this.customerService.getCustomersLookup().subscribe({
+            next: (data) => this.customers = data,
+            error: (err) => console.error("Customer load fail:", err)
         });
     }
 
     onCustomerChange(customerId: number) {
         this.saleOrders = [];
-        this.returnForm.get('saleOrderId')?.reset();
-        this.clearItems(); // Clear items if customer changes
+        this.returnForm.get('saleOrderId')?.setValue(null);
+        this.clearItems(); // Customer badalne par purane items saaf [cite: 2026-02-05]
 
         if (customerId) {
-            this.srService.getSaleOrders(customerId).subscribe(res => {
-                this.saleOrders = res;
+            this.saleOrderService.getOrdersByCustomer(customerId).subscribe({
+                next: (data) => this.saleOrders = data,
+                error: (err) => console.error("Orders load error:", err)
             });
         }
     }
+
+    // onSOChange(soId: number) {
+    //     this.clearItems();
+    //     if (soId) {
+    //         this.isLoading = true;
+    //         this.saleOrderService.getSaleOrderById(soId).subscribe({
+    //             next: (soData) => {
+    //                 if (soData && soData.items) {
+    //                     this.populateItems(soData.items);
+    //                 }
+    //                 this.isLoading = false;
+    //                 this.cdr.detectChanges();
+    //             },
+    //             error: () => this.isLoading = false
+    //         });
+    //     }
+    // }
 
     onSOChange(soId: number) {
         this.clearItems();
         if (soId) {
             this.isLoading = true;
-            this.srService.getSaleOrderItems(soId).subscribe({
+            this.saleOrderService.getSaleOrderItems(soId).subscribe({
                 next: (items) => {
-                    this.populateItems(items);
+                    items.forEach(item => {
+                        const itemGroup = this.fb.group({
+                            productId: [item.productId],
+                            productName: [item.productName],
+                            quantity: [item.soldQty || item.quantity], // Handle both namings
+                            rate: [item.rate || item.unitPrice || 0],
+                            itemCondition: ['Good', Validators.required],
+                            reason: [''],
+                            returnQty: [0, [Validators.required, Validators.min(0), Validators.max(item.soldQty || item.quantity)]],
+                            taxRate: [item.taxPercentage || item.taxRate || 0],
+                            amount: [0]
+                        });
+
+                        // Initial Calculation (creates 0, but ensures types/state)
+                        this.calculateRowTotal(itemGroup);
+
+                        // Qty change hone par total calculation trigger karein
+                        itemGroup.get('returnQty')?.valueChanges.subscribe(() => {
+                            this.calculateRowTotal(itemGroup);
+                        });
+
+                        this.itemsFormArray.push(itemGroup);
+                    });
+                    this.itemsDataSource.data = this.itemsFormArray.controls;
                     this.isLoading = false;
+                    this.cdr.detectChanges(); // UI refresh ke liye
                 },
                 error: () => this.isLoading = false
             });
         }
     }
+
 
     get itemsFormArray(): FormArray {
         return this.returnForm.get('items') as FormArray;
@@ -101,14 +148,15 @@ export class SaleReturnFormComponent implements OnInit {
             const itemGroup = this.fb.group({
                 productId: [item.productId],
                 productName: [item.productName],
-                quantity: [item.quantity], // Sold Qty
-                rate: [item.rate],
+                quantity: [item.quantity],
+                rate: [item.unitPrice || item.rate], // Backend mapping check
+                itemCondition: ['Good', Validators.required],
+                reason: [''],
                 returnQty: [0, [Validators.required, Validators.min(0), Validators.max(item.quantity)]],
-                taxRate: [item.taxRate],
-                amount: [0] // Calculated
+                taxRate: [item.taxPercentage || item.taxRate || 0],
+                amount: [0]
             });
 
-            // Listen to value changes for calculation
             itemGroup.get('returnQty')?.valueChanges.subscribe(() => {
                 this.calculateRowTotal(itemGroup);
             });
@@ -116,21 +164,25 @@ export class SaleReturnFormComponent implements OnInit {
             this.itemsFormArray.push(itemGroup);
         });
 
-        this.itemsDataSource.data = this.itemsFormArray.controls;
+        // Use spread operator to create a new array reference, ensuring MatTable updates
+        this.itemsDataSource.data = [...this.itemsFormArray.controls];
     }
 
     calculateRowTotal(group: FormGroup) {
-        const qty = group.get('returnQty')?.value || 0;
-        const rate = group.get('rate')?.value || 0;
-        const taxRate = group.get('taxRate')?.value || 0;
+        const qty = +group.get('returnQty')?.value || 0;
+        const rate = +group.get('rate')?.value || 0;
+        const taxRate = +group.get('taxRate')?.value || 0;
 
-        // Simple calculation: Amount = Qty * Rate + Tax
-        // Adjust logic based on actual business rules (Tax inclusive/exclusive)
         const baseAmount = qty * rate;
         const taxAmount = baseAmount * (taxRate / 100);
         const total = baseAmount + taxAmount;
 
         group.patchValue({ amount: total }, { emitEvent: false });
+    }
+
+    get totalReturnAmount(): number {
+        return this.itemsFormArray.controls
+            .reduce((sum, control) => sum + (control.get('amount')?.value || 0), 0);
     }
 
     loadReturnDetails(id: number) {
@@ -142,37 +194,9 @@ export class SaleReturnFormComponent implements OnInit {
                 saleOrderId: res.saleOrderId,
                 remarks: res.remarks
             });
-
-            // Populate items with returned quantities
-            // This logic might need adjustment based on how the API returns "items"
-            // For now, assuming standard population but we need to fetch SO items first likely?
-            // Or if 'res.items' contains everything we need:
-            if (res.items) {
-                this.clearItems();
-                res.items.forEach((item: any) => {
-                    // similar population logic
-                    const itemGroup = this.fb.group({
-                        productId: [item.productId],
-                        productName: [item.productName],
-                        quantity: [item.originalQuantity], // Sold Qty
-                        rate: [item.rate],
-                        returnQty: [item.returnQuantity, [Validators.required, Validators.min(0)]],
-                        taxRate: [item.taxRate],
-                        amount: [item.amount]
-                    });
-                    itemGroup.get('returnQty')?.valueChanges.subscribe(() => this.calculateRowTotal(itemGroup));
-                    this.itemsFormArray.push(itemGroup);
-                });
-                this.itemsDataSource.data = this.itemsFormArray.controls;
-            }
-
+            // Additional logic for edit mode population...
             this.isLoading = false;
         });
-    }
-
-    get totalReturnAmount(): number {
-        return this.itemsFormArray.controls
-            .reduce((sum, control) => sum + (control.get('amount')?.value || 0), 0);
     }
 
     onSubmit() {
@@ -180,17 +204,10 @@ export class SaleReturnFormComponent implements OnInit {
             this.returnForm.markAllAsTouched();
             return;
         }
-
-        const formValue = this.returnForm.value;
-        // Filter out items with 0 return qty if business rule says so, 
-        // or just send all and let backend handle.
-        // Usually valid to return 0.
-
         this.isLoading = true;
-        this.srService.saveSaleReturn(formValue).subscribe({
+        this.srService.saveSaleReturn(this.returnForm.value).subscribe({
             next: () => {
                 this.isLoading = false;
-                // Navigate or show success
                 this.router.navigate(['/app/inventory/sale-return']);
             },
             error: (err) => {
