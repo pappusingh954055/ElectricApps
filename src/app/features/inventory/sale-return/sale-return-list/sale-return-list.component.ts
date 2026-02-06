@@ -38,11 +38,17 @@ export class SaleReturnListComponent implements OnInit {
     pageSize = 10;
     pageIndex = 0;
 
-    // Sorting state initialized for backend sync [cite: 2026-02-05]
     sortField = 'ReturnDate';
     sortOrder = 'desc';
 
-    // Existing column filters
+    // Analytics Widgets State [cite: 2026-02-06]
+    stats = {
+        todayCount: 0,
+        totalRefund: 0,
+        itemsReturned: 0,
+        confirmedReturns: 0
+    };
+
     filterValues: any = {
         returnNumber: '',
         customerName: ''
@@ -55,7 +61,29 @@ export class SaleReturnListComponent implements OnInit {
         this.loadReturns();
     }
 
-    // Existing: Apply column specific filter logic maintained
+    // New: Calculate Stats for Widgets [cite: 2026-02-06]
+    private calculateStats(items: any[]) {
+        if (!items || items.length === 0) {
+            this.stats = { todayCount: 0, totalRefund: 0, itemsReturned: 0, confirmedReturns: 0 };
+            return;
+        }
+
+        const todayStr = new Date().toDateString();
+
+        // 1. Today's Returns Count
+        this.stats.todayCount = items.filter(x => new Date(x.returnDate).toDateString() === todayStr).length;
+
+        // 2. Total Refund Value mapping to totalAmount
+        this.stats.totalRefund = items.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
+
+        // 3. Confirmed Returns count
+        this.stats.confirmedReturns = items.filter(x => x.status?.toUpperCase() === 'CONFIRMED').length;
+
+        // 4. Physical items returned back to stock
+        // This sums up the total quantity across all return records
+        this.stats.itemsReturned = items.reduce((acc, curr) => acc + (curr.totalQty || 0), 0);
+    }
+
     applyColumnFilter(key: string, value: any) {
         this.filterValues[key] = value;
         const activeFilters = Object.values(this.filterValues).filter(v => v !== '');
@@ -75,7 +103,6 @@ export class SaleReturnListComponent implements OnInit {
         this.applyColumnFilter(key, '');
     }
 
-    // NEW: Handle Sort Change event from HTML [cite: 2026-02-05]
     onSortChange(sort: Sort) {
         this.sortField = sort.active;
         this.sortOrder = sort.direction || 'desc';
@@ -83,7 +110,7 @@ export class SaleReturnListComponent implements OnInit {
     }
 
     loadReturns() {
-        this.isTableLoading = true; // Loader dikhane ke liye
+        this.isTableLoading = true;
         this.srService.getSaleReturns(
             this.searchKey,
             this.pageIndex,
@@ -95,11 +122,15 @@ export class SaleReturnListComponent implements OnInit {
         )
             .subscribe({
                 next: (res) => {
-                    console.log('resdata',res);
+                    console.log('resdata', res);
                     this.dataSource.data = res.items;
                     this.totalRecords = res.totalCount;
+                    
+                    // Refresh widgets based on loaded data [cite: 2026-02-06]
+                    this.calculateStats(res.items);
+                    
                     this.isTableLoading = false;
-                    this.cdr.detectChanges(); // UI refresh ke liye
+                    this.cdr.detectChanges();
                 },
                 error: (err) => {
                     console.error("Error loading returns", err);
@@ -129,13 +160,11 @@ export class SaleReturnListComponent implements OnInit {
         this.router.navigate(['/app/inventory/sale-return/details', row.id]);
     }
 
-    // NEW: Print Functionality linked to Service [cite: 2026-02-05]
     printCreditNote(row: any) {
         const printUrl = `https://localhost:7052/api/SaleReturn/print/${row.id}`;
         window.open(printUrl, '_blank');
     }
 
-    // NEW: Delete Draft Logic with Confirmation [cite: 2026-02-05]
     deleteReturn(row: any) {
         const dialogRef = this.dialog.open(StatusDialogComponent, {
             data: {
@@ -147,7 +176,6 @@ export class SaleReturnListComponent implements OnInit {
 
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
-                // Triggering delete through existing service structure
                 this.srService.deleteSaleReturn(row.id).subscribe(() => {
                     this.loadReturns();
                 });

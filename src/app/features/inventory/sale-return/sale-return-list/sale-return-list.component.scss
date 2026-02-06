@@ -2,8 +2,8 @@
     padding: 24px;
     display: flex;
     flex-direction: column;
-    /* Fixed height to contain scroll within table */
-    height: calc(100vh - 240px); 
+    /* Adjusted height: Added space for widgets so table doesn't overflow */
+    height: calc(100vh - 100px); 
     overflow: hidden; 
     box-sizing: border-box;
 }
@@ -22,13 +22,67 @@
     }
 }
 
+// START: NEW WIDGET STYLES [cite: 2026-02-06]
+.stats-grid-container {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); // Force 4 columns in a row
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+
+.stat-item {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    border-left: 4px solid #ccc;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    &.border-primary { border-left-color: #3f51b5; }
+    &.border-danger { border-left-color: #f44336; }
+    &.border-success { border-left-color: #4caf50; }
+    &.border-info { border-left-color: #00bcd4; }
+
+    .stat-label {
+        font-size: 11px;
+        font-weight: 700;
+        color: #757575;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .stat-data {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #212121;
+        }
+
+        .stat-icon {
+            font-size: 24px;
+            height: 24px;
+            width: 24px;
+            opacity: 0.2;
+        }
+    }
+}
+// END: NEW WIDGET STYLES
+
 .filter-section {
     display: flex;
     gap: 16px;
     align-items: center;
     flex-wrap: wrap;
     flex-shrink: 0;
-    margin-bottom: 8px;
+    margin-bottom: 16px;
 
     .search-field {
         flex: 1;
@@ -52,10 +106,10 @@
     min-height: 0;
 
     /* HIDE SCROLLBAR COMPLETELY */
-    scrollbar-width: none; /* Firefox */
-    -ms-overflow-style: none; /* IE/Edge */
+    scrollbar-width: none; 
+    -ms-overflow-style: none; 
     &::-webkit-scrollbar {
-        display: none; /* Chrome/Safari */
+        display: none; 
     }
 
     .loading-shade {
@@ -73,31 +127,28 @@
     
     table {
         width: 100%;
-        border-collapse: separate; /* Required for sticky header border */
+        border-collapse: separate; 
         border-spacing: 0;
 
-        // NEW: Return Number highlight
         .bold-text {
             font-weight: 600;
             color: #3f51b5;
         }
     }
 
-    /* Enterprise Header Styling */
     th.mat-header-cell {
         font-weight: 600;
         font-size: 13px;
-        color: #37474f; /* Darker grey text */
-        background-color: #f1f3f4; /* Light grey background */
+        color: #37474f; 
+        background-color: #f1f3f4; 
         border-bottom: 1px solid #cfd8dc;
         white-space: nowrap;
-        padding: 8px 12px; /* Reduced padding for professional look */
-        z-index: 100; /* Ensure header stays on top */
-        position: sticky !important; /* Force sticky */
-        top: 0; /* Stick to top of container */
+        padding: 8px 12px; 
+        z-index: 100; 
+        position: sticky !important; 
+        top: 0; 
     }
 
-    /* Filter Icon Styling */
     ::ng-deep .header-content {
         display: flex;
         align-items: center;
@@ -119,21 +170,19 @@
     td.mat-cell {
         font-size: 14px;
         color: #263238;
-        padding: 8px 12px; /* Reduced padding for professional look */
+        padding: 8px 12px; 
         border-bottom: 1px solid #eceff1;
     }
 
-    /* Row Hover Effect */
     tr.element-row {
         transition: background-color 0.2s ease;
         cursor: pointer;
 
         &:hover {
-            background-color: #e3f2fd; /* Light blue hover */
+            background-color: #e3f2fd; 
         }
     }
 
-    // NEW: Action buttons alignment
     .action-buttons {
         display: flex;
         gap: 4px;
@@ -141,21 +190,20 @@
 }
 
 .status-badge {
-    padding: 4px 10px; // Slightly wider for better look
+    padding: 4px 10px; 
     border-radius: 4px;
-    font-size: 11px; // Compact font for status
-    font-weight: 700; // Bold status
+    font-size: 11px; 
+    font-weight: 700; 
     text-transform: uppercase;
     letter-spacing: 0.5px;
 
-    // SYNCED WITH SALE ORDER STATUS
     &.confirmed, &.completed, &.approved {
         background-color: #e8f5e9;
         color: #2e7d32;
     }
 
     &.draft, &.pending {
-        background-color: #f5f5f5; // Neutral for draft
+        background-color: #f5f5f5; 
         color: #616161;
     }
 
@@ -166,10 +214,21 @@
 }
 
 /* Responsive Styles */
+@media (max-width: 1024px) {
+    .stats-grid-container {
+        grid-template-columns: repeat(2, 1fr); // 2 columns for tablets
+    }
+}
+
 @media (max-width: 768px) {
     .list-container {
         padding: 12px;
-        gap: 16px;
+        height: auto;
+        overflow: visible;
+    }
+
+    .stats-grid-container {
+        grid-template-columns: 1fr; // 1 column for mobile
     }
     
     .header-actions {
@@ -179,12 +238,10 @@
         
         h1 {
             font-size: 20px;
-            text-align: left;
         }
 
         button {
             width: 100%;
-            white-space: nowrap;
         }
     }
 
@@ -192,34 +249,11 @@
         display: grid;
         grid-template-columns: 1fr;
         gap: 12px;
-        
-        .search-field, mat-form-field {
-            width: 100%;
-            margin-bottom: 0;
-        }
-        
-        mat-form-field {
-            width: 100% !important;
-        }
-
-        button {
-            width: 100%;
-            height: 56px;
-        }
     }
 
     .table-container {
         overflow-x: auto;
-        border: 1px solid #e0e0e0;
-        
-        table {
-            min-width: 800px;
-            
-            th.mat-header-cell, td.mat-cell {
-                padding: 0 8px;
-                font-size: 13px;
-            }
-        }
+        height: 400px;
     }
 }
 
@@ -231,7 +265,6 @@
     gap: 12px;
     min-width: 250px;
     background: white;
-    overflow: hidden;
 
     .small-filter-input {
         width: 100%;
@@ -251,8 +284,6 @@
 
 ::ng-deep .filter-menu-panel {
     max-width: none !important;
-    overflow-x: hidden !important; 
-    
     .mat-mdc-menu-content {
         padding: 0 !important;
     }

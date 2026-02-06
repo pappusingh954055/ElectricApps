@@ -6,6 +6,39 @@
         </button>
     </div>
 
+    <div class="stats-grid-container">
+        <div class="stat-item border-primary">
+            <div class="stat-label">TOTAL RETURNS (TODAY)</div>
+            <div class="stat-data">
+                <span class="stat-value">{{stats.todayCount || 0}}</span>
+                <mat-icon class="stat-icon color-primary">assignment_return</mat-icon>
+            </div>
+        </div>
+
+        <div class="stat-item border-danger">
+            <div class="stat-label">TOTAL REFUND VALUE</div>
+            <div class="stat-data">
+                <span class="stat-value text-danger">{{stats.totalRefund | currency:'INR'}}</span>
+                <mat-icon class="stat-icon color-danger">payments</mat-icon>
+            </div>
+        </div>
+
+        <div class="stat-item border-success">
+            <div class="stat-label">STOCK RE-FILLED</div>
+            <div class="stat-data">
+                <span class="stat-value text-success">{{stats.itemsReturned || 0}} PCS</span>
+                <mat-icon class="stat-icon color-success">inventory_2</mat-icon>
+            </div>
+        </div>
+
+        <div class="stat-item border-info">
+            <div class="stat-label">CONFIRMED RETURNS</div>
+            <div class="stat-data">
+                <span class="stat-value">{{stats.confirmedReturns || 0}}</span>
+                <mat-icon class="stat-icon color-info">verified</mat-icon>
+            </div>
+        </div>
+    </div>
     <div class="filter-section">
         <mat-form-field appearance="outline" class="search-field">
             <mat-label>Search</mat-label>
@@ -40,7 +73,6 @@
         </div>
 
         <table mat-table [dataSource]="dataSource" matSort>
-
             <ng-container matColumnDef="returnNumber">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> 
                     <div class="header-content">
