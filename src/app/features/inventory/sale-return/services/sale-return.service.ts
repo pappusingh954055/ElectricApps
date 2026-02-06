@@ -34,7 +34,7 @@ export class SaleReturnService {
         if (fromDate) params = params.set('fromDate', fromDate.toISOString());
         if (toDate) params = params.set('toDate', toDate.toISOString());
 
-        return this.http.get<SaleReturnPagedResponse>(`${this.apiUrl}/list`, { params });
+        return this.http.get<SaleReturnPagedResponse>(`${this.apiUrl}/SaleReturn/list`, { params });
     }
 
     // Create Sale Return

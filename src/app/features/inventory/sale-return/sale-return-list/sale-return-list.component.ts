@@ -88,13 +88,14 @@ export class SaleReturnListComponent implements OnInit {
             this.searchKey,
             this.pageIndex,
             this.pageSize,
-            this.sortField, // Add this
-            this.sortOrder, // Add this
-            this.fromDate || undefined, // Add this
-            this.toDate || undefined    // Add this
+            this.sortField,
+            this.sortOrder, 
+            this.fromDate || undefined, 
+            this.toDate || undefined 
         )
             .subscribe({
                 next: (res) => {
+                    console.log('resdata',res);
                     this.dataSource.data = res.items;
                     this.totalRecords = res.totalCount;
                     this.isTableLoading = false;

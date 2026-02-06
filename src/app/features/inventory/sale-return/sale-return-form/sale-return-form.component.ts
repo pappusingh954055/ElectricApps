@@ -7,6 +7,7 @@ import { MaterialModule } from '../../../../shared/material/material/material-mo
 import { SaleReturnService } from '../services/sale-return.service';
 import { customerService } from '../../../master/customer-component/customer.service';
 import { SaleOrderService } from '../../service/saleorder.service';
+import { CreateSaleReturnDto, SaleReturnItem } from '../models/create-sale-return.model';
 
 @Component({
     selector: 'app-sale-return-form',
@@ -32,7 +33,6 @@ export class SaleReturnFormComponent implements OnInit {
     isLoading = false;
 
     itemsDataSource = new MatTableDataSource<AbstractControl>();
-    // Updated to match HTML exactly [cite: 2026-02-05]
     displayedColumns: string[] = ['productName', 'quantity', 'rate', 'itemCondition', 'reason', 'returnQty', 'tax', 'total'];
 
     constructor() {
@@ -57,41 +57,32 @@ export class SaleReturnFormComponent implements OnInit {
     }
 
     loadCustomersLookup() {
+
         this.customerService.getCustomersLookup().subscribe({
-            next: (data) => this.customers = data,
+            next: (data) => {
+                this.customers = data;
+                this.cdr.detectChanges();
+            },
             error: (err) => console.error("Customer load fail:", err)
+
         });
     }
 
     onCustomerChange(customerId: number) {
         this.saleOrders = [];
         this.returnForm.get('saleOrderId')?.setValue(null);
-        this.clearItems(); // Customer badalne par purane items saaf [cite: 2026-02-05]
+        this.clearItems();
 
         if (customerId) {
             this.saleOrderService.getOrdersByCustomer(customerId).subscribe({
-                next: (data) => this.saleOrders = data,
+                next: (data) => {
+                    this.saleOrders = data;
+                    this.cdr.detectChanges();
+                },
                 error: (err) => console.error("Orders load error:", err)
             });
         }
     }
-
-    // onSOChange(soId: number) {
-    //     this.clearItems();
-    //     if (soId) {
-    //         this.isLoading = true;
-    //         this.saleOrderService.getSaleOrderById(soId).subscribe({
-    //             next: (soData) => {
-    //                 if (soData && soData.items) {
-    //                     this.populateItems(soData.items);
-    //                 }
-    //                 this.isLoading = false;
-    //                 this.cdr.detectChanges();
-    //             },
-    //             error: () => this.isLoading = false
-    //         });
-    //     }
-    // }
 
     onSOChange(soId: number) {
         this.clearItems();
@@ -103,7 +94,7 @@ export class SaleReturnFormComponent implements OnInit {
                         const itemGroup = this.fb.group({
                             productId: [item.productId],
                             productName: [item.productName],
-                            quantity: [item.soldQty || item.quantity], // Handle both namings
+                            quantity: [item.soldQty || item.quantity],
                             rate: [item.rate || item.unitPrice || 0],
                             itemCondition: ['Good', Validators.required],
                             reason: [''],
@@ -112,25 +103,26 @@ export class SaleReturnFormComponent implements OnInit {
                             amount: [0]
                         });
 
-                        // Initial Calculation (creates 0, but ensures types/state)
                         this.calculateRowTotal(itemGroup);
 
-                        // Qty change hone par total calculation trigger karein
                         itemGroup.get('returnQty')?.valueChanges.subscribe(() => {
                             this.calculateRowTotal(itemGroup);
+                            this.cdr.detectChanges();
                         });
 
                         this.itemsFormArray.push(itemGroup);
                     });
                     this.itemsDataSource.data = this.itemsFormArray.controls;
                     this.isLoading = false;
-                    this.cdr.detectChanges(); // UI refresh ke liye
+                    this.cdr.detectChanges();
                 },
-                error: () => this.isLoading = false
+                error: () => {
+                    this.isLoading = false;
+                    this.cdr.detectChanges();
+                }
             });
         }
     }
-
 
     get itemsFormArray(): FormArray {
         return this.returnForm.get('items') as FormArray;
@@ -149,7 +141,7 @@ export class SaleReturnFormComponent implements OnInit {
                 productId: [item.productId],
                 productName: [item.productName],
                 quantity: [item.quantity],
-                rate: [item.unitPrice || item.rate], // Backend mapping check
+                rate: [item.unitPrice || item.rate],
                 itemCondition: ['Good', Validators.required],
                 reason: [''],
                 returnQty: [0, [Validators.required, Validators.min(0), Validators.max(item.quantity)]],
@@ -159,13 +151,14 @@ export class SaleReturnFormComponent implements OnInit {
 
             itemGroup.get('returnQty')?.valueChanges.subscribe(() => {
                 this.calculateRowTotal(itemGroup);
+                this.cdr.detectChanges();
             });
 
             this.itemsFormArray.push(itemGroup);
         });
 
-        // Use spread operator to create a new array reference, ensuring MatTable updates
         this.itemsDataSource.data = [...this.itemsFormArray.controls];
+        this.cdr.detectChanges();
     }
 
     calculateRowTotal(group: FormGroup) {
@@ -194,29 +187,75 @@ export class SaleReturnFormComponent implements OnInit {
                 saleOrderId: res.saleOrderId,
                 remarks: res.remarks
             });
-            // Additional logic for edit mode population...
             this.isLoading = false;
+            this.cdr.detectChanges();
         });
     }
 
+    // ==========================================
+    // SAVE LOGIC (Updated as requested)
+    // ==========================================
     onSubmit() {
         if (this.returnForm.invalid) {
             this.returnForm.markAllAsTouched();
             return;
         }
+
+        const userId = localStorage.getItem('email') || 'admin@admin.com';
+        const rawValue = this.returnForm.value;
+
+        // Backend ko wahi naam chahiye jo SaleReturnItem interface mein hain
+        const mappedItems: SaleReturnItem[] = rawValue.items
+            .filter((i: any) => i.returnQty > 0)
+            .map((i: any) => ({
+                productId: i.productId,
+                returnQty: i.returnQty,
+                unitPrice: i.rate,           // UI 'rate' -> Backend 'unitPrice'
+                taxPercentage: i.taxRate,    // UI 'taxRate' -> Backend 'taxPercentage'
+                totalAmount: i.amount,       // UI 'amount' -> Backend 'totalAmount'
+                reason: i.reason || 'No Reason',
+                itemCondition: i.itemCondition || 'Good'
+            }));
+
+        if (mappedItems.length === 0) {
+            alert("Please enter return quantity for at least one item.");
+            return;
+        }
+
+        const payload: CreateSaleReturnDto = {
+            returnDate: rawValue.returnDate,
+            saleOrderId: Number(rawValue.saleOrderId),
+            customerId: Number(rawValue.customerId),
+            remarks: rawValue.remarks,
+            createdBy: userId, // Audit fields ke liye email pass ho raha hai
+            items: mappedItems
+        };
+
         this.isLoading = true;
-        this.srService.saveSaleReturn(this.returnForm.value).subscribe({
+        console.log('Final Payload to Backend:', payload);
+
+        this.srService.saveSaleReturn(payload).subscribe({
             next: () => {
                 this.isLoading = false;
+                this.cdr.detectChanges();
                 this.router.navigate(['/app/inventory/sale-return']);
             },
             error: (err) => {
-                console.error(err);
+                console.error("Save Return Error:", err);
                 this.isLoading = false;
+
+                // --- VALIDATION ERROR HANDLING ---
+                // Backend se aane wala message 'err.error.message' ya seedha 'err.error' mein ho sakta hai
+                // Isse Dashboard par jo -4 ki wajah se error aayega wo user ko dikhega
+                const errorMessage = err.error?.message || err.error || "Something went wrong while saving the return.";
+
+                // Yahan alert ki jagah aap apna 'statusshow' component/toast bhi use kar sakte hain
+                alert(errorMessage);
+
+                this.cdr.detectChanges();
             }
         });
     }
-
     goBack() {
         this.router.navigate(['/app/inventory/sale-return']);
     }

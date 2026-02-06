@@ -50,10 +50,24 @@
       </table>
     </div>
 
-    <div class="grand-total-section">
-      <div class="total-box">
-        <span class="total-label">Grand Total:</span>
-        <span class="total-amount">{{data.grandTotal | currency:'INR'}}</span>
+    <div class="grand-total-section mt-4">
+      <div class="d-flex flex-column align-items-end">
+        
+        <div class="d-flex justify-content-end gap-3 mb-1" style="width: 250px;">
+          <span class="text-muted">Sub-Total:</span>
+          <span class="fw-medium text-dark">{{data.subTotal | currency:'INR'}}</span>
+        </div>
+
+        <div class="d-flex justify-content-end gap-3 mb-2" style="width: 250px;">
+          <span class="text-muted">Total Tax:</span>
+          <span class="fw-medium text-dark">{{data.totalTax | currency:'INR'}}</span>
+        </div>
+
+        <div class="total-box border-top pt-2" style="width: 250px;">
+          <span class="total-label">Grand Total:</span>
+          <span class="total-amount">{{data.grandTotal | currency:'INR'}}</span>
+        </div>
+        
       </div>
     </div>
   </mat-dialog-content>

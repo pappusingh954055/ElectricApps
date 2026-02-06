@@ -123,15 +123,18 @@
 }
 
 .total-box {
+  display: flex; /* Added flex to separate label and value */
+  justify-content: space-between;
+  align-items: center;
   text-align: right;
   .total-label {
     font-size: 13px;
     color: #666;
-    margin-right: 10px;
+    margin-right: 0; /* Removed margin-right as space-between handles it */
     font-weight: 500;
   }
   .total-amount {
-    font-size: 1.4rem; // Mobile pe thoda chota
+    font-size: 1.4rem;
     font-weight: 700;
     color: #3f51b5;
 
