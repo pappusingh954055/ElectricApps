@@ -2,8 +2,8 @@
     padding: 24px;
     display: flex;
     flex-direction: column;
-    /* Adjusted height: Added space for widgets so table doesn't overflow */
-    height: calc(100vh - 100px); 
+    /* Adjusted height to fit widgets and remove page scroll */
+    height: calc(100vh - 220px); 
     overflow: hidden; 
     box-sizing: border-box;
 }
