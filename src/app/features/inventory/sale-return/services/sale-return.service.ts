@@ -53,7 +53,7 @@ export class SaleReturnService {
 
     // Get Customers who have items that can be returned (if applicable)
     // Or just a list of customers to start the return process
-  
+
     // Get Sale Orders/Invoices for a specific customer
     getSaleOrders(customerId: number): Observable<any[]> {
         return this.http.get<any[]>(`${this.apiUrl}/SaleReturn/sale-orders/${customerId}`);
@@ -74,5 +74,14 @@ export class SaleReturnService {
             params: params,
             responseType: 'blob'
         });
+    }
+
+    getPrintData(id: number): Observable<any> {
+        return this.http.get(`${this.apiUrl}/SaleReturn/print-data/${id}`);
+    }
+
+    printCreditNote(id: number): Observable<Blob> {
+        const url = `${this.apiUrl}/SaleReturn/print/${id}`;
+        return this.http.get(url, { responseType: 'blob' });
     }
 }

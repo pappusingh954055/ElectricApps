@@ -9,6 +9,7 @@ import { MaterialModule } from '../../../../shared/material/material/material-mo
 import { SaleReturnService } from '../services/sale-return.service';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
+import { SaleReturnDetailsModal } from '../sale-return-details-modal/sale-return-details-modal';
 
 
 @Component({
@@ -116,19 +117,19 @@ export class SaleReturnListComponent implements OnInit {
             this.pageIndex,
             this.pageSize,
             this.sortField,
-            this.sortOrder, 
-            this.fromDate || undefined, 
-            this.toDate || undefined 
+            this.sortOrder,
+            this.fromDate || undefined,
+            this.toDate || undefined
         )
             .subscribe({
                 next: (res) => {
                     console.log('resdata', res);
                     this.dataSource.data = res.items;
                     this.totalRecords = res.totalCount;
-                    
+
                     // Refresh widgets based on loaded data [cite: 2026-02-06]
                     this.calculateStats(res.items);
-                    
+
                     this.isTableLoading = false;
                     this.cdr.detectChanges();
                 },
@@ -157,12 +158,61 @@ export class SaleReturnListComponent implements OnInit {
     }
 
     viewCreditNote(row: any) {
-        this.router.navigate(['/app/inventory/sale-return/details', row.id]);
+        const id = row.saleReturnHeaderId;
+        this.isTableLoading = true;
+        this.srService.getPrintData(id).subscribe({
+            next: (res) => {
+                console.log('modal data', res);
+                this.isTableLoading = false;
+
+                const modalData = {
+                    ...res,
+                    saleReturnHeaderId: id
+                };
+
+                this.dialog.open(SaleReturnDetailsModal, {
+                    width: '850px',
+                    data: modalData,
+                    panelClass: 'custom-modalbox'
+                });
+
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                console.error("Popup data fetch failed", err);
+                this.isTableLoading = false;
+                this.cdr.detectChanges();
+            }
+        });
     }
 
     printCreditNote(row: any) {
-        const printUrl = `https://localhost:7052/api/SaleReturn/print/${row.id}`;
-        window.open(printUrl, '_blank');
+        const returnId = row.saleReturnHeaderId;
+
+        if (!returnId) {
+            console.error("ID is missing! Check if 'saleReturnHeaderId' exists in row.");
+            return;
+        }
+
+        this.isTableLoading = true;
+
+        this.srService.printCreditNote(returnId).subscribe({
+            next: (blob: Blob) => {
+                const fileURL = URL.createObjectURL(blob);
+                window.open(fileURL, '_blank');
+
+
+                setTimeout(() => URL.revokeObjectURL(fileURL), 100);
+
+                this.isTableLoading = false;
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                console.error("PDF generation failed", err);
+                this.isTableLoading = false;
+                this.cdr.detectChanges();
+            }
+        });
     }
 
     deleteReturn(row: any) {
