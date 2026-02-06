@@ -2,7 +2,10 @@
     padding: 24px;
     display: flex;
     flex-direction: column;
-    /* Allow naturally growing page */
+    /* Fixed height to contain scroll within table */
+    height: calc(100vh - 240px); 
+    overflow: hidden; 
+    box-sizing: border-box;
 }
 
 .header-actions {
@@ -43,9 +46,26 @@
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 
-    /* Remove internal scroll, let page scroll */
-    overflow: visible;
-
+    /* Internal scrolling with Sticky Header support */
+    flex: 1;
+    overflow: auto; 
+    min-height: 0;
+    
+    /* Professional Slim Scrollbar */
+    &::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    &::-webkit-scrollbar-thumb {
+        background: #cfd8dc;
+        border-radius: 3px;
+    }
+    &::-webkit-scrollbar-thumb:hover {
+        background: #b0bec5;
+    }
 
     .loading-shade {
         position: absolute;
@@ -83,7 +103,7 @@
         padding: 8px 12px; /* Reduced padding for professional look */
         z-index: 100; /* Ensure header stays on top */
         position: sticky !important; /* Force sticky */
-        top: 0;
+        top: 0; /* Stick to top of container */
     }
 
     /* Filter Icon Styling */
