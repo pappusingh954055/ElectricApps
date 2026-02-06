@@ -1,9 +1,9 @@
 .modal-container {
-  padding: 10px;
-  // Responsive fix: Fixed width hata kar max-width use karein
+  padding: 15px;
   width: 100%;
   max-width: 850px; 
   margin: 0 auto;
+  box-sizing: border-box;
 
   .modal-header {
     display: flex;
@@ -13,10 +13,9 @@
     margin-bottom: 20px;
     padding-bottom: 10px;
 
-    h2 { margin: 0; color: #3f51b5; font-size: 20px; font-weight: 500; }
-    .date-text { color: #666; font-size: 14px; }
+    h2 { margin: 0; color: #3f51b5; font-size: 18px; font-weight: 500; }
+    .date-text { color: #666; font-size: 13px; }
 
-    // Mobile ke liye header stack karein
     @media (max-width: 576px) {
       flex-direction: column;
       gap: 5px;
@@ -25,7 +24,7 @@
 
   .info-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr; // Desktop par 2 columns
+    grid-template-columns: 1fr 1fr;
     gap: 15px;
     margin-bottom: 25px;
 
@@ -36,13 +35,12 @@
       .value { font-size: 14px; color: #333; font-weight: 500; margin-top: 2px; word-break: break-all; }
     }
 
-    // Mobile par 1 column
     @media (max-width: 576px) {
       grid-template-columns: 1fr;
     }
   }
 
-  // Table Container for horizontal scroll
+  // Horizontal Scroll Fix
   .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -56,12 +54,12 @@
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    min-width: 500px; // Mobile par table itni choti na ho ki read na kar sakein
+    min-width: 550px; // Table readablity on mobile
 
     thead th {
       background-color: #f8f9fa;
       padding: 12px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       color: #555;
       text-align: left;
@@ -70,23 +68,27 @@
 
     tbody td {
       padding: 12px;
-      font-size: 14px;
+      font-size: 13px;
       color: #444;
       border-bottom: 1px solid #f5f5f5;
     }
   }
 
-  .footer-section {
+  // Footer Alignment Fix
+  .footer-container {
     display: flex;
-    justify-content: flex-end;
-    margin-top: 15px;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-top: 10px;
+    width: 100%;
 
     .summary-card {
       background: #f9f9f9;
       padding: 15px;
       border-radius: 8px;
-      width: 100%; // Mobile par full width
-      max-width: 280px; // Desktop par fixed width
+      width: 100%;
+      max-width: 280px;
+      border: 1px solid #eee;
 
       .summary-line {
         display: flex;
@@ -109,8 +111,14 @@
     }
 
     @media (max-width: 576px) {
-      justify-content: center;
+      align-items: center;
       .summary-card { max-width: 100%; }
     }
   }
+}
+
+// Dialog buttons spacing
+mat-dialog-actions {
+  padding: 15px 0 0 0 !important;
+  button mat-icon { margin-right: 8px; }
 }

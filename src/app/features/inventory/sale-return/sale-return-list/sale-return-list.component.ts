@@ -234,24 +234,44 @@ export class SaleReturnListComponent implements OnInit {
     }
 
     exportToExcel() {
+
         this.isExportLoading = true;
-        const start = this.fromDate ? this.fromDate.toISOString() : undefined;
-        const end = this.toDate ? this.toDate.toISOString() : undefined;
+        this.cdr.detectChanges();
+
+
+        const start = this.fromDate ? new Date(this.fromDate).toISOString() : undefined;
+        const end = this.toDate ? new Date(this.toDate).toISOString() : undefined;
+
 
         this.srService.downloadExcel(start, end).subscribe({
             next: (blob: Blob) => {
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `SaleReturns_${new Date().toISOString().split('T')[0]}.xlsx`;
-                link.click();
-                window.URL.revokeObjectURL(url);
+                if (blob.size > 0) {
+
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+
+
+                    const fileName = `SaleReturns_${new Date().toISOString().split('T')[0]}.xlsx`;
+                    link.download = fileName;
+
+
+                    link.click();
+
+
+                    window.URL.revokeObjectURL(url);
+                } else {
+                    console.warn("Bhai, Excel file khali (empty) hai!");
+                }
+
                 this.isExportLoading = false;
                 this.cdr.detectChanges();
             },
             error: (err) => {
+                console.error("Excel Export Error:", err);
                 this.isExportLoading = false;
                 this.cdr.detectChanges();
+
             }
         });
     }
