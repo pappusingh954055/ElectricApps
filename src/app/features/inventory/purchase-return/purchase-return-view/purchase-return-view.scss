@@ -1,15 +1,15 @@
 .dialog-header {
   background-color: #ffffff;
   color: #333333;
-  padding: 10px 20px; /* Reduced vertical padding */
+  padding: 10px 20px;
   margin: 0;
   display: flex !important;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   box-sizing: border-box; 
-  font-size: 18px; /* Slightly reduced font size if it was too big */
-  border-bottom: 1px solid #e0e0e0;
+  font-size: 18px;
+  border-bottom: 2px solid #3f51b5; /* Blue divider attached to header */
 }
 
 .flex-spacer {

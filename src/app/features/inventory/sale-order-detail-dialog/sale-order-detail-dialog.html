@@ -35,7 +35,7 @@
             <th class="text-start">Product Name</th>
             <th class="text-start">Quantity</th>
             <th class="text-start">Rate</th>
-            <th class="text-start">Total</th>
+            <th class="text-end pe-3">Total</th>
           </tr>
         </thead>
         <tbody>
@@ -44,28 +44,28 @@
             <td class="fw-medium text-dark text-start">{{item.productName}}</td>
             <td class="text-start">{{item.qty}}</td>
             <td class="text-start">{{item.rate | currency:'INR'}}</td>
-            <td class="text-start fw-bold text-dark">{{(item.qty * item.rate) | currency:'INR'}}</td>
+            <td class="text-end pe-3 fw-bold text-dark">{{(item.qty * item.rate) | currency:'INR'}}</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="grand-total-section mt-4">
-      <div class="d-flex flex-column align-items-end">
+    <div class="grand-total-section mt-4 d-flex justify-content-end">
+      <div style="width: 280px;">
         
-        <div class="d-flex justify-content-end gap-3 mb-1" style="width: 250px;">
+        <div class="d-flex justify-content-between mb-1">
           <span class="text-muted">Sub-Total:</span>
-          <span class="fw-medium text-dark">{{data.subTotal | currency:'INR'}}</span>
+          <span class="fw-bold text-dark">{{data.subTotal | currency:'INR'}}</span>
         </div>
 
-        <div class="d-flex justify-content-end gap-3 mb-2" style="width: 250px;">
+        <div class="d-flex justify-content-between mb-2">
           <span class="text-muted">Total Tax:</span>
-          <span class="fw-medium text-dark">{{data.totalTax | currency:'INR'}}</span>
+          <span class="fw-bold text-dark">{{data.totalTax | currency:'INR'}}</span>
         </div>
 
-        <div class="total-box border-top pt-2" style="width: 250px;">
-          <span class="total-label">Grand Total:</span>
-          <span class="total-amount">{{data.grandTotal | currency:'INR'}}</span>
+        <div class="total-box border-top pt-2 d-flex justify-content-between align-items-center">
+          <span class="total-label mb-0">Grand Total:</span>
+          <span class="total-amount mb-0">{{data.grandTotal | currency:'INR'}}</span>
         </div>
         
       </div>
