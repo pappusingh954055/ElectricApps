@@ -46,25 +46,16 @@
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 
-    /* Internal scrolling with Sticky Header support */
+    /* Internal scrolling enabled */
     flex: 1;
     overflow: auto; 
     min-height: 0;
-    
-    /* Professional Slim Scrollbar */
+
+    /* HIDE SCROLLBAR COMPLETELY */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE/Edge */
     &::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-    &::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    &::-webkit-scrollbar-thumb {
-        background: #cfd8dc;
-        border-radius: 3px;
-    }
-    &::-webkit-scrollbar-thumb:hover {
-        background: #b0bec5;
+        display: none; /* Chrome/Safari */
     }
 
     .loading-shade {
