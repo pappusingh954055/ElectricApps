@@ -6,12 +6,13 @@ import { ChartConfiguration } from 'chart.js';
 import { DashboardService } from '../services/dashboard.service';
 import { Router } from '@angular/router';
 import { ProductService } from '../../master/product/service/product.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, BehaviorSubject } from 'rxjs';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @Component({
   selector: 'app-dashboard-component',
   standalone: true,
-  imports: [MaterialModule, CommonModule, BaseChartDirective],
+  imports: [MaterialModule, CommonModule, BaseChartDirective, ScrollingModule],
   providers: [DecimalPipe],
   templateUrl: './dashboard-component.html',
   styleUrl: './dashboard-component.scss',
@@ -26,7 +27,7 @@ export class DashboardComponent implements OnInit {
   isDashboardLoading = true;
   private productService = inject(ProductService);
 
-  displayedColumns: string[] = ['product', 'type', 'quantity', 'date', 'status'];
+
 
   // Stats array with 'hasAlert' property for type safety in HTML
   stats: any[] = [
@@ -37,6 +38,10 @@ export class DashboardComponent implements OnInit {
   ];
 
   recentActivities: any[] = [];
+  page = 1;
+  pageSize = 10;
+  loadingActivities = false;
+  allLoaded = false;
 
   public lineChartData: ChartConfiguration['data'] = {
     datasets: [
@@ -78,7 +83,7 @@ export class DashboardComponent implements OnInit {
     forkJoin({
       summary: this.dashboardService.getSummary(),
       charts: this.dashboardService.getChartData(),
-      activities: this.dashboardService.getRecentActivities()
+      activities: this.dashboardService.getRecentMovements(this.page, this.pageSize)
     }).subscribe({
       next: (res) => {
         // 1. Summary Stats Update
@@ -106,6 +111,9 @@ export class DashboardComponent implements OnInit {
 
         // 3. Recent Activities
         this.recentActivities = res.activities;
+        if (res.activities.length < this.pageSize) {
+          this.allLoaded = true;
+        }
 
         // Sab kuch load hone ke baad Loader OFF
         this.isDashboardLoading = false;
@@ -195,6 +203,40 @@ export class DashboardComponent implements OnInit {
         console.error('PDF export failed:', err);
         this.isPdfLoading = false;
         this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onScroll(index: number) {
+    // Agar hum list ke end ke kareeb hain (e.g., last 5 items), toh next page load karein
+    if (this.recentActivities.length && !this.loadingActivities && !this.allLoaded) {
+      const threshold = this.recentActivities.length - 5;
+      if (index > threshold) {
+        this.loadMoreActivities();
+      }
+    }
+  }
+
+  loadMoreActivities() {
+    this.loadingActivities = true;
+    this.page++;
+    this.dashboardService.getRecentMovements(this.page, this.pageSize).subscribe({
+      next: (data) => {
+        if (data.length > 0) {
+          this.recentActivities = [...this.recentActivities, ...data];
+        }
+
+        if (data.length < this.pageSize) {
+          this.allLoaded = true;
+        }
+
+        this.loadingActivities = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading more activities:', err);
+        this.loadingActivities = false;
+        this.page--; // Revert page increment on error
       }
     });
   }

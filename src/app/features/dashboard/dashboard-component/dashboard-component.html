@@ -89,44 +89,42 @@
     <mat-card class="activity-card hover-card">
       <mat-card-header><mat-card-title>Recent Stock Movements</mat-card-title></mat-card-header>
       <mat-card-content class="table-container">
-        <table mat-table [dataSource]="recentActivities" class="full-width-table">
-          
-          <ng-container matColumnDef="product">
-            <th mat-header-cell *matHeaderCellDef> Product </th>
-            <td mat-cell *matCellDef="let element"> <b>{{element.product}}</b> </td>
-          </ng-container>
+        <!-- Header Row (Fixed) -->
+        <div class="table-header">
+          <div>Product</div>
+          <div>Type</div>
+          <div>Qty</div>
+          <div>Date</div>
+          <div>Status</div>
+        </div>
 
-          <ng-container matColumnDef="type">
-            <th mat-header-cell *matHeaderCellDef> Type </th>
-            <td mat-cell *matCellDef="let element"> 
+        <!-- Virtual Scroller -->
+        <cdk-virtual-scroll-viewport itemSize="48" class="virtual-scroll-viewport" (scrolledIndexChange)="onScroll($event)">
+          <div *cdkVirtualFor="let element of recentActivities" class="table-row">
+            <div><b>{{element.product}}</b></div>
+            
+            <div>
               <span [class]="'type-label ' + element.type.toLowerCase()">{{element.type}}</span>
-            </td>
-          </ng-container>
+            </div>
 
-          <ng-container matColumnDef="quantity">
-            <th mat-header-cell *matHeaderCellDef> Qty </th>
-            <td mat-cell *matCellDef="let element"> {{element.qty}} </td>
-          </ng-container>
+            <div>{{element.qty}}</div>
 
-          <ng-container matColumnDef="date">
-            <th mat-header-cell *matHeaderCellDef> Date </th>
-            <td mat-cell *matCellDef="let element"> {{element.date | date:'MMM dd, yyyy'}} </td>
-          </ng-container>
+            <div>{{element.date | date:'MMM dd, yyyy'}}</div>
 
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef> Status </th>
-            <td mat-cell *matCellDef="let element">
+            <div>
               <mat-chip-set>
                 <mat-chip class="status-chip" [attr.data-status]="element.status">
                   {{element.status}}
                 </mat-chip>
               </mat-chip-set>
-            </td>
-          </ng-container>
+            </div>
+          </div>
 
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-        </table>
+          <!-- Loading Spinner for Infinite Scroll -->
+          <div *ngIf="loadingActivities" style="display: flex; justify-content: center; padding: 10px; width: 100%;">
+            <mat-spinner diameter="24"></mat-spinner>
+          </div>
+        </cdk-virtual-scroll-viewport>
       </mat-card-content>
     </mat-card>
 
