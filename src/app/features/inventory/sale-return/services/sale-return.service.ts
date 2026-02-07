@@ -84,4 +84,8 @@ export class SaleReturnService {
         const url = `${this.apiUrl}/SaleReturn/print/${id}`;
         return this.http.get(url, { responseType: 'blob' });
     }
+
+    getDashboardSummary(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/SaleReturn/summary`);
+}
 }

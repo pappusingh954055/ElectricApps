@@ -10,7 +10,7 @@
         <div class="stat-item border-primary">
             <div class="stat-label">TOTAL RETURNS (TODAY)</div>
             <div class="stat-data">
-                <span class="stat-value">{{stats.todayCount || 0}}</span>
+                <span class="stat-value">{{summaryData.totalReturnsToday}}</span>
                 <mat-icon class="stat-icon color-primary">assignment_return</mat-icon>
             </div>
         </div>
@@ -18,7 +18,7 @@
         <div class="stat-item border-danger">
             <div class="stat-label">TOTAL REFUND VALUE</div>
             <div class="stat-data">
-                <span class="stat-value text-danger">{{stats.totalRefund | currency:'INR'}}</span>
+                <span class="stat-value text-danger">{{summaryData.totalRefundValue | currency:'INR'}}</span>
                 <mat-icon class="stat-icon color-danger">payments</mat-icon>
             </div>
         </div>
@@ -26,7 +26,7 @@
         <div class="stat-item border-success">
             <div class="stat-label">STOCK RE-FILLED</div>
             <div class="stat-data">
-                <span class="stat-value text-success">{{stats.itemsReturned || 0}} PCS</span>
+                <span class="stat-value text-success">{{summaryData.stockRefilledPcs}} PCS</span>
                 <mat-icon class="stat-icon color-success">inventory_2</mat-icon>
             </div>
         </div>
@@ -34,7 +34,7 @@
         <div class="stat-item border-info">
             <div class="stat-label">CONFIRMED RETURNS</div>
             <div class="stat-data">
-                <span class="stat-value">{{stats.confirmedReturns || 0}}</span>
+                <span class="stat-value">{{summaryData.confirmedReturns}}</span>
                 <mat-icon class="stat-icon color-info">verified</mat-icon>
             </div>
         </div>

@@ -50,6 +50,13 @@ export class SaleReturnListComponent implements OnInit {
         confirmedReturns: 0
     };
 
+    summaryData: any = {
+        totalReturnsToday: 0,
+        totalRefundValue: 0,
+        stockRefilledPcs: 0,
+        confirmedReturns: 0
+    };
+
     filterValues: any = {
         returnNumber: '',
         customerName: ''
@@ -59,10 +66,22 @@ export class SaleReturnListComponent implements OnInit {
     @ViewChild(MatSort) sort!: MatSort;
 
     ngOnInit(): void {
+        this.loadDashboardSummary();
         this.loadReturns();
     }
 
-    // New: Calculate Stats for Widgets [cite: 2026-02-06]
+
+    loadDashboardSummary() {
+        this.srService.getDashboardSummary().subscribe({
+            next: (data) => {
+                this.summaryData = data;
+                this.cdr.detectChanges(); // UI update trigger karein [cite: 2026-02-06]
+            },
+            error: (err) => console.error("Summary load failed", err)
+        });
+    }
+
+
     private calculateStats(items: any[]) {
         if (!items || items.length === 0) {
             this.stats = { todayCount: 0, totalRefund: 0, itemsReturned: 0, confirmedReturns: 0 };
