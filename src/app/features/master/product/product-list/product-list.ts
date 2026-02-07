@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component, OnChanges, OnInit, ViewChild } from '@angular/core';
-
+import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core'; // inject add kiya
+import { ActivatedRoute } from '@angular/router'; // Filter read karne ke liye
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -10,27 +10,25 @@ import { ServerDatagridComponent } from '../../../../shared/components/server-da
 import { MatDialog } from '@angular/material/dialog';
 import { GridRequest } from '../../../../shared/models/grid-request.model';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
-import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
-
 
 @Component({
   selector: 'app-product-list',
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, MaterialModule,
-    ServerDatagridComponent],
+  standalone: true,
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, MaterialModule, ServerDatagridComponent],
   providers: [DatePipe],
   templateUrl: './product-list.html',
   styleUrl: './product-list.scss',
 })
 export class ProductList implements OnInit {
+  // ActivatedRoute inject kiya filter read karne ke liye
+  private route = inject(ActivatedRoute);
 
   loading = false;
-
   totalCount = 0;
-
   selectedRows: any[] = [];
-
   lastRequest!: GridRequest;
+  isLowStockFilterActive = false; // State for dashboard alert
 
   @ViewChild(ServerDatagridComponent)
   grid!: ServerDatagridComponent<any>;
@@ -39,7 +37,8 @@ export class ProductList implements OnInit {
 
   constructor(
     private service: ProductService,
-    private router: Router, private dialog: MatDialog,
+    private router: Router,
+    private dialog: MatDialog,
     private datePipe: DatePipe,
     private cdr: ChangeDetectorRef) { }
 
@@ -49,48 +48,54 @@ export class ProductList implements OnInit {
     { field: 'productName', header: 'Product', sortable: true, width: 150, visible: true },
     { field: 'sku', header: 'SKU', sortable: true, width: 75, visible: true },
     { field: 'unit', header: 'Unit', sortable: true, width: 75, visible: true },
-
     { field: 'defaultGst', header: 'GST %', sortable: true, width: 75, visible: true },
     { field: 'hsnCode', header: 'HSN Code', sortable: true, width: 80, visible: true },
     { field: 'minStock', header: 'Min Stock', sortable: true, width: 80, visible: true },
     { field: 'currentStock', header: 'Current Stock', sortable: true, width: 80, visible: true },
-
     { field: 'trackInventory', sortable: true, width: 75, visible: true, header: 'Track Inv', cell: (row: any) => row.trackInventory ? 'Yes' : 'No' },
     {
       field: 'createdAt',
       header: 'Created On',
       sortable: true, width: 120, visible: true,
       cell: (row: any) =>
-        row.createdAt ?
-          this.datePipe.transform(row.createdAt, 'dd-MMM-yyyy') : '-'
+        row.createdAt ? this.datePipe.transform(row.createdAt, 'dd-MMM-yyyy') : '-'
     }
   ];
-  isLowStockFilterActive = false;
+
   ngOnInit(): void {
+    // Redirection filter check karein
+    this.route.queryParams.subscribe(params => {
+      this.isLowStockFilterActive = params['filter'] === 'lowstock';
 
-
-    // Initial load
-    this.loadPriceLists({
-      pageNumber: 1,
-      pageSize: 10,
-      sortDirection: 'desc'
+      // Initial load with default request
+      this.loadPriceLists({
+        pageNumber: 1,
+        pageSize: 10,
+        sortDirection: 'desc'
+      });
     });
   }
 
   loadPriceLists(request: GridRequest): void {
     this.loading = true;
-    this.lastRequest = request; // ✅ store last state    
+    this.lastRequest = request;
     this.cdr.detectChanges();
 
-    this.service.getPaged(request).subscribe({
-      next: res => {
-        this.data = res.items;
-        console.log(this.data)
-        this.totalCount = res.totalCount;
+    // Conditional API Call: Agar dashboard se aaye hain toh low-stock API hit karein
+    const apiCall: any = this.isLowStockFilterActive
+      ? this.service.getLowStockProducts()
+      : this.service.getPaged(request);
+
+    apiCall.subscribe({
+      next: (res: any) => {
+        // Mapping check: Paged API 'items' return karti hai, LowStock seedha list
+        this.data = this.isLowStockFilterActive ? (res as any) : res.items;
+        this.totalCount = this.isLowStockFilterActive ? this.data.length : res.totalCount;
+
         this.loading = false;
         this.cdr.detectChanges();
       },
-      error: err => {
+      error: (err: any) => {
         console.error(err);
         this.loading = false;
         this.cdr.detectChanges();
@@ -98,50 +103,31 @@ export class ProductList implements OnInit {
     });
   }
 
+  // Filter clear karke normal view par jaane ke liye
+  clearFilter(): void {
+    this.router.navigate(['/app/master/products']);
+  }
 
   onEdit(row: any): void {
     this.router.navigate(['/app/master/products/edit', row.id]);
   }
 
   deleteProduct(category: any): void {
-    this.dialog
-      .open(ConfirmDialogComponent, {
-        data: {
-          title: 'Confirm Delete',
-          message: 'Are you sure you want to delete this product list?'
-        }
-      })
-      .afterClosed()
-      .subscribe(confirm => {
+    this.dialog.open(ConfirmDialogComponent, {
+      data: { title: 'Confirm Delete', message: 'Are you sure you want to delete this product list?' }
+    })
+      .afterClosed().subscribe(confirm => {
         if (!confirm) return;
-
         this.loading = true;
-
         this.service.delete(category.id).subscribe({
-          next: res => {
+          next: (res: any) => {
             this.loading = false;
-
-            this.dialog.open(StatusDialogComponent, {
-              data: {
-                isSuccess: true,
-                message: res.message
-              }
-            });
-
+            this.dialog.open(StatusDialogComponent, { data: { isSuccess: true, message: res.message } });
             this.loadPriceLists(this.lastRequest);
           },
-          error: err => {
+          error: (err: any) => {
             this.loading = false;
-
-            const message =
-              err?.error?.message || 'Unable to delete Price list';
-
-            this.dialog.open(StatusDialogComponent, {
-              data: {
-                isSuccess: false,
-                message
-              }
-            });
+            this.dialog.open(StatusDialogComponent, { data: { isSuccess: false, message: err?.error?.message || 'Unable to delete' } });
           }
         });
       });
@@ -153,53 +139,24 @@ export class ProductList implements OnInit {
 
   confirmBulkDelete(): void {
     if (!this.selectedRows.length) return;
-
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+    this.dialog.open(ConfirmDialogComponent, {
       width: '420px',
-      data: {
-        title: 'Delete product List',
-        message: `Are you sure you want to delete ${this.selectedRows.length} selected product list?`
-      }
-    });
-
-    dialogRef.afterClosed().subscribe(confirm => {
+      data: { title: 'Delete product List', message: `Are you sure you want to delete ${this.selectedRows.length} selected items?` }
+    }).afterClosed().subscribe(confirm => {
       if (!confirm) return;
-
       const ids = this.selectedRows.map(x => x.id);
-
       this.loading = true;
-
       this.service.deleteMany(ids).subscribe({
-        next: (res) => {
-          // 🔄 Reload grid
+        next: (res: any) => {
           this.loadPriceLists(this.lastRequest);
-
-          // 🧹 Clear selection via grid reference
           this.grid.clearSelection();
-
           this.loading = false;
-          this.dialog.open(StatusDialogComponent, {
-            data: {
-              isSuccess: true,
-              message: res.message
-            }
-          });
-
+          this.dialog.open(StatusDialogComponent, { data: { isSuccess: true, message: res.message } });
           this.cdr.detectChanges();
         },
-        error: err => {
-          console.error(err);
+        error: (err: any) => {
           this.loading = false;
-          const message =
-            err?.error?.message || 'Unable to delete product list';
-
-          this.dialog.open(StatusDialogComponent, {
-            data: {
-              isSuccess: false,
-              message
-            }
-          });
-          this.cdr.detectChanges();
+          this.dialog.open(StatusDialogComponent, { data: { isSuccess: false, message: err?.error?.message || 'Error' } });
         }
       });
     });

@@ -96,6 +96,6 @@ export class ProductService {
     }
 
     getLowStockProducts(): Observable<LowStockProductDto[]> {
-        return this.http.get<LowStockProductDto[]>(`${this.url}/products/low-stock`);
+        return this.http.get<LowStockProductDto[]>(`${this.url}/low-stock`);
     }
 }
