@@ -2,7 +2,7 @@ export interface GridColumn {
   field: string;
   header: string;
   sortable?: boolean;
-  
+
   // Custom cell rendering ke liye
   cell?: (row: any) => string | number | null;
 
@@ -17,13 +17,14 @@ export interface GridColumn {
 
   // Resizing allow karne ke liye
   isResizable?: boolean;
-  
+
 
   type?: 'text' | 'number' | 'boolean' | 'date' | 'currency';
-  
+
   // Alignment: text left, numbers right
   align?: 'left' | 'right' | 'center';
 
   close?: string; // Aapka existing field
   filterValue?: string;
+  action?: (row: any) => void;
 }

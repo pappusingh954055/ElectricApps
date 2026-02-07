@@ -31,4 +31,8 @@ export class POService {
       params: { productId, priceListId }
     });
   }
+
+  bulkSentForApproval(ids: number[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/PurchaseOrders/bulk-sent-for-approval`, ids);
+  }
 }

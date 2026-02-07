@@ -5,6 +5,8 @@ import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
 import { DashboardService } from '../services/dashboard.service';
 import { Router } from '@angular/router';
+import { ProductService } from '../../master/product/service/product.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-dashboard-component',
@@ -19,15 +21,20 @@ export class DashboardComponent implements OnInit {
   private decimalPipe = inject(DecimalPipe);
   private router = inject(Router);
 
+  isExcelLoading = false;
+  isPdfLoading = false;
+  isDashboardLoading = true;
+  private productService = inject(ProductService);
+
   displayedColumns: string[] = ['product', 'type', 'quantity', 'date', 'status'];
 
   // Stats array with 'hasAlert' property for type safety in HTML
-stats: any[] = [
+  stats: any[] = [
     { title: 'Total Sales', value: '₹0', icon: 'trending_up', color: '#4caf50' },
     { title: 'Purchase Orders', value: '0 Pending', icon: 'shopping_cart', color: '#2196f3' },
     { title: 'Stock Value', value: '₹0', icon: 'inventory_2', color: '#ff9800', subLabel: '0 Units' },
     { title: 'Low Stock', value: 'Loading...', icon: 'report_problem', color: '#f44336', hasAlert: false }
-];
+  ];
 
   recentActivities: any[] = [];
 
@@ -63,75 +70,132 @@ stats: any[] = [
     this.loadDashboardData();
   }
 
-loadDashboardData() {
-    // 1. Summary Widgets Update
-    this.dashboardService.getSummary().subscribe({
+  loadDashboardData() {
+    this.isDashboardLoading = true; // Loader ON
+    this.cdr.detectChanges();
+
+    // Teeno APIs ko ek saath call kar rahe hain
+    forkJoin({
+      summary: this.dashboardService.getSummary(),
+      charts: this.dashboardService.getChartData(),
+      activities: this.dashboardService.getRecentActivities()
+    }).subscribe({
       next: (res) => {
-        // Sales aur Purchase update
-        this.stats[0].value = '₹' + (this.decimalPipe.transform(res.totalSales, '1.0-0') || '0');
-        this.stats[1].value = (res.pendingPurchaseOrders || 0) + ' Pending';
+        // 1. Summary Stats Update
+        this.stats[0].value = '₹' + (this.decimalPipe.transform(res.summary.totalSales, '1.0-0') || '0');
+        this.stats[1].value = (res.summary.pendingPurchaseOrders || 0) + ' Pending';
+        this.stats[2].value = '₹' + (this.decimalPipe.transform(res.summary.totalStockValue, '1.0-0') || '0');
+        this.stats[2].subLabel = (this.decimalPipe.transform(res.summary.totalStockItems) || '0') + ' Units In Stock';
 
-        // Stock Value aur Units
-        this.stats[2].value = '₹' + (this.decimalPipe.transform(res.totalStockValue, '1.0-0') || '0');
-        this.stats[2].subLabel = (this.decimalPipe.transform(res.totalStockItems) || '0') + ' Units In Stock';
-
-        // FIX: Dynamic Low Stock Alert
-        const lowStockCount = res.lowStockAlertCount || 0;
+        const lowStockCount = res.summary.lowStockAlertCount || 0;
         this.stats[3].value = lowStockCount + (lowStockCount === 1 ? ' Item' : ' Items');
         this.stats[3].hasAlert = lowStockCount > 0;
+        this.stats = [...this.stats];
 
-        // Spread operator use kar rahe hain taaki Angular change detection ko refresh kar sake
-        this.stats = [...this.stats]; 
+        // 2. Charts Update
+        this.lineChartData.labels = res.charts.labels;
+        this.lineChartData.datasets[0].data = res.charts.salesData;
+        this.lineChartData.datasets[1].data = res.charts.purchaseData;
+        this.donutChartData.datasets[0].data = [
+          res.charts.finishedGoods || 0,
+          res.charts.rawMaterials || 0,
+          res.charts.damagedItems || 0
+        ];
+        this.lineChartData = { ...this.lineChartData };
+        this.donutChartData = { ...this.donutChartData };
+
+        // 3. Recent Activities
+        this.recentActivities = res.activities;
+
+        // Sab kuch load hone ke baad Loader OFF
+        this.isDashboardLoading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error fetching summary:', err);
-        this.stats[3].value = 'Error';
-      }
-    });
-
-    // 2. Charts Update
-    this.dashboardService.getChartData().subscribe({
-      next: (res) => {
-        this.lineChartData.labels = res.labels;
-        this.lineChartData.datasets[0].data = res.salesData;
-        this.lineChartData.datasets[1].data = res.purchaseData;
-
-        this.donutChartData.datasets[0].data = [
-          res.finishedGoods || 0,
-          res.rawMaterials || 0,
-          res.damagedItems || 0
-        ];
-
-        this.lineChartData = { ...this.lineChartData };
-        this.donutChartData = { ...this.donutChartData };
+        console.error('Dashboard load error:', err);
+        this.isDashboardLoading = false;
         this.cdr.detectChanges();
       }
     });
+  }
 
-    // 3. Recent Activities Update
-    this.dashboardService.getRecentActivities().subscribe({
-      next: (res) => {
-        this.recentActivities = res;
-        this.cdr.detectChanges();
-      },
-      error: (err) => console.error('Error loading recent activities:', err)
-    });
-}
   get hasDonutData(): boolean {
     const data = this.donutChartData.datasets[0].data;
     return data ? data.some(val => (val as number) > 0) : false;
   }
 
-navigateToLowStockReport() {
-  console.log('Low Stock Card Clicked. Stats Data:', this.stats[3]);
-  
-  // Testing ke liye condition hata di taaki har baar redirect ho
-  console.log('Force Redirecting to Product List...');
-  this.router.navigate(['/app/master/products'], { 
-    queryParams: { filter: 'lowstock' } 
-  });
-}
-  exportExcel() { console.log('Exporting Excel...'); }
-  exportPDF() { console.log('Downloading PDF...'); }
+  navigateToLowStockReport() {
+    console.log('Low Stock Card Clicked. Stats Data:', this.stats[3]);
+
+    // Testing ke liye condition hata di taaki har baar redirect ho
+    console.log('Force Redirecting to Product List...');
+    this.router.navigate(['/app/master/products'], {
+      queryParams: { filter: 'lowstock' }
+    });
+  }
+  exportToExcel() {
+    this.isExcelLoading = true; // Spinner start karein
+
+    this.productService.downloadLowStockExcel().subscribe({
+      next: (blob: Blob) => {
+        this.cdr.detectChanges();
+        // 1. Blob se URL create karein
+        const url = window.URL.createObjectURL(blob);
+
+        // 2. Ek hidden anchor element banayein
+        const a = document.createElement('a');
+        a.href = url;
+
+        // 3. File ka naam set karein
+        a.download = `LowStockReport_${new Date().getTime()}.xlsx`;
+
+        // 4. Click trigger karke download start karein
+        a.click();
+
+        // 5. Cleanup: URL aur element ko remove karein
+        window.URL.revokeObjectURL(url);
+        a.remove();
+
+        this.isExcelLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Excel export failed:', err);
+        this.isExcelLoading = false;
+        // Yahan aap toast message ya notification dikha sakte hain
+      }
+    });
+  }
+  exportToPdf() {
+    this.isPdfLoading = true; // Dashboard par spinner dikhane ke liye
+    this.cdr.detectChanges();
+    this.productService.downloadLowStockPdf().subscribe({
+      next: (blob: Blob) => {
+        // 1. Browser memory mein temporary URL banayein
+        const url = window.URL.createObjectURL(blob);
+
+        // 2. Hidden link element create karein
+        const a = document.createElement('a');
+        a.href = url;
+
+        // 3. File name set karein
+        a.download = `LowStock_Report_${new Date().toLocaleDateString()}.pdf`;
+
+        // 4. Download trigger karein
+        a.click();
+
+        // 5. Cleanup
+        window.URL.revokeObjectURL(url);
+        a.remove();
+
+        this.isPdfLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('PDF export failed:', err);
+        this.isPdfLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
 }

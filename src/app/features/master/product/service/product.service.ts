@@ -98,4 +98,16 @@ export class ProductService {
     getLowStockProducts(): Observable<LowStockProductDto[]> {
         return this.http.get<LowStockProductDto[]>(`${this.url}/low-stock`);
     }
+
+    downloadLowStockExcel(): Observable<Blob> {
+        return this.http.get(`${this.url}/export-low-stock`, {
+            responseType: 'blob'
+        });
+    }
+    // PDF Download API call
+    downloadLowStockPdf(): Observable<Blob> {
+        return this.http.get(`${this.url}/export-low-stock-pdf`, {
+            responseType: 'blob' // Zaroori hai PDF file stream handle karne ke liye
+        });
+    }
 }

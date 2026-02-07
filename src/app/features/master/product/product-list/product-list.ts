@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core'; // inject add kiya
-import { ActivatedRoute } from '@angular/router'; // Filter read karne ke liye
+import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { CommonModule, DatePipe } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -21,14 +21,13 @@ import { StatusDialogComponent } from '../../../../shared/components/status-dial
   styleUrl: './product-list.scss',
 })
 export class ProductList implements OnInit {
-  // ActivatedRoute inject kiya filter read karne ke liye
   private route = inject(ActivatedRoute);
 
   loading = false;
   totalCount = 0;
   selectedRows: any[] = [];
   lastRequest!: GridRequest;
-  isLowStockFilterActive = false; // State for dashboard alert
+  isLowStockFilterActive = false;
 
   @ViewChild(ServerDatagridComponent)
   grid!: ServerDatagridComponent<any>;
@@ -48,6 +47,17 @@ export class ProductList implements OnInit {
     { field: 'productName', header: 'Product', sortable: true, width: 150, visible: true },
     { field: 'sku', header: 'SKU', sortable: true, width: 75, visible: true },
     { field: 'unit', header: 'Unit', sortable: true, width: 75, visible: true },
+
+    // UPDATED: Quick Order Column Add kiya hai
+    {
+      field: 'reorder',
+      header: 'Order',
+      width: 100,
+      visible: true,
+      cell: (row: any) => row.currentStock <= row.minStock ? '🛒 Reorder' : '-',
+      action: (row: any) => this.navigateToCreatePO(row)
+    },
+
     { field: 'defaultGst', header: 'GST %', sortable: true, width: 75, visible: true },
     { field: 'hsnCode', header: 'HSN Code', sortable: true, width: 80, visible: true },
     { field: 'minStock', header: 'Min Stock', sortable: true, width: 80, visible: true },
@@ -63,11 +73,9 @@ export class ProductList implements OnInit {
   ];
 
   ngOnInit(): void {
-    // Redirection filter check karein
     this.route.queryParams.subscribe(params => {
       this.isLowStockFilterActive = params['filter'] === 'lowstock';
 
-      // Initial load with default request
       this.loadPriceLists({
         pageNumber: 1,
         pageSize: 10,
@@ -81,14 +89,12 @@ export class ProductList implements OnInit {
     this.lastRequest = request;
     this.cdr.detectChanges();
 
-    // Conditional API Call: Agar dashboard se aaye hain toh low-stock API hit karein
     const apiCall: any = this.isLowStockFilterActive
       ? this.service.getLowStockProducts()
       : this.service.getPaged(request);
 
     apiCall.subscribe({
       next: (res: any) => {
-        // Mapping check: Paged API 'items' return karti hai, LowStock seedha list
         this.data = this.isLowStockFilterActive ? (res as any) : res.items;
         this.totalCount = this.isLowStockFilterActive ? this.data.length : res.totalCount;
 
@@ -103,7 +109,24 @@ export class ProductList implements OnInit {
     });
   }
 
-  // Filter clear karke normal view par jaane ke liye
+  // NAYA: Purchase Order page par redirect karne ke liye
+  navigateToCreatePO(row: any) {
+    if (row.currentStock <= row.minStock) {
+      const refillData = {
+        productName: row.productName,
+        productId: row.id,
+        unit: row.unit,
+        rate: row.basePurchasePrice || row.rate || 0,
+        gstPercent: row.defaultGst || 0,
+        suggestedQty: row.minStock - row.currentStock > 0 ? row.minStock - row.currentStock : 10
+      };
+
+      this.router.navigate(['/app/inventory/polist/add'], {
+        state: { refillData }
+      });
+    }
+  }
+
   clearFilter(): void {
     this.router.navigate(['/app/master/products']);
   }

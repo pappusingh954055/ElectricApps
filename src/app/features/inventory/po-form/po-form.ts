@@ -49,6 +49,7 @@ export class PoForm implements OnInit, OnDestroy {
   private refillData: any = null;
 
   constructor() {
+    // Redirection se aane wala data pakadne ke liye
     const navigation = this.router.getCurrentNavigation();
     if (navigation?.extras.state) {
       this.refillData = navigation.extras.state['refillData'];
@@ -66,6 +67,7 @@ export class PoForm implements OnInit, OnDestroy {
       this.isEditMode = true;
       this.loadPODetails(id);
     } else if (this.refillData) {
+      // Dashboard redirection wala case
       this.isEditMode = false;
       this.loadNextPoNumber();
       this.addRefillRow(this.refillData);
@@ -76,13 +78,14 @@ export class PoForm implements OnInit, OnDestroy {
     }
   }
 
+  // NAYA METHOD: Dashboard data ko row mein convert karne ke liye
   private addRefillRow(data: any) {
     const index = this.items.length;
     const row = this.fb.group({
       productSearch: [data.productName, Validators.required],
       productId: [data.productId, Validators.required],
       qty: [data.suggestedQty || 10, [Validators.required, Validators.min(1)]],
-      unit: [{ value: data.unit || 'PCS', disabled: false }], // Set disabled to false so getRawValue() picks it
+      unit: [{ value: data.unit || 'PCS', disabled: false }], 
       price: [data.rate || 0, [Validators.required, Validators.min(1)]],
       discountPercent: [0],
       gstPercent: [data.gstPercent || 18],
@@ -96,6 +99,7 @@ export class PoForm implements OnInit, OnDestroy {
     this.isProductLoading[index] = false;
     this.setupFilter(index);
 
+    // Auto-rate fetch logic if Price List exists
     const pListId = this.poForm.get('priceListId')?.value;
     if (pListId && data.productId) {
       this.inventoryService.getProductRate(data.productId, pListId).subscribe({
@@ -106,16 +110,10 @@ export class PoForm implements OnInit, OnDestroy {
               gstPercent: res.gstPercent || data.gstPercent,
               unit: res.unit || data.unit
             });
-          } else {
-            row.patchValue({ price: 0 });
           }
           this.updateTotal(index);
         },
-        error: (err) => {
-          row.patchValue({ price: 0 });
-          if (err.status === 404) {
-            this.notification.showStatus(false, `Refill Alert: ${data.productName} is not in the Price List. Rate reset to 0.`);
-          }
+        error: () => {
           this.updateTotal(index);
         }
       });
@@ -160,7 +158,7 @@ export class PoForm implements OnInit, OnDestroy {
       poDate: [new Date(), Validators.required],
       expectedDeliveryDate: [null],
       PoNumber: [{ value: '', disabled: true }],
-      remarks: ['', Validators.required], // Added required validator for backend
+      remarks: ['', Validators.required],
       items: this.fb.array([])
     });
   }
@@ -170,7 +168,7 @@ export class PoForm implements OnInit, OnDestroy {
       productSearch: [item.productName, Validators.required],
       productId: [item.productId, Validators.required],
       qty: [item.qty, [Validators.required, Validators.min(1)]],
-      unit: [item.unit || 'PCS', Validators.required], // Unit must not be null
+      unit: [item.unit || 'PCS', Validators.required],
       price: [item.rate, [Validators.required, Validators.min(1)]],
       discountPercent: [item.discountPercent || 0],
       gstPercent: [item.gstPercent || 0],
@@ -194,8 +192,6 @@ export class PoForm implements OnInit, OnDestroy {
         this.poForm.get('priceListId')?.setValue(res.defaultpricelistId);
         this.isPriceListAutoSelected = true;
         this.refreshAllItemRates(res.defaultpricelistId);
-      } else {
-        this.notification.showStatus(false, 'Selected supplier has no default Price List.');
       }
       this.cdr.detectChanges();
     });
@@ -204,24 +200,15 @@ export class PoForm implements OnInit, OnDestroy {
   refreshAllItemRates(priceListId: string) {
     this.items.controls.forEach((control, index) => {
       const prodId = control.get('productId')?.value;
-      const productName = control.get('productSearch')?.value?.name || 'Item';
       if (prodId && priceListId) {
         this.poService.getProductRate(prodId, priceListId).subscribe({
           next: (res: any) => {
             if (res) {
               control.patchValue({ price: res.recommendedRate || res.rate, gstPercent: res.gstPercent });
-            } else {
-              control.patchValue({ price: 0 });
             }
             this.updateTotal(index);
           },
-          error: (err) => {
-            control.patchValue({ price: 0 });
-            this.updateTotal(index);
-            if (err.status === 404) {
-              this.notification.showStatus(false, `${productName} not found in the new Price List. Rate reset to 0.`);
-            }
-          }
+          error: () => this.updateTotal(index)
         });
       }
     });
@@ -255,18 +242,10 @@ export class PoForm implements OnInit, OnDestroy {
         next: (res: any) => {
           if (res) {
             row.patchValue({ price: res.recommendedRate || res.rate, gstPercent: res.gstPercent });
-          } else {
-            row.patchValue({ price: 0 });
           }
           this.updateTotal(index);
         },
-        error: (err) => {
-          row.patchValue({ price: 0 });
-          this.updateTotal(index);
-          if (err.status === 404) {
-            this.notification.showStatus(false, `Product '${product.name}' is not in the Price List. Please enter rate manually.`);
-          }
-        }
+        error: () => this.updateTotal(index)
       });
     } else {
       this.updateTotal(index);
@@ -305,7 +284,7 @@ export class PoForm implements OnInit, OnDestroy {
       productSearch: ['', Validators.required],
       productId: [null, Validators.required],
       qty: [1, [Validators.required, Validators.min(1)]],
-      unit: ['PCS', Validators.required], // Unit required for backend
+      unit: ['PCS', Validators.required],
       price: [0, [Validators.required, Validators.min(1)]],
       discountPercent: [0],
       gstPercent: [0],
@@ -362,12 +341,9 @@ export class PoForm implements OnInit, OnDestroy {
   saveDraft() {
     const formValue = this.poForm.getRawValue();
 
-    // Date Validation: Delivery Date >= PO Date
     if (formValue.expectedDeliveryDate) {
       const poDate = new Date(formValue.poDate);
       const deliveryDate = new Date(formValue.expectedDeliveryDate);
-
-      // Reset time to ensure we only subtract dates
       poDate.setHours(0, 0, 0, 0);
       deliveryDate.setHours(0, 0, 0, 0);
 
@@ -377,36 +353,31 @@ export class PoForm implements OnInit, OnDestroy {
       }
     }
 
-    // Manual validation check for zero price items
     const hasZeroPrice = formValue.items.some((item: any) => Number(item.price) <= 0);
 
     if (this.poForm.invalid || hasZeroPrice) {
-      const errorMsg = hasZeroPrice
-        ? 'One or more items have zero rate. Please enter valid rates.'
-        : 'Please fill all required fields correctly.';
-      this.notification.showStatus(false, errorMsg);
+      this.notification.showStatus(false, hasZeroPrice ? 'Rate must be greater than 0.' : 'Please fill all required fields.');
       return;
     }
 
-    // Identify selected supplier for its name
     const supplier = this.suppliers.find(s => s.id === Number(formValue.supplierId));
     const userId = localStorage.getItem('email') || 'System User';
     this.isLoading = true;
     const payload: any = {
       id: this.isEditMode ? Number(this.poId) : 0,
       supplierId: Number(formValue.supplierId),
-      supplierName: supplier ? supplier.name : 'Unknown', // Required field
+      supplierName: supplier ? supplier.name : 'Unknown',
       priceListId: formValue.priceListId,
       poDate: DateHelper.toLocalISOString(formValue.poDate),
       poNumber: formValue.PoNumber,
-      remarks: formValue.remarks || 'No remarks provided', // Required field
-      createdBy: userId, // Required field
+      remarks: formValue.remarks || 'No remarks provided',
+      createdBy: userId,
       grandTotal: this.grandTotal,
       status: 'Draft',
       items: formValue.items.map((item: any) => ({
         productId: item.productId,
         qty: Number(item.qty),
-        unit: item.unit || 'PCS', // Required field
+        unit: item.unit || 'PCS',
         rate: Number(item.price),
         gstPercent: Number(item.gstPercent),
         discountPercent: Number(item.discountPercent),
@@ -424,7 +395,7 @@ export class PoForm implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isLoading = false;
-        this.notification.showStatus(false, err.error?.message || 'Error saving PO. Check required fields.');
+        this.notification.showStatus(false, err.error?.message || 'Error saving PO.');
       }
     });
   }
