@@ -47,6 +47,7 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
 
   @Output() selectionChanged = new EventEmitter<any[]>();
   @Output() bulkApproveOrders = new EventEmitter<any[]>();
+  @Output() bulkDraftApproved = new EventEmitter<any[]>();
 
   @Output() bulkDeleteParentOrders = new EventEmitter<any[]>();
   @Output() actionClicked = new EventEmitter<{ action: string, row: any }>();
@@ -378,6 +379,12 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
       this.bulkApproveOrders.emit(this.selection.selected);
       // Selection clear is handled by parent or manual? 
       // Usually parent refreshes data which clears selection, but let's leave it to parent.
+    }
+  }
+
+  onBulkDraftApprovedClick() {
+    if (this.selection.selected.length > 0) {
+      this.bulkDraftApproved.emit(this.selection.selected);
     }
   }
   // enterprise-hierarchical-grid.ts

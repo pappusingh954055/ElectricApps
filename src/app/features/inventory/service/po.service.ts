@@ -32,7 +32,11 @@ export class POService {
     });
   }
 
-  bulkSentForApproval(ids: number[]): Observable<any> {
+  bulkSentForDraftApproval(ids: number[]): Observable<any> {
     return this.http.post(`${this.apiUrl}/PurchaseOrders/bulk-sent-for-approval`, ids);
+  }
+
+  bulkDraftApprove(ids: number[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/PurchaseOrders/bulk-approve`, ids);
   }
 }

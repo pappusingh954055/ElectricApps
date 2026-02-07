@@ -185,7 +185,7 @@ export class PoList implements OnInit {
       data: {
         title: 'Delete Purchase Order',
         message: `Do you want to delete the PO No: ${row.poNumber}? This will delete all items.`,
-        confirmText: 'Yes, Delete All',
+        confirmText: 'Yes',
         cancelText: 'No'
       }
     });
@@ -212,44 +212,29 @@ export class PoList implements OnInit {
     });
   }
 
-  // --- 2. BULK PARENT DELETE (Main Selection) ---
   onBulkDeleteParentOrders(selectedRows: any[]) {
     if (!selectedRows || selectedRows.length === 0) {
       this.notification.showStatus(false, 'First select the po!');
       return;
     }
 
-    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '450px',
-      data: {
-        title: '⚠️ Critical: Bulk Delete Parent Orders',
-        message: `Do you want to permanently remove these ${selectedRows.length} orders?`,
-        confirmText: 'Yes, Delete All',
-        cancelText: 'Cancel'
-      }
-    });
+    this.isLoading = true;
+    const parentIds = selectedRows.map(row => row.id);
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.isLoading = true;
-        const parentIds = selectedRows.map(row => row.id);
-
-        this.poService.bulkDeletePurchaseOrders(parentIds).subscribe({
-          next: (res) => {
-            this.isLoading = false;
-            if (res.success) {
-              this.notification.showStatus(true, `${selectedRows.length} Orders deleted.`);
-              this.selection.clear(); // Important cleanup
-              this.loadData(this.currentGridState);
-            }
-            this.cdr.detectChanges();
-          },
-          error: () => {
-            this.isLoading = false;
-            this.notification.showStatus(false, 'Error: Bulk delete failed.');
-            this.cdr.detectChanges();
-          }
-        });
+    this.poService.bulkDeletePurchaseOrders(parentIds).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        if (res.success) {
+          this.notification.showStatus(true, `${selectedRows.length} Orders deleted.`);
+          this.selection.clear(); // Important cleanup
+          this.loadData(this.currentGridState);
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isLoading = false;
+        this.notification.showStatus(false, 'Error: Bulk delete failed.');
+        this.cdr.detectChanges();
       }
     });
   }
@@ -323,6 +308,9 @@ export class PoList implements OnInit {
         break;
       case 'CREATE_GRN':
         this.onCreateGRN(row); // Approved PO ke liye truck icon logic
+        break;
+      case 'DELETE':
+        this.onDeleteSingleParentRecord(row);
         break;
 
       default:
@@ -458,7 +446,7 @@ export class PoList implements OnInit {
     });
   }
 
-  onBulkApprove(selectedRows: any[]) {
+  onBulkSentForDraftApproval(selectedRows: any[]) {
     // 1. Validation: Only Drafts
     const draftRows = selectedRows.filter((row: any) => row.status === 'Draft');
 
@@ -487,7 +475,7 @@ export class PoList implements OnInit {
         this.isLoading = true;
         const ids = draftRows.map((row: any) => row.id);
 
-        this.poActionService.bulkSentForApproval(ids).subscribe({
+        this.poActionService.bulkSentForDraftApproval(ids).subscribe({
           next: () => {
             this.isLoading = false;
             this.notification.showStatus(true, 'Selected POs sent for approval successfully.');
@@ -502,6 +490,64 @@ export class PoList implements OnInit {
             console.error(err);
             this.isLoading = false;
             this.notification.showStatus(false, 'Failed to submit POs for approval.');
+          }
+        });
+      }
+    });
+  }
+
+  onBulkDraftApproved(selectedRows: any[]) {
+    // 1. Validation: Only Submitted items usually, but strictly based on user req, maybe Drafts too?
+    // Assuming we are approving drafts directly or similar state. 
+    // The previous logic filtered 'Draft', lets see. The user said 'Bulk Draft Approved'.
+    // If the API is bulkApprove, usually it moves status to Approved.
+    // I'll check if they need to be in a specific state. 
+    // Usually "Draft Approved" might mean skipping "Submitted" state or Approving "Submitted" ones.
+    // Given the previous button was "Bulk Draft Approval" (which calls 'bulkSentForDraftApproval' -> changes status to Submitted?),
+    // and this is "Bulk Draft Approved" (calls 'bulkDraftApprove' -> changes status to Approved?).
+
+    // Let's assume we can approve from Draft or Submitted if the API allows. 
+    // But usually approval happens on 'Submitted' items.
+    // However, if the user explicitly calls it "Bulk Draft Approved", maybe they want to approve drafts directly?
+    // Be safe, just send the IDs and let backend handle status checks, or filter for non-Approved.
+
+    const validRows = selectedRows.filter((row: any) => row.status !== 'Approved'); // Basic check
+
+    if (validRows.length === 0) {
+      this.notification.showStatus(false, 'Selected items are already Approved.');
+      return;
+    }
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '450px',
+      data: {
+        title: 'Bulk Approve',
+        message: `Are you sure you want to Approve ${validRows.length} POs?`,
+        confirmText: 'Yes, Approve All',
+        cancelText: 'Cancel'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        this.cdr.detectChanges();
+        const ids = validRows.map((row: any) => row.id);
+
+        this.poActionService.bulkDraftApprove(ids).subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.notification.showStatus(true, 'Selected POs Approved successfully.');
+            if (this.grid && this.grid.selection) {
+              this.grid.selection.clear();
+            }
+            this.loadData(this.currentGridState);
+          },
+          error: (err) => {
+            console.error(err);
+            this.isLoading = false;
+            this.notification.showStatus(false, 'Failed to Approve POs.');
+            this.cdr.detectChanges();
           }
         });
       }

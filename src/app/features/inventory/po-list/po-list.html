@@ -21,7 +21,8 @@
   (bulkDeleteChildItems)="onBulkDeleteChildItems($event)"
   (selectionChanged)="onGridSelectionChange($event)"
   (bulkDeleteParentOrders)="onBulkDeleteParentOrders($event)"
-  (bulkApproveOrders)="onBulkApprove($event)"
+  (bulkApproveOrders)="onBulkSentForDraftApproval($event)"
+  (bulkDraftApproved)="onBulkDraftApproved($event)"
   (actionClicked)="handleGridAction($event)" >
 </app-enterprise-hierarchical-grid>
   </div>

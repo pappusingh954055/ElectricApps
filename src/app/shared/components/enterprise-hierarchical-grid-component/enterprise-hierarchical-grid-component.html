@@ -47,7 +47,12 @@
 
       <button mat-flat-button color="accent" *ngIf="selection.hasValue()" (click)="onBulkApproveClick()" class="action-btn"
         style="margin-right: 8px;">
-        <mat-icon>done_all</mat-icon> Bulk Approval ({{selection.selected.length}})
+        <mat-icon>done_all</mat-icon> Bulk Draft Approval ({{selection.selected.length}})
+      </button>
+
+      <button mat-flat-button color="primary" *ngIf="selection.hasValue()" (click)="onBulkDraftApprovedClick()" class="action-btn"
+        style="margin-right: 8px; background-color: #2e7d32; color: white;">
+        <mat-icon>verified</mat-icon> Bulk Draft Approved ({{selection.selected.length}})
       </button>
       
       <button mat-flat-button color="primary" (click)="onAddNewClick()">+ {{ addNewLabel }}</button>
@@ -127,7 +132,7 @@
 
     <button mat-icon-button 
             (click)="$event.stopPropagation(); handleAction('SUBMIT', row)" 
-            matTooltip="Submit for Approval"
+            matTooltip="Draft Submit for Approval"
             style="color: #2196f3; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
       <mat-icon style="font-size: 18px; width: 18px; height: 18px; line-height: 18px;">send</mat-icon>
     </button>
