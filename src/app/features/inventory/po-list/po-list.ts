@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angular/core';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
@@ -6,6 +6,7 @@ import { EnterpriseHierarchicalGridComponent } from '../../../shared/components/
 import { MatTableDataSource } from '@angular/material/table';
 import { GridColumn } from '../../../shared/models/grid-column.model';
 import { InventoryService } from '../service/inventory.service';
+import { POService } from '../service/po.service';
 import { Router } from '@angular/router';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
@@ -53,8 +54,11 @@ export class PoList implements OnInit {
 
   userRole: any;
 
+  @ViewChild(EnterpriseHierarchicalGridComponent) grid!: EnterpriseHierarchicalGridComponent;
+
   constructor(
     private poService: InventoryService,
+    private poActionService: POService,
     private cdr: ChangeDetectorRef,
     private datePipe: DatePipe,
     private currencyPipe: CurrencyPipe,
@@ -454,5 +458,53 @@ export class PoList implements OnInit {
     });
   }
 
-  
+  onBulkApprove(selectedRows: any[]) {
+    // 1. Validation: Only Drafts
+    const draftRows = selectedRows.filter((row: any) => row.status === 'Draft');
+
+    if (draftRows.length === 0) {
+      this.notification.showStatus(false, 'Selected items must be in "Draft" status to submit.');
+      return;
+    }
+
+    if (draftRows.length !== selectedRows.length) {
+      this.notification.showStatus(false, 'Some selected items were skipped (not Draft). Processing valid ones only.');
+    }
+
+    // 2. Confirmation Dialog
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '450px',
+      data: {
+        title: 'Bulk Approval Submission',
+        message: `Are you sure you want to send ${draftRows.length} POs for approval?`,
+        confirmText: 'Yes, Send All',
+        cancelText: 'Cancel'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        const ids = draftRows.map((row: any) => row.id);
+
+        this.poActionService.bulkSentForApproval(ids).subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.notification.showStatus(true, 'Selected POs sent for approval successfully.');
+
+            // Clear selection and reload
+            if (this.grid && this.grid.selection) {
+              this.grid.selection.clear();
+            }
+            this.loadData(this.currentGridState);
+          },
+          error: (err) => {
+            console.error(err);
+            this.isLoading = false;
+            this.notification.showStatus(false, 'Failed to submit POs for approval.');
+          }
+        });
+      }
+    });
+  }
 }

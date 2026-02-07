@@ -44,6 +44,12 @@
         style="margin-right: 8px;">
         <mat-icon>delete_sweep</mat-icon> Bulk Delete ({{selection.selected.length}})
       </button>
+
+      <button mat-flat-button color="accent" *ngIf="selection.hasValue()" (click)="onBulkApproveClick()" class="action-btn"
+        style="margin-right: 8px;">
+        <mat-icon>done_all</mat-icon> Bulk Approval ({{selection.selected.length}})
+      </button>
+      
       <button mat-flat-button color="primary" (click)="onAddNewClick()">+ {{ addNewLabel }}</button>
     </div>
   </div>
