@@ -107,6 +107,8 @@ export class ProductForm implements OnInit {
       minStock: [0, [Validators.min(0)]],
       description: [null],
       saleRate: [0, [Validators.min(0)]],
+      productType: [null, [Validators.required]],
+      damagedStock: [0],
     });
   }
 
@@ -198,8 +200,8 @@ export class ProductForm implements OnInit {
     return {
       categoryId: formValue.categoryId,
       subcategoryId: formValue.subcategoryId,
-      productName: formValue.productName?.trim(), 
-      sku: formValue.sku?.trim(),             
+      productName: formValue.productName?.trim(),
+      sku: formValue.sku?.trim(),
       brand: formValue.brand?.trim(),
       unit: formValue.unit,
       hsnCode: formValue.hsnCode?.trim(),
@@ -211,6 +213,8 @@ export class ProductForm implements OnInit {
       isActive: Boolean(formValue.isActive),
       description: formValue.description?.trim(),
       saleRate: Number(formValue.saleRate),
+      productType: formValue.productType ? String(formValue.productType) : '',
+      damagedStock: formValue.damagedStock ? Number(formValue.damagedStock) : 0,
     };
   }
 }

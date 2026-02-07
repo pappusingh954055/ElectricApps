@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Product } from '../model/product.model';
+import { LowStockProductDto, Product } from '../model/product.model';
 import { Observable } from 'rxjs';
 import { ApiService } from '../../../../shared/api.service';
 import { SubCategory } from '../../subcategory/modesls/subcategory.model';
@@ -95,7 +95,7 @@ export class ProductService {
         return query.join('&');
     }
 
-//     searchProducts(term: string): Observable<any[]> {
-//   return this.http.get<any[]>(`${this.apiUrl}/products/search?term=${term}`);
-// }
+    getLowStockProducts(): Observable<LowStockProductDto[]> {
+        return this.http.get<LowStockProductDto[]>(`${this.url}/products/low-stock`);
+    }
 }

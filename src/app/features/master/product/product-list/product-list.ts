@@ -53,6 +53,7 @@ export class ProductList implements OnInit {
     { field: 'defaultGst', header: 'GST %', sortable: true, width: 75, visible: true },
     { field: 'hsnCode', header: 'HSN Code', sortable: true, width: 80, visible: true },
     { field: 'minStock', header: 'Min Stock', sortable: true, width: 80, visible: true },
+    { field: 'currentStock', header: 'Current Stock', sortable: true, width: 80, visible: true },
 
     { field: 'trackInventory', sortable: true, width: 75, visible: true, header: 'Track Inv', cell: (row: any) => row.trackInventory ? 'Yes' : 'No' },
     {
@@ -64,8 +65,10 @@ export class ProductList implements OnInit {
           this.datePipe.transform(row.createdAt, 'dd-MMM-yyyy') : '-'
     }
   ];
-
+  isLowStockFilterActive = false;
   ngOnInit(): void {
+
+
     // Initial load
     this.loadPriceLists({
       pageNumber: 1,

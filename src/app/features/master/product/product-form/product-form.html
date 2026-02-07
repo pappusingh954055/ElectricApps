@@ -103,6 +103,20 @@
         </mat-slide-toggle>
       </div>
 
+      <mat-form-field appearance="outline">
+        <mat-label>Product Type</mat-label>
+        <mat-select formControlName="productType">
+          <mat-option [value]="1">Finished</mat-option>
+          <mat-option [value]="2">Goods</mat-option>
+          <mat-option [value]="3">Raw Material</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Damaged Stock</mat-label>
+        <input matInput type="number" formControlName="damagedStock" placeholder="Alert level">
+      </mat-form-field>
+
       <mat-form-field appearance="outline" class="full-width">
         <mat-label>Description</mat-label>
         <textarea matInput rows="2" formControlName="description" placeholder="Technical specifications..."></textarea>

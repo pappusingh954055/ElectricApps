@@ -12,7 +12,9 @@
   </div>
 
   <div class="kpi-grid">
-    <mat-card *ngFor="let item of stats" class="kpi-card hover-card">
+    <mat-card *ngFor="let item of stats" class="kpi-card hover-card clickable" 
+              [class.clickable]="item.title === 'Low Stock'"
+              (click)="item.title === 'Low Stock' ? navigateToLowStockReport() : null" style="cursor: pointer;">
       <div class="card-content">
         <div class="icon-box" [style.background-color]="item.color">
           <mat-icon>{{item.icon}}</mat-icon>
@@ -20,9 +22,10 @@
         <div class="text-box">
           <div class="pulse-container">
             <p class="card-label">{{item.title}}</p>
-            <div *ngIf="item.title === 'Low Stock'" class="red-dot"></div>
+            <div *ngIf="item.title === 'Low Stock' && item.hasAlert" class="red-dot pulse"></div>
           </div>
           <h2 class="card-value">{{item.value}}</h2>
+          <p *ngIf="item.subLabel" class="card-sublabel">{{item.subLabel}}</p>
         </div>
       </div>
     </mat-card>
@@ -30,16 +33,32 @@
 
   <div class="charts-grid">
     <mat-card class="chart-container hover-card">
-      <mat-card-header><mat-card-title>Sales vs Purchase Trends</mat-card-title></mat-card-header>
+      <mat-card-header>
+        <mat-card-title>Sales vs Purchase Trends</mat-card-title>
+      </mat-card-header>
       <mat-card-content class="chart-body">
-        <canvas baseChart [data]="lineChartData" [options]="chartOptions" [type]="'line'"></canvas>
+        <canvas *ngIf="lineChartData.labels?.length" baseChart 
+                [data]="lineChartData" 
+                [options]="chartOptions" 
+                [type]="'line'">
+        </canvas>
       </mat-card-content>
     </mat-card>
 
     <mat-card class="chart-container hover-card">
-      <mat-card-header><mat-card-title>Stock Status</mat-card-title></mat-card-header>
+      <mat-card-header>
+        <mat-card-title>Stock Status</mat-card-title>
+      </mat-card-header>
       <mat-card-content class="chart-body">
-        <canvas baseChart [data]="donutChartData" [options]="chartOptions" [type]="'doughnut'"></canvas>
+        <canvas *ngIf="hasDonutData" 
+                baseChart 
+                [data]="donutChartData" 
+                [options]="chartOptions" 
+                [type]="'doughnut'">
+        </canvas>
+        <div *ngIf="!hasDonutData" class="no-data-msg">
+          No stock movements recorded yet.
+        </div>
       </mat-card-content>
     </mat-card>
   </div>
@@ -48,6 +67,7 @@
     <mat-card-header><mat-card-title>Recent Stock Movements</mat-card-title></mat-card-header>
     <mat-card-content class="table-container">
       <table mat-table [dataSource]="recentActivities" class="full-width-table">
+        
         <ng-container matColumnDef="product">
           <th mat-header-cell *matHeaderCellDef> Product </th>
           <td mat-cell *matCellDef="let element"> <b>{{element.product}}</b> </td>
@@ -67,7 +87,7 @@
 
         <ng-container matColumnDef="date">
           <th mat-header-cell *matHeaderCellDef> Date </th>
-          <td mat-cell *matCellDef="let element"> {{element.date}} </td>
+          <td mat-cell *matCellDef="let element"> {{element.date | date:'MMM dd, yyyy'}} </td>
         </ng-container>
 
         <ng-container matColumnDef="status">
@@ -82,7 +102,7 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;" style="cursor: pointer;"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
     </mat-card-content>
   </mat-card>
