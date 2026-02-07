@@ -11,7 +11,7 @@
         <mat-spinner diameter="20" *ngIf="isExportLoading" class="me-2"></mat-spinner>
         Export Excel
       </button>
-      <button mat-raised-button color="primary" (click)="navigateToCreate()">
+      <button mat-raised-button color="primary" (click)="navigateToCreate()" [disabled]="isTableLoading">
         <mat-icon>add</mat-icon> New Return
       </button>
     </div>

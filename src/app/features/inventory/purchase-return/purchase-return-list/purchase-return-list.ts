@@ -27,7 +27,7 @@ export class PurchaseReturnList implements OnInit {
   displayedColumns: string[] = ['returnNumber', 'returnDate', 'supplierName', 'grnRef', 'totalAmount', 'status', 'actions'];
 
   // Separate Loading States [cite: 2026-02-04]
-  isTableLoading = false;
+  isTableLoading = true;
   isExportLoading = false;
 
   selectedReturn: any;

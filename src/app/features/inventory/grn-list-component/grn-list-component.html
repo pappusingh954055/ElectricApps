@@ -12,7 +12,7 @@
                 <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
 
-            <button matButton="tonal" class="bg-azure" (click)="openPOSearchDialog()">
+            <button mat-raised-button color="primary" (click)="openPOSearchDialog()" [disabled]="isLoadingResults">
                 <mat-icon>add</mat-icon>
                 Receive New Stock
             </button>
