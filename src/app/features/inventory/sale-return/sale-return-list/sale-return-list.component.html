@@ -7,11 +7,17 @@
     </div>
 
     <div class="stats-grid-container">
-        <div class="stat-item border-primary">
+        <div class="stat-item border-primary" 
+             [ngClass]="{'active-widget': activeStatus === 'TODAY'}"
+             (click)="filterByStatus('TODAY')"
+             style="cursor: pointer;">
             <div class="stat-label">TOTAL RETURNS (TODAY)</div>
             <div class="stat-data">
                 <span class="stat-value">{{summaryData.totalReturnsToday}}</span>
-                <mat-icon class="stat-icon color-primary">assignment_return</mat-icon>
+                <mat-icon class="stat-icon color-primary" 
+                          [style.color]="activeStatus === 'TODAY' ? '#3f51b5' : ''">
+                    assignment_return
+                </mat-icon>
             </div>
         </div>
 
@@ -31,14 +37,26 @@
             </div>
         </div>
 
-        <div class="stat-item border-info">
+        <div class="stat-item border-info" 
+             [ngClass]="{'active-widget': activeStatus === 'CONFIRMED'}"
+             (click)="filterByStatus('CONFIRMED')"
+             style="cursor: pointer;">
             <div class="stat-label">CONFIRMED RETURNS</div>
             <div class="stat-data">
                 <span class="stat-value">{{summaryData.confirmedReturns}}</span>
-                <mat-icon class="stat-icon color-info">verified</mat-icon>
+                <mat-icon class="stat-icon color-info" 
+                          [style.color]="activeStatus === 'CONFIRMED' ? '#24d2fd' : ''">
+                    verified
+                </mat-icon>
             </div>
         </div>
     </div>
+
+    <div class="active-filter-banner" *ngIf="activeStatus" (click)="filterByStatus(activeStatus)" style="cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; color: #666; font-size: 14px;">
+        <mat-icon style="font-size: 20px; width: 20px; height: 20px;">filter_list</mat-icon>
+        <span>Showing <strong>{{activeStatus}}</strong> returns. Click here to clear filter.</span>
+    </div>
+
     <div class="filter-section">
         <mat-form-field appearance="outline" class="search-field">
             <mat-label>Search</mat-label>
@@ -72,7 +90,7 @@
             <mat-spinner diameter="50"></mat-spinner>
         </div>
 
-        <table mat-table [dataSource]="dataSource" matSort>
+        <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)">
             <ng-container matColumnDef="returnNumber">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> 
                     <div class="header-content">
@@ -163,7 +181,7 @@
 
             <tr class="mat-row" *matNoDataRow>
                 <td class="mat-cell" colspan="7" style="text-align: center; padding: 20px;">
-                    No data matching the filter "{{input.value}}"
+                    No data matching the filter.
                 </td>
             </tr>
         </table>

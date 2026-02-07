@@ -20,17 +20,18 @@ export class SaleReturnService {
         pageSize: number = 10,
         sortField: string = 'ReturnDate',
         sortOrder: string = 'desc',
-        fromDate?: Date, // Naya parameter [cite: 2026-02-05]
-        toDate?: Date    // Naya parameter [cite: 2026-02-05]
+        fromDate?: Date,
+        toDate?: Date,
+        status: string = '' // Naya Optional Parameter
     ): Observable<SaleReturnPagedResponse> {
         let params = new HttpParams()
             .set('search', search)
+            .set('status', status) // Status param add kiya
             .set('pageIndex', pageIndex.toString())
             .set('pageSize', pageSize.toString())
             .set('sortField', sortField)
             .set('sortOrder', sortOrder);
 
-        // Agar date hai toh params mein add karein [cite: 2026-02-05]
         if (fromDate) params = params.set('fromDate', fromDate.toISOString());
         if (toDate) params = params.set('toDate', toDate.toISOString());
 
@@ -86,6 +87,6 @@ export class SaleReturnService {
     }
 
     getDashboardSummary(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/SaleReturn/summary`);
-}
+        return this.http.get(`${this.apiUrl}/SaleReturn/summary`);
+    }
 }

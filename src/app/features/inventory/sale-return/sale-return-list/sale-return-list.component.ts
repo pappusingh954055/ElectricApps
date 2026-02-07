@@ -11,7 +11,6 @@ import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { SaleReturnDetailsModal } from '../sale-return-details-modal/sale-return-details-modal';
 
-
 @Component({
     selector: 'app-sale-return-list',
     standalone: true,
@@ -35,6 +34,9 @@ export class SaleReturnListComponent implements OnInit {
     fromDate: Date | null = null;
     toDate: Date | null = null;
 
+    // Active Filter State for Widgets
+    activeStatus: string = "";
+
     totalRecords = 0;
     pageSize = 10;
     pageIndex = 0;
@@ -42,7 +44,6 @@ export class SaleReturnListComponent implements OnInit {
     sortField = 'ReturnDate';
     sortOrder = 'desc';
 
-    // Analytics Widgets State [cite: 2026-02-06]
     stats = {
         todayCount: 0,
         totalRefund: 0,
@@ -50,16 +51,16 @@ export class SaleReturnListComponent implements OnInit {
         confirmedReturns: 0
     };
 
+    filterValues: any = {
+        returnNumber: '',
+        customerName: ''
+    };
+
     summaryData: any = {
         totalReturnsToday: 0,
         totalRefundValue: 0,
         stockRefilledPcs: 0,
         confirmedReturns: 0
-    };
-
-    filterValues: any = {
-        returnNumber: '',
-        customerName: ''
     };
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -70,17 +71,22 @@ export class SaleReturnListComponent implements OnInit {
         this.loadReturns();
     }
 
-
     loadDashboardSummary() {
         this.srService.getDashboardSummary().subscribe({
             next: (data) => {
                 this.summaryData = data;
-                this.cdr.detectChanges(); // UI update trigger karein [cite: 2026-02-06]
+                this.cdr.detectChanges();
             },
             error: (err) => console.error("Summary load failed", err)
         });
     }
 
+
+    filterByStatus(status: string) {
+        this.activeStatus = this.activeStatus === status ? '' : status;
+        this.pageIndex = 0;
+        this.loadReturns();
+    }
 
     private calculateStats(items: any[]) {
         if (!items || items.length === 0) {
@@ -90,17 +96,9 @@ export class SaleReturnListComponent implements OnInit {
 
         const todayStr = new Date().toDateString();
 
-        // 1. Today's Returns Count
         this.stats.todayCount = items.filter(x => new Date(x.returnDate).toDateString() === todayStr).length;
-
-        // 2. Total Refund Value mapping to totalAmount
         this.stats.totalRefund = items.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
-
-        // 3. Confirmed Returns count
         this.stats.confirmedReturns = items.filter(x => x.status?.toUpperCase() === 'CONFIRMED').length;
-
-        // 4. Physical items returned back to stock
-        // This sums up the total quantity across all return records
         this.stats.itemsReturned = items.reduce((acc, curr) => acc + (curr.totalQty || 0), 0);
     }
 
@@ -131,30 +129,29 @@ export class SaleReturnListComponent implements OnInit {
 
     loadReturns() {
         this.isTableLoading = true;
+
         this.srService.getSaleReturns(
-            this.searchKey,
+            this.searchKey, // Global search alag rahega
             this.pageIndex,
             this.pageSize,
             this.sortField,
             this.sortOrder,
             this.fromDate || undefined,
-            this.toDate || undefined
+            this.toDate || undefined,
+            this.activeStatus // Widgets se aane wala status yahan jayega
         )
             .subscribe({
                 next: (res) => {
-                    console.log('resdata', res);
                     this.dataSource.data = res.items;
                     this.totalRecords = res.totalCount;
-
-                    // Refresh widgets based on loaded data [cite: 2026-02-06]
                     this.calculateStats(res.items);
-
                     this.isTableLoading = false;
                     this.cdr.detectChanges();
                 },
                 error: (err) => {
                     console.error("Error loading returns", err);
                     this.isTableLoading = false;
+                    this.cdr.detectChanges();
                 }
             });
     }
@@ -168,6 +165,7 @@ export class SaleReturnListComponent implements OnInit {
     applySearch(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
         this.searchKey = filterValue.trim().toLowerCase();
+        this.activeStatus = ''; // Search karne par status filter clear kar dein
         this.pageIndex = 0;
         this.loadReturns();
     }
@@ -181,20 +179,13 @@ export class SaleReturnListComponent implements OnInit {
         this.isTableLoading = true;
         this.srService.getPrintData(id).subscribe({
             next: (res) => {
-                console.log('modal data', res);
                 this.isTableLoading = false;
-
-                const modalData = {
-                    ...res,
-                    saleReturnHeaderId: id
-                };
-
+                const modalData = { ...res, saleReturnHeaderId: id };
                 this.dialog.open(SaleReturnDetailsModal, {
                     width: '850px',
                     data: modalData,
                     panelClass: 'custom-modalbox'
                 });
-
                 this.cdr.detectChanges();
             },
             error: (err) => {
@@ -207,22 +198,14 @@ export class SaleReturnListComponent implements OnInit {
 
     printCreditNote(row: any) {
         const returnId = row.saleReturnHeaderId;
-
-        if (!returnId) {
-            console.error("ID is missing! Check if 'saleReturnHeaderId' exists in row.");
-            return;
-        }
+        if (!returnId) return;
 
         this.isTableLoading = true;
-
         this.srService.printCreditNote(returnId).subscribe({
             next: (blob: Blob) => {
                 const fileURL = URL.createObjectURL(blob);
                 window.open(fileURL, '_blank');
-
-
                 setTimeout(() => URL.revokeObjectURL(fileURL), 100);
-
                 this.isTableLoading = false;
                 this.cdr.detectChanges();
             },
@@ -253,36 +236,23 @@ export class SaleReturnListComponent implements OnInit {
     }
 
     exportToExcel() {
-
         this.isExportLoading = true;
         this.cdr.detectChanges();
-
 
         const start = this.fromDate ? new Date(this.fromDate).toISOString() : undefined;
         const end = this.toDate ? new Date(this.toDate).toISOString() : undefined;
 
-
         this.srService.downloadExcel(start, end).subscribe({
             next: (blob: Blob) => {
                 if (blob.size > 0) {
-
                     const url = window.URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-
-
                     const fileName = `SaleReturns_${new Date().toISOString().split('T')[0]}.xlsx`;
                     link.download = fileName;
-
-
                     link.click();
-
-
                     window.URL.revokeObjectURL(url);
-                } else {
-                    console.warn("Bhai, Excel file khali (empty) hai!");
                 }
-
                 this.isExportLoading = false;
                 this.cdr.detectChanges();
             },
@@ -290,7 +260,6 @@ export class SaleReturnListComponent implements OnInit {
                 console.error("Excel Export Error:", err);
                 this.isExportLoading = false;
                 this.cdr.detectChanges();
-
             }
         });
     }
