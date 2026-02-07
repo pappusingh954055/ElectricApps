@@ -27,7 +27,7 @@ export class SaleReturnListComponent implements OnInit {
     dataSource = new MatTableDataSource<any>();
     displayedColumns: string[] = ['returnNumber', 'returnDate', 'customerName', 'soRef', 'totalAmount', 'status', 'actions'];
 
-    isTableLoading = false;
+    isTableLoading = true;
     isExportLoading = false;
 
     searchKey: string = "";

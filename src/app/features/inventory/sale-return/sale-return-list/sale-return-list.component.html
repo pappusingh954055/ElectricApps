@@ -1,7 +1,7 @@
 <div class="list-container">
     <div class="header-actions">
         <h1>Sale Returns (Credit Notes)</h1>
-        <button mat-raised-button color="primary" (click)="navigateToCreate()">
+        <button mat-raised-button color="primary" (click)="navigateToCreate()" [disabled]="isTableLoading">
             <mat-icon>add</mat-icon> New Return
         </button>
     </div>
