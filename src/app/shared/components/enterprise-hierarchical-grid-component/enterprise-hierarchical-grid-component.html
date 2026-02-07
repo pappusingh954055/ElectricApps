@@ -40,7 +40,7 @@
         </div>
       </mat-menu>
 
-      <button mat-flat-button color="warn" *ngIf="selection.hasValue()" (click)="onBulkDeleteClick()" class="action-btn"
+      <button mat-flat-button color="warn" *ngIf="selection.hasValue() && userRole !== 'Manager'" (click)="onBulkDeleteClick()" class="action-btn"
         style="margin-right: 8px;">
         <mat-icon>delete_sweep</mat-icon> Bulk Delete ({{selection.selected.length}})
       </button>
@@ -54,8 +54,13 @@
         style="margin-right: 8px; background-color: #2e7d32; color: white;">
         <mat-icon>verified</mat-icon> Bulk Draft Approved ({{selection.selected.length}})
       </button>
+
+      <button mat-flat-button color="warn" *ngIf="selection.hasValue() && userRole === 'Manager'" (click)="onBulkPORejectedClick()" class="action-btn"
+      style="margin-right: 8px;">
+      <mat-icon>cancel</mat-icon> Bulk PO Rejected ({{selection.selected.length}})
+    </button>
       
-      <button mat-flat-button color="primary" (click)="onAddNewClick()">+ {{ addNewLabel }}</button>
+      <button mat-flat-button color="primary" *ngIf="userRole !== 'Manager'" (click)="onAddNewClick()">+ {{ addNewLabel }}</button>
     </div>
   </div>
 
@@ -71,7 +76,7 @@
         </th>
         <td mat-cell *matCellDef="let row" (click)="$event.stopPropagation()" style="width: 50px; padding-right: 0;">
           <mat-checkbox (click)="$event.stopPropagation()" (change)="$event ? onParentCheck(row) : null"
-            [checked]="selection.isSelected(row)" [disabled]="row.status !== 'Draft'">
+            [checked]="selection.isSelected(row)" [disabled]="!isRowSelectable(row)">
           </mat-checkbox>
         </td>
       </ng-container>

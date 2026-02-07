@@ -85,7 +85,7 @@ export class PoForm implements OnInit, OnDestroy {
       productSearch: [data.productName, Validators.required],
       productId: [data.productId, Validators.required],
       qty: [data.suggestedQty || 10, [Validators.required, Validators.min(1)]],
-      unit: [{ value: data.unit || 'PCS', disabled: false }], 
+      unit: [{ value: data.unit || 'PCS', disabled: false }],
       price: [data.rate || 0, [Validators.required, Validators.min(1)]],
       discountPercent: [0],
       gstPercent: [data.gstPercent || 18],
@@ -154,7 +154,7 @@ export class PoForm implements OnInit, OnDestroy {
   initForm(): void {
     this.poForm = this.fb.group({
       supplierId: [0, [Validators.required, Validators.min(1)]],
-      priceListId: [null],
+      priceListId: [null, Validators.required],
       poDate: [new Date(), Validators.required],
       expectedDeliveryDate: [null],
       PoNumber: [{ value: '', disabled: true }],
@@ -368,10 +368,12 @@ export class PoForm implements OnInit, OnDestroy {
       supplierId: Number(formValue.supplierId),
       supplierName: supplier ? supplier.name : 'Unknown',
       priceListId: formValue.priceListId,
+      priceList: this.priceLists.find(p => p.id === formValue.priceListId) || null,
       poDate: DateHelper.toLocalISOString(formValue.poDate),
       poNumber: formValue.PoNumber,
       remarks: formValue.remarks || 'No remarks provided',
       createdBy: userId,
+      updatedBy: userId,
       grandTotal: this.grandTotal,
       status: 'Draft',
       items: formValue.items.map((item: any) => ({

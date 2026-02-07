@@ -553,4 +553,49 @@ export class PoList implements OnInit {
       }
     });
   }
+
+  onBulkPOReject(selectedRows: any[]) {
+    // 1. Filter for Submitted items (Since manager views Submitted items)
+    // We can also double check that they are not already Rejected or Approved if needed
+    // But Manager selects "Submitted" items mostly.
+
+    if (!selectedRows || selectedRows.length === 0) return;
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '450px',
+      data: {
+        title: 'Bulk Reject',
+        message: `Are you sure you want to Reject ${selectedRows.length} POs?`,
+        confirmText: 'Yes, Reject All',
+        cancelText: 'Cancel',
+        confirmColor: 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        this.cdr.detectChanges();
+        const ids = selectedRows.map((row: any) => row.id);
+
+        this.poActionService.bulkPOReject(ids).subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.notification.showStatus(true, 'Selected POs Rejected successfully.');
+            if (this.grid && this.grid.selection) {
+              this.grid.selection.clear();
+            }
+            this.loadData(this.currentGridState);
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error(err);
+            this.isLoading = false;
+            this.notification.showStatus(false, 'Failed to Reject POs.');
+            this.cdr.detectChanges();
+          }
+        });
+      }
+    });
+  }
 }

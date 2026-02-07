@@ -48,6 +48,7 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   @Output() selectionChanged = new EventEmitter<any[]>();
   @Output() bulkApproveOrders = new EventEmitter<any[]>();
   @Output() bulkDraftApproved = new EventEmitter<any[]>();
+  @Output() bulkPORejected = new EventEmitter<any[]>();
 
   @Output() bulkDeleteParentOrders = new EventEmitter<any[]>();
   @Output() actionClicked = new EventEmitter<{ action: string, row: any }>();
@@ -120,10 +121,19 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   //   this.emitSelection();
   // }
 
+  isRowSelectable(row: any): boolean {
+    if (this.userRole === 'Manager') {
+      return row.status === 'Submitted';
+    }
+    // Default to User behavior (Draft only)
+    return row.status === 'Draft';
+  }
+
   isAllSelected(): boolean {
     const numSelected = this.selection.selected.length;
-    // Sirf un rows ko count karein jinaka status 'Draft' hai [cite: 2026-01-22]
-    const selectableRows = this.dataSource.data.filter(row => row.status === 'Draft').length;
+
+    // Filter rows based on role logic
+    const selectableRows = this.dataSource.data.filter(row => this.isRowSelectable(row)).length;
 
     return numSelected === selectableRows && selectableRows > 0;
   }
@@ -132,13 +142,13 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
     if (this.isAllSelected()) {
       this.selection.clear();
     } else {
-      // 1. Pehle pura selection clear karein safety ke liye [cite: 2026-01-22]
+      // 1. Pehle pura selection clear karein safety ke liye
       this.selection.clear();
       this.childSelection.clear();
 
-      // 2. Sirf 'Draft' status wali rows ko hi loop karke select karein [cite: 2026-01-22]
+      // 2. Choose rows based on role
       this.dataSource.data.forEach(row => {
-        if (row.status === 'Draft') {
+        if (this.isRowSelectable(row)) {
           this.selection.select(row);
         }
       });
@@ -385,6 +395,12 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   onBulkDraftApprovedClick() {
     if (this.selection.selected.length > 0) {
       this.bulkDraftApproved.emit(this.selection.selected);
+    }
+  }
+
+  onBulkPORejectedClick() {
+    if (this.selection.selected.length > 0) {
+      this.bulkPORejected.emit(this.selection.selected);
     }
   }
   // enterprise-hierarchical-grid.ts

@@ -39,4 +39,8 @@ export class POService {
   bulkDraftApprove(ids: number[]): Observable<any> {
     return this.http.post(`${this.apiUrl}/PurchaseOrders/bulk-approve`, ids);
   }
+
+  bulkPOReject(ids: number[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/PurchaseOrders/bulk-reject`, ids);
+  }
 }
