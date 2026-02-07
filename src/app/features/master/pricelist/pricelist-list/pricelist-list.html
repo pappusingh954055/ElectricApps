@@ -79,7 +79,7 @@
 
   <mat-drawer-content class="drawer-body">
      <div class="action-bar">
-       <button mat-raised-button color="primary" (click)="openCreateDrawer()">+ New List</button>
+       <button mat-raised-button class="bg-azure" (click)="openCreateDrawer()" [disabled]="loading">+ New List</button>
      </div>
      
     <div class="grid-wrapper">
@@ -95,7 +95,7 @@
     (editAction)="onEditClicked($event)">
   </app-server-datagrid>
     <mat-card-actions>
-    <button style="margin-top: 10px;" mat-flat-button class="bg-azure" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
+    <button style="margin-top: 10px;" class="bg-azure" mat-raised-button  (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
       Delete Selected
     </button>
   </mat-card-actions>

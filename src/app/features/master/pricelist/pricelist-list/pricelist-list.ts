@@ -45,7 +45,7 @@ export class PricelistList implements OnInit {
     }
   ];
 
-  loading = false;
+  loading = true;
   totalCount = 0;
   selectedRows: any[] = [];
   lastRequest!: GridRequest;

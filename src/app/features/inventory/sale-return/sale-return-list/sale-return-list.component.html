@@ -72,7 +72,7 @@
             <mat-datepicker #picker2></mat-datepicker>
         </mat-form-field>
 
-        <button mat-stroked-button color="primary" (click)="exportToExcel()" [disabled]="isExportLoading">
+        <button mat-stroked-button color="primary" (click)="exportToExcel()" [disabled]="isExportLoading || isTableLoading">
             <mat-icon *ngIf="!isExportLoading">download</mat-icon>
             <mat-spinner *ngIf="isExportLoading" diameter="20"></mat-spinner>
             Export

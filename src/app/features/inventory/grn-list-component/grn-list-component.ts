@@ -52,6 +52,8 @@ export class GrnListComponent implements OnInit, AfterViewInit {
   ) { }
 
   ngOnInit(): void {
+    this.searchControl.disable({ emitEvent: false });
+
     // Search input par debounce lagaya hai taaki har word par API call na ho [cite: 2026-01-22]
     this.searchControl.valueChanges.pipe(
       debounceTime(400),
@@ -80,6 +82,7 @@ export class GrnListComponent implements OnInit, AfterViewInit {
         switchMap(() => {
           // Loader ON: API call start [cite: 2026-01-22]
           this.isLoadingResults = true;
+          this.searchControl.disable({ emitEvent: false });
           this.cdr.detectChanges();
           return this.inventoryService.getGRNPagedList(
             this.sort.active,
@@ -91,6 +94,7 @@ export class GrnListComponent implements OnInit, AfterViewInit {
             catchError(() => {
               // Loader OFF: Agar API fail ho jaye
               this.isLoadingResults = false;
+              this.searchControl.enable({ emitEvent: false });
               return of(null);
             })
           );
@@ -98,6 +102,7 @@ export class GrnListComponent implements OnInit, AfterViewInit {
         map(data => {
           // Loader OFF: Success response aane par
           this.isLoadingResults = false;
+          this.searchControl.enable({ emitEvent: false });
           this.cdr.detectChanges();
           if (data === null) return [];
 

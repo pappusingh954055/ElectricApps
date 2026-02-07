@@ -37,7 +37,7 @@ export class SubcategoryList implements OnInit, OnChanges {
   readonly categoryService = inject(CategoryService)
   readonly subCategoryService = inject(SubCategoryService)
 
-  loading = false;
+  loading = true;
 
   data: SubCategory[] = [];
   totalCount = 0;

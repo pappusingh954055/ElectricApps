@@ -4,11 +4,12 @@
     <div class="d-flex gap-2">
       <button mat-raised-button color="accent" 
               (click)="selection.hasValue() ? DownloadMultipleOrders(getSelectedIds()) : exportOrders()" 
-              style="height: 40px; margin-right: 12px;">
+              style="height: 40px; margin-right: 12px;"
+              [disabled]="isLoading">
         <mat-icon>download</mat-icon> 
         {{ selection.hasValue() ? 'Export Selected (' + selection.selected.length + ')' : 'Export Excel' }}
       </button>
-      <button mat-raised-button color="primary" (click)="createNewOrder()" style="height: 40px;">
+      <button mat-raised-button color="primary" (click)="createNewOrder()" style="height: 40px;" [disabled]="isLoading">
         <mat-icon>add</mat-icon> New Sale Order
       </button>
     </div>

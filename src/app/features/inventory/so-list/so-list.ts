@@ -26,7 +26,7 @@ export class SoList implements OnInit {
   displayedColumns: string[] = ['select', 'soNumber', 'soDate', 'customerName', 'grandTotal', 'status', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   isAdmin: boolean = false;
-  isLoading: boolean = false;
+  isLoading: boolean = true;
 
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
