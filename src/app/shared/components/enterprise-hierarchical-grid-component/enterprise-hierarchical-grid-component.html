@@ -45,12 +45,12 @@
         <mat-icon>delete_sweep</mat-icon> Bulk Delete ({{selection.selected.length}})
       </button>
 
-      <button mat-flat-button color="accent" *ngIf="selection.hasValue()" (click)="onBulkApproveClick()" class="action-btn"
+      <button mat-flat-button color="accent" *ngIf="selection.hasValue() && userRole === 'User'" (click)="onBulkApproveClick()" class="action-btn"
         style="margin-right: 8px;">
         <mat-icon>done_all</mat-icon> Bulk Draft Approval ({{selection.selected.length}})
       </button>
 
-      <button mat-flat-button color="primary" *ngIf="selection.hasValue()" (click)="onBulkDraftApprovedClick()" class="action-btn"
+      <button mat-flat-button color="primary" *ngIf="selection.hasValue() && userRole === 'Manager'" (click)="onBulkDraftApprovedClick()" class="action-btn"
         style="margin-right: 8px; background-color: #2e7d32; color: white;">
         <mat-icon>verified</mat-icon> Bulk Draft Approved ({{selection.selected.length}})
       </button>
