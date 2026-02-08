@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
@@ -42,6 +42,7 @@ export class RolePermissionsComponent implements OnInit {
   private roleService = inject(RoleService);
   private menuService = inject(MenuService);
   private snackBar = inject(MatSnackBar);
+  private cdr = inject(ChangeDetectorRef);
 
   constructor() {
     this.dataSource = new MatTableDataSource<MenuItem>([]);
@@ -53,7 +54,10 @@ export class RolePermissionsComponent implements OnInit {
   }
 
   loadRoles() {
-    this.roleService.getAllRoles().subscribe(roles => this.roles = roles);
+    this.roleService.getAllRoles().subscribe(roles => {
+      this.roles = roles;
+      this.cdr.detectChanges();
+    });
   }
 
   loadMenus() {
@@ -65,6 +69,7 @@ export class RolePermissionsComponent implements OnInit {
       if (this.paginator) {
         this.dataSource.paginator = this.paginator;
       }
+      this.cdr.detectChanges();
     });
   }
 
@@ -84,6 +89,7 @@ export class RolePermissionsComponent implements OnInit {
       this.roleService.getRolePermissions(this.selectedRoleId).subscribe(perms => {
         this.permissions = perms;
         // Trigger CD implicitly via binding updates
+
       });
     }
   }
@@ -93,6 +99,7 @@ export class RolePermissionsComponent implements OnInit {
 
     let perm = this.permissions.find(p => p.menuId === menuId);
     if (!perm) {
+
       // Default permission object (not added to array yet to avoid clutter until saved, 
       // but binding requires it to be in array or stable object.
       // Better: Create it and push to local permissions array so Reference works.
@@ -108,6 +115,7 @@ export class RolePermissionsComponent implements OnInit {
       // Or send all. Sending all is safer for "edit" logic (to turn off).
       this.roleService.updateRolePermissions(this.selectedRoleId, this.permissions).subscribe(() => {
         this.snackBar.open('Permissions saved successfully', 'Close', { duration: 3000 });
+
       });
     }
   }
@@ -116,6 +124,7 @@ export class RolePermissionsComponent implements OnInit {
     if (this.selectedRoleId) {
       this.onRoleChange(); // Reload from DB
       this.snackBar.open('Permissions reset to last saved state.', 'Close', { duration: 2000 });
+
     }
   }
 
@@ -135,12 +144,15 @@ export class RolePermissionsComponent implements OnInit {
   isAllSelected(column: 'canView' | 'canAdd' | 'canEdit' | 'canDelete'): boolean {
     const visibleData = this.dataSource.filteredData; // Only affect filtered rows
     if (visibleData.length === 0) return false;
+
     return visibleData.every(row => this.getPermission(row.id)[column]);
+
   }
 
   isSomeSelected(column: 'canView' | 'canAdd' | 'canEdit' | 'canDelete'): boolean {
     const visibleData = this.dataSource.filteredData;
     if (visibleData.length === 0) return false;
+
     return visibleData.some(row => this.getPermission(row.id)[column]);
   }
 
@@ -148,6 +160,7 @@ export class RolePermissionsComponent implements OnInit {
     const visibleData = this.dataSource.filteredData;
     visibleData.forEach(row => {
       const perm = this.getPermission(row.id);
+
       perm[column] = checked;
     });
   }
