@@ -12,7 +12,7 @@
             </div>
           </div>
           <div class="doc-title">
-            <h2>{{ data?.headerTitle || 'BILL OF SUPPLY' }}</h2>
+            <h2>{{ data?.status === 'Received' ? 'TAX INVOICE' : (data?.headerTitle || 'BILL OF SUPPLY') }}</h2>
           </div>
       </div>
   
