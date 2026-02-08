@@ -14,7 +14,10 @@ export class MenuService {
   // Get hierarchical menu for current user (sidebar)
   getMenu(): Observable<MenuItem[]> {
     return this.http.get<MenuItem[]>(`${this.baseUrl}/user-menu`).pipe(
-      map(menus => (menus && menus.length > 0) ? menus : this.getStaticMenu()),
+      map(menus => {
+        if (!menus || menus.length === 0) return this.getStaticMenu();
+        return this.sortMastersMenu(menus);
+      }),
       catchError(() => of(this.getStaticMenu()))
     );
   }
@@ -22,10 +25,34 @@ export class MenuService {
   // Get all menus (flat or tree) for Admin management
   getAllMenus(): Observable<MenuItem[]> {
     return this.http.get<MenuItem[]>(this.baseUrl).pipe(
-      map(menus => (menus && menus.length > 0) ? menus : this.getStaticMenu()),
+      map(menus => {
+        if (!menus || menus.length === 0) return this.getStaticMenu();
+        // If it's a tree structure, sort Masters. If it's flat, sorting is harder but usually tree is returned.
+        return this.sortMastersMenu(menus);
+      }),
       catchError(() => of(this.getStaticMenu()))
     );
   }
+
+  private sortMastersMenu(menus: MenuItem[]): MenuItem[] {
+    const masterOrder = ['Categories', 'Subcategories', 'Products', 'Price Lists', 'Suppliers', 'Customers'];
+
+    const mastersIndex = menus.findIndex(m => m.title === 'Masters');
+    if (mastersIndex !== -1 && menus[mastersIndex].children) {
+      menus[mastersIndex].children.sort((a, b) => {
+        const indexA = masterOrder.indexOf(a.title);
+        const indexB = masterOrder.indexOf(b.title);
+
+        // If not found in our order list, push to the end
+        const orderA = indexA === -1 ? 99 : indexA;
+        const orderB = indexB === -1 ? 99 : indexB;
+
+        return orderA - orderB;
+      });
+    }
+    return menus;
+  }
+
 
   createMenu(menu: MenuItem): Observable<MenuItem> {
     return this.http.post<MenuItem>(this.baseUrl, menu);
@@ -114,6 +141,12 @@ export class MenuService {
             permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
           },
           {
+            title: 'Price Lists',
+            icon: 'price_check',
+            url: '/app/master/pricelists',
+            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
+          },
+          {
             title: 'Suppliers',
             icon: 'local_shipping',
             url: '/app/master/suppliers',
@@ -123,12 +156,6 @@ export class MenuService {
             title: 'Customers',
             icon: 'person',
             url: '/app/master/customer',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-          {
-            title: 'Price Lists',
-            icon: 'price_check',
-            url: '/app/master/pricelists',
             permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
           }
         ]
