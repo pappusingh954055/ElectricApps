@@ -17,6 +17,7 @@ import { PurchaseOrderStatus } from '../models/po-status.enum';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 import { ActionConfirmDialog } from '../../../shared/components/action-confirm-dialog/action-confirm-dialog';
 import { ReasonRejectDialog } from '../../../shared/components/reason-reject-dialog/reason-reject-dialog';
+import { PoPrintModalComponent } from './po-print-modal/po-print-modal.component';
 
 @Component({
   selector: 'app-po-list',
@@ -302,6 +303,10 @@ export class PoList implements OnInit {
         this.onRejectPO(row);
         break;
 
+      case 'VIEW': // Eye icon triggers Print Preview as per requirements
+        this.onPrintPO(row);
+        break;
+
       // --- Naye Cases Jo Humne Add Kiye ---
       case 'PRINT':
         this.onPrintPO(row);
@@ -327,13 +332,34 @@ export class PoList implements OnInit {
   }
 
   // 2. Print logic
+  // 2. Print logic
   onPrintPO(row: any) {
-    console.log('Printing PO:', row.poNumber);
-    // Yahan aap apna printing logic ya service call likh sakte hain
-    this.notification.showStatus(true, `Printing Order: ${row.poNumber}...`);
+    this.isLoading = true;
+    this.cdr.detectChanges();
 
-    // Example: browser print open karne ke liye
-    // window.print(); 
+    this.poActionService.getPrintDetails(row.id).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+
+        if (res) {
+          this.dialog.open(PoPrintModalComponent, {
+            width: '850px',
+            maxWidth: '95vw',
+            data: res,
+            autoFocus: false
+          });
+        } else {
+          this.notification.showStatus(false, 'No print details found.');
+        }
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+        console.error('Print Fetch Error:', err);
+        this.notification.showStatus(false, 'Failed to fetch print data.');
+      }
+    });
   }
   // 1. User: Submit (Status: 'Submitted')
   onSubmitPO(row: any) {

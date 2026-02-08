@@ -1,0 +1,246 @@
+$primary-color: #1976d2;
+$border-color: #e0e0e0;
+$header-bg: #f5f7fa;
+
+// Wrapper for the dialog content
+.print-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+// Ensure the scrollable content has padding
+.print-content {
+  padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'Inter', 'Roboto', sans-serif;
+  color: #333;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 2px solid $primary-color;
+
+    .logo-section {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        .logo-icon {
+          font-size: 48px;
+          width: 48px;
+          height: 48px;
+          color: $primary-color;
+        }
+
+        .company-name {
+            h1 {
+                margin: 0;
+                font-size: 24px;
+                font-weight: 700;
+                color: $primary-color;
+                letter-spacing: 0.5px;
+            }
+            .tagline {
+                font-size: 12px;
+                color: #666;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+        }
+    }
+
+    .doc-title {
+        h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            color: #444;
+            text-transform: uppercase;
+            border: 1px solid #ccc;
+            padding: 8px 16px;
+            border-radius: 4px;
+        }
+    }
+}
+
+.po-info-card {
+    background-color: $header-bg;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 32px;
+    border: 1px solid $border-color;
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+
+        .info-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+
+            label {
+                font-size: 12px;
+                color: #777;
+                text-transform: uppercase;
+                font-weight: 600;
+            }
+
+            span {
+                font-size: 16px;
+                font-weight: 500;
+                color: #222;
+            }
+        }
+    }
+}
+
+.table-container {
+  margin-bottom: 32px;
+  
+  .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      
+      th {
+          background-color: $header-bg;
+          color: #555;
+          font-weight: 600;
+          text-transform: uppercase;
+          font-size: 13px;
+          padding: 12px 16px;
+          border-bottom: 2px solid $border-color;
+          text-align: left;
+      }
+
+      td {
+          padding: 12px 16px;
+          border-bottom: 1px solid $border-color;
+          color: #444;
+          font-size: 14px;
+      }
+
+      tr:last-child td {
+          border-bottom: none;
+      }
+
+      .text-center { text-align: center; }
+      .text-right { text-align: right; }
+
+      tfoot {
+          tr {
+              background-color: #fafafa;
+              td {
+                  border-top: 2px solid $primary-color;
+                  border-bottom: none;
+                  padding-top: 16px;
+              }
+          }
+
+          .label-total {
+              font-weight: 700;
+              font-size: 16px;
+              color: #333;
+          }
+
+          .value-total {
+              font-weight: 700;
+              font-size: 18px;
+              color: $primary-color;
+          }
+      }
+  }
+}
+
+// Action Bar Styling
+.footer-actions {
+    padding: 16px 24px;
+    border-top: 1px solid $border-color;
+    background-color: #fff;
+}
+
+// PRINT STYLES
+// PRINT STYLES
+@media print {
+    // Force global styles to override encapsulation
+    ::ng-deep {
+        /* 1. HIDE EVERYTHING */
+        body, body * {
+            visibility: hidden !important;
+            height: 0; // Collapse hidden content
+            overflow: hidden !important; 
+        }
+
+        /* 2. MAKE PRINT CONTENT VISIBLE */
+        // We target .print-content and ALL its descendants
+        .print-content, .print-content * {
+            visibility: visible !important;
+            height: auto !important; // Allow content to flow
+            overflow: visible !important;
+        }
+
+        /* 3. POSITION CONTENT ON PAGE */
+        .print-content {
+            // "fixed" positions relative to the paper/viewport, ignoring parent transforms
+            position: fixed !important; 
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 20px !important;
+            background-color: white !important;
+            z-index: 99999 !important; // Ensure it's on top
+            
+            // Clean specific styles for print
+            max-width: none !important;
+            box-shadow: none !important;
+        }
+
+        /* 4. CLEAN UP SYSTEM DIALOG ARTIFACTS */
+        .cdk-overlay-container, 
+        .cdk-global-overlay-wrapper, 
+        .cdk-overlay-pane, 
+        .mat-dialog-container {
+            // These wrappers must be visible for the child (.print-content) to render
+            // BUT we don't want them taking up space or applying styles
+            visibility: visible !important; // Parent needs to be visible for child? No, visibility works through hidden parents.
+                                            // However, let's keep them hidden via body * rule, but ensure they don't block layout.
+            position: static !important; 
+            transform: none !important; // Critical: Remove transforms that breakfixed positioning
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            width: 0 !important; // Collapse width so they don't push content
+            height: 0 !important;
+            overflow: visible !important; // Allow fixed child to be seen
+            margin: 0 !important;
+            padding: 0 !important;
+            display: block !important;
+        }
+        
+        // Hide the backdrop specifically
+        .cdk-overlay-backdrop {
+            display: none !important;
+        }
+
+        /* 5. HIDE ACTION BUTTONS */
+        .no-print {
+            display: none !important;
+        }
+        
+        /* 6. COLOR ADJUSTMENTS */
+        .po-info-card, .items-table th {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            background-color: #f5f7fa !important;
+            color: #000 !important;
+        }
+    }
+}

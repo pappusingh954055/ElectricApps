@@ -1,0 +1,71 @@
+<div class="print-wrapper">
+  
+  <!-- Content Scrollable Area -->
+  <div mat-dialog-content class="print-content">
+      
+      <div class="header">
+          <div class="logo-section">
+            <mat-icon class="logo-icon">inventory_2</mat-icon>
+            <div class="company-name">
+              <h1>ELECTRIC INVENTORY</h1>
+              <span class="tagline">Premium Inventory Management</span>
+            </div>
+          </div>
+          <div class="doc-title">
+            <h2>BILL OF SUPPLY</h2>
+          </div>
+      </div>
+  
+      <div class="po-info-card">
+          <div class="info-row">
+              <div class="info-group">
+                  <label>PO Number</label>
+                  <span>{{data?.poNumber || 'N/A'}}</span>
+              </div>
+              <div class="info-group">
+                  <label>Date</label>
+                  <span>{{data?.poDate | date:'dd MMM yyyy'}}</span>
+              </div>
+              <div class="info-group">
+                  <label>Supplier</label>
+                  <span>{{data?.supplierName || 'Unknown'}}</span>
+              </div>
+          </div>
+      </div>
+  
+      <div class="table-container">
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th class="col-product">Product Description</th>
+                    <th class="col-qty text-center">Qty</th>
+                    <th class="col-rate text-right">Rate</th>
+                    <th class="col-total text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of data?.items">
+                    <td>{{item.productName}}</td>
+                    <td class="text-center">{{item.qty}}</td>
+                    <td class="text-right">{{item.rate | currency:'INR':'symbol':'1.2-2'}}</td>
+                    <td class="text-right">{{item.total | currency:'INR':'symbol':'1.2-2'}}</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-right label-total">Grand Total</td>
+                    <td class="text-right value-total">{{data?.grandTotal | currency:'INR':'symbol':'1.2-2'}}</td>
+                </tr>
+            </tfoot>
+        </table>
+      </div>
+  </div>
+
+  <!-- Sticky Footer Actions -->
+  <div mat-dialog-actions align="end" class="footer-actions no-print">
+      <button mat-stroked-button color="warn" (click)="close()">Cancel</button>
+      <button mat-flat-button color="primary" (click)="print()">
+        <mat-icon>print</mat-icon> Print Now
+      </button>
+  </div>
+</div>
