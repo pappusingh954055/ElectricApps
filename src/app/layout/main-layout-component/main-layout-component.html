@@ -82,9 +82,55 @@
 
       <div class="nav-actions">
         <span *ngIf="userEmail" class="welcome-text">Welcome, {{ userEmail }}</span>
-        <button mat-icon-button matTooltip="Notifications" class="nav-icon">
-          <mat-icon matBadge="5" matBadgeColor="warn">notifications</mat-icon>
+        <button mat-icon-button [matMenuTriggerFor]="notificationMenu" (menuOpened)="onMenuOpened()" matTooltip="Notifications" class="nav-icon">
+          <mat-icon [matBadge]="unreadCount" [matBadgeHidden]="unreadCount === 0" matBadgeColor="warn">notifications</mat-icon>
         </button>
+
+        <mat-menu #notificationMenu="matMenu" xPosition="before" class="notification-menu-panel">
+          <div class="notification-header" (click)="$event.stopPropagation()">
+            <span class="header-title">Notifications ({{unreadCount}})</span>
+            <button mat-button color="primary" class="mark-read-btn" (click)="markAllAsRead()">Mark all read</button>
+          </div>
+          
+          <mat-divider></mat-divider>
+
+          <div class="notification-list">
+            <div *ngIf="notifications.length === 0" class="empty-state">
+              <mat-icon>notifications_none</mat-icon>
+              <p>No new notifications</p>
+              <span class="text-muted text-xs">You're all caught up!</span>
+            </div>
+
+            <button mat-menu-item *ngFor="let item of notifications" 
+                    [class.unread]="!item.isRead"
+                    (click)="markAsRead(item)" class="notification-item">
+              <div class="notif-content-wrapper">
+                
+                <!-- Color-Coded Icon -->
+                <div class="notif-icon-box" [ngClass]="item.type.toLowerCase() || 'info'">
+                  <mat-icon>{{ getIconForType(item.type) }}</mat-icon>
+                </div>
+
+                <div class="notif-text-content">
+                  <div class="notif-title-row">
+                    <span class="notif-title">{{item.title}}</span>
+                    <span class="notif-time">{{item.createdAtFormatted}}</span>
+                  </div>
+                  <div class="notif-message">{{item.message}}</div>
+                </div>
+
+              </div>
+            </button>
+          </div>
+          
+          <mat-divider></mat-divider>
+
+          <div class="notification-footer">
+            <button mat-button color="primary" class="view-all-btn" (click)="viewAllNotifications()">
+              View All Notifications
+            </button>
+          </div>
+        </mat-menu>
 
         <button mat-icon-button [matMenuTriggerFor]="userMenu" matTooltip="User Options" class="nav-icon">
           <mat-icon>account_circle</mat-icon>
