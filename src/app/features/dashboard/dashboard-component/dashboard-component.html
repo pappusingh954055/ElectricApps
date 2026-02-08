@@ -33,26 +33,29 @@
       </div>
     </div>
 
-    <div class="kpi-grid">
-      <mat-card *ngFor="let item of stats" class="kpi-card hover-card clickable" 
-                [class.clickable]="item.title === 'Low Stock'"
-                (click)="item.title === 'Low Stock' ? navigateToLowStockReport() : null" 
-                style="cursor: pointer;">
-        <div class="card-content">
-          <div class="icon-box" [style.background-color]="item.color">
-            <mat-icon>{{item.icon}}</mat-icon>
-          </div>
-          <div class="text-box">
-            <div class="pulse-container">
-              <p class="card-label">{{item.title}}</p>
-              <div *ngIf="item.title === 'Low Stock' && item.hasAlert" class="red-dot pulse"></div>
-            </div>
-            <h2 class="card-value">{{item.value}}</h2>
-            <p *ngIf="item.subLabel" class="card-sublabel">{{item.subLabel}}</p>
-          </div>
+   <div class="kpi-grid">
+  <mat-card *ngFor="let item of stats" 
+            class="kpi-card hover-card" 
+            [matTooltip]="item.tooltip" 
+            matTooltipPosition="above"
+            [class.clickable]="item.title === 'Low Stock'"
+            (click)="item.title === 'Low Stock' ? navigateToLowStockReport() : null">
+    
+    <div class="card-content">
+      <div class="icon-box" [style.background-color]="item.color">
+        <mat-icon>{{item.icon}}</mat-icon>
+      </div>
+      <div class="text-box">
+        <div class="pulse-container">
+          <p class="card-label">{{item.title}}</p>
+          <div *ngIf="item.title === 'Low Stock' && item.hasAlert" class="red-dot pulse"></div>
         </div>
-      </mat-card>
+        <h2 class="card-value">{{item.value}}</h2>
+        <p *ngIf="item.subLabel" class="card-sublabel">{{item.subLabel}}</p>
+      </div>
     </div>
+  </mat-card>
+</div>
 
     <div class="charts-grid">
       <mat-card class="chart-container hover-card">
