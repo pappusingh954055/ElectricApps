@@ -82,6 +82,29 @@
 
       <div class="nav-actions">
         <span *ngIf="userEmail" class="welcome-text">Welcome, {{ userEmail }}</span>
+        
+        <!-- Theme Selector -->
+        <button mat-icon-button [matMenuTriggerFor]="themeMenu" matTooltip="Change Theme" class="nav-icon">
+          <mat-icon>palette</mat-icon>
+        </button>
+
+        <mat-menu #themeMenu="matMenu" xPosition="before">
+          <span mat-subheader>Color Theme</span>
+          <button mat-menu-item *ngFor="let theme of availableThemes" (click)="setTheme(theme.name)">
+            <mat-icon [style.color]="theme.color">circle</mat-icon>
+            <span>{{ theme.label }}</span>
+            <mat-icon *ngIf="currentTheme === theme.name" class="check-icon">check</mat-icon>
+          </button>
+          
+          <mat-divider></mat-divider>
+          
+          <div mat-menu-item (click)="$event.stopPropagation()">
+            <mat-slide-toggle [checked]="isDarkMode" (change)="toggleTheme()">
+              Dark Mode
+            </mat-slide-toggle>
+          </div>
+        </mat-menu>
+
         <button mat-icon-button [matMenuTriggerFor]="notificationMenu" (menuOpened)="onMenuOpened()" matTooltip="Notifications" class="nav-icon">
           <mat-icon [matBadge]="unreadCount" [matBadgeHidden]="unreadCount === 0" matBadgeColor="warn">notifications</mat-icon>
         </button>

@@ -13,6 +13,7 @@ import { MenuService } from '../../core/services/menu.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../features/dashboard/services/notification.service';
 import { NotificationDto } from '../../features/dashboard/services/notification.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-main-layout-component',
@@ -30,17 +31,22 @@ export class MainLayoutComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
   private notificationService = inject(NotificationService);
+  private themeService = inject(ThemeService);
 
   isMobile = false;
+  isDarkMode = false;
+  currentTheme = '';
   menuItems: MenuItem[] = [];
   userEmail: string | null = null;
-
   notifications: NotificationDto[] = [];
   unreadCount = 0;
+
+  availableThemes: { name: string, label: string, color: string }[] = [];
 
   ngOnInit(): void {
     this.userEmail = localStorage.getItem('email');
     this.menuItems = this.menuService.getMenu();
+    this.availableThemes = this.themeService.availableThemes;
 
     this.breakpointObserver
       .observe([Breakpoints.Handset])
@@ -48,8 +54,25 @@ export class MainLayoutComponent implements OnInit {
         this.isMobile = result.matches;
       });
 
+    // Theme subscription
+    this.themeService.darkMode$.subscribe(isDark => {
+      this.isDarkMode = isDark;
+    });
+
+    this.themeService.activeTheme$.subscribe(theme => {
+      this.currentTheme = theme;
+    });
+
     // Step 1: Count Check on Page Load
     this.loadUnreadCount();
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleDarkMode();
+  }
+
+  setTheme(themeName: string): void {
+    this.themeService.setTheme(themeName);
   }
 
   toggleSidenav(): void {

@@ -155,13 +155,14 @@ mat-accordion {
 }
 
 /* 🔹 Layout & Content */
+/* 🔹 Layout & Content */
 .toolbar {
   flex-shrink: 0;
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: #ffffff !important;
-  color: #1f2937 !important;
+  // background: #ffffff !important; // Removed to let mat-toolbar color="primary" work
+  // color: #1f2937 !important;     // Removed to let mat-toolbar contrast color work
   height: 70px !important;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   padding: 0 32px !important;
@@ -169,9 +170,6 @@ mat-accordion {
   align-items: center;
 
   ::ng-deep {
-    .mat-icon {
-      color: #4b5563 !important;
-    }
     button[mat-icon-button] {
       width: 44px;
       height: 44px;
@@ -179,11 +177,7 @@ mat-accordion {
       transition: all 0.2s ease;
       
       &:hover {
-        background: #f3f4f6;
-        color: #3b82f6 !important;
-        .mat-icon {
-          color: #3b82f6 !important;
-        }
+        background: rgba(255, 255, 255, 0.1); 
       }
     }
   }
@@ -192,13 +186,10 @@ mat-accordion {
 .toolbar-title {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #111827;
+  // color: #111827; // Removed
   letter-spacing: -0.025em;
   margin-left: 16px;
-  background: linear-gradient(135deg, #111827 0%, #374151 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  // Removed gradient text to ensure visibility on primary color
 }
 
 .breadcrumb {
@@ -541,4 +532,14 @@ button.notification-item {
     height: 36px;
     line-height: 36px;
   }
+}
+
+/* 🔹 Theme Menu Specifics */
+.check-icon {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+  color: #3b82f6 !important;
+  font-size: 18px !important;
+  width: 18px !important;
+  height: 18px !important;
 }

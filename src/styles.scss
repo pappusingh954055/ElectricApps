@@ -3,15 +3,72 @@
 /* =====================================================
    1. MATERIAL THEME
 ===================================================== */
-html {
-  @include mat.theme((
-    color: (
-      primary: mat.$azure-palette,
-      tertiary: mat.$blue-palette,
-    ),
-    typography: Roboto,
-    density: 0,
-  ));
+@use 'sass:map';
+
+$app-themes: (
+  "azure-blue": (primary: mat.$azure-palette, tertiary: mat.$blue-palette),
+  "rose-red": (primary: mat.$rose-palette, tertiary: mat.$red-palette),
+  "green-orange": (primary: mat.$green-palette, tertiary: mat.$orange-palette),
+  "magenta-violet": (primary: mat.$magenta-palette, tertiary: mat.$violet-palette),
+  "cyan-orange": (primary: mat.$cyan-palette, tertiary: mat.$orange-palette),
+);
+
+$theme-colors: (
+  "azure-blue": #007fff,  // Match standard Azure/Blue
+  "rose-red": #e91e63,    // Standard Pink 500
+  "green-orange": #4caf50,// Standard Green 500
+  "magenta-violet": #9c27b0, // Standard Purple 500
+  "cyan-orange": #00bcd4  // Standard Cyan 500
+);
+
+@each $name, $config in $app-themes {
+  $primary: map.get($config, primary);
+  $tertiary: map.get($config, tertiary);
+  $hex-color: map.get($theme-colors, $name);
+
+  // Apply theme to the root element for this theme class
+  html.theme-#{$name} {
+    
+    // Set icon color to white for better visibility on colored toolbars
+    .toolbar .nav-icon .mat-icon {
+        color: white !important;
+    }
+
+    @include mat.theme((
+      color: (
+        primary: $primary,
+        tertiary: $tertiary,
+      ),
+      typography: Roboto,
+      density: 0,
+    ));
+
+    // DIRECT HEX OVERRIDE for maximum reliability
+    .mat-toolbar.mat-primary,
+    .toolbar {
+         background-color: $hex-color !important;
+         color: white !important;
+    }
+  }
+
+  html.theme-#{$name}.dark-mode {
+    @include mat.theme((
+      color: (
+        theme-type: dark,
+        primary: $primary,
+        tertiary: $tertiary,
+      ),
+      typography: Roboto,
+      density: 0,
+    ));
+    
+    // Maintain vibrant toolbar in dark mode
+    .mat-toolbar.mat-primary,
+    .toolbar {
+         background-color: $hex-color !important;
+         color: white !important;
+    }
+  }
 }
 
 /* =====================================================
