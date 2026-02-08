@@ -51,25 +51,23 @@
                     <td class="text-right">{{item.total | currency:'INR':'':'1.2-2'}}</td>
                 </tr>
             </tbody>
-            <tfoot>
-            <tfoot>
-                <!-- Sub Total -->
-                <tr class="summary-row">
-                    <td colspan="3" class="text-right label-total">Sub Total</td>
-                    <td class="text-right value-total">{{(data?.subTotal || 0) | currency:'INR':'':'1.2-2'}}</td>
-                </tr>
-                <!-- Total Tax -->
-                <tr class="summary-row">
-                    <td colspan="3" class="text-right label-total">Total Tax</td>
-                    <td class="text-right value-total">{{(data?.totalTax || 0) | currency:'INR':'':'1.2-2'}}</td>
-                </tr>
-                <!-- Grand Total -->
-                <tr class="grand-total-row">
-                    <td colspan="3" class="text-right label-total">Grand Total</td>
-                    <td class="text-right value-total">{{(data?.grandTotal || 0) | currency:'INR':'':'1.2-2'}}</td>
-                </tr>
-            </tfoot>
         </table>
+      </div>
+
+      <!-- Invoice Summary (Moved outside table for better right-alignment) -->
+      <div class="invoice-summary">
+          <div class="summary-row">
+              <span class="label">Sub Total</span>
+              <span class="value">{{(data?.subTotal || 0) | currency:'INR':'':'1.2-2'}}</span>
+          </div>
+          <div class="summary-row">
+              <span class="label">Total Tax</span>
+              <span class="value">{{(data?.totalTax || 0) | currency:'INR':'':'1.2-2'}}</span>
+          </div>
+          <div class="summary-row grand-total">
+              <span class="label">Grand Total</span>
+              <span class="value">{{(data?.grandTotal || 0) | currency:'INR':'':'1.2-2'}}</span>
+          </div>
       </div>
   </div>
 

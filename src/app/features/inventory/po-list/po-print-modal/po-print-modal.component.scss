@@ -149,55 +149,57 @@ $border: #e5e7eb;
       .col-qty { width: 10%; }
       .col-rate { width: 20%; }
       .col-total { width: 20%; }
-
-      tfoot {
-          .summary-row, .grand-total-row {
-              td {
-                  text-align: right; // Ensure ALL footer cells are right-aligned
-              }
-          }
-
-          .summary-row {
-              td {
-                  padding-top: 8px;
-                  padding-bottom: 8px;
-                  border: none;
-              }
-              .label-total {
-                  font-weight: 600;
-                  color: $text-medium;
-                  text-transform: uppercase;
-                  font-size: 12px;
-                  padding-right: 24px; // Add spacing between label and value
-              }
-              .value-total {
-                  font-weight: 600;
-                  font-size: 14px;
-              }
-          }
-
-          .grand-total-row {
-              td {
-                  padding-top: 16px;
-                  padding-bottom: 16px;
-                  border-top: 2px solid $border;
-                  border-bottom: none;
-              }
-              .label-total {
-                  font-weight: 800;
-                  font-size: 14px;
-                  color: $text-dark;
-                  text-transform: uppercase;
-                  padding-right: 24px; // Add spacing between label and value
-              }
-              .value-total {
-                  font-weight: 800;
-                  font-size: 20px;
-                  color: $primary;
-              }
-          }
-      }
   }
+}
+
+.invoice-summary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; // Push everything to the right
+    margin-top: 24px;
+    margin-bottom: 24px;
+    // Align with table padding
+    padding-right: 16px; 
+
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        width: 300px;
+        padding: 6px 0;
+        
+        .label { 
+            font-size: 11px;
+            font-weight: 600;
+            color: $text-medium;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .value { 
+            font-size: 14px;
+            font-weight: 600;
+            color: $text-dark;
+            text-align: right;
+        }
+        
+        &.grand-total {
+            border-top: 2px solid $border;
+            margin-top: 12px;
+            padding-top: 16px;
+            
+            .label {
+                font-size: 14px;
+                font-weight: 800;
+                color: $text-dark;
+            }
+            
+            .value { 
+                color: $primary; 
+                font-size: 24px; 
+                font-weight: 800;
+            }
+        }
+    }
 }
 
 // Action Bar Styling

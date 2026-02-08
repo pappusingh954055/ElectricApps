@@ -42,6 +42,7 @@ export class PoForm implements OnInit, OnDestroy {
   isLoading = false;
   grandTotal = 0;
   totalTaxAmount = 0;
+  subTotal = 0;
   poForm!: FormGroup;
   poId!: any;
   currentStatus = '';
@@ -276,6 +277,7 @@ export class PoForm implements OnInit, OnDestroy {
     });
     this.totalTaxAmount = Number(totalTax.toFixed(2));
     this.grandTotal = Number(totalWithTax.toFixed(2));
+    this.subTotal = Number((this.grandTotal - this.totalTaxAmount).toFixed(2));
     this.cdr.detectChanges();
   }
 
@@ -370,11 +372,14 @@ export class PoForm implements OnInit, OnDestroy {
       priceListId: formValue.priceListId,
       priceList: this.priceLists.find(p => p.id === formValue.priceListId) || null,
       poDate: DateHelper.toLocalISOString(formValue.poDate),
+      expectedDeliveryDate: DateHelper.toLocalISOString(formValue.expectedDeliveryDate),
       poNumber: formValue.PoNumber,
       remarks: formValue.remarks || 'No remarks provided',
       createdBy: userId,
       updatedBy: userId,
       grandTotal: this.grandTotal,
+      subTotal: this.subTotal,
+      totalTax: this.totalTaxAmount,
       status: 'Draft',
       items: formValue.items.map((item: any) => ({
         productId: item.productId,
