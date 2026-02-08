@@ -12,7 +12,7 @@
             </div>
           </div>
           <div class="doc-title">
-            <h2>BILL OF SUPPLY</h2>
+            <h2>{{ data?.headerTitle || 'BILL OF SUPPLY' }}</h2>
           </div>
       </div>
   
@@ -47,14 +47,26 @@
                 <tr *ngFor="let item of data?.items">
                     <td>{{item.productName}}</td>
                     <td class="text-center">{{item.qty}}</td>
-                    <td class="text-right">{{item.rate | currency:'INR':'symbol':'1.2-2'}}</td>
-                    <td class="text-right">{{item.total | currency:'INR':'symbol':'1.2-2'}}</td>
+                    <td class="text-right">{{item.rate | currency:'INR':'':'1.2-2'}}</td>
+                    <td class="text-right">{{item.total | currency:'INR':'':'1.2-2'}}</td>
                 </tr>
             </tbody>
             <tfoot>
-                <tr>
+            <tfoot>
+                <!-- Sub Total -->
+                <tr class="summary-row">
+                    <td colspan="3" class="text-right label-total">Sub Total</td>
+                    <td class="text-right value-total">{{(data?.subTotal || 0) | currency:'INR':'':'1.2-2'}}</td>
+                </tr>
+                <!-- Total Tax -->
+                <tr class="summary-row">
+                    <td colspan="3" class="text-right label-total">Total Tax</td>
+                    <td class="text-right value-total">{{(data?.totalTax || 0) | currency:'INR':'':'1.2-2'}}</td>
+                </tr>
+                <!-- Grand Total -->
+                <tr class="grand-total-row">
                     <td colspan="3" class="text-right label-total">Grand Total</td>
-                    <td class="text-right value-total">{{data?.grandTotal | currency:'INR':'symbol':'1.2-2'}}</td>
+                    <td class="text-right value-total">{{(data?.grandTotal || 0) | currency:'INR':'':'1.2-2'}}</td>
                 </tr>
             </tfoot>
         </table>
@@ -64,7 +76,22 @@
   <!-- Sticky Footer Actions -->
   <div mat-dialog-actions align="end" class="footer-actions no-print">
       <button mat-stroked-button color="warn" (click)="close()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="print()">
+      
+      <!-- Logic Update: 
+           1. If Mode is PRINT OR (Status is Received) -> Show Print Button
+           2. If Mode is VIEW OR (Status is Received AND Mode is PRINT) -> Show Download Button
+      -->
+
+      <!-- Download Button: Visible if Mode is VIEW OR (Status is Received AND Mode is PRINT) -->
+      <button *ngIf="data?.mode === 'VIEW' || (data?.status === 'Received' && data?.mode === 'PRINT')" 
+              mat-flat-button color="accent" (click)="downloadPDF()" [disabled]="isLoading">
+        <mat-icon *ngIf="!isLoading">file_download</mat-icon> 
+        <mat-spinner *ngIf="isLoading" diameter="20" style="display:inline-block; margin-right: 8px; vertical-align: middle;"></mat-spinner>
+        {{ isLoading ? 'Downloading...' : 'Download PDF' }}
+      </button>
+
+      <!-- Print Button: Visible if Mode is PRINT -->
+      <button *ngIf="data?.mode === 'PRINT'" mat-flat-button color="primary" (click)="print()">
         <mat-icon>print</mat-icon> Print Now
       </button>
   </div>

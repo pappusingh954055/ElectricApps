@@ -303,13 +303,13 @@ export class PoList implements OnInit {
         this.onRejectPO(row);
         break;
 
-      case 'VIEW': // Eye icon triggers Print Preview as per requirements
-        this.onPrintPO(row);
+      case 'VIEW': // Eye icon -> Download Mode
+        this.onPrintPO(row, 'VIEW');
         break;
 
       // --- Naye Cases Jo Humne Add Kiye ---
-      case 'PRINT':
-        this.onPrintPO(row);
+      case 'PRINT': // Print icon -> Print Mode
+        this.onPrintPO(row, 'PRINT');
         break;
       case 'CREATE_GRN':
         this.onCreateGRN(row); // Approved PO ke liye truck icon logic
@@ -333,7 +333,7 @@ export class PoList implements OnInit {
 
   // 2. Print logic
   // 2. Print logic
-  onPrintPO(row: any) {
+  onPrintPO(row: any, mode: string = 'PRINT') {
     this.isLoading = true;
     this.cdr.detectChanges();
 
@@ -346,7 +346,7 @@ export class PoList implements OnInit {
           this.dialog.open(PoPrintModalComponent, {
             width: '850px',
             maxWidth: '95vw',
-            data: res,
+            data: { ...res, mode: mode, id: row.id, status: row.status }, // Pass status for conditional buttons
             autoFocus: false
           });
         } else {

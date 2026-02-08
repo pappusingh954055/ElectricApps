@@ -1,56 +1,63 @@
-$primary-color: #1976d2;
-$border-color: #e0e0e0;
-$header-bg: #f5f7fa;
+$primary: #2563eb; // Modern Blue
+$text-dark: #1f2937;
+$text-medium: #4b5563;
+$text-light: #9ca3af;
+$bg-light: #f9fafb;
+$border: #e5e7eb;
 
-// Wrapper for the dialog content
 .print-wrapper {
   display: flex;
   flex-direction: column;
   height: 100%;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: $text-dark;
 }
 
-// Ensure the scrollable content has padding
 .print-content {
-  padding: 24px;
-  max-width: 800px;
+  padding: 40px;
+  max-width: 850px;
   margin: 0 auto;
-  font-family: 'Inter', 'Roboto', sans-serif;
-  color: #333;
+  background: white;
 }
 
 .header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 32px;
+    align-items: flex-start;
+    margin-bottom: 48px;
     padding-bottom: 24px;
-    border-bottom: 2px solid $primary-color;
+    border-bottom: 1px solid $border;
 
     .logo-section {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: 12px;
 
         .logo-icon {
-          font-size: 48px;
-          width: 48px;
-          height: 48px;
-          color: $primary-color;
+          font-size: 40px;
+          width: 40px;
+          height: 40px;
+          color: $primary;
         }
 
         .company-name {
+            display: flex;
+            flex-direction: column;
+
             h1 {
                 margin: 0;
-                font-size: 24px;
-                font-weight: 700;
-                color: $primary-color;
-                letter-spacing: 0.5px;
+                font-size: 20px;
+                font-weight: 800;
+                color: $text-dark;
+                letter-spacing: -0.5px;
+                line-height: 1.2;
             }
             .tagline {
-                font-size: 12px;
-                color: #666;
+                font-size: 11px;
+                font-weight: 500;
+                color: $text-medium;
                 text-transform: uppercase;
-                letter-spacing: 1px;
+                letter-spacing: 1.5px;
             }
         }
     }
@@ -58,73 +65,76 @@ $header-bg: #f5f7fa;
     .doc-title {
         h2 {
             margin: 0;
-            font-size: 20px;
-            font-weight: 600;
-            color: #444;
+            font-size: 28px;
+            font-weight: 300;
+            color: $text-light;
             text-transform: uppercase;
-            border: 1px solid #ccc;
-            padding: 8px 16px;
-            border-radius: 4px;
+            letter-spacing: 2px;
+            text-align: right;
         }
     }
 }
 
 .po-info-card {
-    background-color: $header-bg;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 32px;
-    border: 1px solid $border-color;
+    margin-bottom: 48px;
 
     .info-row {
-        display: flex;
-        justify-content: space-between;
-        gap: 24px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr); // 3 Equal columns for spaced layout
+        gap: 32px;
+        background-color: $bg-light;
+        padding: 24px;
+        border-radius: 6px;
+        border: 1px solid $border;
 
         .info-group {
             display: flex;
             flex-direction: column;
-            gap: 4px;
+            gap: 6px;
 
             label {
-                font-size: 12px;
-                color: #777;
+                font-size: 11px;
+                color: $text-medium;
                 text-transform: uppercase;
                 font-weight: 600;
+                letter-spacing: 0.05em;
             }
 
             span {
                 font-size: 16px;
-                font-weight: 500;
-                color: #222;
+                font-weight: 600;
+                color: $text-dark;
             }
         }
     }
 }
 
 .table-container {
-  margin-bottom: 32px;
+  margin-bottom: 40px;
   
   .items-table {
       width: 100%;
       border-collapse: collapse;
+      table-layout: fixed; // Enforce strict column widths
       
       th {
-          background-color: $header-bg;
-          color: #555;
-          font-weight: 600;
-          text-transform: uppercase;
-          font-size: 13px;
-          padding: 12px 16px;
-          border-bottom: 2px solid $border-color;
           text-align: left;
+          font-size: 11px;
+          font-weight: 700;
+          color: $text-medium;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
+          padding: 12px 16px;
+          border-bottom: 2px solid $border;
       }
 
       td {
-          padding: 12px 16px;
-          border-bottom: 1px solid $border-color;
-          color: #444;
+          padding: 12px 16px; // Reduced padding slightly for tighter look
+          border-bottom: 1px solid $border;
+          color: $text-dark;
           font-size: 14px;
+          vertical-align: middle;
+          word-wrap: break-word; // Handle long descriptions
       }
 
       tr:last-child td {
@@ -133,27 +143,58 @@ $header-bg: #f5f7fa;
 
       .text-center { text-align: center; }
       .text-right { text-align: right; }
+      
+      // Column Widths
+      .col-product { width: 50%; }
+      .col-qty { width: 10%; }
+      .col-rate { width: 20%; }
+      .col-total { width: 20%; }
 
       tfoot {
-          tr {
-              background-color: #fafafa;
+          .summary-row, .grand-total-row {
               td {
-                  border-top: 2px solid $primary-color;
-                  border-bottom: none;
-                  padding-top: 16px;
+                  text-align: right; // Ensure ALL footer cells are right-aligned
               }
           }
 
-          .label-total {
-              font-weight: 700;
-              font-size: 16px;
-              color: #333;
+          .summary-row {
+              td {
+                  padding-top: 8px;
+                  padding-bottom: 8px;
+                  border: none;
+              }
+              .label-total {
+                  font-weight: 600;
+                  color: $text-medium;
+                  text-transform: uppercase;
+                  font-size: 12px;
+                  padding-right: 24px; // Add spacing between label and value
+              }
+              .value-total {
+                  font-weight: 600;
+                  font-size: 14px;
+              }
           }
 
-          .value-total {
-              font-weight: 700;
-              font-size: 18px;
-              color: $primary-color;
+          .grand-total-row {
+              td {
+                  padding-top: 16px;
+                  padding-bottom: 16px;
+                  border-top: 2px solid $border;
+                  border-bottom: none;
+              }
+              .label-total {
+                  font-weight: 800;
+                  font-size: 14px;
+                  color: $text-dark;
+                  text-transform: uppercase;
+                  padding-right: 24px; // Add spacing between label and value
+              }
+              .value-total {
+                  font-weight: 800;
+                  font-size: 20px;
+                  color: $primary;
+              }
           }
       }
   }
@@ -161,9 +202,14 @@ $header-bg: #f5f7fa;
 
 // Action Bar Styling
 .footer-actions {
-    padding: 16px 24px;
-    border-top: 1px solid $border-color;
-    background-color: #fff;
+    padding: 16px 32px;
+    background-color: white;
+    border-top: 1px solid $border;
+    
+    // Add gap between buttons
+    gap: 12px;
+    display: flex;
+    justify-content: flex-end;
 }
 
 // PRINT STYLES
