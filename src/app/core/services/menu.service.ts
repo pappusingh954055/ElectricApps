@@ -126,6 +126,25 @@ export class MenuService {
             permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
           }
         ]
+      },
+      {
+        title: 'Admin',
+        icon: 'admin_panel_settings',
+        url: '',
+        children: [
+          {
+            title: 'Role Permissions',
+            icon: 'security',
+            url: '/app/admin/role-permissions',
+            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
+          },
+          {
+            title: 'Users',
+            icon: 'people',
+            url: '/app/admin/users',
+            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
+          }
+        ]
       }
     ];
   }
