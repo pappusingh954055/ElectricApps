@@ -1,6 +1,16 @@
 export interface MenuItem {
-  label: string;
+  id?: number;
+  title: string;
+  url: string;
   icon: string;
-  route?: string;
+  parentId?: number | null;
   children?: MenuItem[];
+  permissions?: MenuPermissions;
+}
+
+export interface MenuPermissions {
+  canView: boolean;
+  canAdd: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
 }

@@ -1,0 +1,142 @@
+<div class="page-container">
+  <div class="header-section">
+    <div class="title-group">
+      <h1>Role Permissions Management</h1>
+      <p class="subtitle">Search, filter, and manage permissions for each role efficiently.</p>
+    </div>
+    
+    <div class="controls-group">
+      <mat-form-field appearance="outline" class="role-select">
+        <mat-label>Select Role</mat-label>
+        <mat-select [(ngModel)]="selectedRoleId" (selectionChange)="onRoleChange()">
+          <mat-option *ngFor="let role of roles" [value]="role.id">{{role.name}}</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="content-card mat-elevation-z8" *ngIf="selectedRoleId; else noRoleSelected">
+    
+    <!-- Toolbar with Search and Actions -->
+    <div class="table-toolbar">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search Menu</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Type menu name..." #input>
+      </mat-form-field>
+
+      <div class="actions-group">
+        <button mat-stroked-button color="warn" (click)="resetPermissions()" style="margin-right: 12px;">
+            <mat-icon>restart_alt</mat-icon> Reset
+        </button>
+        <button mat-raised-button color="primary" (click)="savePermissions()">
+            <mat-icon>save</mat-icon> Save Changes
+        </button>
+      </div>
+    </div>
+
+    <!-- Data Table -->
+    <div class="table-container">
+      <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z0">
+
+        <!-- Menu Column -->
+        <ng-container matColumnDef="menu">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 40%"> Menu Item </th>
+          <td mat-cell *matCellDef="let row"> 
+             <div class="menu-cell">
+               <mat-icon class="menu-icon">{{row.icon}}</mat-icon>
+               <!-- Using a class if it's a child (determined by parentId presence or logic) -->
+               <span>{{row.title}}</span>
+             </div>
+          </td>
+        </ng-container>
+
+        <!-- View Column -->
+        <ng-container matColumnDef="canView">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="header-checkbox">
+              <mat-checkbox (change)="toggleAll('canView', $event.checked)"
+                            [checked]="isAllSelected('canView')"
+                            [indeterminate]="isSomeSelected('canView') && !isAllSelected('canView')"
+                            color="primary">
+              </mat-checkbox>
+              <span>View</span>
+            </div>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <mat-checkbox [(ngModel)]="getPermission(row.id).canView" color="primary"></mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- Add Column -->
+        <ng-container matColumnDef="canAdd">
+          <th mat-header-cell *matHeaderCellDef>
+             <div class="header-checkbox">
+              <mat-checkbox (change)="toggleAll('canAdd', $event.checked)"
+                            [checked]="isAllSelected('canAdd')"
+                             [indeterminate]="isSomeSelected('canAdd') && !isAllSelected('canAdd')"
+                            color="primary"></mat-checkbox>
+              <span>Add</span>
+             </div>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <mat-checkbox [(ngModel)]="getPermission(row.id).canAdd" color="primary"></mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- Edit Column -->
+        <ng-container matColumnDef="canEdit">
+          <th mat-header-cell *matHeaderCellDef>
+             <div class="header-checkbox">
+              <mat-checkbox (change)="toggleAll('canEdit', $event.checked)" 
+                            [checked]="isAllSelected('canEdit')"
+                             [indeterminate]="isSomeSelected('canEdit') && !isAllSelected('canEdit')"
+                            color="accent"></mat-checkbox>
+              <span>Edit</span>
+             </div>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <mat-checkbox [(ngModel)]="getPermission(row.id).canEdit" color="accent"></mat-checkbox>
+          </td>
+        </ng-container>
+
+        <!-- Delete Column -->
+        <ng-container matColumnDef="canDelete">
+          <th mat-header-cell *matHeaderCellDef>
+             <div class="header-checkbox">
+              <mat-checkbox (change)="toggleAll('canDelete', $event.checked)" 
+                            [checked]="isAllSelected('canDelete')"
+                             [indeterminate]="isSomeSelected('canDelete') && !isAllSelected('canDelete')"
+                            color="warn"></mat-checkbox>
+              <span>Delete</span>
+             </div>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <mat-checkbox [(ngModel)]="getPermission(row.id).canDelete" color="warn"></mat-checkbox>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row"></tr>
+
+        <!-- No Data Row -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" colspan="5" style="text-align: center; padding: 24px; color: #777;">
+            No menus found matching "{{input.value}}"
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <mat-paginator [pageSizeOptions]="[10, 20, 50]" showFirstLastButtons aria-label="Select page of menus"></mat-paginator>
+
+  </div>
+
+  <ng-template #noRoleSelected>
+    <div class="empty-state">
+      <mat-icon class="empty-icon">admin_panel_settings</mat-icon>
+      <h3>Select a Role to Manage Permissions</h3>
+      <p>Choose a role from the dropdown above to view, filter, and edit access rights efficiently.</p>
+    </div>
+  </ng-template>
+</div>

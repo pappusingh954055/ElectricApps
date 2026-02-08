@@ -50,6 +50,11 @@ export const routes: Routes = [
         loadChildren: () =>
           import('./routes/inventory.routes')
             .then(m => m.INVENTORY_ROUTES)
+      },
+      {
+        path: 'admin',
+        data: { breadcrumb: 'Admin' },
+        loadChildren: () => import('./routes/admin.routes').then(m => m.ADMIN_ROUTES)
       }
     ]
   },

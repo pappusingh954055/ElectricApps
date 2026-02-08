@@ -29,6 +29,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { MatTreeModule } from '@angular/material/tree';
 
 @NgModule({
     imports: [MatToolbarModule,
@@ -64,6 +65,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
         MatTooltipModule,
         MatAutocompleteModule,
         DragDropModule,
+        MatTreeModule,
     ],
     exports: [
         MatToolbarModule,
@@ -99,6 +101,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
         MatTooltipModule,
         MatAutocompleteModule,
         DragDropModule,
+        MatTreeModule,
         MatTableModule,
         MatSortModule,
         MatPaginatorModule,

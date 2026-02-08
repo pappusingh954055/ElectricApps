@@ -14,6 +14,8 @@ import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../features/dashboard/services/notification.service';
 import { NotificationDto } from '../../features/dashboard/services/notification.service';
 import { ThemeService } from '../../core/services/theme.service';
+import { NestedTreeControl } from '@angular/cdk/tree';
+import { MatTreeNestedDataSource } from '@angular/material/tree';
 
 @Component({
   selector: 'app-main-layout-component',
@@ -37,16 +39,27 @@ export class MainLayoutComponent implements OnInit {
   isMobile = false;
   isDarkMode = false;
   currentTheme = '';
-  menuItems: MenuItem[] = [];
+  // menuItems: MenuItem[] = []; // Replaced by Tree DataSource
   userEmail: string | null = null;
   notifications: NotificationDto[] = [];
   unreadCount = 0;
 
   availableThemes: { name: string, label: string, color: string }[] = [];
 
+  // Tree Components
+  treeControl = new NestedTreeControl<MenuItem>(node => node.children);
+  dataSource = new MatTreeNestedDataSource<MenuItem>();
+
+  hasChild = (_: number, node: MenuItem) => !!node.children && node.children.length > 0;
+
   ngOnInit(): void {
     this.userEmail = localStorage.getItem('email');
-    this.menuItems = this.menuService.getMenu();
+
+    // Subscribe to Menu Service
+    this.menuService.getMenu().subscribe(menus => {
+      this.dataSource.data = menus;
+    });
+
     this.availableThemes = this.themeService.availableThemes;
 
     this.breakpointObserver
