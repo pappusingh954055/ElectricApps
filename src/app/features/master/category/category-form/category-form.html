@@ -7,6 +7,10 @@
         {{ selectedFileName }}
       </span>
       
+      <button mat-stroked-button color="primary" (click)="downloadTemplate()">
+        <mat-icon>download</mat-icon> Download Template
+      </button>
+
       <button mat-stroked-button color="primary" (click)="fileInput.click()">
         <mat-icon>cloud_upload</mat-icon> Upload Excel
       </button>

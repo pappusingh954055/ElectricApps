@@ -95,32 +95,43 @@ export class CategoryForm implements OnInit {
     }
   }
 
+  downloadTemplate() {
+    const link = document.createElement('a');
+    link.href = '/assets/templates/category_template.xlsx';
+    link.download = 'category_template.xlsx';
+    link.click();
+  }
+
   uploadExcel(): void {
     if (!this.selectedFile) return;
 
     this.loading = true;
-    const formData = new FormData();
-    formData.append('file', this.selectedFile);
 
-    // Assuming you have an upload endpoint in your service
-    // If not, you'll need to add it to CategoryService
-    // For now, I'll allow this but you might need to update the service.
-    // this.categorySvc.uploadExcel(formData).subscribe(...) 
-
-    // Placeholder for now as per previous context
-    console.log('Uploading file:', this.selectedFile);
-
-    // Simulating upload for now
-    setTimeout(() => {
-      this.loading = false;
-      this.dialog.open(StatusDialogComponent, {
-        data: {
-          isSuccess: true,
-          message: 'File uploaded successfully (Simulation)'
-        }
-      });
-      this.cdr.detectChanges();
-    }, 1000);
+    this.categorySvc.uploadExcel(this.selectedFile).subscribe({
+      next: (res) => {
+        this.loading = false;
+        this.dialog.open(StatusDialogComponent, {
+          data: {
+            isSuccess: true,
+            // message: res.message || 'File uploaded successfully'
+            message: 'File uploaded successfully'
+          }
+        }).afterClosed().subscribe(() => {
+          this.router.navigate(['/app/master/categories']);
+        });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.dialog.open(StatusDialogComponent, {
+          data: {
+            isSuccess: false,
+            message: err.error?.message ?? 'Upload failed'
+          }
+        });
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   resetFile(input?: HTMLInputElement): void {
