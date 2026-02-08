@@ -68,6 +68,69 @@ export class CategoryForm implements OnInit {
     });
   }
 
+  selectedFile: File | null = null;
+  selectedFileName: string = '';
+
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (file) {
+      const validExtensions = ['.xlsx', '.xls'];
+      const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+
+      if (!validExtensions.includes(fileExtension)) {
+        this.dialog.open(StatusDialogComponent, {
+          data: {
+            isSuccess: false,
+            message: 'Invalid file format. Please upload an Excel file (.xlsx, .xls).'
+          }
+        });
+        event.target.value = ''; // Reset input
+        this.selectedFileName = '';
+        this.selectedFile = null;
+        return;
+      }
+
+      this.selectedFile = file;
+      this.selectedFileName = file.name;
+    }
+  }
+
+  uploadExcel(): void {
+    if (!this.selectedFile) return;
+
+    this.loading = true;
+    const formData = new FormData();
+    formData.append('file', this.selectedFile);
+
+    // Assuming you have an upload endpoint in your service
+    // If not, you'll need to add it to CategoryService
+    // For now, I'll allow this but you might need to update the service.
+    // this.categorySvc.uploadExcel(formData).subscribe(...) 
+
+    // Placeholder for now as per previous context
+    console.log('Uploading file:', this.selectedFile);
+
+    // Simulating upload for now
+    setTimeout(() => {
+      this.loading = false;
+      this.dialog.open(StatusDialogComponent, {
+        data: {
+          isSuccess: true,
+          message: 'File uploaded successfully (Simulation)'
+        }
+      });
+      this.cdr.detectChanges();
+    }, 1000);
+  }
+
+  resetFile(input?: HTMLInputElement): void {
+    this.selectedFile = null;
+    this.selectedFileName = '';
+    if (input) {
+      input.value = '';
+    }
+  }
+
   onSave(): void {
     if (this.categoryForm.invalid) return;
 

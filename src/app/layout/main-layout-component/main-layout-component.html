@@ -89,7 +89,7 @@
         </button>
 
         <mat-menu #themeMenu="matMenu" xPosition="before">
-          <span mat-subheader>Color Theme</span>
+          <span mat-subheader style="display: flex; justify-content: center;">Color Theme</span>
           <button mat-menu-item *ngFor="let theme of availableThemes" (click)="setTheme(theme.name)">
             <mat-icon [style.color]="theme.color">circle</mat-icon>
             <span>{{ theme.label }}</span>

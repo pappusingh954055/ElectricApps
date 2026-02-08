@@ -50,4 +50,11 @@ export class CategoryService {
     getById(id: string): Observable<Category> {
         return this.api.get<Category>(`categories/${id}`);
     }
+
+
+    uploadExcel(file: File): Observable<any> {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+        return this.api.post(`categories/upload-excel`, formData);
+    }
 }
