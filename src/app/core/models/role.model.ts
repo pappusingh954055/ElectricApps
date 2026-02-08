@@ -1,10 +1,10 @@
 export interface Role {
     id: number;
-    name: string;
-    description: string;
+    roleName: string;
 }
 
 export interface RolePermission {
+    id?: number;
     roleId: number;
     menuId: number;
     canView: boolean;

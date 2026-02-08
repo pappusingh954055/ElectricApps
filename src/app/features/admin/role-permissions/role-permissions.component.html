@@ -9,7 +9,7 @@
       <mat-form-field appearance="outline" class="role-select">
         <mat-label>Select Role</mat-label>
         <mat-select [(ngModel)]="selectedRoleId" (selectionChange)="onRoleChange()">
-          <mat-option *ngFor="let role of roles" [value]="role.id">{{role.name}}</mat-option>
+          <mat-option *ngFor="let role of roles" [value]="role.id">{{role.roleName}}</mat-option>
         </mat-select>
       </mat-form-field>
     </div>

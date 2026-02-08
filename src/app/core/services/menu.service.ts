@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
-import { BehaviorSubject, Observable, map, of } from "rxjs";
+import { BehaviorSubject, Observable, map, of, catchError } from "rxjs";
 import { environment } from "../../enviornments/environment";
 import { MenuItem } from "../models/menu-item.model";
 
@@ -13,12 +13,18 @@ export class MenuService {
 
   // Get hierarchical menu for current user (sidebar)
   getMenu(): Observable<MenuItem[]> {
-    return this.http.get<MenuItem[]>(`${this.baseUrl}/user-menu`);
+    return this.http.get<MenuItem[]>(`${this.baseUrl}/user-menu`).pipe(
+      map(menus => (menus && menus.length > 0) ? menus : this.getStaticMenu()),
+      catchError(() => of(this.getStaticMenu()))
+    );
   }
 
   // Get all menus (flat or tree) for Admin management
   getAllMenus(): Observable<MenuItem[]> {
-    return this.http.get<MenuItem[]>(this.baseUrl);
+    return this.http.get<MenuItem[]>(this.baseUrl).pipe(
+      map(menus => (menus && menus.length > 0) ? menus : this.getStaticMenu()),
+      catchError(() => of(this.getStaticMenu()))
+    );
   }
 
   createMenu(menu: MenuItem): Observable<MenuItem> {
