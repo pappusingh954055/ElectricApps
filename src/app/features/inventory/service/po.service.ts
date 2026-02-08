@@ -43,4 +43,22 @@ export class POService {
   bulkPOReject(ids: number[]): Observable<any> {
     return this.http.post(`${this.apiUrl}/PurchaseOrders/bulk-reject`, ids);
   }
+
+  /**
+   * DB Tables: PurchaseOrders + PurchaseOrderItems ka combined data layega
+   * @param id Purchase Order ki Primary Key (Id)
+   */
+  getPrintDetails(id: number): Observable<any> {
+    // Backend Controller mein humne [HttpGet("{id}/print-details")] banaya hai
+    return this.http.get<any>(`${this.apiUrl}/PurchaseOrders/${id}/print-details`);
+  }
+
+  /**
+   * Agar aap backend se direct PDF file download karwana chahte hain
+   */
+  downloadPOReport(id: number): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/PurchaseOrders/${id}/download-pdf`, {
+      responseType: 'blob'
+    });
+  }
 }
