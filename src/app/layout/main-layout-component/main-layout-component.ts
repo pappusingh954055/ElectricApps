@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { MaterialModule } from '../../shared/material/material/material-module';
 import { CommonModule } from '@angular/common';
 import { RouterModule, RouterOutlet, Router } from '@angular/router';
@@ -27,6 +27,7 @@ export class MainLayoutComponent implements OnInit {
   @ViewChild(MatSidenav) sidenav!: MatSidenav;
 
   private breakpointObserver = inject(BreakpointObserver);
+  private cdr = inject(ChangeDetectorRef);
   private menuService = inject(MenuService);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -52,15 +53,18 @@ export class MainLayoutComponent implements OnInit {
       .observe([Breakpoints.Handset])
       .subscribe(result => {
         this.isMobile = result.matches;
+        this.cdr.detectChanges();
       });
 
     // Theme subscription
     this.themeService.darkMode$.subscribe(isDark => {
       this.isDarkMode = isDark;
+      this.cdr.detectChanges();
     });
 
     this.themeService.activeTheme$.subscribe(theme => {
       this.currentTheme = theme;
+      this.cdr.detectChanges();
     });
 
     // Step 1: Count Check on Page Load
@@ -89,13 +93,17 @@ export class MainLayoutComponent implements OnInit {
   // Step 1 Helper: Load count
   loadUnreadCount(): void {
     this.notificationService.getUnreadCount().subscribe({
-      next: (count) => this.unreadCount = count,
+      next: (count) => {
+        this.unreadCount = count;
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error('Failed to load notification count', err)
     });
   }
 
   // Step 2: List Load on Bell Click
   loadNotifications(): void {
+    this.cdr.detectChanges();
     this.notificationService.getUnreadNotifications().subscribe({
       next: (data) => {
         this.notifications = data;
@@ -111,16 +119,19 @@ export class MainLayoutComponent implements OnInit {
   // Step 3: Single Read on Click
   markAsRead(notification: NotificationDto): void {
     if (!notification.isRead) {
+      this.cdr.detectChanges();
       this.notificationService.markAsRead(notification.id).subscribe({
         next: () => {
           // Remove from local list or mark as read
           notification.isRead = true;
+          this.cdr.detectChanges();
           this.notifications = this.notifications.filter(n => !n.isRead);
           if (this.unreadCount > 0) this.unreadCount--;
 
           // Navigate
           if (notification.targetUrl) {
             this.navigateTo(notification.targetUrl);
+            this.cdr.detectChanges();
           }
         },
         error: (err) => console.error('Failed to mark as read', err)
@@ -138,6 +149,7 @@ export class MainLayoutComponent implements OnInit {
       next: () => {
         this.notifications = [];
         this.unreadCount = 0;
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Failed to mark all as read', err)
     });
@@ -151,6 +163,7 @@ export class MainLayoutComponent implements OnInit {
 
   viewAllNotifications(): void {
     this.router.navigate(['/notifications']);
+    this.cdr.detectChanges();
   }
 
   // Method to be called when menu is opened

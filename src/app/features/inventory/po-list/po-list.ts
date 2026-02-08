@@ -89,6 +89,15 @@ export class PoList implements OnInit {
         width: 120,
         cell: (row: any) => this.datePipe.transform(row.poDate, 'MM/dd/yyyy')
       },
+      {
+        field: 'expectedDeliveryDate',
+        header: 'Delivery Date',
+        sortable: true,
+        isResizable: true,
+        width: 120,
+        cell: (row: any) => this.datePipe.transform(row.expectedDeliveryDate, 'MM/dd/yyyy')
+      },
+      { field: 'createdBy', header: 'Created By', sortable: true, isFilterable: true, isResizable: true, width: 150 },
       { field: 'supplierName', header: 'Supplier Name', sortable: true, isResizable: true, width: 200, isFilterable: true },
       {
         field: 'grandTotal',
