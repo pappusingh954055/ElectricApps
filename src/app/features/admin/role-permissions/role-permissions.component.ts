@@ -81,8 +81,6 @@ export class RolePermissionsComponent implements OnInit {
 
   loadMenus() {
     this.menuService.getAllMenus().subscribe(menus => {
-      // FIX: Build the tree structure on frontend before giving it to FlatTreeDataSource
-      // This prevents items from appearing both as root and children.
       const menuTree = this.menuService.buildMenuTree(menus);
       this.dataSource.data = this.menuService.sortMenus(menuTree);
       this.cdr.detectChanges();
@@ -93,7 +91,7 @@ export class RolePermissionsComponent implements OnInit {
     if (this.selectedRoleId) {
       this.roleService.getRolePermissions(this.selectedRoleId).subscribe(perms => {
         this.permissions = perms;
-        // Trigger CD implicitly via binding updates
+
 
       });
     }
@@ -109,17 +107,6 @@ export class RolePermissionsComponent implements OnInit {
     }
     return perm;
   }
-
-  // savePermissions() {
-  //   if (this.selectedRoleId) {
-  //     // Filter out permissions that are all false to save DB space? 
-  //     // Or send all. Sending all is safer for "edit" logic (to turn off).
-  //     this.roleService.updateRolePermissions(this.selectedRoleId, this.permissions).subscribe(() => {
-  //       this.snackBar.open('Permissions saved successfully', 'Close', { duration: 3000 });
-
-  //     });
-  //   }
-  // }
 
   savePermissions() {
     if (this.selectedRoleId) {
