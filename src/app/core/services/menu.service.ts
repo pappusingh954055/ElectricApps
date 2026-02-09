@@ -3,34 +3,117 @@ import { HttpClient } from "@angular/common/http";
 import { BehaviorSubject, Observable, map, of, catchError } from "rxjs";
 import { environment } from "../../enviornments/environment";
 import { MenuItem } from "../models/menu-item.model";
+import { AuthService } from "./auth.service";
+import { RoleService } from "./role.service";
+import { switchMap } from "rxjs";
 
 @Injectable({ providedIn: 'root' })
 export class MenuService {
 
   private readonly baseUrl = environment.LoginApiBaseUrl.replace('/auth', '') + '/menus';
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private authService: AuthService,
+    private roleService: RoleService
+  ) { }
 
   // Get hierarchical menu for current user (sidebar)
   getMenu(): Observable<MenuItem[]> {
-    return this.http.get<MenuItem[]>(`${this.baseUrl}/user-menu`).pipe(
-      map(menus => {
-        if (!menus || menus.length === 0) return this.getStaticMenu();
-        return this.sortMastersMenu(menus);
+    const roleName = this.authService.getUserRole();
+
+    return this.roleService.getAllRoles().pipe(
+      switchMap(roles => {
+        const userRole = roles.find(r => r.roleName === roleName);
+        const roleId = userRole ? userRole.id : 0; // Default or handle error
+
+        return this.roleService.getRolePermissions(roleId).pipe(
+          switchMap(permissions => {
+            return this.getAllMenus().pipe(
+              map(flatMenus => {
+                if (!flatMenus) return [];
+
+                // 1. Build Tree from Flat List
+                const menuTree = this.buildMenuTree(flatMenus);
+
+                // 2. Filter Tree by Permissions
+                return this.filterMenusByPermissions(menuTree, permissions);
+              })
+            );
+          })
+        );
       }),
-      catchError(() => of(this.getStaticMenu()))
+      catchError(err => {
+        console.error('Error loading menu:', err);
+        return of([]);
+      })
     );
+  }
+
+  private buildMenuTree(flatMenus: MenuItem[]): MenuItem[] {
+    const menuMap = new Map<number, MenuItem>();
+    const rootMenus: MenuItem[] = [];
+
+    // 1. Initialize map and ensure children arrays exist
+    flatMenus.forEach(menu => {
+      // Create a shallow copy to manage references cleanly if needed, 
+      // but here we modify the objects to link them.
+      menu.children = [];
+      if (menu.id) {
+        menuMap.set(menu.id, menu);
+      }
+    });
+
+    // 2. Link children to parents
+    flatMenus.forEach(menu => {
+      if (menu.parentId) {
+        const parent = menuMap.get(menu.parentId);
+        if (parent) {
+          parent.children = parent.children || [];
+          parent.children.push(menu);
+        }
+      } else {
+        // No parentId means it's a root item
+        rootMenus.push(menu);
+      }
+    });
+
+    return rootMenus;
+  }
+
+  private filterMenusByPermissions(menus: MenuItem[], permissions: any[]): MenuItem[] {
+    return menus.map(menu => {
+      // Find permission for this menu
+      const perm = permissions.find(p => p.menuId === menu.id);
+
+      // If no permission record, assume hidden or check logic. 
+      // Based on user req, strict binding expected.
+      const canView = perm ? perm.canView : false;
+
+      // Process children recursively
+      let children: MenuItem[] = [];
+      if (menu.children && menu.children.length > 0) {
+        children = this.filterMenusByPermissions(menu.children, permissions);
+      }
+
+      // Return the menu if it is viewable
+      // We assign the filtered children back to the menu copy
+      if (canView) {
+        return { ...menu, children: children };
+      }
+      return null;
+    }).filter(m => m !== null) as MenuItem[];
   }
 
   // Get all menus (flat or tree) for Admin management
   getAllMenus(): Observable<MenuItem[]> {
     return this.http.get<MenuItem[]>(this.baseUrl).pipe(
       map(menus => {
-        if (!menus || menus.length === 0) return this.getStaticMenu();
+        if (!menus || menus.length === 0) return [];
         // If it's a tree structure, sort Masters. If it's flat, sorting is harder but usually tree is returned.
         return this.sortMastersMenu(menus);
       }),
-      catchError(() => of(this.getStaticMenu()))
+      catchError(() => of([]))
     );
   }
 
@@ -66,119 +149,5 @@ export class MenuService {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
 
-  private getStaticMenu(): MenuItem[] {
-    return [
-      {
-        title: 'Dashboard',
-        icon: 'dashboard',
-        url: '/app/dashboard',
-        permissions: { canView: true, canAdd: false, canEdit: false, canDelete: false }
-      },
-      {
-        title: 'Inventory',
-        icon: 'layers',
-        url: '',
-        children: [
-          {
-            title: 'Purchase Order',
-            icon: 'shopping_cart',
-            url: '/app/inventory/polist',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-          {
-            title: 'Sale Order',
-            icon: 'description',
-            url: '/app/inventory/solist',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-          {
-            title: 'GRN List',
-            icon: 'list',
-            url: '/app/inventory/grn-list',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-          {
-            title: 'Current Stock',
-            icon: 'shopping_cart',
-            url: '/app/inventory/current-stock',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-          {
-            title: 'Purchase Return',
-            icon: 'assignment_return',
-            url: '/app/inventory/purchase-return',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-          {
-            title: 'Sale Return',
-            icon: 'assignment_return',
-            url: '/app/inventory/sale-return',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-        ]
-      },
-      {
-        title: 'Masters',
-        icon: 'layers',
-        url: '',
-        children: [
-          {
-            title: 'Categories',
-            icon: 'category',
-            url: '/app/master/categories',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-          {
-            title: 'Subcategories',
-            icon: 'list_alt',
-            url: '/app/master/subcategories',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-          {
-            title: 'Products',
-            icon: 'inventory_2',
-            url: '/app/master/products',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-          {
-            title: 'Price Lists',
-            icon: 'price_check',
-            url: '/app/master/pricelists',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-          {
-            title: 'Suppliers',
-            icon: 'local_shipping',
-            url: '/app/master/suppliers',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-          {
-            title: 'Customers',
-            icon: 'person',
-            url: '/app/master/customer',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          }
-        ]
-      },
-      {
-        title: 'Admin',
-        icon: 'admin_panel_settings',
-        url: '',
-        children: [
-          {
-            title: 'Role Permissions',
-            icon: 'security',
-            url: '/app/admin/role-permissions',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          },
-          {
-            title: 'Users',
-            icon: 'people',
-            url: '/app/admin/users',
-            permissions: { canView: true, canAdd: true, canEdit: true, canDelete: true }
-          }
-        ]
-      }
-    ];
-  }
+
 }
