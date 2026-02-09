@@ -5,8 +5,6 @@ import { environment } from '../../enviornments/environment';
 import { LoginDto } from '../models/user.model';
 import { Router } from '@angular/router';
 
-
-
 @Injectable({
   providedIn: 'root'
 })
@@ -18,13 +16,9 @@ export class AuthService {
 
   // 🔐 LOGIN
   login(data: LoginDto): Observable<any> {
-
     const payload = {
       dto: data
     };
-
-    //console.log('[AuthService] login payload:', payload);
-
     return this.http.post<any>(`${this.baseUrl}/login`, payload).pipe(
       tap(res => this.storeTokens(res))
     );
@@ -45,30 +39,53 @@ export class AuthService {
   storeTokens(res: any): void {
     if (!res) return;
 
-    console.log('[AuthService] saving tokens');
+    // Support both camelCase and PascalCase from backend
+    const token = res.accessToken || res.AccessToken;
+    const refresh = res.refreshToken || res.RefreshToken;
+    const email = res.email || res.Email;
+    const userId = res.userId || res.UserId;
+    const userName = res.userName || res.UserName;
+    let roles = res.roles || res.Roles;
 
-    localStorage.setItem('accessToken', res.accessToken);
-    localStorage.setItem('refreshToken', res.refreshToken);
+    console.log('[AuthService] Processing tokens. roles found in res:', !!roles);
 
-    // Save roles and other info if available in response
-    if (res.roles) {
-      localStorage.setItem('roles', JSON.stringify(res.roles));
+    localStorage.setItem('accessToken', token || '');
+    localStorage.setItem('refreshToken', refresh || '');
+
+    // 🕵️ If roles are missing in response, try to decode from JWT
+    if (!roles && token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const roleClaim = payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'] || payload['role'];
+        if (roleClaim) {
+          roles = Array.isArray(roleClaim) ? roleClaim : [roleClaim];
+          console.log('[AuthService] Extracted roles from JWT:', roles);
+        }
+      } catch (e) {
+        console.error('[AuthService] Failed to decode JWT for roles', e);
+      }
     }
-    if (res.email) {
-      localStorage.setItem('email', res.email);
+
+    if (roles) {
+      localStorage.setItem('roles', JSON.stringify(roles));
+    } else {
+      localStorage.setItem('roles', JSON.stringify(['User'])); // Default fallback
     }
-    if (res.userId) {
-      localStorage.setItem('userId', res.userId);
-    }
+
+    if (email) localStorage.setItem('email', email);
+    if (userId) localStorage.setItem('userId', userId);
+    if (userName) localStorage.setItem('userName', userName);
   }
 
   // 🔍 CHECK LOGIN STATUS
   isLoggedIn(): boolean {
-    return !!localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken');
+    return !!token && token !== '' && token !== 'undefined';
   }
 
   // 🚪 LOGOUT
   logout(): void {
+    console.warn('[AuthService] Logout triggered');
     localStorage.clear();
     this.router.navigate(['/login']);
   }
@@ -81,12 +98,22 @@ export class AuthService {
   getRefreshToken(): string | null {
     return localStorage.getItem('refreshToken');
   }
+
   getUserRole(): string {
     const roles = localStorage.getItem('roles');
-    if (roles) {
-      const parsedRoles = JSON.parse(roles);
-      return Array.isArray(parsedRoles) ? parsedRoles[0] : parsedRoles;
+    if (!roles || roles === 'undefined' || roles === 'null') {
+      return 'User';
     }
-    return 'User';
+
+    try {
+      const parsedRoles = JSON.parse(roles);
+      if (Array.isArray(parsedRoles) && parsedRoles.length > 0) {
+        return parsedRoles[0];
+      }
+      return parsedRoles || 'User';
+    } catch (e) {
+      console.error('[AuthService] Error parsing roles', e);
+      return 'User';
+    }
   }
 }

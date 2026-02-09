@@ -14,10 +14,17 @@ export class PermissionGuard implements CanActivate {
     private dialog = inject(MatDialog);
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
-        // We fetch the latest menu/permissions from the DB to ensure we don't use stale data after login
+        console.log(`[PermissionGuard] Checking access for: ${state.url}`);
+
         return this.menuService.getMenu().pipe(
             map(menus => {
+                if (!menus || menus.length === 0) {
+                    console.error('[PermissionGuard] No menus loaded. Denying access to:', state.url);
+                }
+
                 const hasViewPermission = this.permissionService.checkPermissionWithData(menus, state.url, 'CanView');
+
+                console.log(`[PermissionGuard] Access result for ${state.url}:`, hasViewPermission);
 
                 if (hasViewPermission) {
                     return true;

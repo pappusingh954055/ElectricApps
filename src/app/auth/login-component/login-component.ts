@@ -58,15 +58,8 @@ export class LoginComponent {
       })
     ).subscribe({
       next: (res) => {
-        localStorage.setItem('userId', res.userId);
-        if (res.userName) localStorage.setItem('userName', res.userName);
-        localStorage.setItem('accessToken', res.accessToken);
-        localStorage.setItem('refreshToken', res.refreshToken);
-        localStorage.setItem('roles', JSON.stringify(res.roles));
-        localStorage.setItem('email', res.email);
-
         console.log('Login successful:', res);
-        this.router.navigate(['/app/dashboard']); // ✅ IMPORTANT
+        this.router.navigate(['/app/dashboard']);
       },
       error: err => {
         console.error('Login error:', err);
