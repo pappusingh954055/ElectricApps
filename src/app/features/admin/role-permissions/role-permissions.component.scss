@@ -118,14 +118,19 @@
           gap: 12px;
 
           .menu-icon {
-            color: #757575;
-            font-size: 20px;
-            width: 20px;
-            height: 20px;
+            color: #5f6368;
+            font-size: 22px;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -2px; /* Slight lift to visually centre with text baseline */
           }
 
           span {
             font-weight: 500;
+            /* Removed line-height/display: inline-block to let flex align-items handle centering naturally */
             
             &.is-child {
                 padding-left: 24px; /* Indent Hierarchically */

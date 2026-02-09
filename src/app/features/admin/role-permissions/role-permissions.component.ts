@@ -7,9 +7,11 @@ import { MenuService } from '../../../core/services/menu.service';
 import { Role, RolePermission } from '../../../core/models/role.model';
 import { MenuItem } from '../../../core/models/menu-item.model';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
+import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 
 @Component({
   selector: 'app-role-permissions',
@@ -43,6 +45,7 @@ export class RolePermissionsComponent implements OnInit {
   private menuService = inject(MenuService);
   private snackBar = inject(MatSnackBar);
   private cdr = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
 
   constructor() {
     this.dataSource = new MatTableDataSource<MenuItem>([]);
@@ -99,23 +102,56 @@ export class RolePermissionsComponent implements OnInit {
 
     let perm = this.permissions.find(p => p.menuId === menuId);
     if (!perm) {
-
-      // Default permission object (not added to array yet to avoid clutter until saved, 
-      // but binding requires it to be in array or stable object.
-      // Better: Create it and push to local permissions array so Reference works.
       perm = { roleId: this.selectedRoleId!, menuId: menuId, canView: false, canAdd: false, canEdit: false, canDelete: false };
       this.permissions.push(perm);
     }
     return perm;
   }
 
+  // savePermissions() {
+  //   if (this.selectedRoleId) {
+  //     // Filter out permissions that are all false to save DB space? 
+  //     // Or send all. Sending all is safer for "edit" logic (to turn off).
+  //     this.roleService.updateRolePermissions(this.selectedRoleId, this.permissions).subscribe(() => {
+  //       this.snackBar.open('Permissions saved successfully', 'Close', { duration: 3000 });
+
+  //     });
+  //   }
+  // }
+
   savePermissions() {
     if (this.selectedRoleId) {
-      // Filter out permissions that are all false to save DB space? 
-      // Or send all. Sending all is safer for "edit" logic (to turn off).
-      this.roleService.updateRolePermissions(this.selectedRoleId, this.permissions).subscribe(() => {
-        this.snackBar.open('Permissions saved successfully', 'Close', { duration: 3000 });
+      this.roleService.updateRolePermissions(this.selectedRoleId, this.permissions).subscribe({
+        next: () => {
+          this.dialog.open(StatusDialogComponent, {
+            width: '400px',
+            data: {
+              isSuccess: true,
+              message: 'Permissions have been updated and saved successfully!'
+            },
+            disableClose: true
+          });
+        },
+        error: (err) => {
+          let errorMessage = 'Something went wrong while saving permissions.';
+          if (err.error && typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err.error && err.error.message) {
+            errorMessage = err.error.message;
+          } else if (err.message) {
+            errorMessage = err.message;
+          }
 
+          this.dialog.open(StatusDialogComponent, {
+            width: '400px',
+            data: {
+              isSuccess: false,
+              message: errorMessage
+            }
+          });
+
+          console.error('Permission Save Error:', err);
+        }
       });
     }
   }
