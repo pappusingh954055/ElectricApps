@@ -62,33 +62,35 @@
         </div>
       </div>
 
-      <!-- Items Table -->
-      <table class="items-table">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Product Name</th>
-            <th>SKU</th>
-            <th class="text-right">Ordered Qty</th>
-            <th class="text-right">Received Qty</th>
-            <th class="text-right">Rate</th>
-            <th class="text-right">GST %</th>
-            <th class="text-right">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let item of grnData.items; let i = index">
-            <td>{{i + 1}}</td>
-            <td>{{item.productName}}</td>
-            <td>{{item.sku}}</td>
-            <td class="text-right">{{item.orderedQty}}</td>
-            <td class="text-right">{{item.receivedQty}}</td>
-            <td class="text-right">{{item.unitRate | currency:'INR'}}</td>
-            <td class="text-right">{{item.gstPercentage}}%</td>
-            <td class="text-right">{{item.total | currency:'INR'}}</td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- Items Table Area (Only this will scroll) -->
+      <div class="table-scroll-area">
+        <table class="items-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Product Name</th>
+              <th>SKU</th>
+              <th class="text-right">Ordered Qty</th>
+              <th class="text-right">Received Qty</th>
+              <th class="text-right">Rate</th>
+              <th class="text-right">GST %</th>
+              <th class="text-right">Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of grnData.items; let i = index">
+              <td>{{i + 1}}</td>
+              <td>{{item.productName}}</td>
+              <td>{{item.sku}}</td>
+              <td class="text-right">{{item.orderedQty}}</td>
+              <td class="text-right">{{item.receivedQty}}</td>
+              <td class="text-right">{{item.unitRate | currency:'INR'}}</td>
+              <td class="text-right">{{item.gstPercentage}}%</td>
+              <td class="text-right">{{item.total | currency:'INR'}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <!-- Grand Totals -->
       <div class="totals-section">

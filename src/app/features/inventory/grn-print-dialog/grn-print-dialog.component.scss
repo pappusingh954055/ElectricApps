@@ -5,6 +5,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  height: 90vh; // Fixed height to ensure internal flex works
 }
 
 .dialog-header {
@@ -40,6 +41,10 @@
 .dialog-content {
   padding: 24px;
   flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
 
   .loading-state {
     display: flex;
@@ -76,6 +81,10 @@
 // PRINT PREVIEW STYLES
 .print-preview {
   color: #334155;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
 
   .print-header {
     display: flex;
@@ -83,6 +92,10 @@
     margin-bottom: 40px;
     border-bottom: 2px solid #334155;
     padding-bottom: 20px;
+
+    .company-info, .grn-title {
+      flex-shrink: 0;
+    }
 
     .company-info {
       h1 {
@@ -113,7 +126,8 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 40px;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
+    flex-shrink: 0; // Prevent info from shrinking
 
     .detail-section {
       h3 {
@@ -140,10 +154,23 @@
     }
   }
 
+  .table-scroll-area {
+    flex: 1 1 auto; // Allow growing and shrinking but favor content
+    overflow-y: auto;
+    margin: 10px 0;
+    min-height: 0; // Crucial for flex scrolling
+    
+    // Hide Scrollbar visually but keep scrollable
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
   table {
     width: 100%;
     border-collapse: collapse;
-    margin: 20px 0;
 
     th {
       background: #f1f5f9;
@@ -154,6 +181,9 @@
       color: #475569;
       text-transform: uppercase;
       border: 1px solid #e2e8f0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
     td {
@@ -168,47 +198,54 @@
   }
 
   .totals-section {
-    margin-top: 30px;
+    margin-top: auto; // Push to bottom of flex if space
+    padding-top: 10px;
     display: flex;
     justify-content: flex-end;
+    flex-shrink: 0; 
+    border-top: 1px dotted #e2e8f0;
 
     .totals-table {
-      width: 280px;
+      width: 250px;
 
       .total-row {
         display: flex;
         justify-content: space-between;
-        padding: 10px 0;
-        font-size: 14px;
+        padding: 4px 0;
+        font-size: 13px;
         color: #475569;
 
         &.grand-total {
           font-weight: 800;
-          font-size: 18px;
+          font-size: 16px;
           color: #2563eb;
-          padding-top: 15px;
+          padding-top: 8px;
+          margin-top: 4px;
+          border-top: 2px solid #2563eb;
         }
       }
     }
   }
 
   .print-footer {
-    margin-top: 60px;
+    margin-top: 20px;
     display: flex;
     justify-content: space-between;
-    padding: 0 40px;
-
+    padding: 0 40px 15px 40px;
+    flex-shrink: 0; // Fix signature at bottom
+    
     .signature {
       text-align: center;
       .sig-line {
-        width: 150px;
+        width: 140px;
         border-bottom: 1px solid #94a3b8;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
       }
       p {
-        font-size: 12px;
+        font-size: 11px;
         color: #64748b;
         margin: 0;
+        font-weight: 500;
       }
     }
   }
