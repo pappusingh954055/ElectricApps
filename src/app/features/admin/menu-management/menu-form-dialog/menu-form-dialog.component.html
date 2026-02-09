@@ -1,0 +1,67 @@
+<div class="menu-form-container">
+  <div class="dialog-header">
+    <h2 mat-dialog-title>{{ data.menu ? 'Edit Menu' : 'Create New Menu' }}</h2>
+    <button mat-icon-button mat-dialog-close>
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <mat-dialog-content>
+    <form [formGroup]="menuForm" class="form-grid">
+      
+      <!-- Title -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Menu Title</mat-label>
+        <input matInput formControlName="title" placeholder="e.g. Dashboard">
+        <mat-icon matSuffix>label</mat-icon>
+        <mat-error *ngIf="menuForm.get('title')?.hasError('required')">Title is required</mat-error>
+      </mat-form-field>
+
+      <!-- URL -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>URL / Route</mat-label>
+        <input matInput formControlName="url" placeholder="e.g. /app/dashboard">
+        <mat-icon matSuffix>link</mat-icon>
+      </mat-form-field>
+
+      <div class="form-row">
+        <!-- Icon -->
+        <mat-form-field appearance="outline">
+          <mat-label>Icon Name (Material)</mat-label>
+          <input matInput formControlName="icon" placeholder="e.g. dashboard">
+          <mat-icon matPrefix *ngIf="menuForm.get('icon')?.value">{{menuForm.get('icon')?.value}}</mat-icon>
+          <mat-icon matSuffix *ngIf="!menuForm.get('icon')?.value">search</mat-icon>
+        </mat-form-field>
+
+        <!-- Order -->
+        <mat-form-field appearance="outline">
+          <mat-label>Sort Order</mat-label>
+          <input matInput type="number" formControlName="order">
+          <mat-icon matSuffix>sort</mat-icon>
+        </mat-form-field>
+      </div>
+
+      <!-- Parent -->
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Parent Menu</mat-label>
+        <mat-select formControlName="parentId">
+          <mat-option [value]="null">Root (No Parent)</mat-option>
+          <mat-option *ngFor="let m of data.allMenus" [value]="m.id" [disabled]="m.id === data.menu?.id">
+            {{m.title}}
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix>account_tree</mat-icon>
+      </mat-form-field>
+
+    </form>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button mat-dialog-close class="cancel-btn">Cancel</button>
+    <button mat-flat-button color="primary" class="save-btn" [disabled]="menuForm.invalid || loading" (click)="save()">
+      <mat-icon *ngIf="!loading">save</mat-icon>
+      <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
+      {{ data.menu ? 'Update' : 'Create' }} Menu
+    </button>
+  </mat-dialog-actions>
+</div>

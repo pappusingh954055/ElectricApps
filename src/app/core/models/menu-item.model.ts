@@ -4,6 +4,7 @@ export interface MenuItem {
   url: string;
   icon?: string;
   parentId?: number | null;
+  order: number;
   children?: MenuItem[];
   permissions?: MenuPermissions;
 }

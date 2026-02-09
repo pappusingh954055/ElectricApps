@@ -1,0 +1,217 @@
+.menu-management-container {
+  padding: 32px;
+  background: #f8f9fa;
+  min-height: calc(100vh - 64px);
+
+  .header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+
+    .title-group {
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        font-weight: 700;
+        color: #1e293b;
+        letter-spacing: -0.5px;
+      }
+
+      p {
+        margin: 4px 0 0;
+        color: #64748b;
+        font-size: 15px;
+      }
+    }
+
+    .add-btn {
+      height: 48px;
+      padding: 0 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 15px;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+
+      mat-icon {
+        margin-right: 8px;
+      }
+    }
+  }
+
+  .filter-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 16px 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #f1f5f9;
+      padding: 12px 20px;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+
+      &:focus-within {
+        background: #fff;
+        box-shadow: 0 0 0 2px #3b82f6;
+      }
+
+      mat-icon {
+        color: #94a3b8;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      input {
+        border: none;
+        background: transparent;
+        width: 100%;
+        outline: none;
+        color: #1e293b;
+        font-size: 15px;
+        font-weight: 500;
+
+        &::placeholder {
+          color: #94a3b8;
+        }
+      }
+    }
+  }
+
+  .table-container {
+    background: #fff;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0;
+
+    table {
+      width: 100%;
+    }
+
+    th {
+      background: #f8fafc;
+      color: #64748b;
+      font-weight: 600;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 20px 24px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    td {
+      padding: 16px 24px;
+      color: #334155;
+      font-size: 14px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    .menu-row {
+      transition: background 0.2s;
+      &:hover {
+        background: #f8fafc;
+      }
+    }
+
+    .menu-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      .menu-icon {
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #eff6ff;
+        color: #3b82f6;
+        border-radius: 10px;
+        font-size: 20px;
+      }
+
+      .menu-title {
+        font-weight: 600;
+        color: #1e293b;
+      }
+    }
+
+    .url-code {
+      background: #f1f5f9;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .parent-chip {
+      background: #f0fdf4;
+      color: #16a34a;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .root-chip {
+      background: #fef2f2;
+      color: #dc2626;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .order-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      background: #f1f5f9;
+      border-radius: 50%;
+      font-weight: 700;
+      color: #64748b;
+      font-size: 12px;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 4px;
+
+      button {
+        mat-icon {
+          font-size: 18px;
+        }
+
+        &.edit-icon { color: #3b82f6; }
+        &.delete-icon { color: #ef4444; }
+
+        &:hover {
+          background: rgba(0,0,0,0.04);
+        }
+      }
+    }
+
+    .no-data-row {
+      td {
+        padding: 40px;
+        text-align: center;
+        color: #94a3b8;
+        font-style: italic;
+      }
+    }
+  }
+
+  mat-paginator {
+    background: transparent;
+    border-top: 1px solid #f1f5f9;
+  }
+}

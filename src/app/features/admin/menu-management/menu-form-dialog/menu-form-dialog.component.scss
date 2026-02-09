@@ -1,0 +1,75 @@
+.menu-form-container {
+  padding: 8px;
+
+  .dialog-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    
+    h2 {
+      margin: 0;
+      font-weight: 700;
+      color: #1e293b;
+    }
+  }
+
+  mat-dialog-content {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  .form-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 4px;
+  }
+
+  .full-width {
+    width: 100%;
+  }
+
+  .form-row {
+    display: flex;
+    gap: 16px;
+    
+    mat-form-field {
+      flex: 1;
+    }
+  }
+
+  mat-form-field {
+    .mat-mdc-form-field-wrapper {
+      padding-bottom: 0;
+    }
+  }
+
+  mat-dialog-actions {
+    padding: 24px 0 8px;
+    
+    .cancel-btn {
+      color: #64748b;
+      font-weight: 600;
+    }
+
+    .save-btn {
+      height: 44px;
+      padding: 0 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      
+      mat-icon {
+        margin-right: 8px;
+        font-size: 20px;
+      }
+    }
+  }
+}
+
+::ng-deep .mat-mdc-dialog-container {
+  .mdc-dialog__surface {
+    border-radius: 20px !important;
+  }
+}

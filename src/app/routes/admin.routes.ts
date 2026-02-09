@@ -13,5 +13,11 @@ export const ADMIN_ROUTES: Routes = [
         canActivate: [PermissionGuard],
         loadComponent: () => import('../features/admin/user-list/user-list.component').then(m => m.UserListComponent),
         data: { breadcrumb: 'Users' }
+    },
+    {
+        path: 'menus',
+        canActivate: [PermissionGuard],
+        loadComponent: () => import('../features/admin/menu-management/menu-management.component').then(m => m.MenuManagementComponent),
+        data: { breadcrumb: 'Menus' }
     }
 ];
