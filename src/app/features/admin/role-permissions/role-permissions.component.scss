@@ -38,9 +38,24 @@
   }
 
   .table-container {
-    max-height: calc(100vh - 320px);
-    overflow: auto;
     background: #fff;
+    display: flex;
+    flex-direction: column;
+
+    .viewport {
+      height: calc(100vh - 380px); /* Adjust based on toolbar/header height */
+      width: 100%;
+      outline: none;
+
+      /* Hide native scrollbar for a cleaner look if desired, or keep standard */
+      &::-webkit-scrollbar {
+        width: 8px;
+      }
+      &::-webkit-scrollbar-thumb {
+        background: #dadce0;
+        border-radius: 4px;
+      }
+    }
 
     /* FLAT GRID SYSTEM */
     .grid-row {
@@ -49,6 +64,7 @@
       align-items: center;
       border-bottom: 1px solid #f1f3f4;
       transition: all 0.2s;
+      background: white; /* Ensure rows have background for virtual scroll */
 
       .cell {
         padding: 8px 16px;

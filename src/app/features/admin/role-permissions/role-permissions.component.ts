@@ -14,11 +14,12 @@ import { MatSort } from '@angular/material/sort';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @Component({
   selector: 'app-role-permissions',
   standalone: true,
-  imports: [CommonModule, MaterialModule, FormsModule],
+  imports: [CommonModule, MaterialModule, FormsModule, ScrollingModule],
   templateUrl: './role-permissions.component.html',
   styleUrls: ['./role-permissions.component.scss']
 })
@@ -56,7 +57,6 @@ export class RolePermissionsComponent implements OnInit {
 
   hasChild = (_: number, node: any) => node.expandable;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
   private roleService = inject(RoleService);

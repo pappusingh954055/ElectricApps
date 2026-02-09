@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <!-- CLEAN TABLE GRID STRUCTURE -->
+    <!-- CLEAN TABLE GRID STRUCTURE WITH VIRTUAL SCROLL -->
     <div class="table-container flat-tree-grid">
       
       <!-- HEADER WITH FIXED ALIGNMENT -->
@@ -46,14 +46,12 @@
         <div class="cell checkbox-col delete">Delete</div>
       </div>
 
-      <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
-        
-        <!-- Flat Node Template -->
-        <mat-tree-node *matTreeNodeDef="let node" class="grid-row node-row" [class.parent-node]="node.expandable">
+      <cdk-virtual-scroll-viewport itemSize="56" class="viewport">
+        <div *cdkVirtualFor="let node of dataSource" class="grid-row node-row" [class.parent-node]="node.expandable">
           
           <!-- Menu Column with Level-based Indentation -->
           <div class="cell menu-col" [style.padding-left.px]="16 + (node.level * 32)">
-            <button mat-icon-button *ngIf="node.expandable" matTreeNodeToggle class="toggle-btn">
+            <button mat-icon-button *ngIf="node.expandable" (click)="treeControl.toggle(node)" class="toggle-btn">
               <mat-icon>{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}</mat-icon>
             </button>
             <span *ngIf="!node.expandable" class="spacer-btn"></span>
@@ -83,12 +81,9 @@
                           (change)="handlePermissionChange(node, 'canDelete', $event.checked)"
                           color="warn"></mat-checkbox>
           </div>
-          
-        </mat-tree-node>
-      </mat-tree>
+        </div>
+      </cdk-virtual-scroll-viewport>
     </div>
-
-    <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
   </div>
 
   <ng-template #noRoleSelected>
