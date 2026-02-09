@@ -1,9 +1,80 @@
+// Loading Overlay Styles
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.loading-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  padding: 40px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.4s ease-out;
+}
+
+.loading-text {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1b1b1b;
+  letter-spacing: 0.5px;
+}
+
+.loading-subtext {
+  margin: 0;
+  font-size: 14px;
+  color: #6c757d;
+  font-weight: 400;
+}
+
+.disabled-content {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.5;
+  filter: blur(2px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
 .dashboard-container {
   height: auto;      /* Layout scroll karega, iski height content ke hisaab se hogi */
   width: 100%;
   padding: 24px;
   box-sizing: border-box;
   background-color: #f4f7fe;
+  transition: all 0.3s ease;
   
   // Iske andar ke content (KPIs, Charts, Table) ki purani classes yahan rahegi
 }
