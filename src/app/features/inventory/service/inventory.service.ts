@@ -207,6 +207,6 @@ export class InventoryService {
    */
     createBulkGrn(data: BulkGrnRequest): Observable<any> {
         // Backend ke [HttpPost("bulk-create")] ko hit karega
-        return this.http.post(`${this.apiUrl}/bulk-create`, data);
+        return this.http.post(`${this.apiUrl}/GRN/bulk-create`, data);
     }
 }
