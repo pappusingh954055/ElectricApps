@@ -83,7 +83,6 @@ export class LoginComponent {
   private showErrorDialog(message: string) {
     this.dialog.open(StatusDialogComponent, {
       data: { isSuccess: false, message: message },
-      width: '400px',
       disableClose: true
     });
   }

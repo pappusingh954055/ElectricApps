@@ -1,9 +1,11 @@
 import { Routes } from '@angular/router';
+import { PermissionGuard } from '../core/gaurds/permission.guard';
 
 export const INVENTORY_ROUTES: Routes = [
 
   {
     path: 'polist',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'Purchase Orders' },
     children: [
       { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('./../features/inventory/po-list/po-list').then(m => m.PoList) },
@@ -14,6 +16,7 @@ export const INVENTORY_ROUTES: Routes = [
 
   {
     path: 'grn-list',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'GRN' },
     children: [
       { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('../features/inventory/grn-list-component/grn-list-component').then(m => m.GrnListComponent) },
@@ -24,6 +27,7 @@ export const INVENTORY_ROUTES: Routes = [
   },
   {
     path: 'current-stock',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'Current Stock' },
     children: [
       { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('../features/inventory/current-stock-component/current-stock-component').then(m => m.CurrentStockComponent) },
@@ -33,6 +37,7 @@ export const INVENTORY_ROUTES: Routes = [
 
   {
     path: 'purchase-return',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'Purchase Return' },
     children: [
       { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('../features/inventory/purchase-return/purchase-return-list/purchase-return-list').then(m => m.PurchaseReturnList) },
@@ -44,6 +49,7 @@ export const INVENTORY_ROUTES: Routes = [
 
   {
     path: 'solist',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'Sale Orders' },
     children: [
       { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('./../features/inventory/so-list/so-list').then(m => m.SoList) },
@@ -53,6 +59,7 @@ export const INVENTORY_ROUTES: Routes = [
   },
   {
     path: 'sale-return',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'Sale Return' },
     children: [
       { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('../features/inventory/sale-return/sale-return-list/sale-return-list.component').then(m => m.SaleReturnListComponent) },

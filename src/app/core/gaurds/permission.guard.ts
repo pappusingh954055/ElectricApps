@@ -1,27 +1,45 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { PermissionService } from '../services/permission.service';
+import { MenuService } from '../services/menu.service';
+import { Observable, map, of, catchError } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { StatusDialogComponent } from '../../shared/components/status-dialog-component/status-dialog-component';
 
 @Injectable({ providedIn: 'root' })
 export class PermissionGuard implements CanActivate {
+    private router = inject(Router);
+    private permissionService = inject(PermissionService);
+    private menuService = inject(MenuService);
+    private dialog = inject(MatDialog);
 
-    constructor(
-        private router: Router,
-        private permissionService: PermissionService
-    ) { }
+    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
+        // We fetch the latest menu/permissions from the DB to ensure we don't use stale data after login
+        return this.menuService.getMenu().pipe(
+            map(menus => {
+                const hasViewPermission = this.permissionService.checkPermissionWithData(menus, state.url, 'CanView');
 
-    canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
-        const hasViewPermission = this.permissionService.checkPermission(state.url, 'CanView');
+                if (hasViewPermission) {
+                    return true;
+                }
 
-        if (hasViewPermission) {
-            return true;
-        }
+                console.error(`[PermissionGuard] Access Denied to ${state.url}`);
 
-        // Redirect to unauthorized page or dashboard if user tries to access restricted page directly
-        // Or just return false to block navigation
-        console.log(`Access Denied to ${state.url}`);
-        // this.router.navigate(['/unauthorized']); 
-        // For now, let's keep it simple:
-        return false;
+                // Show proper error message using StatusDialogComponent
+                this.dialog.open(StatusDialogComponent, {
+                    data: {
+                        isSuccess: false,
+                        message: 'Access Denied: Your account has no assigned roles or permissions. Please contact your administrator.'
+                    },
+                    disableClose: true
+                });
+
+                return false;
+            }),
+            catchError((err) => {
+                console.error('[PermissionGuard] Error checking permissions:', err);
+                return of(false);
+            })
+        );
     }
 }

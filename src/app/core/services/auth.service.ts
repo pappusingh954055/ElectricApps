@@ -49,6 +49,17 @@ export class AuthService {
 
     localStorage.setItem('accessToken', res.accessToken);
     localStorage.setItem('refreshToken', res.refreshToken);
+
+    // Save roles and other info if available in response
+    if (res.roles) {
+      localStorage.setItem('roles', JSON.stringify(res.roles));
+    }
+    if (res.email) {
+      localStorage.setItem('email', res.email);
+    }
+    if (res.userId) {
+      localStorage.setItem('userId', res.userId);
+    }
   }
 
   // 🔍 CHECK LOGIN STATUS

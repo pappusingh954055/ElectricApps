@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
+import { PermissionGuard } from '../core/gaurds/permission.guard';
 
 export const SO_ROUTES: Routes = [
   {
     path: '',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'List' },
     loadComponent: () =>
       import('./../features/sales-orders/so-list/so-list')
@@ -10,6 +12,7 @@ export const SO_ROUTES: Routes = [
   },
   {
     path: 'add',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'Add New' },
     loadComponent: () =>
       import('./../features/sales-orders/so-form/so-form')
@@ -17,6 +20,7 @@ export const SO_ROUTES: Routes = [
   },
   {
     path: 'edit/:id',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'Edit' },
     loadComponent: () =>
       import('./../features/sales-orders/so-form/so-form')
@@ -24,6 +28,7 @@ export const SO_ROUTES: Routes = [
   },
   {
     path: 'print/:id',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'Print' },
     loadComponent: () =>
       import('./../features/sales-orders/so-print/so-print')

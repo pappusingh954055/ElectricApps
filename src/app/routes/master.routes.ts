@@ -1,9 +1,11 @@
 import { Routes } from '@angular/router';
+import { PermissionGuard } from '../core/gaurds/permission.guard';
 
 export const MASTER_ROUTES: Routes = [
 
   {
     path: 'categories',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'Categories' },
     children: [
       { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('./../features/master/category/category-list/category-list').then(m => m.CategoryList) },
@@ -14,6 +16,7 @@ export const MASTER_ROUTES: Routes = [
 
   {
     path: 'subcategories',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'Subcategories' },
     children: [
       { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('./../features/master/subcategory/subcategory-list/subcategory-list').then(m => m.SubcategoryList) },
@@ -24,6 +27,7 @@ export const MASTER_ROUTES: Routes = [
 
   {
     path: 'products',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'Products' },
     children: [
       { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('./../features/master/product/product-list/product-list').then(m => m.ProductList) },
@@ -34,6 +38,7 @@ export const MASTER_ROUTES: Routes = [
 
   {
     path: 'pricelists',
+    canActivate: [PermissionGuard],
     data: { breadcrumb: 'Price Lists' },
     children: [
       { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('./../features/master/pricelist/pricelist-list/pricelist-list').then(m => m.PricelistList) },

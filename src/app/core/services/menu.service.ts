@@ -86,9 +86,8 @@ export class MenuService {
       // Find permission for this menu
       const perm = permissions.find(p => p.menuId === menu.id);
 
-      // If no permission record, assume hidden or check logic. 
-      // Based on user req, strict binding expected.
-      const canView = perm ? perm.canView : false;
+      // If no permission record, assume hidden.
+      const canView = perm ? !!perm.canView : false;
 
       // Process children recursively
       let children: MenuItem[] = [];
@@ -97,9 +96,17 @@ export class MenuService {
       }
 
       // Return the menu if it is viewable
-      // We assign the filtered children back to the menu copy
       if (canView) {
-        return { ...menu, children: children };
+        return {
+          ...menu,
+          children: children,
+          permissions: perm ? {
+            canView: !!perm.canView,
+            canAdd: !!perm.canAdd,
+            canEdit: !!perm.canEdit,
+            canDelete: !!perm.canDelete
+          } : undefined
+        };
       }
       return null;
     }).filter(m => m !== null) as MenuItem[];

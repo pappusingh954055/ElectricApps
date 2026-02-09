@@ -41,20 +41,29 @@ export class PermissionService {
 
     private findMenuItemRecursive(items: MenuItem[], url: string): MenuItem | null {
         for (const item of items) {
-            if (item.url && url.includes(item.url)) {
-                // Simple match, might need strict match
-                return item;
-            }
-            if (item.children) {
+            // Check for children first to find the most specific match (leaf node)
+            if (item.children && item.children.length > 0) {
                 const found = this.findMenuItemRecursive(item.children, url);
                 if (found) return found;
+            }
+
+            // Check if this item matches the URL. 
+            // item.url must be non-empty and must match exactly or be the start of the URL.
+            if (item.url && item.url.trim() !== '') {
+                // Remove trailing slashes and potential query params for comparison if needed
+                const cleanUrl = url.split('?')[0].replace(/\/$/, '');
+                const cleanItemUrl = item.url.split('?')[0].replace(/\/$/, '');
+
+                if (cleanUrl === cleanItemUrl) {
+                    return item;
+                }
             }
         }
         return null;
     }
 
-    checkPermission(url: string, action: 'CanView' | 'CanAdd' | 'CanEdit' | 'CanDelete'): boolean {
-        const menuItem = this.findMenuItemRecursive(this.menuItems, url);
+    checkPermissionWithData(menus: MenuItem[], url: string, action: 'CanView' | 'CanAdd' | 'CanEdit' | 'CanDelete'): boolean {
+        const menuItem = this.findMenuItemRecursive(menus, url);
         if (!menuItem || !menuItem.permissions) {
             return false;
         }
@@ -68,7 +77,11 @@ export class PermissionService {
         }
     }
 
+    checkPermission(url: string, action: 'CanView' | 'CanAdd' | 'CanEdit' | 'CanDelete'): boolean {
+        return this.checkPermissionWithData(this.menuItems, url, action);
+    }
+
     hasPermission(action: 'CanView' | 'CanAdd' | 'CanEdit' | 'CanDelete'): boolean {
-        return this.checkPermission(this.router.url, action);
+        return this.checkPermissionWithData(this.menuItems, this.router.url, action);
     }
 }
