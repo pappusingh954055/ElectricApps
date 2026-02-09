@@ -17,7 +17,6 @@
 
   <div class="content-card mat-elevation-z8" *ngIf="selectedRoleId; else noRoleSelected">
     
-    <!-- Toolbar with Search and Actions -->
     <div class="table-toolbar">
       <mat-form-field appearance="outline" class="search-field">
         <mat-label>Search Menu</mat-label>
@@ -35,107 +34,63 @@
       </div>
     </div>
 
-    <!-- Data Table -->
-    <div class="table-container">
-      <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z0">
+    <!-- CLEAN TABLE GRID STRUCTURE -->
+    <div class="table-container flat-tree-grid">
+      
+      <!-- HEADER WITH FIXED ALIGNMENT -->
+      <div class="sticky-header grid-row header-row">
+        <div class="cell menu-col">Menu Item</div>
+        <div class="cell checkbox-col view">View</div>
+        <div class="cell checkbox-col add">Add</div>
+        <div class="cell checkbox-col edit">Edit</div>
+        <div class="cell checkbox-col delete">Delete</div>
+      </div>
 
-        <!-- Menu Column -->
-        <ng-container matColumnDef="menu">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header style="width: 40%"> Menu Item </th>
-          <td mat-cell *matCellDef="let row"> 
-             <div class="menu-cell">
-               <mat-icon class="menu-icon" *ngIf="row.icon">{{row.icon}}</mat-icon>
-               <mat-icon class="menu-icon" *ngIf="!row.icon">menu</mat-icon>
-               <span>{{row.title}}</span>
-             </div>
-          </td>
-        </ng-container>
+      <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+        
+        <!-- Flat Node Template -->
+        <mat-tree-node *matTreeNodeDef="let node" class="grid-row node-row" [class.parent-node]="node.expandable">
+          
+          <!-- Menu Column with Level-based Indentation -->
+          <div class="cell menu-col" [style.padding-left.px]="node.level * 32">
+            <button mat-icon-button *ngIf="node.expandable" matTreeNodeToggle class="toggle-btn">
+              <mat-icon>{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}</mat-icon>
+            </button>
+            <span *ngIf="!node.expandable" class="spacer-btn"></span>
+            
+            <mat-icon class="menu-icon">{{node.icon || (node.expandable ? 'folder' : 'description')}}</mat-icon>
+            <span class="node-title">{{node.title}}</span>
+          </div>
 
-        <!-- View Column -->
-        <ng-container matColumnDef="canView">
-          <th mat-header-cell *matHeaderCellDef>
-            <div class="header-checkbox">
-              <mat-checkbox (change)="toggleAll('canView', $event.checked)"
-                            [checked]="isAllSelected('canView')"
-                            [indeterminate]="isSomeSelected('canView') && !isAllSelected('canView')"
-                            color="primary">
-              </mat-checkbox>
-              <span class="header-label">View</span>
-            </div>
-          </th>
-          <td mat-cell *matCellDef="let row">
-            <mat-checkbox [(ngModel)]="getPermission(row.id).canView" color="primary"></mat-checkbox>
-          </td>
-        </ng-container>
-
-        <!-- Add Column -->
-        <ng-container matColumnDef="canAdd">
-          <th mat-header-cell *matHeaderCellDef>
-            <div class="header-checkbox">
-              <mat-checkbox (change)="toggleAll('canAdd', $event.checked)"
-                            [checked]="isAllSelected('canAdd')"
-                            [indeterminate]="isSomeSelected('canAdd') && !isAllSelected('canAdd')"
-                            color="accent">
-              </mat-checkbox>
-              <span class="header-label">Add</span>
-            </div>
-          </th>
-          <td mat-cell *matCellDef="let row">
-            <mat-checkbox [(ngModel)]="getPermission(row.id).canAdd" color="accent"></mat-checkbox>
-          </td>
-        </ng-container>
-
-        <!-- Edit Column -->
-        <ng-container matColumnDef="canEdit">
-          <th mat-header-cell *matHeaderCellDef>
-            <div class="header-checkbox">
-              <mat-checkbox (change)="toggleAll('canEdit', $event.checked)"
-                            [checked]="isAllSelected('canEdit')"
-                            [indeterminate]="isSomeSelected('canEdit') && !isAllSelected('canEdit')"
-                            color="accent">
-              </mat-checkbox>
-              <span class="header-label">Edit</span>
-            </div>
-          </th>
-          <td mat-cell *matCellDef="let row">
-            <mat-checkbox [(ngModel)]="getPermission(row.id).canEdit" color="accent"></mat-checkbox>
-          </td>
-        </ng-container>
-
-        <!-- Delete Column -->
-        <ng-container matColumnDef="canDelete">
-          <th mat-header-cell *matHeaderCellDef>
-            <div class="header-checkbox">
-              <mat-checkbox (change)="toggleAll('canDelete', $event.checked)"
-                            [checked]="isAllSelected('canDelete')"
-                            [indeterminate]="isSomeSelected('canDelete') && !isAllSelected('canDelete')"
-                            color="warn">
-              </mat-checkbox>
-              <span class="header-label">Delete</span>
-            </div>
-          </th>
-          <td mat-cell *matCellDef="let row">
-            <mat-checkbox [(ngModel)]="getPermission(row.id).canDelete" color="warn"></mat-checkbox>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-        <!-- No Data Row -->
-        <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell" colspan="5" style="text-align: center; padding: 24px;">
-            No menus found matching "{{input.value}}"
-          </td>
-        </tr>
-      </table>
+          <!-- CHECKBOX COLUMNS - PERFECTLY ALIGNED -->
+          <div class="cell checkbox-col">
+            <mat-checkbox [(ngModel)]="getPermission(node.id).canView" 
+                          (change)="node.expandable ? toggleNode(node, 'canView', $event.checked) : null"
+                          color="primary"></mat-checkbox>
+          </div>
+          <div class="cell checkbox-col">
+            <mat-checkbox [(ngModel)]="getPermission(node.id).canAdd" 
+                          (change)="node.expandable ? toggleNode(node, 'canAdd', $event.checked) : null"
+                          color="accent"></mat-checkbox>
+          </div>
+          <div class="cell checkbox-col">
+            <mat-checkbox [(ngModel)]="getPermission(node.id).canEdit" 
+                          (change)="node.expandable ? toggleNode(node, 'canEdit', $event.checked) : null"
+                          color="accent"></mat-checkbox>
+          </div>
+          <div class="cell checkbox-col">
+            <mat-checkbox [(ngModel)]="getPermission(node.id).canDelete" 
+                          (change)="node.expandable ? toggleNode(node, 'canDelete', $event.checked) : null"
+                          color="warn"></mat-checkbox>
+          </div>
+          
+        </mat-tree-node>
+      </mat-tree>
     </div>
 
-    <!-- Paginator -->
     <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
   </div>
 
-  <!-- No Role Selected Template -->
   <ng-template #noRoleSelected>
     <div class="empty-state">
       <mat-icon class="empty-icon">admin_panel_settings</mat-icon>

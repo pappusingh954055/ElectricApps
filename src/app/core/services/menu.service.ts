@@ -53,7 +53,7 @@ export class MenuService {
     );
   }
 
-  private buildMenuTree(flatMenus: MenuItem[]): MenuItem[] {
+  buildMenuTree(flatMenus: MenuItem[]): MenuItem[] {
     const menuMap = new Map<number, MenuItem>();
     const rootMenus: MenuItem[] = [];
 
@@ -84,7 +84,7 @@ export class MenuService {
   }
 
   // Generic sorting by order property
-  private sortMenus(menus: MenuItem[]): MenuItem[] {
+  sortMenus(menus: MenuItem[]): MenuItem[] {
     if (!menus) return [];
 
     // Sort current level

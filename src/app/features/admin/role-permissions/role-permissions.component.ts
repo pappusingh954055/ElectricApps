@@ -12,6 +12,8 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { FlatTreeControl } from '@angular/cdk/tree';
+import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
 
 @Component({
   selector: 'app-role-permissions',
@@ -26,20 +28,36 @@ export class RolePermissionsComponent implements OnInit {
   permissions: RolePermission[] = [];
 
   displayedColumns = ['menu', 'canView', 'canAdd', 'canEdit', 'canDelete'];
-  dataSource: MatTableDataSource<MenuItem>;
 
-  @ViewChild(MatPaginator) set matPaginator(mp: MatPaginator) {
-    this.paginator = mp;
-    this.dataSource.paginator = this.paginator;
-  }
+  private _transformer = (node: MenuItem, level: number) => {
+    return {
+      expandable: !!node.children && node.children.length > 0,
+      title: node.title,
+      level: level,
+      id: node.id,
+      icon: node.icon,
+      children: node.children
+    };
+  };
 
-  @ViewChild(MatSort) set matSort(ms: MatSort) {
-    this.sort = ms;
-    this.dataSource.sort = this.sort;
-  }
+  treeControl = new FlatTreeControl<any>(
+    node => node.level,
+    node => node.expandable
+  );
 
-  paginator!: MatPaginator;
-  sort!: MatSort;
+  treeFlattener = new MatTreeFlattener(
+    this._transformer,
+    node => node.level,
+    node => node.expandable,
+    node => node.children
+  );
+
+  dataSource = new MatTreeFlatDataSource(this.treeControl, this.treeFlattener);
+
+  hasChild = (_: number, node: any) => node.expandable;
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
 
   private roleService = inject(RoleService);
   private menuService = inject(MenuService);
@@ -47,9 +65,7 @@ export class RolePermissionsComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
 
-  constructor() {
-    this.dataSource = new MatTableDataSource<MenuItem>([]);
-  }
+  constructor() { }
 
   ngOnInit() {
     this.loadRoles();
@@ -65,26 +81,12 @@ export class RolePermissionsComponent implements OnInit {
 
   loadMenus() {
     this.menuService.getAllMenus().subscribe(menus => {
-      const flatMenus = this.flattenMenus(menus);
-      this.dataSource.data = flatMenus;
-
-      // Re-assign paginator after data load to ensure it calculates pages correctly
-      if (this.paginator) {
-        this.dataSource.paginator = this.paginator;
-      }
+      // FIX: Build the tree structure on frontend before giving it to FlatTreeDataSource
+      // This prevents items from appearing both as root and children.
+      const menuTree = this.menuService.buildMenuTree(menus);
+      this.dataSource.data = this.menuService.sortMenus(menuTree);
       this.cdr.detectChanges();
     });
-  }
-
-  flattenMenus(menus: MenuItem[]): MenuItem[] {
-    let result: MenuItem[] = [];
-    for (const menu of menus) {
-      result.push(menu);
-      if (menu.children) {
-        result = result.concat(this.flattenMenus(menu.children));
-      }
-    }
-    return result;
   }
 
   onRoleChange() {
@@ -167,37 +169,80 @@ export class RolePermissionsComponent implements OnInit {
   // --- Data Table Features ---
 
   applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    const filterValue = (event.target as HTMLInputElement).value.trim().toLowerCase();
+    this.menuService.getAllMenus().subscribe(menus => {
+      if (!filterValue) {
+        this.dataSource.data = menus;
+      } else {
+        this.dataSource.data = this.filterRecursive(menus, filterValue);
+        this.treeControl.expandAll();
+      }
+      this.cdr.detectChanges();
+    });
+  }
 
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
+  private filterRecursive(nodes: MenuItem[], filterValue: string): MenuItem[] {
+    return nodes.map(node => ({ ...node }))
+      .filter(node => {
+        if (node.children) {
+          node.children = this.filterRecursive(node.children, filterValue);
+        }
+        const matches = node.title.toLowerCase().includes(filterValue);
+        const childMatches = node.children && node.children.length > 0;
+        return matches || childMatches;
+      });
   }
 
   // --- Bulk Actions ---
 
   isAllSelected(column: 'canView' | 'canAdd' | 'canEdit' | 'canDelete'): boolean {
-    const visibleData = this.dataSource.filteredData; // Only affect filtered rows
-    if (visibleData.length === 0) return false;
-
-    return visibleData.every(row => this.getPermission(row.id)[column]);
-
+    const allItems = this.getFlatItems(this.dataSource.data);
+    if (allItems.length === 0) return false;
+    return allItems.every(row => this.getPermission(row.id)[column]);
   }
 
   isSomeSelected(column: 'canView' | 'canAdd' | 'canEdit' | 'canDelete'): boolean {
-    const visibleData = this.dataSource.filteredData;
-    if (visibleData.length === 0) return false;
+    const allItems = this.getFlatItems(this.dataSource.data);
+    if (allItems.length === 0) return false;
+    return allItems.some(row => this.getPermission(row.id)[column]);
+  }
 
-    return visibleData.some(row => this.getPermission(row.id)[column]);
+  private getFlatItems(nodes: MenuItem[]): MenuItem[] {
+    let result: MenuItem[] = [];
+    nodes.forEach(node => {
+      result.push(node);
+      if (node.children) {
+        result = result.concat(this.getFlatItems(node.children));
+      }
+    });
+    return result;
   }
 
   toggleAll(column: 'canView' | 'canAdd' | 'canEdit' | 'canDelete', checked: boolean) {
-    const visibleData = this.dataSource.filteredData;
-    visibleData.forEach(row => {
+    const allItems = this.getFlatItems(this.dataSource.data);
+    allItems.forEach(row => {
       const perm = this.getPermission(row.id);
-
       perm[column] = checked;
+    });
+  }
+
+  toggleNode(node: MenuItem, column: 'canView' | 'canAdd' | 'canEdit' | 'canDelete', checked: boolean) {
+    const perm = this.getPermission(node.id);
+    perm[column] = checked;
+
+    // Also toggle all children
+    if (node.children) {
+      this.toggleChildrenRecursive(node.children, column, checked);
+    }
+  }
+
+  private toggleChildrenRecursive(nodes: MenuItem[], column: 'canView' | 'canAdd' | 'canEdit' | 'canDelete', checked: boolean) {
+    nodes.forEach(node => {
+      const perm = this.getPermission(node.id);
+      perm[column] = checked;
+      if (node.children) {
+        this.toggleChildrenRecursive(node.children, column, checked);
+      }
     });
   }
 }
