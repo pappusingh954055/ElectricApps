@@ -235,9 +235,13 @@ export class RolePermissionsComponent implements OnInit {
       this.toggleChildrenRecursive(node.children, column, checked);
     }
 
-    // 2. Cascade up: If we check an item, its parents must be checked to reach it
+    // 2. Cascade up
     if (checked) {
+      // If we check an item, its parents must be checked to reach it
       this.updateParentsRecursive(this.dataSource.data, node.id, column);
+    } else {
+      // If we uncheck an item, check if its parent should also be unchecked (if no other children are checked)
+      this.uncheckParentsRecursive(this.dataSource.data, node.id, column);
     }
 
     this.cdr.detectChanges();
@@ -251,6 +255,25 @@ export class RolePermissionsComponent implements OnInit {
         const found = this.updateParentsRecursive(node.children, targetId, column);
         if (found) {
           this.getPermission(node.id)[column] = true;
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private uncheckParentsRecursive(nodes: MenuItem[], targetId: number, column: 'canView' | 'canAdd' | 'canEdit' | 'canDelete'): boolean {
+    for (const node of nodes) {
+      if (node.id === targetId) return true;
+
+      if (node.children && node.children.length > 0) {
+        const found = this.uncheckParentsRecursive(node.children, targetId, column);
+        if (found) {
+          // If the target was found in this node's branch, check if any child is still checked
+          const anyChildChecked = node.children.some(child => this.getPermission(child.id)[column]);
+          if (!anyChildChecked) {
+            this.getPermission(node.id)[column] = false;
+          }
           return true;
         }
       }
