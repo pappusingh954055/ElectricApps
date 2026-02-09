@@ -6,6 +6,7 @@ import { ApiService } from '../../../shared/api.service';
 import { PurchaseOrderPayload } from '../models/purchaseorder.model';
 import { StockSummary } from '../models/stock-summary.model';
 import { PriceListItemDto } from '../models/price-list-item.dto';
+import { BulkGrnRequest } from '../models/grnbulkrequest.model';
 
 
 
@@ -198,5 +199,14 @@ export class InventoryService {
 
     getGrnPrintData(grnNumber: string): Observable<any> {
         return this.http.get(`${this.apiUrl}/GRN/print-data/${grnNumber}`);
+    }
+
+    /**
+   * Multiple Approved POs se Bulk mein GRN create karne ke liye
+   * @param data { purchaseOrderIds: number[], createdBy: string }
+   */
+    createBulkGrn(data: BulkGrnRequest): Observable<any> {
+        // Backend ke [HttpPost("bulk-create")] ko hit karega
+        return this.http.post(`${this.apiUrl}/bulk-create`, data);
     }
 }

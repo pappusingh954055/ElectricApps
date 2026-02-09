@@ -50,6 +50,7 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   @Output() bulkApproveOrders = new EventEmitter<any[]>();
   @Output() bulkDraftApproved = new EventEmitter<any[]>();
   @Output() bulkPORejected = new EventEmitter<any[]>();
+  @Output() bulkCreateGrn = new EventEmitter<any[]>();
 
   @Output() bulkDeleteParentOrders = new EventEmitter<any[]>();
   @Output() actionClicked = new EventEmitter<{ action: string, row: any }>();
@@ -125,6 +126,9 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   isRowSelectable(row: any): boolean {
     if (this.userRole === 'Manager') {
       return row.status === 'Submitted';
+    }
+    if (this.userRole === 'Warehouse') {
+      return row.status === 'Approved';
     }
     // Default to User behavior (Draft only)
     return row.status === 'Draft';
@@ -402,6 +406,12 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   onBulkPORejectedClick() {
     if (this.selection.selected.length > 0) {
       this.bulkPORejected.emit(this.selection.selected);
+    }
+  }
+
+  onBulkCreateGrnClick() {
+    if (this.selection.selected.length > 0) {
+      this.bulkCreateGrn.emit(this.selection.selected);
     }
   }
   // enterprise-hierarchical-grid.ts

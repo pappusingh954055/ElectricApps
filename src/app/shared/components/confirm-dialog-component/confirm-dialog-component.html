@@ -11,7 +11,7 @@
         {{ data.cancelText || 'Cancel' }}
     </button>
 
-    <button mat-raised-button color="warn" (click)="confirm()">
-        {{ data.confirmText || 'Delete' }}
+    <button mat-raised-button [color]="data.confirmColor || 'warn'" (click)="confirm()">
+        {{ data.confirmText || 'Yes' }}
     </button>
 </mat-dialog-actions>

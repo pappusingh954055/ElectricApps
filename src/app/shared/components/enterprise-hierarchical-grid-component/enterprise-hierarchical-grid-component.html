@@ -40,7 +40,7 @@
         </div>
       </mat-menu>
 
-      <button mat-flat-button color="warn" *ngIf="selection.hasValue() && userRole !== 'Manager'" (click)="onBulkDeleteClick()" class="action-btn"
+      <button mat-flat-button color="warn" *ngIf="selection.hasValue() && userRole !== 'Manager' && userRole !== 'Warehouse'" (click)="onBulkDeleteClick()" class="action-btn"
         style="margin-right: 8px;">
         <mat-icon>delete_sweep</mat-icon> Bulk Delete ({{selection.selected.length}})
       </button>
@@ -59,8 +59,13 @@
       style="margin-right: 8px;">
       <mat-icon>cancel</mat-icon> Bulk PO Rejected ({{selection.selected.length}})
     </button>
+
+      <button mat-flat-button color="accent" *ngIf="selection.hasValue() && userRole === 'Warehouse'" (click)="onBulkCreateGrnClick()" class="action-btn"
+        style="margin-right: 8px; background-color: #2e7d32; color: white;">
+        <mat-icon>inventory</mat-icon> Bulk Receive ({{selection.selected.length}})
+      </button>
       
-      <button mat-flat-button color="primary" *ngIf="userRole !== 'Manager'" (click)="onAddNewClick()">+ {{ addNewLabel }}</button>
+      <button mat-flat-button color="primary" *ngIf="userRole !== 'Manager' && userRole !== 'Warehouse'" (click)="onAddNewClick()">+ {{ addNewLabel }}</button>
     </div>
   </div>
 

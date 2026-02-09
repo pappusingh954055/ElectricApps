@@ -116,4 +116,8 @@ export class AuthService {
       return 'User';
     }
   }
+
+  getUserName(): string {
+    return localStorage.getItem('userName') || localStorage.getItem('email') || 'Unknown';
+  }
 }

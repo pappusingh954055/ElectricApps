@@ -591,6 +591,50 @@ export class PoList implements OnInit {
     });
   }
 
+  onBulkCreateGrn(selectedRows: any[]) {
+    if (!selectedRows || selectedRows.length === 0) return;
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '450px',
+      data: {
+        title: 'Bulk Receive Items',
+        message: `System will automatically create ${selectedRows.length} Goods Received Notes (GRN) for selected POs. Do you want to continue?`,
+        confirmText: 'Yes, Create All',
+        cancelText: 'Cancel',
+        confirmColor: 'primary'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        this.cdr.detectChanges();
+
+        const request = {
+          purchaseOrderIds: selectedRows.map(r => r.id),
+          createdBy: this.authService.getUserName()
+        };
+
+        this.poService.createBulkGrn(request).subscribe({
+          next: (res) => {
+            this.isLoading = false;
+            this.notification.showStatus(true, `${selectedRows.length} GRNs created successfully!`);
+            if (this.grid && this.grid.selection) {
+              this.grid.selection.clear();
+            }
+            this.loadData(this.currentGridState);
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            this.isLoading = false;
+            this.notification.showStatus(false, 'Bulk GRN creation failed. Please check if all selected items are Approved.');
+            this.cdr.detectChanges();
+          }
+        });
+      }
+    });
+  }
+
   onBulkPOReject(selectedRows: any[]) {
     // 1. Filter for Submitted items (Since manager views Submitted items)
     // We can also double check that they are not already Rejected or Approved if needed
