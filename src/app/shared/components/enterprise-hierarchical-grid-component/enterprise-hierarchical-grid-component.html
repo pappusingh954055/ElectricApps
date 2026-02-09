@@ -316,5 +316,11 @@
       </tr>
     </table>
   </div>
-  <mat-paginator [length]="totalRecords" [pageSize]="pageSize" (page)="onPageChange($event)"></mat-paginator>
+  <mat-paginator [length]="totalRecords" 
+                 [pageSize]="pageSize" 
+                 [pageSizeOptions]="[5, 10, 25, 50, 100]" 
+                 showFirstLastButtons
+                 (page)="onPageChange($event)"
+                 class="grid-paginator">
+  </mat-paginator>
 </div>

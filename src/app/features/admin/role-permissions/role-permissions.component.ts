@@ -6,7 +6,6 @@ import { RoleService } from '../../../core/services/role.service';
 import { MenuService } from '../../../core/services/menu.service';
 import { Role, RolePermission } from '../../../core/models/role.model';
 import { MenuItem } from '../../../core/models/menu-item.model';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
@@ -61,7 +60,6 @@ export class RolePermissionsComponent implements OnInit {
 
   private roleService = inject(RoleService);
   private menuService = inject(MenuService);
-  private snackBar = inject(MatSnackBar);
   private cdr = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
 
@@ -148,7 +146,13 @@ export class RolePermissionsComponent implements OnInit {
   resetPermissions() {
     if (this.selectedRoleId) {
       this.onRoleChange(); // Reload from DB
-      this.snackBar.open('Permissions reset to last saved state.', 'Close', { duration: 2000 });
+      this.dialog.open(StatusDialogComponent, {
+        width: '400px',
+        data: {
+          isSuccess: true,
+          message: 'Permissions reset to last saved state.'
+        }
+      });
 
     }
   }

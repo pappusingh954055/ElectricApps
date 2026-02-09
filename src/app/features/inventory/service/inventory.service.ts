@@ -194,5 +194,9 @@ export class InventoryService {
         return this.http.post(url, productIds, {
             responseType: 'blob'
         });
-    }    
+    }
+
+    getGrnPrintData(grnNumber: string): Observable<any> {
+        return this.http.get(`${this.apiUrl}/GRN/print-data/${grnNumber}`);
+    }
 }

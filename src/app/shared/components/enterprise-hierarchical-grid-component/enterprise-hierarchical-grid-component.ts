@@ -21,6 +21,7 @@ import { MatDialog } from '@angular/material/dialog';
     MaterialModule,
     ReactiveFormsModule,
     AppSearchInput,
+    MatPaginatorModule,
     FormsModule],
   templateUrl: './enterprise-hierarchical-grid-component.html',
   styleUrl: './enterprise-hierarchical-grid-component.scss'

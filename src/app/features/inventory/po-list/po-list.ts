@@ -141,6 +141,7 @@ export class PoList implements OnInit {
   // Central control function: Grid se jo bhi change hoga, yahan se API call jayegi
   public onGridStateChange(state: any) {
     this.currentGridState = state;
+    this.pageSize = state.pageSize || 10;
     this.loadData(state);
   }
 
@@ -164,6 +165,7 @@ export class PoList implements OnInit {
 
     this.poService.getPagedOrders(requestPayload).subscribe({
       next: (res) => {
+        console.log('API PO List Response:', res);
         this.dataSource.data = res.data || [];
         this.totalRecords = res.totalRecords || 0;
         this.isLoading = false;

@@ -11,6 +11,7 @@ import { merge, of } from 'rxjs';
 import { startWith, switchMap, map, catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { PoSelectionDialog } from '../po-selection-dialog/po-selection-dialog';
 import { MatDialog } from '@angular/material/dialog';
+import { GrnPrintDialogComponent } from '../grn-print-dialog/grn-print-dialog.component';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
 @Component({
@@ -126,7 +127,12 @@ export class GrnListComponent implements OnInit, AfterViewInit {
   }
 
   printGRN(grn: any) {
-    console.log("Printing GRN:", grn.grnNo);
+    this.dialog.open(GrnPrintDialogComponent, {
+      width: '900px',
+      maxWidth: '95vw',
+      data: { grnNo: grn.grnNo },
+      panelClass: 'grn-print-dialog'
+    });
   }
 
   applyFilter(event: any) { }

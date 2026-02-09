@@ -1,0 +1,132 @@
+<div class="dialog-container">
+  <div class="dialog-header no-print">
+    <div class="title-area">
+      <mat-icon class="header-icon">print</mat-icon>
+      <h2>GRN Print Preview</h2>
+    </div>
+    <button mat-icon-button (click)="close()" class="close-btn">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="dialog-content">
+    <div *ngIf="loading" class="loading-state">
+      <mat-spinner diameter="40"></mat-spinner>
+      <p>Fetching GRN details...</p>
+    </div>
+
+    <div *ngIf="!loading && grnData" id="printable-area" class="print-preview">
+      <!-- Header Section -->
+      <div class="print-header">
+        <div class="company-info">
+          <h1>Electric Inventory System</h1>
+          <p>Main Street, Business Hub, City 12345</p>
+          <p>Contact: +1 234 567 890 | Email: support@electric.com</p>
+        </div>
+        <div class="grn-title">
+          <h2>GOODS RECEIVED NOTE</h2>
+          <div class="detail-row">
+            <span class="detail-label">GRN No:</span>
+            <span>{{grnData.grnNumber}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Date:</span>
+            <span>{{grnData.receivedDate | date:'mediumDate'}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Grid -->
+      <div class="details-grid">
+        <div class="detail-section">
+          <h3>Supplier Details</h3>
+          <div class="detail-row">
+            <span class="detail-label">Name:</span>
+            <span>{{grnData.supplierName || '--'}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">PO Reference:</span>
+            <span>#{{grnData.purchaseOrderId || '--'}}</span>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h3>Other Info</h3>
+          <div class="detail-row">
+            <span class="detail-label">Status:</span>
+            <span>{{grnData.status || '--'}}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Remarks:</span>
+            <span>{{grnData.remarks || '--'}}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items Table -->
+      <table class="items-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Product Name</th>
+            <th>SKU</th>
+            <th class="text-right">Ordered Qty</th>
+            <th class="text-right">Received Qty</th>
+            <th class="text-right">Rate</th>
+            <th class="text-right">GST %</th>
+            <th class="text-right">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of grnData.items; let i = index">
+            <td>{{i + 1}}</td>
+            <td>{{item.productName}}</td>
+            <td>{{item.sku}}</td>
+            <td class="text-right">{{item.orderedQty}}</td>
+            <td class="text-right">{{item.receivedQty}}</td>
+            <td class="text-right">{{item.unitRate | currency:'INR'}}</td>
+            <td class="text-right">{{item.gstPercentage}}%</td>
+            <td class="text-right">{{item.total | currency:'INR'}}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Grand Totals -->
+      <div class="totals-section">
+        <div class="totals-table">
+          <div class="total-row">
+            <span>Sub-total</span>
+            <span>{{grnData.subTotal | currency:'INR'}}</span>
+          </div>
+          <div class="total-row">
+            <span>Tax (GST)</span>
+            <span>{{grnData.totalTaxAmount | currency:'INR'}}</span>
+          </div>
+          <mat-divider></mat-divider>
+          <div class="total-row grand-total">
+            <span>TOTAL AMOUNT</span>
+            <span>{{(grnData.subTotal + grnData.totalTaxAmount) | currency:'INR'}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="print-footer">
+        <div class="signature">
+          <div class="sig-line"></div>
+          <p>Authorized Signature</p>
+        </div>
+        <div class="signature">
+          <div class="sig-line"></div>
+          <p>Store Keeper Signature</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-actions no-print">
+    <button mat-stroked-button (click)="close()">Cancel</button>
+    <button mat-flat-button color="primary" class="print-btn" (click)="print()">
+      <mat-icon>print</mat-icon>
+      Print GRN
+    </button>
+  </div>
+</div>
