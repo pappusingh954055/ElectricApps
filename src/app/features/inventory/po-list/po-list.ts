@@ -80,7 +80,7 @@ export class PoList implements OnInit {
   private initColumns() {
     this.poColumns = [
       { field: 'poNumber', header: 'PO No.', sortable: true, isFilterable: true, isResizable: true, width: 150 },
-      { field: 'id', header: 'ID', sortable: true, isFilterable: true, isResizable: true, width: 150 },
+      { field: 'id', header: 'ID', sortable: true, isFilterable: true, visible: false, isResizable: true, width: 150 },
       {
         field: 'poDate',
         header: 'Date',

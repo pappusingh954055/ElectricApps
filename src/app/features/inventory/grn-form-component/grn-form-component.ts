@@ -201,7 +201,9 @@ export class GrnFormComponent implements OnInit {
       createdBy: currentUserId,
       items: this.items.map(item => ({
         productId: item.productId,
+        orderedQty: Number(item.orderedQty),
         receivedQty: Number(item.receivedQty),
+        pendingQty: Number(item.pendingQty),
         rejectedQty: Number(item.rejectedQty),
         acceptedQty: Number(item.acceptedQty),
         unitRate: Number(item.unitRate)

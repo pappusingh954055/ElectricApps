@@ -40,27 +40,37 @@ export class PermissionService {
     }
 
     private findMenuItemRecursive(items: MenuItem[], url: string): MenuItem | null {
-        for (const item of items) {
-            // Check for children first to find the most specific match (leaf node)
-            if (item.children && item.children.length > 0) {
-                const found = this.findMenuItemRecursive(item.children, url);
-                if (found) return found;
-            }
+        let bestMatch: MenuItem | null = null;
+        let longestUrlMatch = -1;
 
-            // Check if this item matches the URL. 
-            if (item.url && item.url.trim() !== '') {
-                // Normalize both URLs: remove query params, trailing slashes, and leading slashes for comparison
-                const cleanUrl = url.split('?')[0].replace(/\/$/, '').replace(/^\//, '');
-                const cleanItemUrl = item.url.split('?')[0].replace(/\/$/, '').replace(/^\//, '');
+        const search = (menuItems: MenuItem[]) => {
+            for (const item of menuItems) {
+                if (item.url && item.url.trim() !== '') {
+                    const cleanUrl = url.split('?')[0].replace(/\/$/, '').replace(/^\//, '');
+                    const cleanItemUrl = item.url.split('?')[0].replace(/\/$/, '').replace(/^\//, '');
 
-                // Match if exact or if the current URL ends with the menu's path segment
-                // e.g. 'app/dashboard' matches 'dashboard'
-                if (cleanUrl === cleanItemUrl || cleanUrl.endsWith('/' + cleanItemUrl)) {
-                    return item;
+                    // Check if current URL matches this menu item or is a sub-path of it
+                    const isExact = cleanUrl === cleanItemUrl;
+                    const isPrefix = cleanUrl.startsWith(cleanItemUrl + '/');
+                    const isSegment = cleanUrl.endsWith('/' + cleanItemUrl) || cleanUrl.includes('/' + cleanItemUrl + '/');
+
+                    if (isExact || isPrefix || isSegment) {
+                        // Pick the most specific match (the one with the longest URL)
+                        if (cleanItemUrl.length > longestUrlMatch) {
+                            longestUrlMatch = cleanItemUrl.length;
+                            bestMatch = item;
+                        }
+                    }
+                }
+
+                if (item.children && item.children.length > 0) {
+                    search(item.children);
                 }
             }
-        }
-        return null;
+        };
+
+        search(items);
+        return bestMatch;
     }
 
     checkPermissionWithData(menus: MenuItem[], url: string, action: 'CanView' | 'CanAdd' | 'CanEdit' | 'CanDelete'): boolean {

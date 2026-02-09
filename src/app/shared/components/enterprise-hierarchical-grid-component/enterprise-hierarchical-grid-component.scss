@@ -71,6 +71,19 @@
   overflow-y: auto;
   width: 100%;
   flex: 1;
+
+  /* Subtle Scrollbar Styling */
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 table {
