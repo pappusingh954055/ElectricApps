@@ -226,21 +226,43 @@ export class RolePermissionsComponent implements OnInit {
     });
   }
 
-  toggleNode(node: MenuItem, column: 'canView' | 'canAdd' | 'canEdit' | 'canDelete', checked: boolean) {
+  handlePermissionChange(node: any, column: 'canView' | 'canAdd' | 'canEdit' | 'canDelete', checked: boolean) {
     const perm = this.getPermission(node.id);
     perm[column] = checked;
 
-    // Also toggle all children
-    if (node.children) {
+    // 1. Cascade down: If it's a folder, update all children
+    if (node.children && node.children.length > 0) {
       this.toggleChildrenRecursive(node.children, column, checked);
     }
+
+    // 2. Cascade up: If we check an item, its parents must be checked to reach it
+    if (checked) {
+      this.updateParentsRecursive(this.dataSource.data, node.id, column);
+    }
+
+    this.cdr.detectChanges();
+  }
+
+  private updateParentsRecursive(nodes: MenuItem[], targetId: number, column: 'canView' | 'canAdd' | 'canEdit' | 'canDelete'): boolean {
+    for (const node of nodes) {
+      if (node.id === targetId) return true;
+
+      if (node.children && node.children.length > 0) {
+        const found = this.updateParentsRecursive(node.children, targetId, column);
+        if (found) {
+          this.getPermission(node.id)[column] = true;
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   private toggleChildrenRecursive(nodes: MenuItem[], column: 'canView' | 'canAdd' | 'canEdit' | 'canDelete', checked: boolean) {
     nodes.forEach(node => {
       const perm = this.getPermission(node.id);
       perm[column] = checked;
-      if (node.children) {
+      if (node.children && node.children.length > 0) {
         this.toggleChildrenRecursive(node.children, column, checked);
       }
     });

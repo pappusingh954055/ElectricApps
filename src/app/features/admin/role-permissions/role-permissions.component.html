@@ -52,7 +52,7 @@
         <mat-tree-node *matTreeNodeDef="let node" class="grid-row node-row" [class.parent-node]="node.expandable">
           
           <!-- Menu Column with Level-based Indentation -->
-          <div class="cell menu-col" [style.padding-left.px]="node.level * 32">
+          <div class="cell menu-col" [style.padding-left.px]="16 + (node.level * 32)">
             <button mat-icon-button *ngIf="node.expandable" matTreeNodeToggle class="toggle-btn">
               <mat-icon>{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}</mat-icon>
             </button>
@@ -65,22 +65,22 @@
           <!-- CHECKBOX COLUMNS - PERFECTLY ALIGNED -->
           <div class="cell checkbox-col">
             <mat-checkbox [(ngModel)]="getPermission(node.id).canView" 
-                          (change)="node.expandable ? toggleNode(node, 'canView', $event.checked) : null"
+                          (change)="handlePermissionChange(node, 'canView', $event.checked)"
                           color="primary"></mat-checkbox>
           </div>
           <div class="cell checkbox-col">
             <mat-checkbox [(ngModel)]="getPermission(node.id).canAdd" 
-                          (change)="node.expandable ? toggleNode(node, 'canAdd', $event.checked) : null"
+                          (change)="handlePermissionChange(node, 'canAdd', $event.checked)"
                           color="accent"></mat-checkbox>
           </div>
           <div class="cell checkbox-col">
             <mat-checkbox [(ngModel)]="getPermission(node.id).canEdit" 
-                          (change)="node.expandable ? toggleNode(node, 'canEdit', $event.checked) : null"
+                          (change)="handlePermissionChange(node, 'canEdit', $event.checked)"
                           color="accent"></mat-checkbox>
           </div>
           <div class="cell checkbox-col">
             <mat-checkbox [(ngModel)]="getPermission(node.id).canDelete" 
-                          (change)="node.expandable ? toggleNode(node, 'canDelete', $event.checked) : null"
+                          (change)="handlePermissionChange(node, 'canDelete', $event.checked)"
                           color="warn"></mat-checkbox>
           </div>
           

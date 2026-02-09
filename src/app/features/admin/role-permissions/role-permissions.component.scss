@@ -59,10 +59,21 @@
         &.checkbox-col { justify-content: center; }
         
         &.menu-col {
-          gap: 8px;
-          .toggle-btn { width: 32px; height: 32px; line-height: 32px; color: #5f6368; }
-          .spacer-btn { width: 32px; }
-          .menu-icon { color: #5f6368; font-size: 20px; width: 20px; height: 20px; }
+          gap: 0px; /* Controlled via margins now */
+          .toggle-btn { 
+            width: 40px; 
+            height: 40px; 
+            display: inline-flex;
+            align-items: center; 
+            justify-content: center;
+            margin-left: -8px; /* Offset to align icon with text baseline */
+            margin-right: 0px;
+            color: #5f6368; 
+            
+            mat-icon { margin: 0; }
+          }
+          .spacer-btn { width: 32px; display: inline-block; }
+          .menu-icon { color: #5f6368; font-size: 20px; width: 20px; height: 20px; margin-right: 12px; }
           .node-title { font-weight: 500; color: #3c4043; }
         }
       }
