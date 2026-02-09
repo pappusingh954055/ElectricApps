@@ -2,10 +2,7 @@ import { Component, inject, OnInit, ViewChild, ChangeDetectorRef } from '@angula
 import { MaterialModule } from '../../shared/material/material/material-module';
 import { CommonModule } from '@angular/common';
 import { RouterModule, RouterOutlet, Router } from '@angular/router';
-import { ToolbarComponent } from './toolbar-component/toolbar-component';
-import { SidenavComponent } from './sidenav-component/sidenav-component';
 import { BreadcrumbComponent } from './breadcrumb-component/breadcrumb-component';
-import { FooterComponent } from './footer-component/footer-component';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MenuItem } from '../../core/models/menu-item.model';
@@ -42,7 +39,6 @@ export class MainLayoutComponent implements OnInit {
   isDarkMode = false;
   currentTheme = '';
   isGlobalLoading = false; // Track global loading state
-  // menuItems: MenuItem[] = []; // Replaced by Tree DataSource
   userEmail: string | null = null;
   notifications: NotificationDto[] = [];
   unreadCount = 0;

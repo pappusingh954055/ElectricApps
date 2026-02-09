@@ -27,18 +27,6 @@ export const routes: Routes = [
             .then(m => m.DASHBOARD_ROUTES)
       },
       {
-        path: 'purchase-orders',
-        loadChildren: () =>
-          import('./routes/po.routes')
-            .then(m => m.PO_ROUTES)
-      },
-      {
-        path: 'sales-orders',
-        loadChildren: () =>
-          import('./routes/so.routes')
-            .then(m => m.SO_ROUTES)
-      },
-      {
         path: 'master',
         loadChildren: () =>
           import('./routes/master.routes')
