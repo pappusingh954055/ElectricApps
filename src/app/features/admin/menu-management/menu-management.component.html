@@ -35,6 +35,12 @@
           <mat-icon *ngIf="col !== 'actions'" class="drag-handle" cdkDragHandle>drag_indicator</mat-icon>
           <span>{{getColumnLabel(col)}}</span>
         </div>
+        
+        <!-- Resize Handle -->
+        <div class="resize-handle" 
+             *ngIf="col !== 'actions'"
+             (mousedown)="onResizeColumn($event, col)">
+        </div>
       </div>
     </div>
 
