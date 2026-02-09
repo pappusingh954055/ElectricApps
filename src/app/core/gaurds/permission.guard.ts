@@ -32,11 +32,15 @@ export class PermissionGuard implements CanActivate {
 
                 console.error(`[PermissionGuard] Access Denied to ${state.url}`);
 
+                const errorMessage = (menus && menus.length > 0)
+                    ? `Access Denied: You do not have permission to view the requested page (${state.url}).`
+                    : 'Access Denied: Your account has no assigned roles or permissions. Please contact your administrator.';
+
                 // Show proper error message using StatusDialogComponent
                 this.dialog.open(StatusDialogComponent, {
                     data: {
                         isSuccess: false,
-                        message: 'Access Denied: Your account has no assigned roles or permissions. Please contact your administrator.'
+                        message: errorMessage
                     },
                     disableClose: true
                 });

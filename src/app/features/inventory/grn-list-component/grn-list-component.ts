@@ -126,7 +126,7 @@ export class GrnListComponent implements OnInit, AfterViewInit {
   }
 
   printGRN(grn: any) {
-    console.log("Printing GRN:", grn.grnNumber);
+    console.log("Printing GRN:", grn.grnNo);
   }
 
   applyFilter(event: any) { }

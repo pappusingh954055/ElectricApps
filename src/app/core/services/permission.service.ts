@@ -48,13 +48,14 @@ export class PermissionService {
             }
 
             // Check if this item matches the URL. 
-            // item.url must be non-empty and must match exactly or be the start of the URL.
             if (item.url && item.url.trim() !== '') {
-                // Remove trailing slashes and potential query params for comparison if needed
-                const cleanUrl = url.split('?')[0].replace(/\/$/, '');
-                const cleanItemUrl = item.url.split('?')[0].replace(/\/$/, '');
+                // Normalize both URLs: remove query params, trailing slashes, and leading slashes for comparison
+                const cleanUrl = url.split('?')[0].replace(/\/$/, '').replace(/^\//, '');
+                const cleanItemUrl = item.url.split('?')[0].replace(/\/$/, '').replace(/^\//, '');
 
-                if (cleanUrl === cleanItemUrl) {
+                // Match if exact or if the current URL ends with the menu's path segment
+                // e.g. 'app/dashboard' matches 'dashboard'
+                if (cleanUrl === cleanItemUrl || cleanUrl.endsWith('/' + cleanItemUrl)) {
                     return item;
                 }
             }
