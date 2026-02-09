@@ -635,8 +635,8 @@ button.notification-item {
   bottom: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(255, 255, 255, 0.97);
-  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.85); // Reduced opacity to show background
+  backdrop-filter: blur(12px); // Stronger blur
   display: flex;
   align-items: center;
   justify-content: center;
