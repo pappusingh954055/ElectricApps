@@ -4,6 +4,8 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { DragDropModule, moveItemInArray, CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { MenuService } from '../../../core/services/menu.service';
 import { MenuItem } from '../../../core/models/menu-item.model';
@@ -15,16 +17,51 @@ import { MenuFormDialogComponent } from './menu-form-dialog/menu-form-dialog.com
 @Component({
     selector: 'app-menu-management',
     standalone: true,
-    imports: [CommonModule, MaterialModule, MatTableModule, MatPaginatorModule, MatSortModule, MatDialogModule],
+    imports: [CommonModule, MaterialModule, MatTableModule, MatPaginatorModule, MatSortModule, MatDialogModule, ScrollingModule, DragDropModule],
     templateUrl: './menu-management.component.html',
     styleUrl: './menu-management.component.scss'
 })
 export class MenuManagementComponent implements OnInit, AfterViewInit {
     displayedColumns: string[] = ['id', 'title', 'url', 'parentId', 'order', 'actions'];
+    columnWidths: { [key: string]: number } = {
+        'id': 80,
+        'title': 250,
+        'url': 250,
+        'parentId': 150,
+        'order': 100,
+        'actions': 120
+    };
+
+    getGridTemplate(): string {
+        return this.displayedColumns.map(col => `${this.columnWidths[col]}px`).join(' ');
+    }
+
+    onResizeColumn(event: MouseEvent, col: string) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const startX = event.pageX;
+        const startWidth = this.columnWidths[col];
+
+        const onMouseMove = (moveEvent: MouseEvent) => {
+            const currentX = moveEvent.pageX;
+            const diff = currentX - startX;
+            const newWidth = Math.max(50, startWidth + diff);
+            this.columnWidths[col] = newWidth;
+        };
+
+        const onMouseUp = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
     dataSource = new MatTableDataSource<MenuItem>([]);
+    visibleData$ = this.dataSource.connect();
     allMenus: MenuItem[] = [];
 
-    @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
 
     constructor(
@@ -37,7 +74,6 @@ export class MenuManagementComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit() {
-        this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
     }
 
@@ -51,9 +87,33 @@ export class MenuManagementComponent implements OnInit, AfterViewInit {
     applyFilter(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
         this.dataSource.filter = filterValue.trim().toLowerCase();
+    }
 
-        if (this.dataSource.paginator) {
-            this.dataSource.paginator.firstPage();
+    dropColumn(event: CdkDragDrop<string[]>) {
+        moveItemInArray(this.displayedColumns, event.previousIndex, event.currentIndex);
+    }
+
+    getColumnClass(column: string): string {
+        switch (column) {
+            case 'id': return 'col-id';
+            case 'title': return 'col-title';
+            case 'url': return 'col-url';
+            case 'parentId': return 'col-parent';
+            case 'order': return 'col-order';
+            case 'actions': return 'col-actions';
+            default: return '';
+        }
+    }
+
+    getColumnLabel(column: string): string {
+        switch (column) {
+            case 'id': return 'ID';
+            case 'title': return 'Title';
+            case 'url': return 'URL / Path';
+            case 'parentId': return 'Parent';
+            case 'order': return 'Order';
+            case 'actions': return 'Actions';
+            default: return column;
         }
     }
 

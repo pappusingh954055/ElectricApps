@@ -17,77 +17,89 @@
     </div>
   </div>
 
-  <div class="table-container mat-elevation-z0">
-    <table mat-table [dataSource]="dataSource" matSort>
+  <div class="table-container virtual-scroll-grid mat-elevation-z0">
+    <div class="grid-header sticky-header" 
+         [style.grid-template-columns]="getGridTemplate()"
+         matSort 
+         cdkDropList 
+         cdkDropListOrientation="horizontal" 
+         (cdkDropListDropped)="dropColumn($event)">
+      
+      <div *ngFor="let col of displayedColumns" 
+           class="grid-cell drag-header" 
+           [ngClass]="getColumnClass(col) + ' ' + col"
+           cdkDrag
+           [mat-sort-header]="col"
+           [disabled]="col === 'actions'">
+        <div class="header-content">
+          <mat-icon *ngIf="col !== 'actions'" class="drag-handle" cdkDragHandle>drag_indicator</mat-icon>
+          <span>{{getColumnLabel(col)}}</span>
+        </div>
+      </div>
+    </div>
 
-      <!-- ID Column -->
-      <ng-container matColumnDef="id">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
-        <td mat-cell *matCellDef="let row"> #{{row.id}} </td>
-      </ng-container>
-
-      <!-- Title Column -->
-      <ng-container matColumnDef="title">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Title </th>
-        <td mat-cell *matCellDef="let row">
-          <div class="menu-info">
-            <mat-icon class="menu-icon">{{row.icon || 'folder'}}</mat-icon>
-            <span class="menu-title">{{row.title}}</span>
+    <!-- Virtual Viewport -->
+    <cdk-virtual-scroll-viewport itemSize="72" class="viewport">
+      <div *cdkVirtualFor="let row of visibleData$ | async" 
+           class="grid-row menu-row"
+           [style.grid-template-columns]="getGridTemplate()">
+        
+        <ng-container *ngFor="let col of displayedColumns">
+          
+          <!-- ID Column -->
+          <div class="grid-cell col-id" *ngIf="col === 'id'">
+            <span class="id-badge">#{{row.id}}</span>
           </div>
-        </td>
-      </ng-container>
 
-      <!-- URL Column -->
-      <ng-container matColumnDef="url">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> URL / Path </th>
-        <td mat-cell *matCellDef="let row"> 
-            <code class="url-code">{{row.url || '--'}}</code>
-        </td>
-      </ng-container>
+          <!-- Title Column -->
+          <div class="grid-cell col-title" *ngIf="col === 'title'">
+            <div class="menu-info">
+              <div class="icon-box">
+                <mat-icon>{{row.icon || 'folder'}}</mat-icon>
+              </div>
+              <span class="menu-title">{{row.title}}</span>
+            </div>
+          </div>
 
-      <!-- Parent Column -->
-      <ng-container matColumnDef="parentId">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Parent </th>
-        <td mat-cell *matCellDef="let row">
-          <span class="parent-chip" *ngIf="row.parentId">
-            {{ getParentTitle(row.parentId) }}
-          </span>
-          <span class="root-chip" *ngIf="!row.parentId">Root</span>
-        </td>
-      </ng-container>
+          <!-- URL Column -->
+          <div class="grid-cell col-url" *ngIf="col === 'url'">
+            <code class="url-code" *ngIf="row.url">{{row.url}}</code>
+            <span class="no-url" *ngIf="!row.url">--</span>
+          </div>
 
-      <!-- Order Column -->
-      <ng-container matColumnDef="order">
-        <th mat-header-cell *matHeaderCellDef mat-sort-header> Order </th>
-        <td mat-cell *matCellDef="let row"> 
+          <!-- Parent Column -->
+          <div class="grid-cell col-parent" *ngIf="col === 'parentId'">
+            <span class="parent-chip" *ngIf="row.parentId">
+              {{ getParentTitle(row.parentId) }}
+            </span>
+            <span class="root-chip" *ngIf="!row.parentId">Root</span>
+          </div>
+
+          <!-- Order Column -->
+          <div class="grid-cell col-order" *ngIf="col === 'order'">
             <span class="order-badge">{{row.order}}</span>
-        </td>
-      </ng-container>
-
-      <!-- Actions Column -->
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef> Actions </th>
-        <td mat-cell *matCellDef="let row">
-          <div class="action-buttons">
-            <button mat-icon-button (click)="openMenuDialog(row)" matTooltip="Edit">
-              <mat-icon class="edit-icon">edit</mat-icon>
-            </button>
-            <button mat-icon-button (click)="deleteMenu(row)" matTooltip="Delete">
-              <mat-icon class="delete-icon">delete</mat-icon>
-            </button>
           </div>
-        </td>
-      </ng-container>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="menu-row"></tr>
+          <!-- Actions Column -->
+          <div class="grid-cell col-actions" *ngIf="col === 'actions'">
+            <div class="action-buttons">
+              <button mat-icon-button (click)="openMenuDialog(row)" matTooltip="Edit" class="edit-btn">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button (click)="deleteMenu(row)" matTooltip="Delete" class="delete-btn">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
 
-      <!-- Row shown when there is no matching data. -->
-      <tr class="mat-row no-data-row" *matNoDataRow>
-        <td class="mat-cell" colspan="6">No menu items found matching search "{{input.value}}"</td>
-      </tr>
-    </table>
+        </ng-container>
+      </div>
 
-    <mat-paginator [pageSizeOptions]="[10, 25, 50]" aria-label="Select page of menus"></mat-paginator>
+      <!-- No Data State -->
+      <div *ngIf="(visibleData$ | async)?.length === 0" class="no-data-card">
+        <mat-icon>search_off</mat-icon>
+        <p>No menu items found matching your search "{{input.value}}"</p>
+      </div>
+    </cdk-virtual-scroll-viewport>
   </div>
 </div>
