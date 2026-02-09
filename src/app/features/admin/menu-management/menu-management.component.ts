@@ -7,8 +7,10 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { MenuService } from '../../../core/services/menu.service';
 import { MenuItem } from '../../../core/models/menu-item.model';
-import { MenuFormDialogComponent } from './menu-form-dialog/menu-form-dialog.component';
+
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { MenuFormDialogComponent } from './menu-form-dialog/menu-form-dialog.component';
+// Trigger re-build
 
 @Component({
     selector: 'app-menu-management',
