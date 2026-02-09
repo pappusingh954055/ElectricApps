@@ -1,7 +1,7 @@
 <mat-sidenav-container class="sidenav-container">
 
   <!-- SIDE NAV -->
-  <mat-sidenav #sidenav class="sidenav" [mode]="isMobile ? 'over' : 'side'" [opened]="!isMobile">
+  <mat-sidenav #sidenav class="sidenav" [mode]="isMobile ? 'over' : 'side'" [opened]="!isMobile" [class.disabled-sidenav]="isGlobalLoading">
 
     <div class="branding">
       <div class="logo">
@@ -53,10 +53,10 @@
   </mat-sidenav>
 
   <!-- MAIN CONTENT -->
-  <mat-sidenav-content>
+  <mat-sidenav-content [class.disabled-content]="isGlobalLoading">
 
     <!-- TOOLBAR -->
-    <mat-toolbar color="primary" class="toolbar">
+    <mat-toolbar color="primary" class="toolbar" [class.disabled-toolbar]="isGlobalLoading">
       <button mat-icon-button (click)="toggleSidenav()" aria-label="Menu">
         <mat-icon>menu</mat-icon>
       </button>

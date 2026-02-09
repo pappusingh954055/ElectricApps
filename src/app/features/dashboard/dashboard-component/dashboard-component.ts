@@ -8,6 +8,7 @@ import { Router } from '@angular/router';
 import { ProductService } from '../../master/product/service/product.service';
 import { forkJoin, BehaviorSubject } from 'rxjs';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
   selector: 'app-dashboard-component',
@@ -21,6 +22,7 @@ export class DashboardComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private decimalPipe = inject(DecimalPipe);
   private router = inject(Router);
+  private loadingService = inject(LoadingService);
 
   isExcelLoading = false;
   isPdfLoading = false;
@@ -30,39 +32,39 @@ export class DashboardComponent implements OnInit {
 
 
   // Stats array with 'hasAlert' property for type safety in HTML
- stats: any[] = [
-  { 
-    title: 'Total Sales', 
-    value: '₹0', 
-    icon: 'trending_up', 
-    color: '#4caf50',
-    tooltip: 'Total revenue generated from all completed sale orders'
-  },
-  { 
-    title: 'Purchase Orders', 
-    value: '0 Pending', 
-    icon: 'shopping_cart', 
-    color: '#2196f3',
-    // Isse user ko pata chalega ki 0 kyu hai
-    tooltip: 'Orders submitted by users and waiting for Manager Approval' 
-  },
-  { 
-    title: 'Stock Value', 
-    value: '₹0', 
-    icon: 'inventory_2', 
-    color: '#ff9800', 
-    subLabel: '0 Units',
-    tooltip: 'Total value of current stock (Stock Quantity × Purchase Price)'
-  },
-  { 
-    title: 'Low Stock', 
-    value: 'Loading...', 
-    icon: 'report_problem', 
-    color: '#f44336', 
-    hasAlert: false,
-    tooltip: 'Items where current stock is less than or equal to minimum stock level'
-  }
-];
+  stats: any[] = [
+    {
+      title: 'Total Sales',
+      value: '₹0',
+      icon: 'trending_up',
+      color: '#4caf50',
+      tooltip: 'Total revenue generated from all completed sale orders'
+    },
+    {
+      title: 'Purchase Orders',
+      value: '0 Pending',
+      icon: 'shopping_cart',
+      color: '#2196f3',
+      // Isse user ko pata chalega ki 0 kyu hai
+      tooltip: 'Orders submitted by users and waiting for Manager Approval'
+    },
+    {
+      title: 'Stock Value',
+      value: '₹0',
+      icon: 'inventory_2',
+      color: '#ff9800',
+      subLabel: '0 Units',
+      tooltip: 'Total value of current stock (Stock Quantity × Purchase Price)'
+    },
+    {
+      title: 'Low Stock',
+      value: 'Loading...',
+      icon: 'report_problem',
+      color: '#f44336',
+      hasAlert: false,
+      tooltip: 'Items where current stock is less than or equal to minimum stock level'
+    }
+  ];
 
   recentActivities: any[] = [];
   page = 1;
@@ -104,6 +106,7 @@ export class DashboardComponent implements OnInit {
 
   loadDashboardData() {
     this.isDashboardLoading = true; // Loader ON
+    this.loadingService.setLoading(true); // Global loading ON
     this.cdr.detectChanges();
 
     // Teeno APIs ko ek saath call kar rahe hain
@@ -144,11 +147,13 @@ export class DashboardComponent implements OnInit {
 
         // Sab kuch load hone ke baad Loader OFF
         this.isDashboardLoading = false;
+        this.loadingService.setLoading(false); // Global loading OFF
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('Dashboard load error:', err);
         this.isDashboardLoading = false;
+        this.loadingService.setLoading(false); // Global loading OFF on error
         this.cdr.detectChanges();
       }
     });

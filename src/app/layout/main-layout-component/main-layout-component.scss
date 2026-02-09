@@ -598,3 +598,30 @@ button.notification-item {
     display: none;
   }
 }
+
+/* 🔒 GLOBAL LOADING DISABLED STATES */
+.disabled-sidenav {
+  pointer-events: none !important;
+  user-select: none !important;
+  opacity: 0.4 !important;
+  filter: blur(1px) !important;
+  transition: all 0.3s ease !important;
+}
+
+.disabled-toolbar {
+  pointer-events: none !important;
+  user-select: none !important;
+  opacity: 0.6 !important;
+  transition: all 0.3s ease !important;
+}
+
+.disabled-content {
+  pointer-events: none !important;
+  user-select: none !important;
+  
+  .content {
+    opacity: 0.5 !important;
+    filter: blur(2px) !important;
+    transition: all 0.3s ease !important;
+  }
+}

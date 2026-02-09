@@ -16,6 +16,7 @@ import { NotificationDto } from '../../features/dashboard/services/notification.
 import { ThemeService } from '../../core/services/theme.service';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
+import { LoadingService } from '../../core/services/loading.service';
 
 @Component({
   selector: 'app-main-layout-component',
@@ -35,10 +36,12 @@ export class MainLayoutComponent implements OnInit {
   private router = inject(Router);
   private notificationService = inject(NotificationService);
   private themeService = inject(ThemeService);
+  private loadingService = inject(LoadingService);
 
   isMobile = false;
   isDarkMode = false;
   currentTheme = '';
+  isGlobalLoading = false; // Track global loading state
   // menuItems: MenuItem[] = []; // Replaced by Tree DataSource
   userEmail: string | null = null;
   notifications: NotificationDto[] = [];
@@ -77,6 +80,12 @@ export class MainLayoutComponent implements OnInit {
 
     this.themeService.activeTheme$.subscribe(theme => {
       this.currentTheme = theme;
+      this.cdr.detectChanges();
+    });
+
+    // Subscribe to global loading state
+    this.loadingService.loading$.subscribe(isLoading => {
+      this.isGlobalLoading = isLoading;
       this.cdr.detectChanges();
     });
 
