@@ -1,3 +1,12 @@
+<!-- Global Loading Overlay - Covers entire viewport -->
+<div *ngIf="isGlobalLoading" class="global-loading-overlay">
+  <div class="global-loading-content">
+    <mat-spinner diameter="60" strokeWidth="5"></mat-spinner>
+    <p class="global-loading-text">Fetching Inventory Insights...</p>
+    <p class="global-loading-subtext">Please wait while we load your dashboard</p>
+  </div>
+</div>
+
 <mat-sidenav-container class="sidenav-container">
 
   <!-- SIDE NAV -->

@@ -1,12 +1,3 @@
-<!-- Full-screen loading overlay -->
-<div *ngIf="isDashboardLoading" class="loading-overlay">
-  <div class="loading-content">
-    <mat-spinner diameter="60" strokeWidth="5"></mat-spinner>
-    <p class="loading-text">Fetching Inventory Insights...</p>
-    <p class="loading-subtext">Please wait while we load your dashboard</p>
-  </div>
-</div>
-
 <div class="dashboard-container" [class.disabled-content]="isDashboardLoading">
     
     <div class="header-section">
