@@ -12,8 +12,8 @@ export interface User {
 }
 
 export interface RegisterUserDto {
-    userName: string;
-    email: string;
-    password: string;
-    roleIds: number[];
+    UserName: string;
+    Email: string;
+    Password: string;
+    RoleIds: number[];
 }

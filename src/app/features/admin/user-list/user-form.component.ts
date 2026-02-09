@@ -20,32 +20,32 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         
         <mat-form-field appearance="outline">
           <mat-label>Username</mat-label>
-          <input matInput formControlName="userName">
-          <mat-error *ngIf="userForm.get('userName')?.hasError('required')">Username is required</mat-error>
+          <input matInput formControlName="UserName">
+          <mat-error *ngIf="userForm.get('UserName')?.hasError('required')">Username is required</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Email</mat-label>
-          <input matInput formControlName="email">
-          <mat-error *ngIf="userForm.get('email')?.hasError('required')">Email is required</mat-error>
-          <mat-error *ngIf="userForm.get('email')?.hasError('email')">Invalid email</mat-error>
+          <input matInput formControlName="Email">
+          <mat-error *ngIf="userForm.get('Email')?.hasError('required')">Email is required</mat-error>
+          <mat-error *ngIf="userForm.get('Email')?.hasError('email')">Invalid email</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Password</mat-label>
-          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password">
+          <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="Password">
           <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword">
             <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
           </button>
-          <mat-error *ngIf="userForm.get('password')?.hasError('required')">Password is required</mat-error>
+          <mat-error *ngIf="userForm.get('Password')?.hasError('required')">Password is required</mat-error>
         </mat-form-field>
 
         <mat-form-field appearance="outline">
           <mat-label>Roles (Multi-Select)</mat-label>
-          <mat-select formControlName="roleIds" multiple>
+          <mat-select formControlName="RoleIds" multiple>
             <mat-option *ngFor="let role of roles" [value]="role.id">{{role.roleName}}</mat-option>
           </mat-select>
-          <mat-error *ngIf="userForm.get('roleIds')?.hasError('required')">At least one role is required</mat-error>
+          <mat-error *ngIf="userForm.get('RoleIds')?.hasError('required')">At least one role is required</mat-error>
         </mat-form-field>
 
       </form>
@@ -73,10 +73,10 @@ export class UserFormComponent implements OnInit {
     private snackBar: MatSnackBar
   ) {
     this.userForm = this.fb.group({
-      userName: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-      roleIds: [[], Validators.required]
+      UserName: ['', Validators.required],
+      Email: ['', [Validators.required, Validators.email]],
+      Password: ['', Validators.required],
+      RoleIds: [[], Validators.required]
     });
   }
 

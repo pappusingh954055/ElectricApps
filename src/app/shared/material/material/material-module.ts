@@ -66,6 +66,7 @@ import { MatTreeModule } from '@angular/material/tree';
         MatAutocompleteModule,
         DragDropModule,
         MatTreeModule,
+      
     ],
     exports: [
         MatToolbarModule,
