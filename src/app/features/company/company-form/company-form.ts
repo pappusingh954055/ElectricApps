@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
-import { Validators, FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { Validators, FormBuilder, FormGroup, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { MatDialog } from '@angular/material/dialog';
@@ -9,6 +9,7 @@ import { CompanyService } from '../services/company.service';
 import { CompanyProfileDto, UpsertCompanyRequest } from '../model/company.model';
 import { FormFooter } from '../../shared/form-footer/form-footer';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { environment } from '../../../enviornments/environment';
 
 @Component({
     selector: 'app-company-form',
@@ -67,9 +68,32 @@ export class CompanyForm implements OnInit {
                 accountNumber: ['', Validators.required],
                 ifscCode: ['', [Validators.required, Validators.pattern('^[A-Z]{4}0[A-Z0-9]{6}$')]],
                 accountType: ['Current', Validators.required]
-            })
+            }),
+
+            // Authorized Signatories FormArray
+            authorizedSignatories: this.fb.array([])
         });
         this.cdr.detectChanges();
+    }
+
+    get signatories(): FormArray {
+        return this.companyForm.get('authorizedSignatories') as FormArray;
+    }
+
+    addSignatory() {
+        const sigForm = this.fb.group({
+            id: [0],
+            personName: ['', Validators.required],
+            designation: ['', Validators.required],
+            signatureImageUrl: [''],
+            isDefault: [false]
+        });
+        this.signatories.push(sigForm);
+        this.cdr.detectChanges();
+    }
+
+    removeSignatory(index: number) {
+        this.signatories.removeAt(index);
     }
 
     loadCompany() {
@@ -77,6 +101,20 @@ export class CompanyForm implements OnInit {
         this.loading = true;
         this.companyService.getById(+this.companyId).subscribe({
             next: (res) => {
+                // Clear and Re-populate Signatories
+                this.signatories.clear();
+                if (res.authorizedSignatories && res.authorizedSignatories.length > 0) {
+                    res.authorizedSignatories.forEach(sig => {
+                        this.signatories.push(this.fb.group({
+                            id: [sig.id],
+                            personName: [sig.personName, Validators.required],
+                            designation: [sig.designation, Validators.required],
+                            signatureImageUrl: [sig.signatureImageUrl],
+                            isDefault: [sig.isDefault]
+                        }));
+                    });
+                }
+
                 this.companyForm.patchValue(res);
                 this.loading = false;
                 this.cdr.detectChanges();
@@ -134,6 +172,15 @@ export class CompanyForm implements OnInit {
         this.router.navigate(['/app/company']);
     }
 
+    // --- Image Helpers ---
+    getImgUrl(url: string | null | undefined): string {
+        if (!url) return '';
+        if (url.startsWith('data:image') || url.startsWith('http')) {
+            return url;
+        }
+        return `${environment.CompanyRootUrl}/${url}`;
+    }
+
     // --- Logo Upload Logic ---
     selectedLogo: File | null = null;
     logoPreview: string | null = null;
@@ -144,6 +191,18 @@ export class CompanyForm implements OnInit {
             this.selectedLogo = file;
             const reader = new FileReader();
             reader.onload = (e) => (this.logoPreview = e.target?.result as string);
+            reader.readAsDataURL(file);
+        }
+    }
+
+    onSignatureSelected(event: any, index: number): void {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.signatories.at(index).get('signatureImageUrl')?.setValue(e.target?.result as string);
+                this.cdr.detectChanges();
+            };
             reader.readAsDataURL(file);
         }
     }
@@ -162,4 +221,3 @@ export class CompanyForm implements OnInit {
     }
 
 }
-

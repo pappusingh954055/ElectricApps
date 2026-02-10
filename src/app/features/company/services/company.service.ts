@@ -27,13 +27,6 @@ export class CompanyService {
     }
 
     /**
-     * Paged list fetch karne ke liye
-     */
-    getPaged(request: any): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/company/paged`, request);
-    }
-
-    /**
      * ID ke base par specific company data lane ke liye
      */
     getById(id: number): Observable<CompanyProfileDto> {
@@ -44,14 +37,14 @@ export class CompanyService {
      * Nayi company profile create karne ke liye
      */
     insertCompany(company: UpsertCompanyRequest): Observable<number> {
-        return this.http.post<number>(`${this.apiUrl}/company/create`, company);
+        return this.api.post<number>('company/create', company, this.baseUrl);
     }
 
     /**
      * Existing profile ko update karne ke liye
      */
     updateCompany(id: number, profile: UpsertCompanyRequest): Observable<number> {
-        return this.http.put<number>(`${this.apiUrl}/company/update/${id}`, profile);
+        return this.api.put<number>(`company/update/${id}`, profile, this.baseUrl);
     }
 
     /**
