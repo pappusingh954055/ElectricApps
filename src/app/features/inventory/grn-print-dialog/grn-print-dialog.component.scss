@@ -93,6 +93,18 @@
     border-bottom: 2px solid #334155;
     padding-bottom: 20px;
 
+    .company-info-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .company-logo {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+    }
+
     .company-info, .grn-title {
       flex-shrink: 0;
     }

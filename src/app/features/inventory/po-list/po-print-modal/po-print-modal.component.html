@@ -5,10 +5,18 @@
       
       <div class="header">
           <div class="logo-section">
-            <mat-icon class="logo-icon">inventory_2</mat-icon>
+            <img *ngIf="companyInfo?.logoUrl" [src]="getImgUrl(companyInfo?.logoUrl)" class="company-logo" alt="Logo">
+            <mat-icon *ngIf="!companyInfo?.logoUrl" class="logo-icon">inventory_2</mat-icon>
             <div class="company-name">
-              <h1>ELECTRIC INVENTORY</h1>
-              <span class="tagline">Premium Inventory Management</span>
+              <h1>{{companyInfo?.name || 'ELECTRIC INVENTORY'}}</h1>
+              <div *ngIf="companyInfo?.address" class="company-address">
+                {{companyInfo?.address?.addressLine1}}, 
+                {{companyInfo?.address?.addressLine2 ? companyInfo?.address?.addressLine2 + ', ' : ''}}
+                {{companyInfo?.address?.city}}, {{companyInfo?.address?.state}} - {{companyInfo?.address?.pinCode}}
+              </div>
+              <div class="company-contact">
+                Contact: {{companyInfo?.primaryPhone}} | Email: {{companyInfo?.primaryEmail}}
+              </div>
             </div>
           </div>
           <div class="doc-title">

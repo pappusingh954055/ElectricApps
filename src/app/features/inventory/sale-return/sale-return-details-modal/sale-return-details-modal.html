@@ -1,7 +1,22 @@
 <div class="modal-container">
-  <div class="modal-header">
-    <h2>Credit Note Details - {{data.returnNumber}}</h2>
-    <span class="date-text">Date: {{data.returnDate | date:'dd MMM yyyy'}}</span>
+  <div class="header-p">
+    <div class="company-header-group">
+      <img *ngIf="companyInfo?.logoUrl" [src]="getImgUrl(companyInfo?.logoUrl)" class="dialog-logo" alt="Logo">
+      <div class="company-text">
+        <h1>{{companyInfo?.name || 'ELECTRIC INVENTORY'}}</h1>
+        <div class="meta-row" *ngIf="companyInfo?.address">
+          {{companyInfo?.address?.addressLine1}}, {{companyInfo?.address?.city}} - {{companyInfo?.address?.pinCode}}
+        </div>
+        <div class="meta-row">
+          Ph: {{companyInfo?.primaryPhone}} | {{companyInfo?.primaryEmail}}
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-title-group">
+      <h2>CREDIT NOTE #{{data.returnNumber}}</h2>
+      <span class="date-text">{{data.returnDate | date:'dd MMM yyyy'}}</span>
+    </div>
   </div>
 
   <div class="info-grid">
@@ -57,8 +72,8 @@
 
   <mat-dialog-actions align="end">
     <button mat-button (click)="onClose()">Close</button>
-    <button mat-raised-button color="primary" (click)="printPDF()">
-      <mat-icon>print</mat-icon> Print PDF
+    <button mat-raised-button color="primary" (click)="print()">
+      <mat-icon>print</mat-icon> Print
     </button>
   </mat-dialog-actions>
 </div>

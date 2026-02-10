@@ -19,9 +19,15 @@
       <!-- Header Section -->
       <div class="print-header">
         <div class="company-info">
-          <h1>Electric Inventory System</h1>
-          <p>Main Street, Business Hub, City 12345</p>
-          <p>Contact: +1 234 567 890 | Email: support@electric.com</p>
+          <h1>{{companyInfo?.name || 'Electric Inventory System'}}</h1>
+          <p *ngIf="companyInfo?.address">
+            {{companyInfo?.address?.addressLine1}}, 
+            {{companyInfo?.address?.addressLine2 ? companyInfo?.address?.addressLine2 + ', ' : ''}}
+            {{companyInfo?.address?.city}}, {{companyInfo?.address?.state}} - {{companyInfo?.address?.pinCode}}
+          </p>
+          <p>
+            Contact: {{companyInfo?.primaryPhone}} | Email: {{companyInfo?.primaryEmail}}
+          </p>
         </div>
         <div class="grn-title">
           <h2>GOODS RECEIVED NOTE</h2>

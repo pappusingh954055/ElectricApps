@@ -2,10 +2,25 @@
   
   <!-- Header -->
   <div class="header-p">
-    <div class="title-section">
-      <mat-icon>assignment_return</mat-icon>
-      <h2>RETURN #{{data.returnNumber}}</h2>
+    <div class="company-header-group">
+      <img *ngIf="companyInfo?.logoUrl" [src]="getImgUrl(companyInfo?.logoUrl)" class="dialog-logo" alt="Logo">
+      <div class="company-text">
+        <h1>{{companyInfo?.name || 'ELECTRIC INVENTORY'}}</h1>
+        <div class="meta-row" *ngIf="companyInfo?.address">
+          {{companyInfo?.address?.addressLine1}}, {{companyInfo?.address?.city}} - {{companyInfo?.address?.pinCode}}
+        </div>
+        <div class="meta-row">
+          Ph: {{companyInfo?.primaryPhone}} | {{companyInfo?.primaryEmail}}
+        </div>
+      </div>
     </div>
+
+    <div class="order-title-group">
+      <h2>RETURN #{{data.returnNumber}}</h2>
+      <span class="status-pill fail" *ngIf="data.status === 'Draft'">{{data.status}}</span>
+      <span class="status-pill success" *ngIf="data.status === 'Completed' || data.status === 'Confirmed'">{{data.status}}</span>
+    </div>
+
     <button mat-icon-button mat-dialog-close class="close-btn">
       <mat-icon>close</mat-icon>
     </button>

@@ -5,20 +5,63 @@
   margin: 0 auto;
   box-sizing: border-box;
 
-  .modal-header {
+  .header-p {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    border-bottom: 1px solid #e0e0e0;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
+    border-bottom: 2px solid #3367d6; // Changed to match blue theme
+    margin-bottom: 25px;
+    padding-bottom: 20px;
 
-    h2 { margin: 0; color: #3f51b5; font-size: 18px; font-weight: 500; }
-    .date-text { color: #666; font-size: 13px; }
+    .company-header-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex: 1;
+
+      .dialog-logo {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+      }
+
+      .company-text {
+        h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 800;
+            color: #1f2937;
+            line-height: 1.2;
+        }
+        .meta-row {
+            font-size: 12px;
+            color: #4b5563;
+            margin-top: 2px;
+        }
+      }
+    }
+
+    .doc-title-group {
+      text-align: right;
+      
+      h2 {
+        margin: 0;
+        color: #2563eb;
+        font-size: 22px;
+        font-weight: 800;
+        text-transform: uppercase;
+      }
+      .date-text {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 500;
+      }
+    }
 
     @media (max-width: 576px) {
       flex-direction: column;
-      gap: 5px;
+      gap: 15px;
+      .doc-title-group { text-align: left; }
     }
   }
 

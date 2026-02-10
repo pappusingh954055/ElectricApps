@@ -40,6 +40,12 @@ $border: #e5e7eb;
           color: $primary;
         }
 
+        .company-logo {
+          width: 50px;
+          height: 50px;
+          object-fit: contain;
+        }
+
         .company-name {
             display: flex;
             flex-direction: column;
@@ -52,12 +58,12 @@ $border: #e5e7eb;
                 letter-spacing: -0.5px;
                 line-height: 1.2;
             }
-            .tagline {
+            
+            .company-address, .company-contact {
+                margin: 1px 0;
                 font-size: 11px;
-                font-weight: 500;
                 color: $text-medium;
-                text-transform: uppercase;
-                letter-spacing: 1.5px;
+                line-height: 1.4;
             }
         }
     }
