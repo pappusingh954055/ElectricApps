@@ -155,7 +155,7 @@ export class PoList implements OnInit {
     const requestPayload = {
       pageIndex: state.pageIndex ?? 0,
       pageSize: state.pageSize ?? 10,
-      sortField: state.sortField ?? 'PoDate',
+      sortField: state.sortField ?? 'CreatedDate',
       sortOrder: state.sortOrder ?? 'desc',
       filter: state.globalSearch || '', // Grid ke Search input se aa raha hai
       fromDate: state.fromDate ? this.datePipe.transform(state.fromDate, 'yyyy-MM-dd') : null,
