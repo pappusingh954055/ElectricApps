@@ -32,10 +32,22 @@ export class CompanyForm implements OnInit {
 
     ngOnInit(): void {
         this.createForm();
-        this.companyId = this.route.snapshot.paramMap.get('id');
-        if (this.companyId) {
-            this.loadCompany();
-        }
+        this.route.paramMap.subscribe(params => {
+            this.companyId = params.get('id');
+            this.resetImageStates();
+            if (this.companyId) {
+                this.loadCompany();
+            } else {
+                this.companyForm.reset({ isActive: true });
+                this.signatories.clear();
+            }
+        });
+    }
+
+    private resetImageStates() {
+        this.selectedLogo = null;
+        this.logoPreview = null;
+        this.cdr.detectChanges();
     }
 
     createForm() {
@@ -56,7 +68,7 @@ export class CompanyForm implements OnInit {
                 addressLine2: [''],
                 city: ['', Validators.required],
                 state: ['', Validators.required],
-                stateCode: ['', Validators.required],
+                stateCode: [''],
                 pinCode: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
                 country: ['India', Validators.required]
             }),
@@ -64,7 +76,7 @@ export class CompanyForm implements OnInit {
             // Bank Info Nested Group
             bankInfo: this.fb.group({
                 bankName: ['', Validators.required],
-                branchName: ['', Validators.required],
+                branchName: [''],
                 accountNumber: ['', Validators.required],
                 ifscCode: ['', [Validators.required, Validators.pattern('^[A-Z]{4}0[A-Z0-9]{6}$')]],
                 accountType: ['Current', Validators.required]
@@ -101,26 +113,33 @@ export class CompanyForm implements OnInit {
         this.loading = true;
         this.companyService.getById(+this.companyId).subscribe({
             next: (res) => {
+                // Reset form to base state before patching
+                this.companyForm.reset({ isActive: true });
+
                 // Clear and Re-populate Signatories
                 this.signatories.clear();
-                if (res.authorizedSignatories && res.authorizedSignatories.length > 0) {
-                    res.authorizedSignatories.forEach(sig => {
-                        this.signatories.push(this.fb.group({
-                            id: [sig.id],
-                            personName: [sig.personName, Validators.required],
-                            designation: [sig.designation, Validators.required],
-                            signatureImageUrl: [sig.signatureImageUrl],
-                            isDefault: [sig.isDefault]
-                        }));
-                    });
-                }
+                const sigs = res.authorizedSignatories || [];
+                sigs.forEach(sig => {
+                    this.signatories.push(this.fb.group({
+                        id: [sig.id],
+                        personName: [sig.personName, Validators.required],
+                        designation: [sig.designation, Validators.required],
+                        signatureImageUrl: [sig.signatureImageUrl],
+                        isDefault: [sig.isDefault]
+                    }));
+                });
 
+                // Patch the entire form
                 this.companyForm.patchValue(res);
+
+                // Ensure logo state is synced (especially if we want to show existing logo)
+                this.logoPreview = null;
+
                 this.loading = false;
                 this.cdr.detectChanges();
             },
             error: (err) => {
-                console.error(err);
+                console.error('Error loading company:', err);
                 this.loading = false;
                 this.cdr.detectChanges();
             }
@@ -129,6 +148,7 @@ export class CompanyForm implements OnInit {
 
     onSave(): void {
         if (this.companyForm.invalid) {
+            console.error('Form Validation Errors:', this.getFormValidationErrors());
             this.companyForm.markAllAsTouched();
             return;
         }
@@ -178,7 +198,9 @@ export class CompanyForm implements OnInit {
         if (url.startsWith('data:image') || url.startsWith('http')) {
             return url;
         }
-        return `${environment.CompanyRootUrl}/${url}`;
+        // Normalize URL - ensure no double slashes when joining with base URL
+        const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+        return `${environment.CompanyRootUrl}/${cleanUrl}`;
     }
 
     // --- Logo Upload Logic ---
@@ -218,6 +240,26 @@ export class CompanyForm implements OnInit {
                 console.error('Logo upload failed', err);
             }
         });
+    }
+
+    private getFormValidationErrors() {
+        const errors: any = {};
+        const calculateErrors = (group: FormGroup | FormArray, name: string) => {
+            Object.keys(group.controls).forEach(key => {
+                const control = group.get(key);
+                const controlName = name ? `${name}.${key}` : key;
+                if (control instanceof FormGroup || control instanceof FormArray) {
+                    calculateErrors(control, controlName);
+                } else {
+                    const controlErrors = control?.errors;
+                    if (controlErrors) {
+                        errors[controlName] = controlErrors;
+                    }
+                }
+            });
+        };
+        calculateErrors(this.companyForm, '');
+        return errors;
     }
 
 }
