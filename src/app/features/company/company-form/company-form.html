@@ -1,0 +1,160 @@
+<div class="page-container p-4 flex-column">
+  <div class="header-row flex-row flex-between flex-center mb-4">
+    <div class="title-section flex-row flex-center gap-2">
+      <button mat-icon-button (click)="onCancel()" color="primary">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h2 class="text-xl font-bold text-gray-800 m-0">{{ companyId ? 'Edit' : 'Add' }} Company</h2>
+    </div>
+  </div>
+
+  <div class="form-container flex-1">
+    <form [formGroup]="companyForm" class="flex-column gap-4">
+      
+      <!-- Section: General Info -->
+      <mat-card class="section-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar color="primary">business</mat-icon>
+          <mat-card-title>General Information</mat-card-title>
+          <mat-card-subtitle>Basic details of the company</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-4">
+          <div class="flex-row flex-wrap gap-4">
+            <!-- Logo Section -->
+            <div class="logo-upload-container flex-column flex-center gap-2 pr-4 border-r">
+              <div class="logo-preview-box" (click)="logoInput.click()">
+                <img *ngIf="logoPreview || companyForm.get('logoUrl')?.value" 
+                     [src]="logoPreview || companyForm.get('logoUrl')?.value" 
+                     alt="Company Logo">
+                <mat-icon *ngIf="!logoPreview && !companyForm.get('logoUrl')?.value">add_a_photo</mat-icon>
+              </div>
+              <button type="button" mat-stroked-button color="primary" (click)="logoInput.click()" class="btn-sm">
+                {{ (logoPreview || companyForm.get('logoUrl')?.value) ? 'Change Logo' : 'Upload Logo' }}
+              </button>
+              <input #logoInput type="file" (change)="onLogoSelected($event)" accept="image/*" style="display: none;">
+            </div>
+
+            <div class="flex-1 flex-column gap-2">
+              <div class="flex-row flex-wrap gap-4">
+                <mat-form-field appearance="outline" class="flex-grow-1 min-w-300">
+                  <mat-label>Company Name</mat-label>
+                  <input matInput formControlName="name">
+                  <mat-icon matSuffix>corporate_fare</mat-icon>
+                  <mat-error *ngIf="companyForm.get('name')?.hasError('required')">Required</mat-error>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="flex-grow-1 min-w-300">
+                  <mat-label>Tagline</mat-label>
+                  <input matInput formControlName="tagline">
+                  <mat-icon matSuffix>auto_fix_high</mat-icon>
+                </mat-form-field>
+              </div>
+              
+              <div class="flex-row flex-wrap gap-4">
+                <mat-form-field appearance="outline" class="flex-grow-1 min-w-300">
+                  <mat-label>GSTIN</mat-label>
+                  <input matInput formControlName="gstin">
+                  <mat-icon matSuffix>receipt</mat-icon>
+                  <mat-error *ngIf="companyForm.get('gstin')?.hasError('pattern')">Invalid Format</mat-error>
+                </mat-form-field>
+              </div>
+            </div>
+          </div>
+
+
+          <div class="flex-row flex-wrap gap-4 mt-2">
+            <mat-form-field appearance="outline" class="flex-grow-1 min-w-200">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="primaryEmail">
+              <mat-icon matSuffix>email</mat-icon>
+              <mat-error *ngIf="companyForm.get('primaryEmail')?.hasError('email')">Invalid Email</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="flex-grow-1 min-w-200">
+              <mat-label>Phone</mat-label>
+              <input matInput formControlName="primaryPhone">
+              <mat-icon matSuffix>phone</mat-icon>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="flex-grow-1 min-w-200">
+              <mat-label>Registration No.</mat-label>
+              <input matInput formControlName="registrationNumber">
+              <mat-icon matSuffix>app_registration</mat-icon>
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Section: Address -->
+      <mat-card class="section-card" formGroupName="address">
+        <mat-card-header>
+          <mat-icon mat-card-avatar color="primary">location_on</mat-icon>
+          <mat-card-title>Address Details</mat-card-title>
+          <mat-card-subtitle>Registered office location</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-4">
+          <div class="flex-column gap-2">
+            <mat-form-field appearance="outline" class="w-full">
+              <mat-label>Address Line 1</mat-label>
+              <input matInput formControlName="addressLine1">
+            </mat-form-field>
+
+            <div class="flex-row flex-wrap gap-4">
+              <mat-form-field appearance="outline" class="flex-grow-1 min-w-200">
+                <mat-label>City</mat-label>
+                <input matInput formControlName="city">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="flex-grow-1 min-w-200">
+                <mat-label>State</mat-label>
+                <input matInput formControlName="state">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="flex-grow-1 min-w-200">
+                <mat-label>Pin Code</mat-label>
+                <input matInput formControlName="pinCode">
+                <mat-error *ngIf="companyForm.get('address.pinCode')?.hasError('pattern')">6 Digits required</mat-error>
+              </mat-form-field>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Section: Bank Info -->
+      <mat-card class="section-card" formGroupName="bankInfo">
+        <mat-card-header>
+          <mat-icon mat-card-avatar color="primary">account_balance</mat-icon>
+          <mat-card-title>Bank Account Details</mat-card-title>
+          <mat-card-subtitle>For billing and payments</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-4">
+          <div class="flex-row flex-wrap gap-4">
+            <mat-form-field appearance="outline" class="flex-grow-1 min-w-250">
+              <mat-label>Bank Name</mat-label>
+              <input matInput formControlName="bankName">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="flex-grow-1 min-w-250">
+              <mat-label>Account Number</mat-label>
+              <input matInput formControlName="accountNumber">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="flex-grow-1 min-w-200">
+              <mat-label>IFSC Code</mat-label>
+              <input matInput formControlName="ifscCode">
+            </mat-form-field>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Footer -->
+      <form-footer 
+        [loading]="loading" 
+        [saveLabel]="companyId ? 'Update Company' : 'Create Company'" 
+        (save)="onSave()" 
+        (cancel)="onCancel()">
+      </form-footer>
+
+    </form>
+  </div>
+</div>

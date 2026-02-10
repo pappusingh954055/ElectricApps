@@ -21,6 +21,13 @@ export class CompanyService {
     }
 
     /**
+     * Paged list fetch karne ke liye
+     */
+    getPaged(request: any): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/company/paged`, request);
+    }
+
+    /**
      * ID ke base par specific company data lane ke liye
      */
     getById(id: number): Observable<CompanyProfileDto> {
@@ -30,15 +37,15 @@ export class CompanyService {
     /**
      * Nayi company profile create karne ke liye
      */
-    insertCompany(company: UpsertCompanyRequest): Observable<number> {
-        return this.http.post<number>(`${this.apiUrl}/company/create`, company);
+    insertCompany(company: UpsertCompanyRequest): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/company/create`, company);
     }
 
     /**
      * Existing profile ko update karne ke liye
      */
-    updateCompany(id: number, profile: UpsertCompanyRequest): Observable<number> {
-        return this.http.put<number>(`${this.apiUrl}/company/update/${id}`, profile);
+    updateCompany(id: number, profile: UpsertCompanyRequest): Observable<any> {
+        return this.http.put<any>(`${this.apiUrl}/company/update/${id}`, profile);
     }
 
     /**
@@ -47,4 +54,22 @@ export class CompanyService {
     deleteCompany(id: number): Observable<boolean> {
         return this.http.delete<boolean>(`${this.apiUrl}/company/${id}`);
     }
+
+    /**
+     * Bulk delete profiles
+     */
+    deleteMany(ids: number[]): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/company/bulk-delete`, ids);
+    }
+
+    /**
+     * Company Logo upload karne ke liye
+     */
+    uploadLogo(id: number, file: File): Observable<any> {
+        const formData = new FormData();
+        formData.append('file', file, file.name);
+        return this.http.post<any>(`${this.apiUrl}/company/upload-logo/${id}`, formData);
+    }
 }
+
+
