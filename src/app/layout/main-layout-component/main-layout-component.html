@@ -14,8 +14,9 @@
 
     <div class="branding">
       <div class="logo">
-        <mat-icon class="logo-icon">inventory_2</mat-icon>
-        <span class="logo-text">Electric Inventory</span>
+        <img *ngIf="companyLogoUrl" [src]="companyLogoUrl" class="logo-img" style="height: 30px; margin-right: 10px;" alt="Logo">
+        <mat-icon *ngIf="!companyLogoUrl" class="logo-icon">inventory_2</mat-icon>
+        <span class="logo-text">{{ companyName }}</span>
       </div>
     </div>
 
@@ -70,7 +71,7 @@
         <mat-icon>menu</mat-icon>
       </button>
 
-      <span class="toolbar-title">Inventory Management System</span>
+      <span class="toolbar-title">{{ companyTagline }}</span>
 
       <span class="spacer"></span>
 

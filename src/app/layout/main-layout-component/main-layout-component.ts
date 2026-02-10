@@ -14,6 +14,8 @@ import { ThemeService } from '../../core/services/theme.service';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { LoadingService } from '../../core/services/loading.service';
+import { CompanyService } from '../../features/company/services/company.service';
+import { environment } from '../../enviornments/environment';
 
 @Component({
   selector: 'app-main-layout-component',
@@ -34,6 +36,7 @@ export class MainLayoutComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private themeService = inject(ThemeService);
   private loadingService = inject(LoadingService);
+  private companyService = inject(CompanyService);
 
   isMobile = false;
   isDarkMode = false;
@@ -42,6 +45,10 @@ export class MainLayoutComponent implements OnInit {
   userEmail: string | null = null;
   notifications: NotificationDto[] = [];
   unreadCount = 0;
+
+  companyName = 'Electric Inventory';
+  companyTagline = 'Inventory Management System';
+  companyLogoUrl: string | null = null;
 
   availableThemes: { name: string, label: string, color: string }[] = [];
 
@@ -59,6 +66,24 @@ export class MainLayoutComponent implements OnInit {
       this.dataSource.data = menus;
     });
 
+    // Fetch Company Profile for Dynamic Branding
+    this.companyService.getCompanyProfile().subscribe({
+      next: (profile) => {
+        if (profile) {
+          this.companyName = profile.name || 'Electric Inventory';
+          this.companyTagline = profile.tagline || 'Inventory Management System';
+
+          if (profile.logoUrl && !profile.logoUrl.startsWith('http')) {
+            this.companyLogoUrl = `${environment.CompanyRootUrl}/${profile.logoUrl}`;
+          } else {
+            this.companyLogoUrl = profile.logoUrl;
+          }
+          this.cdr.detectChanges();
+        }
+      },
+      error: (err) => console.error('Failed to load company profile', err)
+    });
+
     this.availableThemes = this.themeService.availableThemes;
 
     this.breakpointObserver
@@ -74,6 +99,7 @@ export class MainLayoutComponent implements OnInit {
       this.cdr.detectChanges();
     });
 
+    // Theme subscription
     this.themeService.activeTheme$.subscribe(theme => {
       this.currentTheme = theme;
       this.cdr.detectChanges();
