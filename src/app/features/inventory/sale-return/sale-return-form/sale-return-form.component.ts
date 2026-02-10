@@ -8,6 +8,8 @@ import { SaleReturnService } from '../services/sale-return.service';
 import { customerService } from '../../../master/customer-component/customer.service';
 import { SaleOrderService } from '../../service/saleorder.service';
 import { CreateSaleReturnDto, SaleReturnItem } from '../models/create-sale-return.model';
+import { MatDialog } from '@angular/material/dialog';
+import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 
 @Component({
     selector: 'app-sale-return-form',
@@ -24,6 +26,7 @@ export class SaleReturnFormComponent implements OnInit {
     private cdr = inject(ChangeDetectorRef);
     private customerService = inject(customerService);
     private saleOrderService = inject(SaleOrderService);
+    private dialog = inject(MatDialog);
 
     customers: any[] = [];
     saleOrders: any[] = [];
@@ -235,24 +238,35 @@ export class SaleReturnFormComponent implements OnInit {
         console.log('Final Payload to Backend:', payload);
 
         this.srService.saveSaleReturn(payload).subscribe({
-            next: () => {
+            next: (res: any) => {
                 this.isLoading = false;
                 this.cdr.detectChanges();
-                this.router.navigate(['/app/inventory/sale-return']);
+
+                const dialogRef = this.dialog.open(StatusDialogComponent, {
+                    width: '400px',
+                    data: {
+                        isSuccess: true,
+                        message: res?.message || 'Sale Return saved successfully!'
+                    }
+                });
+
+                dialogRef.afterClosed().subscribe(() => {
+                    this.router.navigate(['/app/inventory/sale-return']);
+                });
             },
             error: (err) => {
-                console.error("Save Return Error:", err);
                 this.isLoading = false;
+                this.cdr.detectChanges();
 
-                // --- VALIDATION ERROR HANDLING ---
-                // Backend se aane wala message 'err.error.message' ya seedha 'err.error' mein ho sakta hai
-                // Isse Dashboard par jo -4 ki wajah se error aayega wo user ko dikhega
                 const errorMessage = err.error?.message || err.error || "Something went wrong while saving the return.";
 
-                // Yahan alert ki jagah aap apna 'statusshow' component/toast bhi use kar sakte hain
-                alert(errorMessage);
-
-                this.cdr.detectChanges();
+                this.dialog.open(StatusDialogComponent, {
+                    width: '400px',
+                    data: {
+                        isSuccess: false,
+                        message: errorMessage
+                    }
+                });
             }
         });
     }

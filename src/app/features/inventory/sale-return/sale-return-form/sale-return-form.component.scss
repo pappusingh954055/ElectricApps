@@ -1,9 +1,18 @@
-.form-container {
-    padding: 24px;
-    max-width: 95%;
-    margin: 0 auto;
+:host {
     display: flex;
     flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.form-container {
+    padding: 24px;
+    background-color: #f8fafc;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
     gap: 24px;
 }
 
@@ -11,6 +20,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-shrink: 0;
 
     .header-left {
         display: flex;
@@ -20,13 +30,68 @@
         h1 {
             margin: 0;
             font-size: 24px;
-            font-weight: 500;
+            font-weight: 700;
+            color: #1e293b;
+            letter-spacing: -0.02em;
         }
 
         .action-buttons {
             display: flex;
-            gap: 10px;
+            gap: 12px;
         }
+    }
+}
+
+/* Premium Buttons */
+.save-btn {
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39) !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    height: 42px !important;
+    padding: 0 24px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none;
+    
+    mat-icon {
+        margin-right: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    &:hover:not(:disabled) {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
+    }
+
+    &:disabled {
+        background: #e2e8f0 !important;
+        color: #94a3b8 !important;
+        box-shadow: none !important;
+        cursor: not-allowed;
+    }
+}
+
+.cancel-btn {
+    background: #f1f5f9 !important;
+    color: #64748b !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.3px !important;
+    height: 42px !important;
+    padding: 0 20px !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid #e2e8f0 !important;
+
+    &:hover {
+        background-color: #e2e8f0 !important;
+        color: #1e293b !important;
     }
 }
 
@@ -106,6 +171,15 @@
         font-weight: 600;
         color: #3f51b5;
     }
+}
+
+.spinning {
+    animation: rotate 1.5s linear infinite;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .actions {

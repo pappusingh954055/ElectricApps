@@ -1,6 +1,6 @@
 <div [formGroup]="priceListForm" class="master-container">
   <div class="actions">
-    <button mat-raised-button color="primary" (click)="onSave()" [disabled]="priceListForm.invalid">
+    <button mat-flat-button class="save-btn" (click)="onSave()" [disabled]="priceListForm.invalid">
       <mat-icon>save</mat-icon> {{ isEditMode ? 'Update Price List' : 'Save Price List' }}
     </button>
   </div>
@@ -56,7 +56,7 @@
   <div class="table-section-card">
     <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light mb-3">
       <h6 class="m-0 fw-bold"><mat-icon class="me-2 text-primary">inventory_2</mat-icon> Linked Products</h6>
-      <button type="button" mat-raised-button color="primary" style="margin-top: 10px;" (click)="addItemRow()">
+      <button type="button" mat-flat-button class="add-item-btn" (click)="addItemRow()">
         <mat-icon>add</mat-icon> Add Product</button>        
     </div>
 
