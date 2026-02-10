@@ -83,7 +83,7 @@ export class CompanyList implements OnInit {
     }
 
     onEdit(row: any): void {
-        this.router.navigate(['/app/company/edit', row.id]);
+        this.router.navigate(['/app/companies/edit', row.id]);
     }
 
     deleteCompany(company: any): void {

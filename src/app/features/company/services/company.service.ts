@@ -27,6 +27,13 @@ export class CompanyService {
     }
 
     /**
+     * Paged list fetch karne ke liye
+     */
+    getPaged(request: any): Observable<any> {
+        return this.http.post<any>(`${this.apiUrl}/company/paged`, request);
+    }
+
+    /**
      * ID ke base par specific company data lane ke liye
      */
     getById(id: number): Observable<CompanyProfileDto> {
@@ -36,15 +43,15 @@ export class CompanyService {
     /**
      * Nayi company profile create karne ke liye
      */
-    insertCompany(company: UpsertCompanyRequest): Observable<any> {
-        return this.api.post<any>('company/create', company, this.baseUrl);
+    insertCompany(company: UpsertCompanyRequest): Observable<number> {
+        return this.http.post<number>(`${this.apiUrl}/company/create`, company);
     }
 
     /**
      * Existing profile ko update karne ke liye
      */
-    updateCompany(id: number, profile: UpsertCompanyRequest): Observable<any> {
-        return this.api.put<any>(`company/update/${id}`, profile, this.baseUrl);
+    updateCompany(id: number, profile: UpsertCompanyRequest): Observable<number> {
+        return this.http.put<number>(`${this.apiUrl}/company/update/${id}`, profile);
     }
 
     /**
@@ -70,6 +77,3 @@ export class CompanyService {
         return this.api.post<any>(`company/upload-logo/${id}`, formData, this.baseUrl);
     }
 }
-
-
-
