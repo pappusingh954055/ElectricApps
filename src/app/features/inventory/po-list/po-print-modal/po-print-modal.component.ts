@@ -19,6 +19,8 @@ export class PoPrintModalComponent implements OnInit {
     companyInfo: CompanyProfileDto | null = null;
     public isLoading: boolean = false;
 
+    public isPageLoading: boolean = false;
+
     constructor(
         public dialogRef: MatDialogRef<PoPrintModalComponent>,
         @Inject(MAT_DIALOG_DATA) public data: any,
@@ -33,12 +35,18 @@ export class PoPrintModalComponent implements OnInit {
     }
 
     loadCompanyProfile(): void {
+        this.isPageLoading = true;
         this.companyService.getCompanyProfile().subscribe({
             next: (res) => {
                 this.companyInfo = res;
+                this.isPageLoading = false;
                 this.cdr.detectChanges();
             },
-            error: (err) => console.error('Error fetching company profile:', err)
+            error: (err) => {
+                console.error('Error fetching company profile:', err);
+                this.isPageLoading = false;
+                this.cdr.detectChanges();
+            }
         });
     }
 

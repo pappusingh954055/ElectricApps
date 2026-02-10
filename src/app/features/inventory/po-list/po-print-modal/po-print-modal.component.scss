@@ -298,3 +298,19 @@ $border: #e5e7eb;
         }
     }
 }
+
+.loading-overlay {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 300px;
+    gap: 16px;
+    
+    p {
+        color: $text-medium;
+        font-size: 14px;
+        font-weight: 500;
+        margin: 0;
+    }
+}

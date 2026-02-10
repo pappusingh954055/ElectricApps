@@ -1,4 +1,10 @@
-<div class="print-wrapper">
+<!-- Loading Overlay -->
+<div class="loading-overlay" *ngIf="isPageLoading">
+  <mat-spinner diameter="50"></mat-spinner>
+  <p>Loading document details...</p>
+</div>
+
+<div class="print-wrapper" *ngIf="!isPageLoading">
   
   <!-- Content Scrollable Area -->
   <div mat-dialog-content class="print-content">
