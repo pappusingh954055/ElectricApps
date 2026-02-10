@@ -33,6 +33,14 @@ export const routes: Routes = [
             .then(m => m.MASTER_ROUTES)
       },
       {
+        path: 'company',
+        loadChildren: () =>
+          import('./routes/company.routes')
+            .then(m => m.COMPANY_ROUTES)
+      },
+
+
+      {
         path: 'inventory',
         data: { breadcrumb: 'Inventory' },
         loadChildren: () =>
