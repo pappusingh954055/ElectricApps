@@ -1,25 +1,25 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../enviornments/environment';
 import { LoginDto } from '../models/user.model';
 import { Router } from '@angular/router';
+import { ApiService } from '../../shared/api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private api = inject(ApiService);
+  private router = inject(Router);
 
-  private readonly baseUrl = environment.LoginApiBaseUrl;
-
-  constructor(private http: HttpClient, private router: Router) { }
+  private readonly baseUrl = environment.api.auth;
 
   // 🔐 LOGIN
   login(data: LoginDto): Observable<any> {
     const payload = {
       dto: data
     };
-    return this.http.post<any>(`${this.baseUrl}/login`, payload).pipe(
+    return this.api.post<any>('login', payload, this.baseUrl).pipe(
       tap(res => this.storeTokens(res))
     );
   }
@@ -30,7 +30,7 @@ export class AuthService {
       accessToken: this.getAccessToken(),
       refreshToken: this.getRefreshToken()
     };
-    return this.http.post<any>(`${this.baseUrl}/refresh`, payload).pipe(
+    return this.api.post<any>('refresh', payload, this.baseUrl).pipe(
       tap(res => this.storeTokens(res))
     );
   }
@@ -121,3 +121,4 @@ export class AuthService {
     return localStorage.getItem('userName') || localStorage.getItem('email') || 'Unknown';
   }
 }
+

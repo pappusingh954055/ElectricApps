@@ -1,22 +1,19 @@
-import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { Injectable, inject } from "@angular/core";
 import { BehaviorSubject, Observable, map, of, catchError } from "rxjs";
 import { environment } from "../../enviornments/environment";
 import { MenuItem } from "../models/menu-item.model";
 import { AuthService } from "./auth.service";
 import { RoleService } from "./role.service";
 import { switchMap } from "rxjs";
+import { ApiService } from "../../shared/api.service";
 
 @Injectable({ providedIn: 'root' })
 export class MenuService {
+  private api = inject(ApiService);
+  private authService = inject(AuthService);
+  private roleService = inject(RoleService);
 
-  private readonly baseUrl = environment.LoginApiBaseUrl.replace('/auth', '') + '/menus';
-
-  constructor(
-    private http: HttpClient,
-    private authService: AuthService,
-    private roleService: RoleService
-  ) { }
+  private readonly baseUrl = environment.api.identity;
 
   // Get hierarchical menu for current user (sidebar)
   getMenu(): Observable<MenuItem[]> {
@@ -127,20 +124,21 @@ export class MenuService {
   }
 
   getAllMenus(): Observable<MenuItem[]> {
-    return this.http.get<MenuItem[]>(this.baseUrl).pipe(
+    return this.api.get<MenuItem[]>('menus', this.baseUrl).pipe(
       catchError(() => of([]))
     );
   }
 
   createMenu(menu: MenuItem): Observable<MenuItem> {
-    return this.http.post<MenuItem>(this.baseUrl, menu);
+    return this.api.post<MenuItem>('menus', menu, this.baseUrl);
   }
 
   updateMenu(id: number, menu: MenuItem): Observable<MenuItem> {
-    return this.http.put<MenuItem>(`${this.baseUrl}/${id}`, menu);
+    return this.api.put<MenuItem>(`menus/${id}`, menu, this.baseUrl);
   }
 
   deleteMenu(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/${id}`);
+    return this.api.delete<void>(`menus/${id}`, this.baseUrl);
   }
 }
+

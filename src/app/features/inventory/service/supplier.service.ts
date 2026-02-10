@@ -21,32 +21,20 @@ export interface Supplier {
     providedIn: 'root'
 })
 export class SupplierService {
-
-    private http = inject(HttpClient);
-
-
-
-    private apiUrl = "https://localhost:7224/api/supplier";
-
-
+    private api = inject(ApiService);
+    private readonly baseUrl = environment.SupplierApiBaseUrl;
 
     // Sare suppliers fetch karne ke liye (PO Dropdown ke liye)
     getSuppliers(): Observable<Supplier[]> {
-        return this.http.get<Supplier[]>(this.apiUrl);
+        return this.api.get<Supplier[]>('', this.baseUrl);
     }
 
 
     addSupplier(supplier: Supplier): Observable<Supplier> {
-        //const userId = localStorage.getItem('userId'); // Ya authService.getUserId()
-
-        const dataWithUser = { ...supplier };
-
-        console.log('Debug: Sending supplier data', dataWithUser);
-
-        return this.http.post<Supplier>(this.apiUrl, dataWithUser);
+        return this.api.post<Supplier>('', supplier, this.baseUrl);
     }
-    
+
     getSupplierById(id: number): Observable<any> {
-        return this.http.get<any>(`${this.apiUrl}/${id}`);
+        return this.api.get<any>(`${id}`, this.baseUrl);
     }
 }

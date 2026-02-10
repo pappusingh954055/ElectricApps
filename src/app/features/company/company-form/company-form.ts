@@ -9,6 +9,7 @@ import { CompanyService } from '../services/company.service';
 import { CompanyProfileDto, UpsertCompanyRequest } from '../model/company.model';
 import { FormFooter } from '../../shared/form-footer/form-footer';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { environment } from '../../../enviornments/environment';
 
 @Component({
     selector: 'app-company-form',
@@ -28,12 +29,14 @@ export class CompanyForm implements OnInit {
     companyForm!: FormGroup;
     loading = false;
     companyId: string | null = null;
-    serverUrl = 'https://localhost:7065';
+    serverUrl = environment.CompanyRootUrl;
 
     getImgUrl(path: string | null): string {
         if (!path) return '';
         if (path.startsWith('data:image') || path.startsWith('http')) return path;
-        return `${this.serverUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+        // Ensure path starts with / if it's not empty and not absolute
+        const cleanPath = path.startsWith('/') ? path : `/${path}`;
+        return `${this.serverUrl}${cleanPath}`;
     }
 
 
@@ -89,11 +92,11 @@ export class CompanyForm implements OnInit {
 
     private createSignatoryGroup(data?: any): FormGroup {
         return this.fb.group({
-            id: [data?.id || 0],
-            personName: [data?.personName || '', Validators.required],
-            designation: [data?.designation || ''],
-            signatureImageUrl: [data?.signatureImageUrl || ''],
-            isDefault: [data?.isDefault ?? true]
+            id: [data?.id || data?.Id || 0],
+            personName: [data?.personName || data?.PersonName || '', Validators.required],
+            designation: [data?.designation || data?.Designation || ''],
+            signatureImageUrl: [data?.signatureImageUrl || data?.SignatureImageUrl || ''],
+            isDefault: [data?.isDefault ?? data?.IsDefault ?? true]
         });
     }
 
@@ -109,26 +112,40 @@ export class CompanyForm implements OnInit {
         if (!this.companyId) return;
         this.loading = true;
         this.companyService.getById(+this.companyId).subscribe({
-            next: (res) => {
-                // Clear and rebuild Signatories Array
+            next: (res: any) => {
+                console.log('Company Profile Data:', res);
+
+                // Clear and rebuild Signatories Array (Handle both cases)
                 this.signatories.clear();
-                if (res.authorizedSignatories) {
-                    res.authorizedSignatories.forEach((s: any) => {
+                const sigs = res.authorizedSignatories || res.AuthorizedSignatories;
+                if (sigs && Array.isArray(sigs)) {
+                    sigs.forEach((s: any) => {
                         this.signatories.push(this.createSignatoryGroup(s));
                     });
                 }
 
+                // Patch top level and nested groups
                 this.companyForm.patchValue(res);
+
+                // Fallback for nested groups if backend uses PascalCase
+                if (res.Address && !res.address) {
+                    this.companyForm.get('address')?.patchValue(res.Address);
+                }
+                if (res.BankInfo && !res.bankInfo) {
+                    this.companyForm.get('bankInfo')?.patchValue(res.BankInfo);
+                }
+
                 this.loading = false;
                 this.cdr.detectChanges();
             },
             error: (err) => {
-                console.error(err);
+                console.error('Error loading company:', err);
                 this.loading = false;
                 this.cdr.detectChanges();
             }
         });
     }
+
 
 
     onSave(): void {

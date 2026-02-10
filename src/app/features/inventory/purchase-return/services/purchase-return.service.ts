@@ -1,35 +1,28 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { ApiService } from '../../../../shared/api.service';
 
 
 @Injectable({
     providedIn: 'root'
 })
 export class PurchaseReturnService {
-    // private apiUrl = `${environment.apiUrl}/api/PurchaseReturn`;
-    private apiUrl = "https://localhost:7052/api";
-
-    constructor(private http: HttpClient) { }
+    private api = inject(ApiService);
 
     // Supplier ke rejected items mangwane ke liye
     getSuppliersWithRejections(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/PurchaseReturn/suppliers-with-rejections`);
+        return this.api.get<any[]>('PurchaseReturn/suppliers-with-rejections');
     }
 
     // 2. Supplier select hone ke baad items ke liye
     getRejectedItems(supplierId: number): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/PurchaseReturn/rejected-items/${supplierId}`);
+        return this.api.get<any[]>(`PurchaseReturn/rejected-items/${supplierId}`);
     }
 
     // Naya Return save karne ke liye [cite: 2026-02-03]
     savePurchaseReturn(data: any): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/PurchaseReturn/create`, data);
+        return this.api.post<any>('PurchaseReturn/create', data);
     }
-
-    // getPurchaseReturns(): Observable<any[]> {
-    //     return this.http.get<any[]>(`${this.apiUrl}/PurchaseReturn/list`);
-    // }
 
     getPurchaseReturns(
         search: string = '',
@@ -37,41 +30,32 @@ export class PurchaseReturnService {
         pageSize: number = 10,
         fromDate?: string,
         toDate?: string,
-        sortField: string = 'ReturnDate', // Naya parameter [cite: 2026-02-04]
-        sortOrder: string = 'desc'       // Naya parameter [cite: 2026-02-04]
+        sortField: string = 'ReturnDate',
+        sortOrder: string = 'desc'
     ): Observable<any> {
-        // 1. HttpParams initialize karein [cite: 2026-02-04]
-        let params = new HttpParams()
-            .set('filter', search)
-            .set('pageIndex', pageIndex.toString())
-            .set('pageSize', pageSize.toString())
-            .set('sortField', sortField) // Backend mapping ke liye [cite: 2026-02-04]
-            .set('sortOrder', sortOrder); // Backend mapping ke liye [cite: 2026-02-04]
+        const request: any = {
+            filter: search,
+            pageIndex,
+            pageSize,
+            sortField,
+            sortOrder
+        };
 
-        // 2. Optional Date Filters [cite: 2026-02-04]
-        if (fromDate) {
-            params = params.set('fromDate', fromDate);
-        }
-        if (toDate) {
-            params = params.set('toDate', toDate);
-        }
+        if (fromDate) request.fromDate = fromDate;
+        if (toDate) request.toDate = toDate;
 
-        // 3. Backend call (Ensure URL is correct) [cite: 2026-02-04]
-        return this.http.get(`${this.apiUrl}/PurchaseReturn/list`, { params });
+        return this.api.get(`PurchaseReturn/list?${this.api.toQueryString(request)}`);
     }
 
     getPurchaseReturnById(id: number): Observable<any> {
-        return this.http.get<any>(`${this.apiUrl}/PurchaseReturn/details/${id}`);
+        return this.api.get<any>(`PurchaseReturn/details/${id}`);
     }
-    downloadExcel(fromDate?: string, toDate?: string): Observable<Blob> {
-        let params = new HttpParams();
-        if (fromDate) params = params.set('fromDate', fromDate);
-        if (toDate) params = params.set('toDate', toDate);
 
-        // responseType 'blob' hona bahut zaroori hai [cite: 2026-02-04]
-        return this.http.get(`${this.apiUrl}/PurchaseReturn/export-excel`, {
-            params: params,
-            responseType: 'blob'
-        });
+    downloadExcel(fromDate?: string, toDate?: string): Observable<Blob> {
+        const request: any = {};
+        if (fromDate) request.fromDate = fromDate;
+        if (toDate) request.toDate = toDate;
+
+        return this.api.getBlob(`PurchaseReturn/export-excel?${this.api.toQueryString(request)}`);
     }
 }

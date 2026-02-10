@@ -1,26 +1,26 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { ApiService } from '../../../shared/api.service';
+import { environment } from '../../../enviornments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class customerService {
-
-  readonly Url = 'https://localhost:7173/api/customers';
-
-  constructor(private http: HttpClient) { }
+  private api = inject(ApiService);
+  private readonly baseUrl = environment.CustomerApiBaseUrl;
 
   addCustomer(customer: any) {
-    return this.http.post(this.Url, customer);
+    return this.api.post('customers', customer, this.baseUrl);
   }
 
   getAllCustomers() {
-    return this.http.get(this.Url);
+    return this.api.get('customers', this.baseUrl);
   }
 
   getCustomersLookup(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.Url}/lookup`);
-  } 
+    return this.api.get<any[]>('customers/lookup', this.baseUrl);
+  }
 
 }
+

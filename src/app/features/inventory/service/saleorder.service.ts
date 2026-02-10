@@ -1,59 +1,48 @@
-import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { POHeaderDetailsDto } from '../models/poheader-details-dto';
+import { ApiService } from '../../../shared/api.service';
 
 @Injectable({ providedIn: 'root' })
 export class SaleOrderService {
-    private apiUrl = "https://localhost:7052/api";
-
-    constructor(private http: HttpClient) { }
-
+    private api = inject(ApiService);
 
     saveSaleOrder(orderData: any): Observable<any> {
-        return this.http.post(`${this.apiUrl}/SaleOrder/save`, orderData);
+        return this.api.post('SaleOrder/save', orderData);
     }
 
     exportSaleOrderList(): Observable<Blob> {
-        // Bina IDs ke call
-        return this.http.get(`${this.apiUrl}/saleorder/export-list`, {
-            responseType: 'blob'
-        });
+        return this.api.getBlob('saleorder/export-list');
     }
 
-
-    // SaleOrderService mein params pass karne ke liye update [cite: 2026-02-03]
     getSaleOrders(page: number, size: number, sort: string, order: string, search: string): Observable<any> {
-        let params = new HttpParams()
-            .set('pageNumber', page.toString())
-            .set('pageSize', size.toString())
-            .set('sortBy', sort)
-            .set('sortOrder', order)
-            .set('searchTerm', search);
-
-        return this.http.get<any>(`${this.apiUrl}/saleorder`, { params });
+        const request = {
+            pageNumber: page,
+            pageSize: size,
+            sortBy: sort,
+            sortOrder: order,
+            searchTerm: search
+        };
+        return this.api.get<any>(`saleorder?${this.api.toQueryString(request)}`);
     }
-
 
     updateSaleOrderStatus(id: number, status: string): Observable<any> {
-        // Fix: PATCH use karein taaki backend se sync ho jaye
-        return this.http.patch(`${this.apiUrl}/saleorder/${id}/status`, { status: status });
+        return this.api.patch(`saleorder/${id}/status`, { status: status });
     }
 
-
     getSaleOrderById(id: number): Observable<any> {
-        return this.http.get<any>(`${this.apiUrl}/saleorder/${id}`);
+        return this.api.get<any>(`saleorder/${id}`);
     }
 
     SaleOrderReportDownload(productIds: string[]) {
-        return this.http.post(`${this.apiUrl}/saleorder/export`, productIds, { responseType: 'blob' });
+        return this.api.postBlob('saleorder/export', productIds);
     }
 
+
     getOrdersByCustomer(customerId: number): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/saleorder/orders-by-customer/${customerId}`);
+        return this.api.get<any[]>(`saleorder/orders-by-customer/${customerId}`);
     }
 
     getSaleOrderItems(saleOrderId: number): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/SaleOrder/grid-items/${saleOrderId}`);
+        return this.api.get<any[]>(`SaleOrder/grid-items/${saleOrderId}`);
     }
 }

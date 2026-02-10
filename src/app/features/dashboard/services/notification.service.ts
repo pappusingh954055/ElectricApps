@@ -1,6 +1,6 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { ApiService } from '../../../shared/api.service';
 
 export interface NotificationDto {
     id: number;
@@ -14,24 +14,21 @@ export interface NotificationDto {
 
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
-    
-    private apiUrl = `https://localhost:7052/api`;
-
-    constructor(private http: HttpClient) { }
+    private api = inject(ApiService);
 
     getUnreadNotifications(): Observable<NotificationDto[]> {
-        return this.http.get<NotificationDto[]>(`${this.apiUrl}/Notifications/unread`);
+        return this.api.get<NotificationDto[]>('Notifications/unread');
     }
 
     getUnreadCount(): Observable<number> {
-        return this.http.get<number>(`${this.apiUrl}/Notifications/count`);
+        return this.api.get<number>('Notifications/count');
     }
 
     markAsRead(id: number): Observable<any> {
-        return this.http.post(`${this.apiUrl}/Notifications/${id}/mark-read`, {});
+        return this.api.post(`Notifications/${id}/mark-read`, {});
     }
 
     markAllAsRead(): Observable<any> {
-        return this.http.post(`${this.apiUrl}/Notifications/mark-all-read`, {});
+        return this.api.post('Notifications/mark-all-read', {});
     }
 }

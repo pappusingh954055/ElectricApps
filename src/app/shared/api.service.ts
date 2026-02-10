@@ -6,26 +6,59 @@ import { GridRequest } from './models/grid-request.model';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
+    public environment = environment;
 
-    constructor(private http: HttpClient) { }
+    constructor(public http: HttpClient) { }
 
-    post<T>(url: string, body: any): Observable<T> {
-        console.log('body', body)
-        return this.http.post<T>(`${environment.ApiBaseUrl}/${url}`, body);
+    post<T>(url: string, body: any, baseUrl: string = environment.ApiBaseUrl): Observable<T> {
+        return this.http.post<T>(`${baseUrl}/${url}`, body);
     }
 
-    put<T>(url: string, body: any): Observable<T> {
-        return this.http.put<T>(`${environment.ApiBaseUrl}/${url}`, body);
+    put<T>(url: string, body: any, baseUrl: string = environment.ApiBaseUrl): Observable<T> {
+        return this.http.put<T>(`${baseUrl}/${url}`, body);
     }
 
-    delete<T>(url: string): Observable<T> {
-        return this.http.delete<T>(`${environment.ApiBaseUrl}/${url}`);
+    patch<T>(url: string, body: any, baseUrl: string = environment.ApiBaseUrl): Observable<T> {
+        return this.http.patch<T>(`${baseUrl}/${url}`, body);
     }
 
-    get<T>(url: string): Observable<T> {
-        return this.http.get<T>(`${environment.ApiBaseUrl}/${url}`);
+    delete<T>(url: string, baseUrl: string = environment.ApiBaseUrl): Observable<T> {
+        return this.http.delete<T>(`${baseUrl}/${url}`);
     }
 
-  
+    get<T>(url: string, baseUrl: string = environment.ApiBaseUrl): Observable<T> {
+        return this.http.get<T>(`${baseUrl}/${url}`);
+    }
+
+    getBlob(url: string, baseUrl: string = environment.ApiBaseUrl): Observable<Blob> {
+        return this.http.get(`${baseUrl}/${url}`, { responseType: 'blob' });
+    }
+
+    postBlob(url: string, body: any, baseUrl: string = environment.ApiBaseUrl): Observable<Blob> {
+        return this.http.post(`${baseUrl}/${url}`, body, { responseType: 'blob' });
+    }
+
+    /**
+     * Helper to convert GridRequest to QueryString
+     */
+    toQueryString(request: any): string {
+        const query: string[] = [];
+        Object.keys(request).forEach(key => {
+            const value = request[key];
+            if (value !== undefined && value !== null && value !== '') {
+                if (typeof value === 'object') {
+                    Object.keys(value).forEach(subKey => {
+                        const subValue = value[subKey];
+                        if (subValue !== undefined && subValue !== null && subValue !== '') {
+                            query.push(`${key}[${encodeURIComponent(subKey)}]=${encodeURIComponent(subValue)}`);
+                        }
+                    });
+                } else {
+                    query.push(`${key}=${encodeURIComponent(value)}`);
+                }
+            }
+        });
+        return query.join('&');
+    }
 
 }

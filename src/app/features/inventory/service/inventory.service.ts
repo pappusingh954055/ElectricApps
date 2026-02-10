@@ -1,10 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { environment } from '../../../enviornments/environment';
 import { ApiService } from '../../../shared/api.service';
 import { PurchaseOrderPayload } from '../models/purchaseorder.model';
-import { StockSummary } from '../models/stock-summary.model';
 import { PriceListItemDto } from '../models/price-list-item.dto';
 import { BulkGrnRequest } from '../models/grnbulkrequest.model';
 
@@ -14,33 +12,26 @@ import { BulkGrnRequest } from '../models/grnbulkrequest.model';
     providedIn: 'root'
 })
 export class InventoryService {
-
-    private http = inject(HttpClient);
-
-
-
-    private apiUrl = "https://localhost:7052/api";
+    private api = inject(ApiService);
 
     getNextPoNumber(): Observable<{ poNumber: string }> {
-
-        return this.http.get<{ poNumber: string }>(`${this.apiUrl}/purchaseorders/next-number`);
+        return this.api.get<{ poNumber: string }>('purchaseorders/next-number');
     }
 
     // PO Save karne ke liye
     savePoDraft(payload: PurchaseOrderPayload): Observable<any> {
-        return this.http.post(`${this.apiUrl}/PurchaseOrders/save-po`, payload);
+        return this.api.post('PurchaseOrders/save-po', payload);
     }
 
 
     // 1. Saari active Price Lists load karne ke liye
     getPriceLists(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/pricelists`);
+        return this.api.get<any[]>('pricelists');
     }
 
     // 2. Kisi specific Price List se product ka rate aur discount nikalne ke liye
     getPriceListRate(priceListId: string, productId: number): Observable<any> {
-        // Query parameters ke saath request bhejenge
-        return this.http.get<any>(`${this.apiUrl}/pricelists/${priceListId}/product-rate/${productId}`);
+        return this.api.get<any>(`pricelists/${priceListId}/product-rate/${productId}`);
     }
 
     /**
@@ -48,21 +39,14 @@ export class InventoryService {
    * @param productId - Selected Product ki ID
    * @param priceListId - Selected Price List ki ID
    */
-    // inventory.service.ts
-    // inventory.service.ts
     getProductRate(productId: string, priceListId: string): Observable<any> {
-        // Params ensure karte hain ki data URL ke piche ?productId=... bankar jaye
-        const params = new HttpParams()
-            .set('productId', productId)
-            .set('priceListId', priceListId);
-
-        return this.http.get(`${this.apiUrl}/products/rate`, { params });
+        const url = `products/rate?productId=${productId}&priceListId=${priceListId}`;
+        return this.api.get(url);
     }
 
     // purchase-order.service.ts
     getPagedOrders(request: any): Observable<any> {
-        // Ye POST call aapke naye [HttpPost("get-paged-orders")] endpoint ko hit karega
-        return this.http.post<any>(`${this.apiUrl}/PurchaseOrders/get-paged-orders`, request);
+        return this.api.post<any>('PurchaseOrders/get-paged-orders', request);
     }
 
 
@@ -73,14 +57,13 @@ export class InventoryService {
      * Purpose: Poore Purchase Order record ko database se khatam karna
      */
     deletePurchaseOrder(poId: number): Observable<any> {
-        return this.http.delete(`${this.apiUrl}/PurchaseOrders/${poId}`);
+        return this.api.delete(`PurchaseOrders/${poId}`);
     }
 
 
 
     bulkDeletePurchaseOrders(ids: number[]): Observable<any> {
-        // Method: POST ya DELETE (Aapke backend ke hisaab se)
-        return this.http.post(`${this.apiUrl}/PurchaseOrders/bulk-delete-orders`, { ids });
+        return this.api.post('PurchaseOrders/bulk-delete-orders', { ids });
     }
 
     /**
@@ -93,67 +76,57 @@ export class InventoryService {
             purchaseOrderId: poId,
             itemIds: itemIds
         };
-        return this.http.post(`${this.apiUrl}/PurchaseOrders/bulk-delete-items`, payload);
+        return this.api.post('PurchaseOrders/bulk-delete-items', payload);
     }
 
     /** * PO Status update karne ke liye nullable reason parameter ke sath [cite: 2026-01-22]
    */
     updatePOStatus(id: number, status: string, reason?: string): Observable<any> {
-        // Payload mein 'Reason' add kiya gaya hai [cite: 2026-01-22]
         const payload = {
             Id: id,
             Status: status,
-            Reason: reason || null  // Agar reason undefined hai toh null bhejein [cite: 2026-01-22]
+            Reason: reason || null
         };
 
-        return this.http.put(`${this.apiUrl}/PurchaseOrders/UpdateStatus`, payload);
+        return this.api.put('PurchaseOrders/UpdateStatus', payload);
     }
 
     // PO Data pick karne ke liye
-    // Thoda aur safe version
     getPODataForGRN(poId: number, grnHeaderId: number | null = null): Observable<any> {
-        console.log(`Calling API with PO: ${poId}, GRN: ${grnHeaderId}`);
-        let url = `${this.apiUrl}/GRN/GetPOData/${poId}`;
-
-        // Explicit null/undefined check
+        let url = `GRN/GetPOData/${poId}`;
         if (grnHeaderId !== null && grnHeaderId !== undefined) {
             url += `?grnHeaderId=${grnHeaderId}`;
         }
-        return this.http.get(url);
+        return this.api.get(url);
     }
+
     // GRN save aur stock update ke liye (CQRS Command)
     saveGRN(payload: any): Observable<any> {
-        return this.http.post(`${this.apiUrl}/GRN/Save`, payload);
+        return this.api.post('GRN/Save', payload);
     }
+
     getCurrentStock(
         sortField: string = '',
         sortOrder: string = '',
         pageIndex: number = 0,
         pageSize: number = 10,
         search: string = '',
-        startDate: Date | null = null, // Naya Parameter
-        endDate: Date | null = null    // Naya Parameter
+        startDate: Date | null = null,
+        endDate: Date | null = null
     ): Observable<any> {
-        // 1. Query parameters build karein
-        let params = new HttpParams()
-            .set('sortField', sortField)
-            .set('sortOrder', sortOrder)
-            .set('pageIndex', pageIndex.toString())
-            .set('pageSize', pageSize.toString())
-            .set('search', search);
+        const request = {
+            sortField,
+            sortOrder,
+            pageIndex,
+            pageSize,
+            search,
+            startDate: startDate?.toISOString(),
+            endDate: endDate?.toISOString()
+        };
 
-        // 2. Date filters add karein agar user ne select kiye hain
-        if (startDate) {
-            // ISO string format (YYYY-MM-DD) bhej rahe hain taaki C# easily parse kar le
-            params = params.set('startDate', startDate.toISOString());
-        }
-        if (endDate) {
-            params = params.set('endDate', endDate.toISOString());
-        }
-
-        // 3. API call [cite: 2026-01-22]
-        return this.http.get<any>(`${this.apiUrl}/stock/current-stock`, { params });
+        return this.api.get(`stock/current-stock?${this.api.toQueryString(request)}`);
     }
+
     /**
    * GRN List fetch karne ke liye (with Paging, Sorting, Searching)
    *
@@ -165,40 +138,36 @@ export class InventoryService {
         pageSize: number = 10,
         search: string = ''
     ): Observable<any> {
-        // Query parameters build karein [cite: 2026-01-22]
-        let params = new HttpParams()
-            .set('sortField', sortField)
-            .set('sortOrder', sortOrder)
-            .set('pageIndex', pageIndex.toString())
-            .set('pageSize', pageSize.toString())
-            .set('search', search);
+        const request = {
+            sortField,
+            sortOrder,
+            pageIndex,
+            pageSize,
+            search
+        };
 
-        return this.http.get<any>(`${this.apiUrl}/grn/grn-list`, { params });
+        return this.api.get(`grn/grn-list?${this.api.toQueryString(request)}`);
     }
 
     getPendingPurchaseOrders(): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/PurchaseOrders/pending-pos`);
+        return this.api.get<any[]>('PurchaseOrders/pending-pos');
     }
 
     getPOItemsForGRN(poId: number): Observable<any[]> {
-        return this.http.get<any[]>(`${this.apiUrl}/PurchaseOrders/po-items/${poId}`);
+        return this.api.get<any[]>(`PurchaseOrders/po-items/${poId}`);
     }
 
     getPriceListItems(priceListId: string): Observable<PriceListItemDto[]> {
-        // Ye API wahi DTO return karegi jo humne abhi C# mein banaya hai [cite: 2026-01-22]
-        return this.http.get<PriceListItemDto[]>(`${this.apiUrl}/pricelists/price-list-items/${priceListId}`);
+        return this.api.get<PriceListItemDto[]>(`pricelists/price-list-items/${priceListId}`);
     }
 
     downloadStockReport(productIds: string[]): Observable<Blob> {
-        const url = `${this.apiUrl}/Stock/ExportExcel`;
-
-        return this.http.post(url, productIds, {
-            responseType: 'blob'
-        });
+        return this.api.postBlob('Stock/ExportExcel', productIds);
     }
 
+
     getGrnPrintData(grnNumber: string): Observable<any> {
-        return this.http.get(`${this.apiUrl}/GRN/print-data/${grnNumber}`);
+        return this.api.get(`GRN/print-data/${grnNumber}`);
     }
 
     /**
@@ -206,7 +175,6 @@ export class InventoryService {
    * @param data { purchaseOrderIds: number[], createdBy: string }
    */
     createBulkGrn(data: BulkGrnRequest): Observable<any> {
-        // Backend ke [HttpPost("bulk-create")] ko hit karega
-        return this.http.post(`${this.apiUrl}/GRN/bulk-create`, data);
+        return this.api.post('GRN/bulk-create', data);
     }
 }

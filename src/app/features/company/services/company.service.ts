@@ -1,65 +1,64 @@
-import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { CompanyProfileDto, UpsertCompanyRequest } from '../model/company.model';
+import { ApiService } from '../../../shared/api.service';
+import { environment } from '../../../enviornments/environment';
 
 
 @Injectable({
     providedIn: 'root'
 })
 export class CompanyService {
-    // Aapke API ka base URL
-    private readonly apiUrl = 'https://localhost:7065/api';
-
-    constructor(private http: HttpClient) { }
+    private readonly api = inject(ApiService);
+    private readonly baseUrl = environment.CompanyApiBaseUrl;
 
     /**
      * Master Company Profile fetch karne ke liye (Report Headers ke liye best)
      */
     getCompanyProfile(): Observable<CompanyProfileDto> {
-        return this.http.get<CompanyProfileDto>(`${this.apiUrl}/company/profile`);
+        return this.api.get<CompanyProfileDto>('company/profile', this.baseUrl);
     }
 
     /**
      * Paged list fetch karne ke liye
      */
     getPaged(request: any): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/company/paged`, request);
+        return this.api.post<any>('company/paged', request, this.baseUrl);
     }
 
     /**
      * ID ke base par specific company data lane ke liye
      */
     getById(id: number): Observable<CompanyProfileDto> {
-        return this.http.get<CompanyProfileDto>(`${this.apiUrl}/company/${id}`);
+        return this.api.get<CompanyProfileDto>(`company/${id}`, this.baseUrl);
     }
 
     /**
      * Nayi company profile create karne ke liye
      */
     insertCompany(company: UpsertCompanyRequest): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/company/create`, company);
+        return this.api.post<any>('company/create', company, this.baseUrl);
     }
 
     /**
      * Existing profile ko update karne ke liye
      */
     updateCompany(id: number, profile: UpsertCompanyRequest): Observable<any> {
-        return this.http.put<any>(`${this.apiUrl}/company/update/${id}`, profile);
+        return this.api.put<any>(`company/update/${id}`, profile, this.baseUrl);
     }
 
     /**
      * Profile delete karne ke liye
      */
     deleteCompany(id: number): Observable<boolean> {
-        return this.http.delete<boolean>(`${this.apiUrl}/company/${id}`);
+        return this.api.delete<boolean>(`company/${id}`, this.baseUrl);
     }
 
     /**
      * Bulk delete profiles
      */
     deleteMany(ids: number[]): Observable<any> {
-        return this.http.post<any>(`${this.apiUrl}/company/bulk-delete`, ids);
+        return this.api.post<any>('company/bulk-delete', ids, this.baseUrl);
     }
 
     /**
@@ -68,8 +67,9 @@ export class CompanyService {
     uploadLogo(id: number, file: File): Observable<any> {
         const formData = new FormData();
         formData.append('file', file, file.name);
-        return this.http.post<any>(`${this.apiUrl}/company/upload-logo/${id}`, formData);
+        return this.api.post<any>(`company/upload-logo/${id}`, formData, this.baseUrl);
     }
 }
+
 
 

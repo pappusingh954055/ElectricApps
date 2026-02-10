@@ -35,11 +35,7 @@ export class CategoryService {
         return this.api.get('categories');
     }
 
-    // getPaged(request: GridRequest): Observable<GridResponse<CategoryGridDto>> {
-    //     return this.api.get<GridResponse<CategoryGridDto>>(
-    //         `categories/paged?${this.api.toQueryString(request)}`
-    //     );
-    // }
+
 
     getPaged(request: GridRequest): Observable<GridResponse<CategoryGridDto>> {
         return this.api.post<GridResponse<CategoryGridDto>>(
