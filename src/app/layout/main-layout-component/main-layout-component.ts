@@ -46,6 +46,8 @@ export class MainLayoutComponent implements OnInit {
   notifications: NotificationDto[] = [];
   unreadCount = 0;
 
+  currentYear = new Date().getFullYear();
+
   companyName = 'Electric Inventory';
   companyTagline = 'Inventory Management System';
   companyLogoUrl: string | null = null;
