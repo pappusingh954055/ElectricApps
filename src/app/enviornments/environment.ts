@@ -12,7 +12,7 @@ export const environment = {
   // Backward compatibility
   ApiBaseUrl: 'https://localhost:7052/api',
   LoginApiBaseUrl: 'https://localhost:7125/api/auth',
-  SupplierApiBaseUrl: 'https://localhost:7224/api/suppliers',
+  SupplierApiBaseUrl: 'https://localhost:7224/api/Supplier',
   CompanyApiBaseUrl: 'https://localhost:7065/api',
   CompanyRootUrl: 'https://localhost:7065',
   CustomerApiBaseUrl: 'https://localhost:7173/api',

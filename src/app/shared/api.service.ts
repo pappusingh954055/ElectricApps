@@ -11,23 +11,23 @@ export class ApiService {
     constructor(public http: HttpClient) { }
 
     post<T>(url: string, body: any, baseUrl: string = environment.ApiBaseUrl): Observable<T> {
-        return this.http.post<T>(`${baseUrl}/${url}`, body);
+        return this.http.post<T>(url ? `${baseUrl}/${url}` : baseUrl, body);
     }
 
     put<T>(url: string, body: any, baseUrl: string = environment.ApiBaseUrl): Observable<T> {
-        return this.http.put<T>(`${baseUrl}/${url}`, body);
+        return this.http.put<T>(url ? `${baseUrl}/${url}` : baseUrl, body);
     }
 
     patch<T>(url: string, body: any, baseUrl: string = environment.ApiBaseUrl): Observable<T> {
-        return this.http.patch<T>(`${baseUrl}/${url}`, body);
+        return this.http.patch<T>(url ? `${baseUrl}/${url}` : baseUrl, body);
     }
 
     delete<T>(url: string, baseUrl: string = environment.ApiBaseUrl): Observable<T> {
-        return this.http.delete<T>(`${baseUrl}/${url}`);
+        return this.http.delete<T>(url ? `${baseUrl}/${url}` : baseUrl);
     }
 
     get<T>(url: string, baseUrl: string = environment.ApiBaseUrl): Observable<T> {
-        return this.http.get<T>(`${baseUrl}/${url}`);
+        return this.http.get<T>(url ? `${baseUrl}/${url}` : baseUrl);
     }
 
     getBlob(url: string, baseUrl: string = environment.ApiBaseUrl): Observable<Blob> {
