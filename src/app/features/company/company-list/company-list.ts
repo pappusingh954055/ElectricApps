@@ -102,6 +102,7 @@ export class CompanyList implements OnInit {
             this.companyService.deleteCompany(company.id).subscribe({
                 next: (res: any) => {
                     this.loading = false;
+                    this.cdr.detectChanges();
                     this.dialog.open(StatusDialogComponent, {
                         data: {
                             isSuccess: true,
@@ -143,8 +144,9 @@ export class CompanyList implements OnInit {
             this.loading = true;
             this.companyService.deleteMany(ids).subscribe({
                 next: (res: any) => {
-                    this.grid.clearSelection();
                     this.loading = false;
+                    this.cdr.detectChanges();
+                    this.grid.clearSelection();
                     this.dialog.open(StatusDialogComponent, {
                         data: {
                             isSuccess: true,

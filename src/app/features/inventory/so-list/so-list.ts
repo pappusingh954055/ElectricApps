@@ -201,11 +201,11 @@ export class SoList implements OnInit {
         document.body.removeChild(a);
         window.URL.revokeObjectURL(url);
         this.isLoading = false;
+        this.cdr.detectChanges();
         this.dialog.open(StatusDialogComponent, {
           width: '350px',
           data: { type: 'success', title: 'Report Downloaded', message: 'The Sale Order report has been successfully downloaded.' }
         });
-        this.cdr.detectChanges();
       },
       error: (err) => {
         this.isLoading = false;
@@ -224,17 +224,19 @@ export class SoList implements OnInit {
     this.saleOrderService.exportSaleOrderList().subscribe({
       next: (blob) => {
         this.isLoading = false;
+        this.cdr.detectChanges();
+
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = `Orders_Report_${new Date().getTime()}.xlsx`;
         a.click();
         window.URL.revokeObjectURL(url);
+
         this.dialog.open(StatusDialogComponent, {
           width: '350px',
           data: { type: 'success', title: 'Success', message: 'Excel download complete!' }
         });
-        this.cdr.detectChanges();
       },
       error: (err) => {
         this.isLoading = false;

@@ -111,6 +111,7 @@ export class CategoryList implements OnInit {
         this.categoryService.delete(category.id).subscribe({
           next: res => {
             this.loading = false;
+            this.cdr.detectChanges();
 
             this.dialog.open(StatusDialogComponent, {
               data: {
@@ -126,7 +127,7 @@ export class CategoryList implements OnInit {
 
             const message =
               err?.error?.message || 'Unable to delete category';
-             this.cdr.detectChanges();
+            this.cdr.detectChanges();
 
             this.dialog.open(StatusDialogComponent, {
               data: {
@@ -160,17 +161,14 @@ export class CategoryList implements OnInit {
       const ids = this.selectedRows.map(x => x.id);
 
       this.loading = true;
-      
+
 
       this.categoryService.deleteMany(ids).subscribe({
         next: (res) => {
-          // 🔄 Reload grid
-          this.loadCategories(this.lastRequest);
-
-          // 🧹 Clear selection via grid reference
+          this.loading = false;
+          this.cdr.detectChanges();
           this.grid.clearSelection();
 
-          this.loading = false;
           this.dialog.open(StatusDialogComponent, {
             data: {
               isSuccess: true,
@@ -178,8 +176,7 @@ export class CategoryList implements OnInit {
             }
           });
 
-          this.loading = false;
-           this.cdr.detectChanges();
+          this.loadCategories(this.lastRequest);
         },
         error: err => {
           console.error(err);

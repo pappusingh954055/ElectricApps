@@ -1,22 +1,22 @@
-<div class="page-container p-4 flex-column">
-  <div class="header-row flex-row flex-between flex-center mb-4">
+<div class="page-container">
+  <div class="header-row">
     <div class="title-section flex-row flex-center gap-2">
-      <mat-icon color="primary" class="header-icon">business</mat-icon>
-      <h2 class="text-2xl font-semibold text-gray-800 m-0">Company Management</h2>
+      <mat-icon class="header-icon">business</mat-icon>
+      <h2>Company Management</h2>
     </div>
-    <div class="action-section flex-row gap-2">
-      <button mat-flat-button class="bg-azure" routerLink="/app/company/add">
+    <div class="action-section d-flex gap-3">
+      <button *ngIf="selectedRows.length > 0" mat-flat-button class="delete-action-btn" (click)="confirmBulkDelete()" [disabled]="loading">
+        <mat-icon>delete_sweep</mat-icon>
+        Delete Selected ({{selectedRows.length}})
+      </button>
+      <button *ngIf="selectedRows.length === 0" mat-flat-button class="main-add-btn" routerLink="/app/company/add">
         <mat-icon>add</mat-icon>
         Add Company
-      </button>
-      <button mat-flat-button color="warn" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
-        <mat-icon>delete</mat-icon>
-        Delete Selected
       </button>
     </div>
   </div>
 
-  <div class="grid-container flex-1">
+  <div class="grid-container">
     <app-server-datagrid 
       gridKey="company-grid"
       [columns]="columns" 

@@ -168,14 +168,10 @@ export class SubcategoryList implements OnInit, OnChanges {
 
       this.subCategoryService.deleteMany(ids).subscribe({
         next: (res) => {
-          // 🔄 Reload grid
-          this.loadSubCategories(this.lastRequest);
+          this.loading = false;
           this.cdr.detectChanges();
-
-          // 🧹 Clear selection via grid reference
           this.grid.clearSelection();
 
-          this.loading = false;
           this.dialog.open(StatusDialogComponent, {
             data: {
               isSuccess: true,
@@ -183,7 +179,7 @@ export class SubcategoryList implements OnInit, OnChanges {
             }
           });
 
-          this.loading = false;
+          this.loadSubCategories(this.lastRequest);
         },
         error: err => {
           console.error(err);

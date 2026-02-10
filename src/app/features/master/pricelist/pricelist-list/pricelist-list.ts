@@ -107,6 +107,7 @@ export class PricelistList implements OnInit {
       this.service.deletePriceList(row.id).subscribe({
         next: (res) => {
           this.loading = false;
+          this.cdr.detectChanges();
           this.dialog.open(StatusDialogComponent, {
             data: { isSuccess: true, message: 'Price list deleted successfully' }
           });
@@ -140,10 +141,10 @@ export class PricelistList implements OnInit {
       // Note: Assuming deleteMany exists in service or using multiple calls
       this.service.deletePriceList(ids[0]).subscribe({ // Example for single, update for multi
         next: () => {
-          this.grid.clearSelection();
-          this.loadPriceLists(this.lastRequest);
           this.loading = false;
           this.cdr.detectChanges();
+          this.grid.clearSelection();
+          this.loadPriceLists(this.lastRequest);
         },
         error: () => this.loading = false
       });

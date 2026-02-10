@@ -134,11 +134,11 @@ export class PurchaseReturnList implements OnInit {
       next: (res) => {
         console.log('popupdata', res);
         this.isTableLoading = false;
+        this.cdr.detectChanges();
         this.dialog.open(PurchaseReturnView, {
           width: '800px',
           data: res
         });
-        this.cdr.detectChanges();
       },
       error: () => {
         this.isTableLoading = false;

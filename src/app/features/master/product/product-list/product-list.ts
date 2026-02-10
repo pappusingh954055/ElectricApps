@@ -145,6 +145,7 @@ export class ProductList implements OnInit {
         this.service.delete(category.id).subscribe({
           next: (res: any) => {
             this.loading = false;
+            this.cdr.detectChanges();
             this.dialog.open(StatusDialogComponent, { data: { isSuccess: true, message: res.message } });
             this.loadPriceLists(this.lastRequest);
           },
@@ -171,11 +172,11 @@ export class ProductList implements OnInit {
       this.loading = true;
       this.service.deleteMany(ids).subscribe({
         next: (res: any) => {
-          this.loadPriceLists(this.lastRequest);
-          this.grid.clearSelection();
           this.loading = false;
-          this.dialog.open(StatusDialogComponent, { data: { isSuccess: true, message: res.message } });
           this.cdr.detectChanges();
+          this.grid.clearSelection();
+          this.dialog.open(StatusDialogComponent, { data: { isSuccess: true, message: res.message } });
+          this.loadPriceLists(this.lastRequest);
         },
         error: (err: any) => {
           this.loading = false;

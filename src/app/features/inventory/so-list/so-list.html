@@ -8,7 +8,7 @@
         <mat-icon>download</mat-icon> 
         {{ selection.hasValue() ? 'Export (' + selection.selected.length + ')' : 'Export Excel' }}
       </button>
-      <button mat-flat-button class="main-add-btn" (click)="createNewOrder()" [disabled]="isLoading">
+      <button mat-flat-button class="main-add-btn" *ngIf="!selection.hasValue()" (click)="createNewOrder()" [disabled]="isLoading">
         <mat-icon>add</mat-icon> New Sale Order
       </button>
     </div>

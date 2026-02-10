@@ -15,7 +15,7 @@
     </div>
   </div>
 
-  <div class="content-card mat-elevation-z8" *ngIf="selectedRoleId; else noRoleSelected">
+  <div class="content-card" *ngIf="selectedRoleId; else noRoleSelected">
     
     <div class="table-toolbar">
       <mat-form-field appearance="outline" class="search-field">
@@ -24,35 +24,34 @@
         <input matInput (keyup)="applyFilter($event)" placeholder="Type menu name..." #input>
       </mat-form-field>
 
-      <div class="actions-group">
-        <button mat-stroked-button color="warn" (click)="resetPermissions()" style="margin-right: 12px;">
+      <div class="actions-group d-flex gap-3">
+        <button mat-flat-button class="reset-action-btn" (click)="resetPermissions()" [disabled]="loading">
             <mat-icon>restart_alt</mat-icon> Reset
         </button>
-        <button mat-raised-button color="primary" (click)="savePermissions()">
+        <button mat-flat-button class="main-save-btn" (click)="savePermissions()" [disabled]="loading">
             <mat-icon>save</mat-icon> Save Changes
         </button>
       </div>
     </div>
 
-    <!-- CLEAN TABLE GRID STRUCTURE WITH VIRTUAL SCROLL -->
-    <div class="table-container flat-tree-grid">
+    <!-- Tree Grid -->
+    <div class="table-container">
       
-      <!-- HEADER WITH FIXED ALIGNMENT -->
-      <div class="sticky-header grid-row header-row">
+      <!-- Sticky Header -->
+      <div class="header-row grid-row">
         <div class="cell menu-col">Menu Item</div>
-        <div class="cell checkbox-col view">View</div>
-        <div class="cell checkbox-col add">Add</div>
-        <div class="cell checkbox-col edit">Edit</div>
-        <div class="cell checkbox-col delete">Delete</div>
+        <div class="cell checkbox-col">View</div>
+        <div class="cell checkbox-col">Add</div>
+        <div class="cell checkbox-col">Edit</div>
+        <div class="cell checkbox-col">Delete</div>
       </div>
 
       <div class="table-body">
         <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
           
-          <!-- Flat Node Template -->
-          <mat-tree-node *matTreeNodeDef="let node" class="grid-row node-row" [class.parent-node]="node.expandable">
+          <mat-tree-node *matTreeNodeDef="let node" class="grid-row" [class.parent-node]="node.expandable">
             
-            <!-- Menu Column with Level-based Indentation -->
+            <!-- Menu Column -->
             <div class="cell menu-col" [style.padding-left.px]="16 + (node.level * 32)">
               <button mat-icon-button *ngIf="node.expandable" matTreeNodeToggle class="toggle-btn">
                 <mat-icon>{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}</mat-icon>
@@ -63,7 +62,7 @@
               <span class="node-title">{{node.title}}</span>
             </div>
   
-            <!-- CHECKBOX COLUMNS - PERFECTLY ALIGNED -->
+            <!-- Checkbox Columns -->
             <div class="cell checkbox-col">
               <mat-checkbox [(ngModel)]="getPermission(node.id).canView" 
                             (change)="handlePermissionChange(node, 'canView', $event.checked)"
@@ -72,17 +71,17 @@
             <div class="cell checkbox-col">
               <mat-checkbox [(ngModel)]="getPermission(node.id).canAdd" 
                             (change)="handlePermissionChange(node, 'canAdd', $event.checked)"
-                            color="accent"></mat-checkbox>
+                            color="primary"></mat-checkbox>
             </div>
             <div class="cell checkbox-col">
               <mat-checkbox [(ngModel)]="getPermission(node.id).canEdit" 
                             (change)="handlePermissionChange(node, 'canEdit', $event.checked)"
-                            color="accent"></mat-checkbox>
+                            color="primary"></mat-checkbox>
             </div>
             <div class="cell checkbox-col">
               <mat-checkbox [(ngModel)]="getPermission(node.id).canDelete" 
                             (change)="handlePermissionChange(node, 'canDelete', $event.checked)"
-                            color="warn"></mat-checkbox>
+                            color="primary"></mat-checkbox>
             </div>
           </mat-tree-node>
         </mat-tree>

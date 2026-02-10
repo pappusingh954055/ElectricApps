@@ -26,6 +26,7 @@ export class RolePermissionsComponent implements OnInit {
   roles: Role[] = [];
   selectedRoleId: number | null = null;
   permissions: RolePermission[] = [];
+  loading = false;
 
   displayedColumns = ['menu', 'canView', 'canAdd', 'canEdit', 'canDelete'];
 
@@ -108,8 +109,11 @@ export class RolePermissionsComponent implements OnInit {
 
   savePermissions() {
     if (this.selectedRoleId) {
+      this.loading = true;
       this.roleService.updateRolePermissions(this.selectedRoleId, this.permissions).subscribe({
         next: () => {
+          this.loading = false;
+          this.cdr.detectChanges();
           this.dialog.open(StatusDialogComponent, {
             width: '400px',
             data: {
@@ -120,6 +124,8 @@ export class RolePermissionsComponent implements OnInit {
           });
         },
         error: (err) => {
+          this.loading = false;
+          this.cdr.detectChanges();
           let errorMessage = 'Something went wrong while saving permissions.';
           if (err.error && typeof err.error === 'string') {
             errorMessage = err.error;
@@ -146,6 +152,8 @@ export class RolePermissionsComponent implements OnInit {
   resetPermissions() {
     if (this.selectedRoleId) {
       this.onRoleChange(); // Reload from DB
+      this.cdr.detectChanges();
+
       this.dialog.open(StatusDialogComponent, {
         width: '400px',
         data: {
@@ -153,7 +161,6 @@ export class RolePermissionsComponent implements OnInit {
           message: 'Permissions reset to last saved state.'
         }
       });
-
     }
   }
 

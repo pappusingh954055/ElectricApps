@@ -431,7 +431,8 @@ export class PoList implements OnInit {
       if (reason) {
         this.poService.updatePOStatus(row.id, 'Rejected', reason).subscribe({
           next: () => {
-            this.loadData(this.currentGridState);
+            this.isLoading = false;
+            this.cdr.detectChanges();
             this.dialog.open(StatusDialogComponent, {
               width: '400px',
               data: {
@@ -440,6 +441,7 @@ export class PoList implements OnInit {
                 isSuccess: true
               }
             });
+            this.loadData(this.currentGridState);
           },
           error: (err) => {
             this.dialog.open(StatusDialogComponent, {
@@ -457,6 +459,8 @@ export class PoList implements OnInit {
   private updateStatus(id: number, status: string, successMessage: string) {
     this.poService.updatePOStatus(id, status).subscribe({
       next: (response) => {
+        this.isLoading = false;
+        this.cdr.detectChanges();
         // SUCCESS logic: isSuccess ko true bhejna hai [cite: 2026-01-22]
         const dialogRef = this.dialog.open(StatusDialogComponent, {
           width: '350px',
