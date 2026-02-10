@@ -28,6 +28,14 @@ export class CompanyForm implements OnInit {
     companyForm!: FormGroup;
     loading = false;
     companyId: string | null = null;
+    serverUrl = 'https://localhost:7065';
+
+    getImgUrl(path: string | null): string {
+        if (!path) return '';
+        if (path.startsWith('data:image') || path.startsWith('http')) return path;
+        return `${this.serverUrl}${path.startsWith('/') ? '' : '/'}${path}`;
+    }
+
 
     ngOnInit(): void {
         this.createForm();
@@ -67,9 +75,34 @@ export class CompanyForm implements OnInit {
                 accountNumber: ['', Validators.required],
                 ifscCode: ['', [Validators.required, Validators.pattern('^[A-Z]{4}0[A-Z0-9]{6}$')]],
                 accountType: ['Current', Validators.required]
-            })
+            }),
+
+            authorizedSignatories: this.fb.array([])
         });
         this.cdr.detectChanges();
+    }
+
+
+    get signatories() {
+        return this.companyForm.get('authorizedSignatories') as any;
+    }
+
+    private createSignatoryGroup(data?: any): FormGroup {
+        return this.fb.group({
+            id: [data?.id || 0],
+            personName: [data?.personName || '', Validators.required],
+            designation: [data?.designation || ''],
+            signatureImageUrl: [data?.signatureImageUrl || ''],
+            isDefault: [data?.isDefault ?? true]
+        });
+    }
+
+    addSignatory() {
+        this.signatories.push(this.createSignatoryGroup());
+    }
+
+    removeSignatory(index: number) {
+        this.signatories.removeAt(index);
     }
 
     loadCompany() {
@@ -77,6 +110,14 @@ export class CompanyForm implements OnInit {
         this.loading = true;
         this.companyService.getById(+this.companyId).subscribe({
             next: (res) => {
+                // Clear and rebuild Signatories Array
+                this.signatories.clear();
+                if (res.authorizedSignatories) {
+                    res.authorizedSignatories.forEach((s: any) => {
+                        this.signatories.push(this.createSignatoryGroup(s));
+                    });
+                }
+
                 this.companyForm.patchValue(res);
                 this.loading = false;
                 this.cdr.detectChanges();
@@ -88,6 +129,7 @@ export class CompanyForm implements OnInit {
             }
         });
     }
+
 
     onSave(): void {
         if (this.companyForm.invalid) {
@@ -151,7 +193,23 @@ export class CompanyForm implements OnInit {
         }
     }
 
+    onSignatureSelected(event: any, index: number): void {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const base64 = e.target?.result as string;
+                this.signatories.at(index).patchValue({
+                    signatureImageUrl: base64
+                });
+                this.cdr.detectChanges();
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
     uploadLogo(id: number): void {
+
         if (!this.selectedLogo) return;
 
         this.companyService.uploadLogo(id, this.selectedLogo).subscribe({

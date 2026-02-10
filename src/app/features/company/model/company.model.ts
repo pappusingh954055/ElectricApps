@@ -8,13 +8,25 @@ export interface CompanyProfileDto {
     tagline: string;
     registrationNumber: string;
     gstin: string; //
-    logoUrl: string;
+    logoUrl: string | null;
     primaryEmail: string;
     primaryPhone: string;
     website: string;
     isActive: boolean;
     address: AddressDto; // Nested Object
     bankInfo: BankDetailDto; // Nested Object
+    authorizedSignatories: AuthorizedSignatoryDto[];
+}
+
+/**
+ * Authorized Signatory Model
+ */
+export interface AuthorizedSignatoryDto {
+    id: number;
+    personName: string;
+    designation: string;
+    signatureImageUrl: string | null;
+    isDefault: boolean;
 }
 
 /**
@@ -52,10 +64,11 @@ export interface UpsertCompanyRequest {
     tagline: string;
     registrationNumber: string;
     gstin: string;
-    logoUrl: string;
+    logoUrl: string | null;
     primaryEmail: string;
     primaryPhone: string;
     website: string;
     address: AddressDto;
     bankInfo: BankDetailDto;
+    authorizedSignatories: AuthorizedSignatoryDto[];
 }

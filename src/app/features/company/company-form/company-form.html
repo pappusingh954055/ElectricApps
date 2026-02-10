@@ -24,7 +24,7 @@
             <div class="logo-upload-container flex-column flex-center gap-2 pr-4 border-r">
               <div class="logo-preview-box" (click)="logoInput.click()">
                 <img *ngIf="logoPreview || companyForm.get('logoUrl')?.value" 
-                     [src]="logoPreview || companyForm.get('logoUrl')?.value" 
+                     [src]="getImgUrl(logoPreview || companyForm.get('logoUrl')?.value)" 
                      alt="Company Logo">
                 <mat-icon *ngIf="!logoPreview && !companyForm.get('logoUrl')?.value">add_a_photo</mat-icon>
               </div>
@@ -147,7 +147,66 @@
         </mat-card-content>
       </mat-card>
 
+      <!-- Section: Authorized Signatories -->
+      <mat-card class="section-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar color="primary">assignment_ind</mat-icon>
+          <div class="flex-column">
+            <mat-card-title>Authorized Signatories</mat-card-title>
+            <mat-card-subtitle>People authorized to sign documents</mat-card-subtitle>
+          </div>
+          <span class="flex-1"></span>
+          <button type="button" mat-stroked-button color="primary" (click)="addSignatory()" class="btn-sm">
+            <mat-icon>add</mat-icon> Add Signatory
+          </button>
+        </mat-card-header>
+        <mat-card-content class="pt-4">
+          <div formArrayName="authorizedSignatories" class="flex-column gap-3">
+            <div *ngFor="let sig of signatories.controls; let i=index" [formGroupName]="i" 
+                 class="signatory-row p-3 border rounded flex-row flex-center gap-3">
+              
+              <!-- Signature Preview/Upload -->
+              <div class="sig-upload-box flex-column flex-center gap-1" (click)="sigInput.click()">
+                <div class="sig-preview">
+                  <img *ngIf="sig.get('signatureImageUrl')?.value" 
+                       [src]="getImgUrl(sig.get('signatureImageUrl')?.value)" alt="Signature">
+                  <mat-icon *ngIf="!sig.get('signatureImageUrl')?.value">draw</mat-icon>
+                </div>
+                <input #sigInput type="file" (change)="onSignatureSelected($event, i)" accept="image/*" style="display: none;">
+                <span class="text-xs text-blue-600">Signature</span>
+              </div>
+
+              <mat-form-field appearance="outline" class="flex-1">
+                <mat-label>Person Name</mat-label>
+                <input matInput formControlName="personName">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="flex-1">
+                <mat-label>Designation</mat-label>
+                <input matInput formControlName="designation">
+              </mat-form-field>
+
+              <div class="flex-column flex-center px-2">
+                <mat-slide-toggle formControlName="isDefault" color="primary">
+                  {{ sig.get('isDefault')?.value ? 'Default' : 'Regular' }}
+                </mat-slide-toggle>
+              </div>
+
+              <button type="button" mat-icon-button color="warn" (click)="removeSignatory(i)">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+
+
+            <div *ngIf="signatories.length === 0" class="empty-state p-4 text-center text-gray-400">
+              No signatories added. Click the button above to add.
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
       <!-- Footer -->
+
       <form-footer 
         [loading]="loading" 
         [saveLabel]="companyId ? 'Update Company' : 'Create Company'" 
