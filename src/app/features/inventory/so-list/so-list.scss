@@ -13,13 +13,59 @@
   flex-direction: column;   /* Stack children */
   height: 100%;             /* Full height */
   overflow: hidden;         /* No double scroll */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   
   .header-section, .d-flex.justify-content-between {
     flex-shrink: 0; /* Don't shrink header */
-    margin-bottom: 16px; /* Adjust spacing */
+    margin-bottom: 24px; /* Adjust spacing */
+  }
+}
+
+.main-add-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  height: 42px !important;
+  padding: 0 20px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  
+  mat-icon {
+    margin-right: 8px;
+    margin-top: -2px;
+    vertical-align: middle;
   }
 
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
+  }
+}
 
+.export-action-btn {
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(225, 29, 72, 0.3) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  height: 42px !important;
+  padding: 0 20px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  margin-right: 12px;
+
+  mat-icon {
+    margin-right: 8px;
+    margin-top: -2px;
+    vertical-align: middle;
+  }
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(225, 29, 72, 0.4) !important;
+  }
 }
 
 /* --- Professional Table Styling --- */

@@ -23,7 +23,7 @@
         <mat-date-range-picker #picker></mat-date-range-picker>
       </mat-form-field>
       
-      <button mat-raised-button color="primary" class="filter-btn" (click)="applyDateFilter()">
+      <button mat-flat-button class="filter-btn" (click)="applyDateFilter()">
         <mat-icon>filter_alt</mat-icon>
         Apply
       </button>
@@ -36,7 +36,7 @@
       <span><b>{{selection.selected.length}}</b> Items Selected</span>
     </div>
     <div class="action-buttons">
-      <button mat-raised-button color="primary" (click)="exportSelected()">
+      <button mat-flat-button class="export-stock-btn" (click)="exportSelected()">
         <mat-icon>download</mat-icon>
         <span>Export Selected</span>
       </button>

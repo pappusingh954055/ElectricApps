@@ -2,16 +2,15 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h2 class="page-title m-0">Purchase Return (Debit Note)</h2>
     <div class="d-flex gap-2">
-      <button mat-raised-button 
-        color="accent" 
+      <button mat-flat-button 
+        class="export-action-btn"
         (click)="exportToExcel()" 
-        style="margin-right: 10px;"
         [disabled]="isExportLoading || dataSource.data.length === 0">
         <mat-icon *ngIf="!isExportLoading">download</mat-icon>
         <mat-spinner diameter="20" *ngIf="isExportLoading" class="me-2"></mat-spinner>
         Export Excel
       </button>
-      <button mat-raised-button color="primary" (click)="navigateToCreate()" [disabled]="isTableLoading">
+      <button mat-flat-button class="main-add-btn" (click)="navigateToCreate()" [disabled]="isTableLoading">
         <mat-icon>add</mat-icon> New Return
       </button>
     </div>
@@ -44,7 +43,7 @@
         <mat-date-range-picker #picker></mat-date-range-picker>
       </mat-form-field>
 
-      <button mat-flat-button color="primary" style="height: 40px;" (click)="loadReturns()">
+      <button mat-flat-button class="filter-btn" (click)="loadReturns()">
         Apply
       </button>
     </div>

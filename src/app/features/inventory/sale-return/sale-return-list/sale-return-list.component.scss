@@ -6,6 +6,7 @@
     height: calc(100vh - 220px); 
     overflow: hidden; 
     box-sizing: border-box;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .header-actions {
@@ -143,6 +144,65 @@
 
     mat-form-field {
         font-size: 14px;
+    }
+}
+
+/* Premium Buttons - Global in this file */
+.main-add-btn {
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39) !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    height: 42px !important;
+    padding: 0 20px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    border: none;
+    
+    mat-icon {
+        margin-right: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    &:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
+    }
+}
+
+.export-action-btn {
+    background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 14px 0 rgba(225, 29, 72, 0.3) !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    height: 42px !important;
+    padding: 0 20px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    margin-bottom: 0px !important;
+
+    mat-icon {
+        margin-right: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    &:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 20px rgba(225, 29, 72, 0.4) !important;
     }
 }
 

@@ -1,90 +1,186 @@
 :host {
-  display: block;
-}
-
-mat-card {
-  padding: 16px;
-}
-
-mat-card-title {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 18px;
-  margin-bottom: 16px;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
-table {
-  width: 100%;
-}
-
-/* Responsive table */
-@media (max-width: 768px) {
-  table {
-    font-size: 13px;
-  }
-
-  mat-card-title {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-}
 .list-container {
-  /* Calculate height to fit in viewport: 100vh - (Toolbar + Breadcrumb + Footer + Padding/Buffer)
-     Increased buffer to 220px to strictly prevent outer scrollbar */
+  /* Calculate height to fit in viewport: 100vh - (Toolbar + Breadcrumb + Footer + Padding/Buffer) */
   height: calc(100vh - 220px);
   width: 100%;
+  background-color: #f8fafc;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .side-drawer {
   width: 650px;
   background-color: #ffffff;
-  box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+  box-shadow: -4px 0 20px rgba(0,0,0,0.05);
+  border-left: 1px solid #e2e8f0;
 }
 
 .drawer-header {
-  padding: 15px 20px;
-  background: #f8f9fa;
+  padding: 20px 24px;
+  background: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #eee;
-}
+  border-bottom: 1px solid #e2e8f0;
 
-/* Ensure internal scrolling only happens within the grid if needed */
-.drawer-body {
-  height: 100%;
-  padding: 16px;
-  box-sizing: border-box;
-  overflow: hidden; /* Critical: Hide overflow on the content wrapper itself */
-  display: flex !important; /* Force flex layout */
-  flex-direction: column;
-}
-
-/* Target element directly in case class is missed or overridden */
-mat-drawer-content {
-  overflow: hidden !important;
-}
-
-.action-bar {
-  margin-bottom: 16px;
-  flex: 0 0 auto;
-}
-
-.grid-wrapper {
-  flex: 1 1 auto;
-  overflow: auto; /* Allow grid to scroll */
-  display: flex;
-  flex-direction: column;
-  /* Fix for flex item scrolling issues */
-  min-height: 0;
-}
-
-/* Mobile Responsiveness [cite: 2026-01-22] */
-@media (max-width: 600px) {
-  .side-drawer {
-    width: 100vw; /* Mobile par full screen [cite: 2026-01-22] */
+  h2 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.01em;
   }
 }
 
+.drawer-body {
+  height: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+  overflow: hidden;
+  display: flex !important;
+  flex-direction: column;
+}
+
+mat-drawer-content {
+  overflow: hidden !important;
+  display: flex;
+  flex-direction: column;
+}
+
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+
+  .d-flex {
+    gap: 16px;
+    
+    button:not(:last-child) {
+      margin-right: 16px !important;
+    }
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Premium Buttons */
+.main-add-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  height: 42px !important;
+  padding: 0 20px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  border: none;
+  
+  mat-icon {
+    margin-right: 8px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
+  }
+}
+
+.delete-action-btn {
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(225, 29, 72, 0.3) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  height: 42px !important;
+  padding: 0 20px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  border: none;
+
+  mat-icon {
+    margin-right: 8px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(225, 29, 72, 0.4) !important;
+  }
+
+  &:disabled {
+    background: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    cursor: not-allowed;
+  }
+}
+
+.grid-wrapper {
+  flex: 1;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e2e8f0;
+}
+
+mat-card-actions {
+  margin: 0 !important;
+  padding: 16px 24px !important;
+  background: white;
+  border-top: 1px solid #f1f5f9;
+  flex-shrink: 0;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .side-drawer {
+    width: 100vw;
+  }
+  
+  .list-container {
+    padding: 16px;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    
+    .d-flex {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+}

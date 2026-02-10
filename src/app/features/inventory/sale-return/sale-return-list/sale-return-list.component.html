@@ -1,7 +1,7 @@
 <div class="list-container">
     <div class="header-actions">
         <h1>Sale Returns (Credit Notes)</h1>
-        <button mat-raised-button color="primary" (click)="navigateToCreate()" [disabled]="isTableLoading">
+        <button mat-flat-button class="main-add-btn" (click)="navigateToCreate()" [disabled]="isTableLoading">
             <mat-icon>add</mat-icon> New Return
         </button>
     </div>
@@ -52,27 +52,27 @@
     </div>
 
     <div class="filter-section">
-        <mat-form-field appearance="outline" class="search-field">
+        <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
             <mat-label>Search</mat-label>
             <input matInput (keyup)="applySearch($event)" placeholder="Search Returns" #input>
             <mat-icon matSuffix>search</mat-icon>
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>From Date</mat-label>
             <input matInput [matDatepicker]="picker1" [(ngModel)]="fromDate" (dateChange)="loadReturns()">
             <mat-datepicker-toggle matIconSuffix [for]="picker1"></mat-datepicker-toggle>
             <mat-datepicker #picker1></mat-datepicker>
         </mat-form-field>
 
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>To Date</mat-label>
             <input matInput [matDatepicker]="picker2" [(ngModel)]="toDate" (dateChange)="loadReturns()">
             <mat-datepicker-toggle matIconSuffix [for]="picker2"></mat-datepicker-toggle>
             <mat-datepicker #picker2></mat-datepicker>
         </mat-form-field>
 
-        <button mat-stroked-button color="primary" (click)="exportToExcel()" [disabled]="isExportLoading || isTableLoading">
+        <button mat-flat-button class="export-action-btn" (click)="exportToExcel()" [disabled]="isExportLoading || isTableLoading">
             <mat-icon *ngIf="!isExportLoading">download</mat-icon>
             <mat-spinner *ngIf="isExportLoading" diameter="20"></mat-spinner>
             Export

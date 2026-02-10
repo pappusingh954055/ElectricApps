@@ -1,26 +1,32 @@
-<div *ngIf="isLowStockFilterActive" class="filter-alert-banner" 
-     style="background: #fff3e0; padding: 12px; margin-bottom: 10px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #ffb74d;">
-  <div style="display: flex; align-items: center;">
-    <mat-icon style="color: #f57c00; margin-right: 12px;">report_problem</mat-icon>
-    <span style="color: #663c00; font-weight: 500;">
-      Dashboard Alert: Showing only <b>Low Stock</b> items.
-    </span>
+<div class="list-container">
+  <div *ngIf="isLowStockFilterActive" class="filter-alert-banner">
+    <div class="alert-content">
+      <mat-icon>report_problem</mat-icon>
+      <span>Dashboard Alert: Showing only <b>Low Stock</b> items.</span>
+    </div>
+    <button mat-button class="view-all-btn" (click)="clearFilter()">
+      VIEW ALL PRODUCTS
+    </button>
   </div>
-  <button mat-button color="primary" (click)="clearFilter()" style="font-weight: bold;">
-    VIEW ALL PRODUCTS
-  </button>
-</div>
 
-<app-server-datagrid [columns]="columns" [data]="data" [totalCount]="totalCount" [loading]="loading" gridKey="product-grid"
-  (loadData)="loadPriceLists($event)" (editAction)="onEdit($event)" (selectionChange)="onSelectionChange($event)" (edit)="onEdit($event)"
-  (delete)="deleteProduct($event[0])">
-</app-server-datagrid>
+  <div class="header-actions">
+    <h1>All Products</h1>
+    <div class="d-flex gap-3">
+      <button mat-flat-button class="delete-action-btn" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
+        <mat-icon>delete_sweep</mat-icon>
+        Delete Selected
+      </button>
+      <button mat-flat-button class="main-add-btn" routerLink="/app/master/products/add">
+        <mat-icon>add</mat-icon>
+        New Product
+      </button>
+    </div>
+  </div>
 
-<div class="action-buttons">
-  <button mat-flat-button class="bg-azure" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
-    Delete Selected
-  </button>
-  <button mat-flat-button class="bg-azure" routerLink="/app/master/products/add">
-    + Add Product
-  </button>
+  <div class="grid-wrapper">
+    <app-server-datagrid [columns]="columns" [data]="data" [totalCount]="totalCount" [loading]="loading" gridKey="product-grid"
+      (loadData)="loadPriceLists($event)" (editAction)="onEdit($event)" (selectionChange)="onSelectionChange($event)" (edit)="onEdit($event)"
+      (delete)="deleteProduct($event[0])">
+    </app-server-datagrid>
+  </div>
 </div>

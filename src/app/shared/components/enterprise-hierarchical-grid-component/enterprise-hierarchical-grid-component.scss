@@ -9,14 +9,15 @@
 .enterprise-grid-container {
   width: 100%;
   height: 100%;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  background: #fff;
-  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  background: #ffffff;
+  border: 1px solid #edf2f7;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   position: relative;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* Loading state */
@@ -26,13 +27,14 @@
   left: 0;
   bottom: 0;
   right: 0;
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.4);
   z-index: 2000;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(2px);
+  backdrop-filter: blur(8px) saturate(180%);
+  transition: all 0.3s ease;
 }
 
 /* Toolbar responsiveness */
@@ -40,30 +42,135 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px 16px;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 16px 24px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #edf2f7;
+  z-index: 1000;
+  gap: 12px;
+  min-height: 72px;
 }
 
-/* Added container for Search and Date Picker alignment with space */
 .date-range-container {
   display: flex;
   align-items: center;
-  gap: 12px;
-  /* Dono ke beech ka space */
+  gap: 16px;
 }
 
-@media (max-width: 600px) {
-  .grid-toolbar {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 12px;
+.right-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  padding-right: 8px;
+  width: 280px;
+
+  &:focus-within {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+}
+
+.modern-datepicker {
+  width: 250px;
+  
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+    display: none; /* Hide hint/error space in toolbar */
+  }
+}
+
+.clear-search-btn {
+  position: absolute;
+  right: 0;
+  opacity: 0.6;
+  transform: scale(0.8);
+}
+
+.main-add-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  height: 42px !important;
+  padding: 0 20px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  
+  mat-icon {
+    margin-right: 8px;
+    margin-top: -2px;
+    vertical-align: middle;
   }
 
-  .date-range-container {
-    flex-direction: column;
-    align-items: stretch;
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
   }
+}
+
+.glass-btn {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #1a202c !important;
+  
+  &:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+}
+
+.success-btn {
+  background-color: #10b981 !important;
+  color: white !important;
+  
+  &:hover {
+    background-color: #059669 !important;
+  }
+}
+
+.bulk-action-btn {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  height: 42px !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.contextual-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  animation: slideIn 0.3s ease-out;
+}
+
+.toolbar-icon-btn {
+  width: 42px !important;
+  height: 42px !important;
+  background: rgba(59, 130, 246, 0.05) !important;
+  border-radius: 10px !important;
+  
+  &:hover {
+    background: rgba(59, 130, 246, 0.1) !important;
+  }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
 }
 
 .responsive-table-wrapper {
@@ -97,7 +204,25 @@ table {
   top: 0;
   position: sticky;
   z-index: 100;
-  background: #f9fafb;
+  background: #fdfdfe !important;
+  transition: box-shadow 0.3s ease;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.05), transparent);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+}
+
+.responsive-table-wrapper:hover .mat-mdc-header-row::after {
+    opacity: 1; /* Dummy hover effect as proxy for scroll state */
 }
 
 /* Header & Resizer styling */
@@ -238,11 +363,43 @@ th.child-th {
   color: #666;
 }
 
+.custom-column-menu {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border-radius: 12px !important;
+  padding: 8px !important;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+}
+
 .menu-header {
-  padding: 10px;
-  font-weight: bold;
-  border-bottom: 1px solid #eee;
-  color: #333;
+  padding: 12px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #1a202c;
+  border-bottom: 1px solid #edf2f7;
+  letter-spacing: -0.01em;
+}
+
+.menu-actions-row {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px 4px;
+  gap: 8px;
+}
+
+.mini-link-btn {
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.menu-item-checkbox {
+  padding: 6px 12px;
+  border-radius: 6px;
+  transition: background 0.2s;
+  
+  &:hover {
+    background: #f1f5f9;
+  }
 }
 
 /* CHILD TABLE FOOTER STYLING */
@@ -511,17 +668,18 @@ th.child-th {
 /* enterprise-hierarchical-grid.component.scss */
 
 .master-row {
-  cursor: pointer !important; /* Isse poori row par hand icon aayega */
-  transition: background-color 0.2s ease;
+  cursor: pointer !important;
+  transition: all 0.2s ease;
 
-  /* Hover effect taaki responsive feel aaye */
   &:hover {
-    background-color: rgba(0, 0, 0, 0.04) !important;
+    background-color: #f1f5f9 !important;
+    transform: translateY(-0.5px);
+    box-shadow: inset 0 0 0 1px #e2e8f0;
   }
 
-  /* Agar row expand ho gayi hai toh highlight karne ke liye (Optional) */
   &.expanded {
-    background-color: #f9f9f9;
+    background-color: #f8fafc;
+    border-left: 3px solid #3b82f6;
   }
 }
 
@@ -736,10 +894,14 @@ div[style*="display: flex"] {
 }
 
 .grid-paginator {
-  background: #f9fafb !important;
-  border-top: 1px solid #e5e7eb;
-  color: #374151;
+  background: #fdfdfe !important;
+  border-top: 1px solid #edf2f7;
+  color: #4a5568;
   font-size: 13px;
+  position: sticky;
+  bottom: 0;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.02);
   
   ::ng-deep .mat-mdc-paginator-range-label {
     font-weight: 500;

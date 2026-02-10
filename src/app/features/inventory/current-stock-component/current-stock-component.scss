@@ -5,7 +5,8 @@
   --dg-row-hover: #f1f5f9;
   --dg-text-main: #334155;
   --dg-text-muted: #64748b;
-  --dg-row-height: 34px; // Further reduced height
+  --dg-row-height: 42px; // Improved height
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .table-container {
@@ -280,7 +281,7 @@ tr.expanded-row + tr.detail-row {
   display: flex;
   justify-content: flex-start; /* Unified flow from left */
   align-items: flex-end; /* Align bottom to match button and inputs */
-  padding: 16px;
+  padding: 16px 16px 24px 16px;
   background-color: #ffffff;
   border-bottom: 1px solid #e2e8f0;
   gap: 15px;
@@ -311,10 +312,61 @@ tr.expanded-row + tr.detail-row {
 
 /* Filter Button Styling */
 .filter-btn {
-  height: 48px; /* Match with Material input height */
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  height: 48px !important;
+  padding: 0 24px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  
+  mat-icon {
+    margin-right: 8px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important;
+  }
+}
+
+.export-stock-btn {
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(225, 29, 72, 0.25) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  height: 42px !important;
   padding: 0 20px !important;
-  font-weight: 500;
-  border-radius: 6px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  border: none;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+
+  mat-icon {
+    margin-right: 8px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(225, 29, 72, 0.35) !important;
+  }
 }
 
 /* Responsive Styles for Mobile */

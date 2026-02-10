@@ -2,64 +2,153 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 
-/* Card container */
-mat-card {
-  padding: 16px;
+.list-container {
+  padding: 24px;
+  background-color: #f8fafc;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
-/* Title + Add button */
-mat-card-title {
+.header-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-shrink: 0;
+
+  .d-flex {
+    gap: 16px;
+    
+    button:not(:last-child) {
+      margin-right: 16px !important;
+    }
+  }
+
+  h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Premium Buttons */
+.main-add-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  height: 42px !important;
+  padding: 0 20px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  border: none;
+  
+  mat-icon {
+    margin-right: 8px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
+  }
+}
+
+.delete-action-btn {
+  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(225, 29, 72, 0.3) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  height: 42px !important;
+  padding: 0 20px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  white-space: nowrap !important;
+  border: none;
+
+  mat-icon {
+    margin-right: 8px;
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(225, 29, 72, 0.4) !important;
+  }
+
+  &:disabled {
+    background: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    cursor: not-allowed;
+  }
+}
+
+.grid-wrapper {
+  flex: 1;
+  overflow: hidden;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border: 1px solid #e2e8f0;
+}
+
+/* Filter Alert Banner */
+.filter-alert-banner {
+  background: #fff8f1 !important;
+  border: 1px solid #ffdec0 !important;
+  padding: 12px 20px !important;
+  border-radius: 12px !important;
+  margin-bottom: 20px !important;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 18px;
-  margin-bottom: 16px;
-}
+  box-shadow: 0 2px 10px rgba(245, 124, 0, 0.08);
 
-/* Table */
-table {
-  width: 100%;
-}
-
-/* Column alignment tweaks */
-.mat-column-status,
-.mat-column-actions {
-  text-align: center;
-}
-
-/* Action icons */
-mat-icon {
-  font-size: 20px;
-}
-
-/* Slide toggle spacing */
-mat-slide-toggle {
-  margin: 0;
-}
-
-/* Responsive behavior */
-@media (max-width: 768px) {
-
-  mat-card-title {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+  .alert-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #9a5b10;
+    font-weight: 500;
+    font-size: 14px;
+    
+    mat-icon {
+      color: #f57c00;
+    }
   }
 
-  table {
-    font-size: 13px;
+  .view-all-btn {
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+    color: #f57c00 !important;
+    text-transform: uppercase;
+    font-size: 12px !important;
+    
+    &:hover {
+      background: rgba(245, 124, 0, 0.05) !important;
+    }
   }
-
-  .mat-column-actions {
-    min-width: 80px;
-  }
-}
-
-.action-buttons {
-  margin-top: 16px;
-  flex-shrink: 0;
-  display: flex;
-  gap: 12px;
 }

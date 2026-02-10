@@ -14,6 +14,7 @@
   flex-direction: column;
   overflow: hidden;
   box-sizing: border-box;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 /* Header Section: Improved Spacing */
@@ -64,14 +65,27 @@
   }
 }
 
-.add-button {
+.main-add-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39) !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
   height: 48px !important;
   padding: 0 24px !important;
-  margin-top: 2px; /* Small nudge to align with search field baseline */
-  font-size: 14px !important;
-  font-weight: 600 !important;
-  border-radius: 8px !important;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  
+  mat-icon {
+    margin-right: 8px;
+    margin-top: -2px;
+    vertical-align: middle;
+  }
+
+  &:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
+  }
 }
 
 /* TABLE COMPACT DESIGN */

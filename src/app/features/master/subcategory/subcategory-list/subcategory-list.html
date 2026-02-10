@@ -1,18 +1,28 @@
 
 
-  <app-server-datagrid [columns]="columns" [data]="data" 
-    gridKey="subcategory-grid"
-    [totalCount]="totalCount" [loading]="loading"
-    (loadData)="loadSubCategories($event)" 
-    (selectionChange)="onSelectionChange($event)" 
-    (editAction)="onEdit($event)"
-    (delete)="deleteCategory($event[0])">
-  </app-server-datagrid>
+  <div class="list-container">
+  <div class="header-actions">
+    <h1>All Subcategories</h1>
+    <div class="d-flex gap-3">
+      <button mat-flat-button class="delete-action-btn" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
+        <mat-icon>delete_sweep</mat-icon>
+        Delete Selected
+      </button>
+      <button mat-flat-button class="main-add-btn" routerLink="/app/master/subcategories/add">
+        <mat-icon>add</mat-icon>
+        New Subcategory
+      </button>
+    </div>
+  </div>
 
-
-    <button mat-flat-button style="margin-right: 10px; margin-top: 10px;" class="bg-azure" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
-      Delete Selected
-    </button>
-       <button mat-flat-button style="margin-top: 10px;" class="bg-azure"  routerLink="/app/master/subcategories/add" [disabled]="loading">
-      + Add Subcategory
-    </button>
+  <div class="grid-wrapper">
+    <app-server-datagrid [columns]="columns" [data]="data" 
+      gridKey="subcategory-grid"
+      [totalCount]="totalCount" [loading]="loading"
+      (loadData)="loadSubCategories($event)" 
+      (selectionChange)="onSelectionChange($event)" 
+      (editAction)="onEdit($event)"
+      (delete)="deleteCategory($event[0])">
+    </app-server-datagrid>
+  </div>
+</div>

@@ -30,6 +30,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { MatTreeModule } from '@angular/material/tree';
+import { ScrollingModule } from '@angular/cdk/scrolling';
 
 @NgModule({
     imports: [MatToolbarModule,
@@ -66,7 +67,7 @@ import { MatTreeModule } from '@angular/material/tree';
         MatAutocompleteModule,
         DragDropModule,
         MatTreeModule,
-      
+
     ],
     exports: [
         MatToolbarModule,
@@ -106,6 +107,7 @@ import { MatTreeModule } from '@angular/material/tree';
         MatTableModule,
         MatSortModule,
         MatPaginatorModule,
+        ScrollingModule,
     ]
 })
 export class MaterialModule { }

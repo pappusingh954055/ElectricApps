@@ -2,14 +2,13 @@
   <div class="d-flex justify-content-between align-items-center mb-3 px-2">
     <h2 class="m-0 text-dark">Sale Order Management</h2>
     <div class="d-flex gap-2">
-      <button mat-raised-button color="accent" 
+      <button mat-flat-button class="export-action-btn" 
               (click)="selection.hasValue() ? DownloadMultipleOrders(getSelectedIds()) : exportOrders()" 
-              style="height: 40px; margin-right: 12px;"
               [disabled]="isLoading">
         <mat-icon>download</mat-icon> 
-        {{ selection.hasValue() ? 'Export Selected (' + selection.selected.length + ')' : 'Export Excel' }}
+        {{ selection.hasValue() ? 'Export (' + selection.selected.length + ')' : 'Export Excel' }}
       </button>
-      <button mat-raised-button color="primary" (click)="createNewOrder()" style="height: 40px;" [disabled]="isLoading">
+      <button mat-flat-button class="main-add-btn" (click)="createNewOrder()" [disabled]="isLoading">
         <mat-icon>add</mat-icon> New Sale Order
       </button>
     </div>

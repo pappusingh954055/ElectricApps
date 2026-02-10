@@ -1,18 +1,19 @@
 <div class="enterprise-grid-container">
   <div class="grid-toolbar">
     <div class="date-range-container">
-      <div class="search-wrapper" style="position: relative; display: flex; align-items: center;">
+      <div class="search-wrapper">
         <app-search-input [value]="globalSearchQuery" (onSearch)="onGlobalSearch($event)"></app-search-input>
         <button *ngIf="globalSearchQuery" mat-icon-button (click)="globalSearchQuery=''; triggerDataLoad()"
-          style="position: absolute; right: 8px;">
+          class="clear-search-btn">
+          <mat-icon>close</mat-icon>
          </button>
       </div>
 
       <mat-form-field appearance="outline" class="modern-datepicker">
-        <mat-label>Select PO Date Range</mat-label>
+        <mat-label>Search by Date Range</mat-label>
         <mat-date-range-input [rangePicker]="picker">
-          <input matStartDate [value]="fromDate" placeholder="Start Date" (dateChange)="applyDateFilter()">
-          <input matEndDate [value]="toDate" placeholder="End Date" (dateChange)="applyDateFilter()">
+          <input matStartDate [value]="fromDate" placeholder="Start" (dateChange)="applyDateFilter()">
+          <input matEndDate [value]="toDate" placeholder="End" (dateChange)="applyDateFilter()">
         </mat-date-range-input>
         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-date-range-picker #picker></mat-date-range-picker>
@@ -20,12 +21,12 @@
     </div>
 
     <div class="right-actions">
-      <button mat-icon-button [matMenuTriggerFor]="columnMenu" title="Hide/Show Columns" style="margin-right: 8px;">
+      <button mat-icon-button [matMenuTriggerFor]="columnMenu" matTooltip="Custom Columns" class="toolbar-icon-btn">
         <mat-icon color="primary">view_column</mat-icon>
       </button>
 
       <mat-menu #columnMenu="matMenu" class="custom-column-menu">
-        <div class="menu-header">Show/Hide Columns</div>
+        <div class="menu-header">Manage Visibility</div>
         <div class="menu-actions-row" (click)="$event.stopPropagation()">
           <button mat-button color="primary" class="mini-link-btn" (click)="toggleAllColumns(true)">Select All</button>
           <span class="v-divider">|</span>
@@ -40,32 +41,33 @@
         </div>
       </mat-menu>
 
-      <button mat-flat-button color="warn" *ngIf="selection.hasValue() && userRole !== 'Manager' && userRole !== 'Warehouse'" (click)="onBulkDeleteClick()" class="action-btn"
-        style="margin-right: 8px;">
-        <mat-icon>delete_sweep</mat-icon> Bulk Delete ({{selection.selected.length}})
-      </button>
+      <!-- Contextual Action Buttons -->
+      <div class="contextual-buttons-group" *ngIf="selection.hasValue()">
+        <button mat-flat-button color="warn" *ngIf="userRole !== 'Manager' && userRole !== 'Warehouse'" (click)="onBulkDeleteClick()" class="bulk-action-btn">
+          <mat-icon>delete_sweep</mat-icon> Bulk Delete
+        </button>
 
-      <button mat-flat-button color="accent" *ngIf="selection.hasValue() && userRole === 'User'" (click)="onBulkApproveClick()" class="action-btn"
-        style="margin-right: 8px;">
-        <mat-icon>done_all</mat-icon> Bulk Draft Approval ({{selection.selected.length}})
-      </button>
+        <button mat-flat-button color="accent" *ngIf="userRole === 'User'" (click)="onBulkApproveClick()" class="bulk-action-btn glass-btn">
+          <mat-icon>done_all</mat-icon> Submit Approval
+        </button>
 
-      <button mat-flat-button color="primary" *ngIf="selection.hasValue() && userRole === 'Manager'" (click)="onBulkDraftApprovedClick()" class="action-btn"
-        style="margin-right: 8px; background-color: #2e7d32; color: white;">
-        <mat-icon>verified</mat-icon> Bulk Draft Approved ({{selection.selected.length}})
-      </button>
+        <button mat-flat-button color="primary" *ngIf="userRole === 'Manager'" (click)="onBulkDraftApprovedClick()" class="bulk-action-btn success-btn">
+          <mat-icon>verified</mat-icon> Massive Approve
+        </button>
 
-      <button mat-flat-button color="warn" *ngIf="selection.hasValue() && userRole === 'Manager'" (click)="onBulkPORejectedClick()" class="action-btn"
-      style="margin-right: 8px;">
-      <mat-icon>cancel</mat-icon> Bulk PO Rejected ({{selection.selected.length}})
-    </button>
+        <button mat-flat-button color="warn" *ngIf="userRole === 'Manager'" (click)="onBulkPORejectedClick()" class="bulk-action-btn">
+          <mat-icon>cancel</mat-icon> Mass Reject
+        </button>
 
-      <button mat-flat-button color="accent" *ngIf="selection.hasValue() && userRole === 'Warehouse'" (click)="onBulkCreateGrnClick()" class="action-btn"
-        style="margin-right: 8px; background-color: #2e7d32; color: white;">
-        <mat-icon>inventory</mat-icon> Bulk Receive ({{selection.selected.length}})
-      </button>
+        <button mat-flat-button color="accent" *ngIf="userRole === 'Warehouse'" (click)="onBulkCreateGrnClick()" class="bulk-action-btn success-btn">
+          <mat-icon>inventory</mat-icon> Bulk Receive
+        </button>
+      </div>
       
-      <button mat-flat-button color="primary" *ngIf="userRole !== 'Manager' && userRole !== 'Warehouse'" (click)="onAddNewClick()">+ {{ addNewLabel }}</button>
+      <button mat-flat-button color="primary" *ngIf="userRole !== 'Manager' && userRole !== 'Warehouse'" (click)="onAddNewClick()" class="main-add-btn">
+        <mat-icon>add</mat-icon>
+        {{ addNewLabel }}
+      </button>
     </div>
   </div>
 

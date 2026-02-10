@@ -1,22 +1,32 @@
 
 
 
-  <app-server-datagrid 
-    gridKey="category-grid"
-    [columns]="columns" 
-    [data]="data" 
-    [totalCount]="totalCount" 
-    [loading]="loading"
-    (loadData)="loadCategories($event)" 
-    (selectionChange)="onSelectionChange($event)"
-    (editAction)="onEdit($event)"
-    (delete)="deleteCategory($event[0])">
-  </app-server-datagrid>
+  <div class="list-container">
+  <div class="header-actions">
+    <h1>All Categories</h1>
+    <div class="d-flex gap-3">
+      <button mat-flat-button class="delete-action-btn" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
+        <mat-icon>delete_sweep</mat-icon>
+        Delete Selected
+      </button>
+      <button mat-flat-button class="main-add-btn" routerLink="/app/master/categories/add">
+        <mat-icon>add</mat-icon>
+        New Category
+      </button>
+    </div>
+  </div>
 
-
-     <button style="margin-right: 10px; margin-top: 10px;" mat-flat-button class="bg-azure" routerLink="/app/master/categories/add">
-      + Add Category
-    </button>
-    <button style="margin-top: 10px;" mat-flat-button class="bg-azure" (click)="confirmBulkDelete()" [disabled]="!selectedRows.length || loading">
-      Delete Selected
-    </button>
+  <div class="grid-wrapper">
+    <app-server-datagrid 
+      gridKey="category-grid"
+      [columns]="columns" 
+      [data]="data" 
+      [totalCount]="totalCount" 
+      [loading]="loading"
+      (loadData)="loadCategories($event)" 
+      (selectionChange)="onSelectionChange($event)"
+      (editAction)="onEdit($event)"
+      (delete)="deleteCategory($event[0])">
+    </app-server-datagrid>
+  </div>
+</div>
