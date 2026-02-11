@@ -83,3 +83,26 @@ mat-card-title {
     align-items: stretch;
   }
 }
+/* Autocomplete & Loader Styles */
+.search-field {
+  position: relative;
+  .input-spinner {
+    display: flex;
+    align-items: center;
+    padding-right: 8px;
+  }
+}
+
+.form-loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}

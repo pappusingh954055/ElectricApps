@@ -1,58 +1,51 @@
-import { ChangeDetectorRef, Component, inject, NgZone, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { Validators, FormBuilder, ReactiveFormsModule, FormGroup } from '@angular/forms';
-
-
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
-
 import { SubCategory } from '../modesls/subcategory.model';
 import { MatDialog } from '@angular/material/dialog';
-import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
-
 import { CategoryService } from '../../category/services/category.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SubCategoryService } from '../services/subcategory.service';
 import { FormFooter } from '../../../shared/form-footer/form-footer';
-import { Category, CategoryDropdown } from '../../category/models/category.model';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
-
-
+import { Observable, Subject } from 'rxjs';
+import { map, startWith, takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-subcategory-form',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MaterialModule, FormFooter],
   templateUrl: './subcategory-form.html',
   styleUrl: './subcategory-form.scss',
 })
-export class SubcategoryForm implements OnInit {
+export class SubcategoryForm implements OnInit, OnDestroy {
+  private fb = inject(FormBuilder);
+  private dialog = inject(MatDialog);
+  private cdr = inject(ChangeDetectorRef);
+  private route = inject(ActivatedRoute);
+  private subcategorySvc = inject(SubCategoryService);
+  private categoryService = inject(CategoryService);
+  private router = inject(Router);
+  private destroy$ = new Subject<void>();
 
   subcategoryForm!: FormGroup;
-
   loading = false;
-
-  mapToSubCategory!: SubCategory;
-
   isEditMode = false;
   subCategoryId: string | null = null;
-
-  constructor(private fb: FormBuilder, private dialog: MatDialog,
-    private cdr: ChangeDetectorRef, private zone: NgZone,
-    private route: ActivatedRoute) { }
-
-  readonly subcategorySvc = inject(SubCategoryService)
-
-  readonly categoryService = inject(CategoryService)
-
-  readonly router = inject(Router);
-
-  categories: any = [];
-
-
+  categories: any[] = [];
+  filteredCategories!: Observable<any[]>;
+  isSearchingCategories = false;
 
   ngOnInit(): void {
     this.detectMode();
-    this.loadCategories();
     this.initForm();
+    this.loadCategories();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   private detectMode(): void {
@@ -62,7 +55,8 @@ export class SubcategoryForm implements OnInit {
 
   private initForm(): void {
     this.subcategoryForm = this.fb.group({
-      categoryId: ['', Validators.required],
+      categoryId: [null, Validators.required],
+      categorySearch: [''], // For autocomplete input text
       subcategoryName: ['', Validators.required],
       subcategoryCode: [''],
       defaultGst: [0, [Validators.min(0), Validators.max(100)]],
@@ -73,13 +67,73 @@ export class SubcategoryForm implements OnInit {
     if (this.isEditMode && this.subCategoryId) {
       this.loadSubCategory(this.subCategoryId);
     }
+
+    // Autocomplete Filtering with precise loader control
+    this.filteredCategories = this.subcategoryForm.get('categorySearch')!.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        this.isSearchingCategories = true;
+        const name = typeof value === 'string' ? value : (value?.categoryName || '');
+        const results = name ? this._filterCategories(name) : this.categories.slice();
+
+        // Use a microtask to ensure results are ready before hiding the loader
+        Promise.resolve().then(() => {
+          this.isSearchingCategories = false;
+          this.cdr.detectChanges();
+        });
+
+        return results;
+      })
+    );
+  }
+
+  private _filterCategories(value: string): any[] {
+    const filterValue = value.toLowerCase();
+    return this.categories.filter(c =>
+      c.categoryName.toLowerCase().includes(filterValue) ||
+      c.categoryCode.toLowerCase().includes(filterValue)
+    );
+  }
+
+  displayCategoryFn(category: any): string {
+    return category ? `[${category.categoryCode}] - ${category.categoryName}` : '';
+  }
+
+  onCategorySelected(event: any): void {
+    const category = event.option.value;
+    this.subcategoryForm.get('categoryId')?.setValue(category.id);
+  }
+
+  private loadCategories(): void {
+    this.loading = true;
+    this.categoryService.getAll().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (data) => {
+        this.categories = data;
+        this.syncCategorySelection();
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private syncCategorySelection(): void {
+    const catId = this.subcategoryForm.get('categoryId')?.value;
+    if (catId && this.categories.length > 0) {
+      const selected = this.categories.find(c => c.id === catId);
+      if (selected) {
+        this.subcategoryForm.get('categorySearch')?.setValue(selected, { emitEvent: false });
+      }
+    }
   }
 
   private loadSubCategory(id: string): void {
     this.loading = true;
-    this.subcategorySvc.getById(id).subscribe({
+    this.subcategorySvc.getById(id).pipe(takeUntil(this.destroy$)).subscribe({
       next: (data) => {
-        console.log('Subcategory loaded for edit:', data);
         this.subcategoryForm.patchValue({
           categoryId: data.categoryId,
           subcategoryName: data.subcategoryName,
@@ -88,103 +142,64 @@ export class SubcategoryForm implements OnInit {
           description: data.description,
           isActive: data.isActive
         });
+        this.syncCategorySelection();
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error loading subcategory:', err);
         this.loading = false;
         this.cdr.detectChanges();
       }
     });
   }
-
-
 
   onSave(): void {
-    if (this.subcategoryForm.invalid) return;
-
-    this.loading = true;
-    const payload = this.mapToSubCategories(this.subcategoryForm.value);
-    if (this.isEditMode && this.subCategoryId) {
-      payload.id = this.subCategoryId;
+    if (this.subcategoryForm.invalid) {
+      this.subcategoryForm.markAllAsTouched();
+      return;
     }
 
-    const request = this.isEditMode && this.subCategoryId
-      ? this.subcategorySvc.update(this.subCategoryId, payload)
-      : this.subcategorySvc.create(payload);
-
-    request.subscribe({
-      next: (res) => {
-        this.dialog.open(StatusDialogComponent, {
-          data: {
-            isSuccess: true,
-            message: res.message
-          }
-        }).afterClosed().subscribe(() => {
-          this.loading = false;
-          this.cdr.detectChanges();
-          this.router.navigate(['/app/master/subcategories']);
-        });
-      },
-      error: (err) => {
-        this.dialog.open(StatusDialogComponent, {
-          data: {
-            isSuccess: false,
-            message: err.error?.message ?? 'Something went wrong'
-          }
-        }).afterClosed().subscribe(() => {
-          this.loading = false;
-          this.cdr.detectChanges();
-        });
-      }
-    });
-  }
-
-
-  onCancel() {
-    this.router.navigate(['/app/master/subcategories']);
-  }
-
-
-  // 🔹 SINGLE RESPONSIBILITY: MAPPING
-  private mapToSubCategories(formValue: any): any {
-    return {
+    this.loading = true;
+    const formValue = this.subcategoryForm.value;
+    const payload: SubCategory = {
       categoryId: formValue.categoryId,
-      subCategoryName: formValue.subcategoryName,
-      subCategoryCode: formValue.subcategoryCode,
+      subcategoryName: formValue.subcategoryName,
+      subcategoryCode: formValue.subcategoryCode,
       defaultGst: Number(formValue.defaultGst),
       description: formValue.description?.trim(),
       isActive: Boolean(formValue.isActive)
     };
-  }
 
-  cancel() { }
+    if (this.isEditMode && this.subCategoryId) {
+      payload.id = this.subCategoryId;
+    }
 
-  loadCategories(): void {
+    const request$ = this.isEditMode && this.subCategoryId
+      ? this.subcategorySvc.update(this.subCategoryId, payload)
+      : this.subcategorySvc.create(payload);
 
-    this.loading = true;
-
-    this.categoryService.getAll().subscribe({
-      next: (data) => {
-        this.categories = data;
-        console.log('Categories loaded:', this.categories);
-        console.log(this.categories);
+    request$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
         this.loading = false;
         this.cdr.detectChanges();
+
+        this.dialog.open(StatusDialogComponent, {
+          data: { isSuccess: true, message: res.message }
+        }).afterClosed().subscribe(() => {
+          this.router.navigate(['/app/master/subcategories']);
+        });
       },
       error: (err) => {
+        this.loading = false;
+        this.cdr.detectChanges();
         this.dialog.open(StatusDialogComponent, {
-          data: {
-            isSuccess: false,
-            message: err.error?.message ?? 'Something went wrong'
-          }
-        }).afterClosed().subscribe(() => {
-          this.loading = false;
-          this.cdr.detectChanges();
+          data: { isSuccess: false, message: err.error?.message ?? 'Something went wrong' }
         });
       }
     });
   }
-}
 
+  onCancel() {
+    this.router.navigate(['/app/master/subcategories']);
+  }
+}

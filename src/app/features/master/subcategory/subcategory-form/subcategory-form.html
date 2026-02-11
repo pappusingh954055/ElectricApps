@@ -1,27 +1,37 @@
-<mat-card>
+<mat-card class="professional-form-card">
   <mat-card-content>
     <form [formGroup]="subcategoryForm" class="form-grid">
 
-         <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline">
         <mat-label>Code</mat-label>
         <input matInput formControlName="subcategoryCode">
       </mat-form-field>
 
-      <mat-form-field appearance="outline">
+      <mat-form-field appearance="outline" class="category-search-field">
         <mat-label>Category *</mat-label>
-        <mat-select formControlName="categoryId">
-          <mat-option *ngFor="let c of categories" [value]="c.id">
-           <span class="fw-bold">[{{ c.categoryCode }}]</span> - {{ c.categoryName }}
+        <input type="text"
+               placeholder="Search Category"
+               matInput
+               formControlName="categorySearch"
+               [matAutocomplete]="auto">
+        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayCategoryFn" (optionSelected)="onCategorySelected($event)">
+          <mat-option *ngFor="let c of filteredCategories | async" [value]="c">
+            <span class="fw-bold">[{{ c.categoryCode }}]</span> - {{ c.categoryName }}
           </mat-option>
-        </mat-select>
+        </mat-autocomplete>
+        
+        <!-- 🌀 Inline Loader (Show when searching or initial loading) -->
+        <div matSuffix *ngIf="isSearchingCategories || loading" class="input-spinner">
+          <mat-spinner diameter="18"></mat-spinner>
+        </div>
+
+        <mat-error *ngIf="subcategoryForm.get('categoryId')?.hasError('required')">Category is required</mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Subcategory Name *</mat-label>
         <input matInput formControlName="subcategoryName">
       </mat-form-field>
-
-   
 
       <mat-form-field appearance="outline">
         <mat-label>Default GST %</mat-label>

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -9,6 +9,8 @@ import { FormFooter } from '../../../shared/form-footer/form-footer';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { Product } from '../model/product.model';
 import { MatDialog } from '@angular/material/dialog';
+import { Observable, Subject, of } from 'rxjs';
+import { map, startWith, takeUntil, finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-product-form',
@@ -17,7 +19,7 @@ import { MatDialog } from '@angular/material/dialog';
   templateUrl: './product-form.html',
   styleUrl: './product-form.scss',
 })
-export class ProductForm implements OnInit {
+export class ProductForm implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -25,6 +27,7 @@ export class ProductForm implements OnInit {
   private dialog = inject(MatDialog);
   private productLukupService = inject(ProductLookUpService);
   private productService = inject(ProductService);
+  private destroy$ = new Subject<void>();
 
   productsForm!: FormGroup;
   loading = false;
@@ -32,10 +35,20 @@ export class ProductForm implements OnInit {
   productId: string | null = null;
 
   categories: any[] = [];
-  subcategories: any[] = []; // Yeh dynamic filter hogi category ke base par
+  subcategories: any[] = [];
+  units: string[] = ['PCS', 'KG', 'BOX', 'NOS', 'COIL', 'PACK', 'LTR', 'LENGTH', 'METER', 'BUNDLE'];
+
+  filteredCategories!: Observable<any[]>;
+  filteredSubcategories!: Observable<any[]>;
+  filteredUnits!: Observable<string[]>;
+
+  isSearchingCategories = false;
+  isSearchingSubcategories = false;
+  isSearchingUnits = false;
 
   ngOnInit() {
     this.createForm();
+    this.setupAutocomplete();
     this.loadInitialLookups();
 
     this.productId = this.route.snapshot.paramMap.get('id');
@@ -45,14 +58,139 @@ export class ProductForm implements OnInit {
     }
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  setupAutocomplete() {
+    // 🔍 Category Autocomplete with "No results found" popup
+    this.filteredCategories = this.productsForm.get('categorySearch')!.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        const name = typeof value === 'string' ? value : (value?.name || '');
+
+        // 🚨 IF CATEGORY IS BLANK -> RESET SUBCATEGORY
+        if (!name || name.trim() === '') {
+          this.productsForm.get('categoryId')?.setValue(null, { emitEvent: false });
+          this.productsForm.get('subcategoryId')?.setValue(null, { emitEvent: false });
+          this.productsForm.get('subcategorySearch')?.setValue('', { emitEvent: false });
+          this.subcategories = [];
+          this.cdr.detectChanges();
+        }
+
+        this.isSearchingCategories = true;
+        const results = name ? this._filterCategories(name) : this.categories.slice();
+
+        Promise.resolve().then(() => {
+          this.isSearchingCategories = false;
+          // Only show "No results" if user has typed something significant
+          if (name && name.length > 2 && results.length === 0) {
+            this.showNoResultsDialog('Category', name);
+          }
+          this.cdr.detectChanges();
+        });
+        return results;
+      })
+    );
+
+    // 🔍 Subcategory Autocomplete with "No results found" popup
+    this.filteredSubcategories = this.productsForm.get('subcategorySearch')!.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        this.isSearchingSubcategories = true;
+        const name = typeof value === 'string' ? value : (value?.subcategoryName || '');
+        const results = name ? this._filterSubcategories(name) : this.subcategories.slice();
+
+        Promise.resolve().then(() => {
+          this.isSearchingSubcategories = false;
+          if (name && results.length === 0) {
+            this.showNoResultsDialog('Subcategory', name);
+          }
+          this.cdr.detectChanges();
+        });
+        return results;
+      })
+    );
+
+    // 🔍 Unit Autocomplete
+    this.filteredUnits = this.productsForm.get('unit')!.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        this.isSearchingUnits = true;
+        const filterValue = (value || '').toLowerCase();
+        const results = this.units.filter(u => u.toLowerCase().includes(filterValue));
+
+        Promise.resolve().then(() => {
+          this.isSearchingUnits = false;
+          this.cdr.detectChanges();
+        });
+        return results;
+      })
+    );
+  }
+
+  // 📝 Helper to show "No Results" dialog nicely
+  private showNoResultsDialog(type: string, query: string) {
+    // We only show it once per unique search to avoid annoying the user
+    this.dialog.open(StatusDialogComponent, {
+      data: {
+        isSuccess: false,
+        message: `No ${type} found matching "${query}". Please check the spelling or create a new ${type}.`
+      }
+    });
+    // Reset search input so they can try again
+    const searchControl = type === 'Category' ? 'categorySearch' : 'subcategorySearch';
+    this.productsForm.get(searchControl)?.setValue('', { emitEvent: false });
+  }
+
+  private _filterCategories(value: string): any[] {
+    const filterValue = value.toLowerCase();
+    return this.categories.filter(c =>
+      c.name.toLowerCase().includes(filterValue) ||
+      (c.categoryCode && c.categoryCode.toLowerCase().includes(filterValue))
+    );
+  }
+
+  private _filterSubcategories(value: string): any[] {
+    const filterValue = value.toLowerCase();
+    return this.subcategories.filter(s =>
+      s.subcategoryName.toLowerCase().includes(filterValue) ||
+      (s.subcategoryCode && s.subcategoryCode.toLowerCase().includes(filterValue))
+    );
+  }
+
+  displayCategoryFn(category: any): string {
+    return category ? `[${category.categoryCode}] - ${category.name}` : '';
+  }
+
+  displaySubcategoryFn(subcategory: any): string {
+    return subcategory ? subcategory.subcategoryName : '';
+  }
+
+  onCategorySelected(event: any) {
+    const category = event.option.value;
+    this.productsForm.get('categoryId')?.setValue(category.id);
+    this.onCategoryChange(category.id);
+  }
+
+  onSubcategorySelected(event: any) {
+    const subcategory = event.option.value;
+    this.productsForm.get('subcategoryId')?.setValue(subcategory.id);
+  }
+
   loadProduct() {
     if (!this.productId) return;
     this.loading = true;
-    this.productService.getById(this.productId!).subscribe({
+    this.productService.getById(this.productId!).pipe(takeUntil(this.destroy$)).subscribe({
       next: (res: any) => {
         // Load subcategories first, then patch form
         this.productLukupService
           .getSubcategoriesByCategory(res.categoryId.toString())
+          .pipe(finalize(() => {
+            this.loading = false;
+            this.cdr.detectChanges();
+          }))
           .subscribe({
             next: (data: any) => {
               this.subcategories = data;
@@ -71,13 +209,15 @@ export class ProductForm implements OnInit {
                 trackInventory: res.trackInventory,
                 isActive: res.isActive,
                 minStock: res.minStock,
-                description: res.description
+                description: res.description,
+                productType: res.productType,
+                damagedStock: res.damagedStock
               });
-              this.loading = false;
-              this.cdr.detectChanges();
+
+              // Sync Autocomplete text
+              this.syncAutocomplete(res.categoryId, res.subcategoryId);
             },
             error: err => {
-              this.loading = false;
               console.error('Failed to load subcategories for product', err);
             }
           });
@@ -90,10 +230,23 @@ export class ProductForm implements OnInit {
     });
   }
 
+  private syncAutocomplete(catId: any, subId: any) {
+    if (catId && this.categories.length > 0) {
+      const cat = this.categories.find(c => c.id === catId);
+      if (cat) this.productsForm.get('categorySearch')?.setValue(cat, { emitEvent: false });
+    }
+    if (subId && this.subcategories.length > 0) {
+      const sub = this.subcategories.find(s => s.id === subId);
+      if (sub) this.productsForm.get('subcategorySearch')?.setValue(sub, { emitEvent: false });
+    }
+  }
+
   createForm() {
     this.productsForm = this.fb.group({
       categoryId: [null, [Validators.required]],
+      categorySearch: ['', [Validators.required]],
       subcategoryId: [null, [Validators.required]],
+      subcategorySearch: ['', [Validators.required]],
       productName: ['', [Validators.required]],
       sku: [null],
       brand: [null],
@@ -112,36 +265,41 @@ export class ProductForm implements OnInit {
     });
   }
 
-  // 🔹 Step 1: Pehle sirf categories load karo
   loadInitialLookups() {
-    this.productLukupService.getLookups().subscribe({
+    this.productLukupService.getLookups().pipe(takeUntil(this.destroy$)).subscribe({
       next: (res: any) => {
         this.categories = res.categories;
-        console.log('Lookups loaded:', this.categories);
+        if (this.isEditMode) {
+          const catId = this.productsForm.get('categoryId')?.value;
+          this.syncAutocomplete(catId, null);
+        }
       },
       error: (err) => console.error('Lookup load failed', err)
     });
   }
 
-  // 🔹 Step 2: Category change hone par subcategories load karo
   onCategoryChange(categoryId: number): void {
     // Purana selection aur list clear karo
     this.subcategories = [];
     this.productsForm.get('subcategoryId')?.setValue(null);
+    this.productsForm.get('subcategorySearch')?.setValue('', { emitEvent: false });
 
     if (!categoryId) return;
 
-    this.loading = true; // Loader dikhao lookup ke waqt
+    this.loading = true;
     this.productLukupService
       .getSubcategoriesByCategory(categoryId.toString())
+      .pipe(finalize(() => {
+        this.loading = false;
+        this.cdr.detectChanges();
+      }))
       .subscribe({
         next: (data: any) => {
           this.subcategories = data;
-          this.loading = false;
-          this.cdr.detectChanges();
+          // Trigger subcategory autocomplete reset to current list
+          this.productsForm.get('subcategorySearch')?.setValue('');
         },
         error: err => {
-          this.loading = false;
           console.error('Failed to load subcategories', err);
         }
       });
@@ -154,15 +312,14 @@ export class ProductForm implements OnInit {
     }
 
     this.loading = true;
-
     const currentUserId = localStorage.getItem('email') || '';
     const productsData = this.mapToProducts(this.productsForm.value);
 
     if (this.isEditMode && this.productId) {
       productsData.id = this.productId;
-      productsData.updatedby = currentUserId; // Required for updates
+      productsData.updatedby = currentUserId;
     } else {
-      productsData.createdby = currentUserId; // Required for creation
+      productsData.createdby = currentUserId;
     }
 
     const request = this.isEditMode && this.productId
@@ -171,9 +328,13 @@ export class ProductForm implements OnInit {
 
     request.subscribe({
       next: (res) => {
+        this.loading = false;
+        this.cdr.detectChanges();
         this.showDialog(true, res.message || (this.isEditMode ? 'Product updated successfully' : 'Product saved successfully'));
       },
       error: (err) => {
+        this.loading = false;
+        this.cdr.detectChanges();
         this.showDialog(false, err.error?.message ?? 'Something went wrong');
       }
     });
@@ -183,11 +344,9 @@ export class ProductForm implements OnInit {
     this.dialog.open(StatusDialogComponent, {
       data: { isSuccess: isSuccess, message: msg }
     }).afterClosed().subscribe(() => {
-      this.loading = false;
       if (isSuccess) {
         this.router.navigate(['/app/master/products']);
       }
-      this.cdr.detectChanges();
     });
   }
 
@@ -195,7 +354,6 @@ export class ProductForm implements OnInit {
     this.router.navigate(['/app/master/products']);
   }
 
-  // 🔹 Step 3: Complete Mapping for Backend
   private mapToProducts(formValue: any): any {
     return {
       categoryId: formValue.categoryId,
