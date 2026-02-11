@@ -123,7 +123,7 @@ export class PoForm implements OnInit, OnDestroy {
     const id = this.route.snapshot.paramMap.get('id');
     this.initForm();
     this.loadSuppliers();
-    this.loadAllPriceLists();
+    this.bindDropdownPriceList();
 
     if (id && id !== '0') {
       this.poId = id;
@@ -399,7 +399,18 @@ export class PoForm implements OnInit, OnDestroy {
 
   loadNextPoNumber() { this.inventoryService.getNextPoNumber().subscribe(res => this.poForm.patchValue({ PoNumber: res.poNumber })); }
   loadSuppliers() { this.supplierService.getSuppliers().subscribe(data => this.suppliers = data); }
-  loadAllPriceLists() { this.inventoryService.getPriceLists().subscribe(data => this.priceLists = data); }
+
+  // loadAllPriceLists() 
+  // { 
+  //   this.inventoryService.getPriceLists().
+  //   subscribe(data => this.priceLists = data); 
+  // }
+
+  bindDropdownPriceList() {
+    this.inventoryService.getPriceListsForDropdown().
+      subscribe(data => this.priceLists = data);
+  }
+
   ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
 
   saveDraft() {

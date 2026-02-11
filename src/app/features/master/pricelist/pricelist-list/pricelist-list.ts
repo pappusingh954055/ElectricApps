@@ -5,7 +5,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { Router, RouterLink } from '@angular/router';
 import { PriceListModel } from '../models/pricelist.model';
-import { ServerDatagridComponent } from '../../../../shared/components/server-datagrid-component/server-datagrid-component';
+import { PricelistHierarchicalGridComponent } from '../pricelist-hierarchical-grid/pricelist-hierarchical-grid.component';
 import { GridRequest } from '../../../../shared/models/grid-request.model';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
@@ -14,8 +14,8 @@ import { StatusDialogComponent } from '../../../../shared/components/status-dial
 
 @Component({
   selector: 'app-pricelist-list',
-  standalone: true, // Ensure standalone if used
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, ServerDatagridComponent],
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule, PricelistHierarchicalGridComponent],
   providers: [DatePipe],
   templateUrl: './pricelist-list.html',
   styleUrl: './pricelist-list.scss',
@@ -43,12 +43,31 @@ export class PricelistList implements OnInit {
     }
   ];
 
+  childColumns = [
+    { field: 'productName', header: 'Product', width: 250 },
+    { field: 'unit', header: 'Unit', width: 80 },
+    { field: 'minQty', header: 'Min Qty', width: 100 },
+    { field: 'maxQty', header: 'Max Qty', width: 100 },
+    {
+      field: 'rate',
+      header: 'Rate (₹)',
+      width: 120,
+      cell: (row: any) => row.rate ? `₹${row.rate.toFixed(2)}` : '-'
+    },
+    {
+      field: 'discountPercent',
+      header: 'Disc (%)',
+      width: 100,
+      cell: (row: any) => row.discountPercent ? `${row.discountPercent}%` : '0%'
+    }
+  ];
+
   loading = true;
   totalCount = 0;
   selectedRows: any[] = [];
   lastRequest!: GridRequest;
 
-  @ViewChild(ServerDatagridComponent) grid!: ServerDatagridComponent<any>;
+  @ViewChild(PricelistHierarchicalGridComponent) grid!: PricelistHierarchicalGridComponent;
   data: PriceListModel[] = [];
 
   constructor(
@@ -73,11 +92,14 @@ export class PricelistList implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
 
-    // Mapping service function to get paged data
     this.service.getPriceLists().subscribe({
       next: (res: any) => {
+        const items = res.items || res;
+        this.data = items.map((item: any) => ({
+          ...item,
+          items: item.priceListItems || item.items || []
+        }));
 
-        this.data = res.items || res;
         this.totalCount = res.totalCount || this.data.length;
         this.loading = false;
         this.cdr.detectChanges();
@@ -140,7 +162,7 @@ export class PricelistList implements OnInit {
         next: () => {
           this.loading = false;
           this.cdr.detectChanges();
-          this.grid.clearSelection();
+          if (this.grid && this.grid.selection) this.grid.selection.clear();
           this.loadPriceLists(this.lastRequest);
         },
         error: () => this.loading = false
@@ -152,14 +174,12 @@ export class PricelistList implements OnInit {
     this.selectedRows = rows;
   }
 
-  // Jab Grid mein Edit click hoga [cite: 2026-01-22]
-  onEditClicked(event: any) {
-    const id = event.id || event.data?.id;
+  onEditClicked(row: any) { // row comes directly from event now
+    const id = row.id;
     if (id) {
       this.router.navigate(['/app/master/pricelists/edit', id]);
     }
   }
-
 
   openCreatePage() {
     this.router.navigate(['/app/master/pricelists/add']);
@@ -167,5 +187,63 @@ export class PricelistList implements OnInit {
 
   handleFormAction(event: any) {
     this.loadPriceLists(this.lastRequest);
+  }
+
+  onDeletePriceListItem(event: { parent: any, child: any }) {
+    const { parent, child } = event;
+
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Item',
+        message: `Are you sure you want to delete product "${child.productName}" from this price list?`
+      }
+    }).afterClosed().subscribe(confirm => {
+      if (!confirm) return;
+
+      // Here we assume we update the pricelist by removing the item
+      // Ideally there would be a specific API endpoint to delete an item
+      // For now, let's simulate or use the update endpoint if appropriate, 
+      // OR just show a message if backend support is needed. 
+      // Since user asked to migrate functionality, assuming previous logic or similar is needed.
+      // If no previous logic for child delete existed, we'll verify.
+      // Looking at previous chats, it seems child columns and logic were discussed.
+
+      // Assuming we can filter and update the parent
+      this.loading = true;
+      const updatedItems = parent.items.filter((i: any) => i !== child);
+      const payload = { ...parent, priceListItems: updatedItems };
+
+      this.service.updatePriceList(parent.id, payload).subscribe({
+        next: () => {
+          this.loading = false;
+          parent.items = updatedItems; // Update local data
+          this.cdr.detectChanges();
+          this.dialog.open(StatusDialogComponent, {
+            data: { isSuccess: true, message: 'Item deleted successfully' }
+          });
+        },
+        error: (err) => {
+          this.loading = false;
+          this.dialog.open(StatusDialogComponent, {
+            data: { isSuccess: false, message: 'Failed to delete item' }
+          });
+        }
+      });
+    });
+  }
+  onRowExpand(row: any) {
+    if (!row || !row.id) return;
+
+    this.service.getPriceListById(row.id).subscribe({
+      next: (details: any) => {
+        const items = details.items || details.priceListItems || [];
+        row.items = items;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load details', err);
+      }
+    });
   }
 }

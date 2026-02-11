@@ -14,16 +14,19 @@
   </div>
    
   <div class="grid-wrapper">
-    <app-server-datagrid 
+    <app-pricelist-hierarchical-grid 
       gridKey="pricelist-grid"
-      [columns]="columns" 
+      [columns]="columns"
+      [childColumns]="childColumns" 
       [data]="data" 
       [totalCount]="totalCount" 
       [loading]="loading"
       (loadData)="loadPriceLists($event)" 
       (selectionChange)="onSelectionChange($event)"
-      (delete)="deletePriceList($event[0])"
-      (editAction)="onEditClicked($event)">
-    </app-server-datagrid>
+      (delete)="deletePriceList($event)"
+      (editAction)="onEditClicked($event)"
+      (rowExpand)="onRowExpand($event)"
+      (deleteChildRow)="onDeletePriceListItem($event)">
+    </app-pricelist-hierarchical-grid>
   </div>
 </div>

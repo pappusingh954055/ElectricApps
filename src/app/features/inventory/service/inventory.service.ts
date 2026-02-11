@@ -29,6 +29,10 @@ export class InventoryService {
         return this.api.get<any[]>('pricelists');
     }
 
+    getPriceListsForDropdown(): Observable<any[]> {
+        return this.api.get<any[]>('pricelists/dropdown');
+    }   
+
     // 2. Kisi specific Price List se product ka rate aur discount nikalne ke liye
     getPriceListRate(priceListId: string, productId: number): Observable<any> {
         return this.api.get<any>(`pricelists/${priceListId}/product-rate/${productId}`);

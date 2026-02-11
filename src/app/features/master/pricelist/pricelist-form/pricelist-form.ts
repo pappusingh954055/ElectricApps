@@ -241,7 +241,9 @@ export class PricelistForm implements OnInit, OnChanges {
   }
 
   displayFn(product: any): string {
-    return product ? (typeof product === 'string' ? product : product.productName) : '';
+    if (!product) return '';
+    if (typeof product === 'string') return product;
+    return product.name || product.productName || '';
   }
 
   removeItem(index: number) {
@@ -299,9 +301,18 @@ export class PricelistForm implements OnInit, OnChanges {
         });
       },
       error: (err) => {
+        let msg = 'Error occurred while saving.';
+        if (err.error && typeof err.error === 'string') {
+          msg = err.error; // Sometimes 500 returns plain text
+        } else if (err.error?.message) {
+          msg = err.error.message;
+        } else if (err.message) {
+          msg = err.message;
+        }
+
         this.dialog.open(StatusDialogComponent, {
-          width: '350px',
-          data: { isSuccess: false, message: err.error?.message || 'Error occurred while saving.' }
+          width: '450px', // Wider for detailed messages
+          data: { isSuccess: false, message: msg }
         });
       }
     });
