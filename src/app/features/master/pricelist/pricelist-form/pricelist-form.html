@@ -1,5 +1,8 @@
 <div [formGroup]="priceListForm" class="master-container">
   <div class="actions">
+    <button mat-button class="back-btn me-2" (click)="onCancel()">
+      <mat-icon>arrow_back</mat-icon> Back
+    </button>
     <button mat-flat-button class="save-btn" (click)="onSave()" [disabled]="priceListForm.invalid">
       <mat-icon>save</mat-icon> {{ isEditMode ? 'Update Price List' : 'Save Price List' }}
     </button>
@@ -46,19 +49,37 @@
         <mat-slide-toggle color="primary" formControlName="isActive">Active Status</mat-slide-toggle>
       </div>
 
-      <mat-form-field appearance="outline" class="full-width-field">
+      <mat-form-field appearance="outline" class="description-field">
         <mat-label>Price List Description / Remarks</mat-label>
-        <textarea matInput formControlName="description" rows="2"></textarea>
+        <textarea matInput formControlName="description" rows="1"></textarea>
       </mat-form-field>
     </div>
   </div>
 
   <div class="table-section-card">
-    <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-light mb-3">
-      <h6 class="m-0 fw-bold"><mat-icon class="me-2 text-primary">inventory_2</mat-icon> Linked Products</h6>
-      <button type="button" mat-flat-button class="add-item-btn" (click)="addItemRow()">
-        <mat-icon>add</mat-icon> Add Product</button>        
+    <div class="p-3 border-bottom d-flex align-items-center bg-light mb-4 flex-wrap gap-3">
+      <!-- Desktop Spacer -->
+      <div class="d-none d-md-block" style="flex: 1;"></div>
+
+      <!-- Title in Center -->
+      <h6 class="m-0 fw-bold d-flex align-items-center justify-content-center flex-grow-1 flex-md-grow-0" style="white-space: nowrap; margin-top: -4px; min-width: 200px;">
+        <mat-icon class="text-primary" style="margin-right: 8px;">inventory_2</mat-icon> 
+        <span>Linked Products</span>
+      </h6>
+      
+      <!-- Buttons on Right / Center on Mobile -->
+      <div class="d-flex gap-3 justify-content-center justify-content-md-end" style="flex: 1; min-width: 200px;">
+        <button type="button" mat-stroked-button color="primary" class="btn-sm-responsive" style="margin-right: 15px;" (click)="openBulkAddDialog()">
+          <mat-icon>list_alt</mat-icon> <span class="d-none d-sm-inline">Bulk </span>Add
+        </button>        
+        <button type="button" mat-flat-button class="add-item-btn btn-sm-responsive" (click)="addItemRow()">
+          <mat-icon>add</mat-icon> Add<span class="d-none d-sm-inline"> Product</span>
+        </button>        
+      </div>
     </div>
+    
+    <!-- Extra Spacer to prevent sticking -->
+    <div style="height: 25px;"></div>
 
     <div formArrayName="priceListItems" class="table-responsive-box">
       <table class="enterprise-table">

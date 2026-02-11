@@ -13,6 +13,7 @@ import { ProductService } from '../../master/product/service/product.service';
 import { POService } from '../service/po.service';
 import { DateHelper } from '../../../shared/models/date-helper';
 import { NotificationService } from '../../shared/notification.service';
+import { ProductSelectionDialogComponent } from '../../../shared/components/product-selection-dialog/product-selection-dialog';
 
 @Component({
   selector: 'app-po-form',
@@ -48,6 +49,67 @@ export class PoForm implements OnInit, OnDestroy {
   currentStatus = '';
   isEditMode: boolean = false;
   private refillData: any = null;
+
+  openBulkAddDialog() {
+    const dialogRef = this.dialog.open(ProductSelectionDialogComponent, {
+      width: '850px',
+      maxWidth: '95vw',
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe((selectedProducts: any[]) => {
+      if (selectedProducts && selectedProducts.length > 0) {
+        // Clear first empty row if untouched
+        if (this.items.length === 1 && !this.items.at(0).get('productId')?.value) {
+          this.items.removeAt(0);
+        }
+
+        selectedProducts.forEach(product => {
+          const isDuplicate = this.items.controls.some(control => control.get('productId')?.value === product.id);
+          if (!isDuplicate) {
+            this.addProductToForm(product);
+          }
+        });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  addProductToForm(product: any) {
+    const priceListId = this.poForm.get('priceListId')?.value;
+    const index = this.items.length;
+
+    const row = this.fb.group({
+      productSearch: [product, Validators.required],
+      productId: [product.id, Validators.required],
+      qty: [1, [Validators.required, Validators.min(1)]],
+      unit: [product.unit || 'PCS', Validators.required],
+      price: [product.basePurchasePrice || 0, [Validators.required, Validators.min(1)]],
+      discountPercent: [0],
+      gstPercent: [product.defaultGst || product.gstPercent || 0],
+      taxAmount: [{ value: 0, disabled: true }],
+      total: [{ value: 0, disabled: true }],
+      id: [0]
+    });
+
+    this.items.push(row);
+    this.isProductLoading[index] = false;
+    this.setupFilter(index);
+
+    if (product.id && priceListId) {
+      this.inventoryService.getProductRate(product.id, priceListId).subscribe({
+        next: (res: any) => {
+          if (res) {
+            row.patchValue({ price: res.recommendedRate || res.rate, gstPercent: res.gstPercent || product.defaultGst });
+          }
+          this.updateTotal(index);
+        },
+        error: () => this.updateTotal(index)
+      });
+    } else {
+      this.updateTotal(index);
+    }
+  }
 
   constructor() {
     // Redirection se aane wala data pakadne ke liye
@@ -304,7 +366,7 @@ export class PoForm implements OnInit, OnDestroy {
       debounceTime(300),
       distinctUntilChanged(),
       switchMap(value => {
-        const str = typeof value === 'string' ? value : value?.name;
+        const str = typeof value === 'string' ? value : value?.productName;
         if (!str || str.length < 2) return of([]);
         this.isProductLoading[index] = true;
         return this.productService.searchProducts(str).pipe(
@@ -316,7 +378,7 @@ export class PoForm implements OnInit, OnDestroy {
     );
   }
 
-  displayProductFn(p: any): string { return p?.name || (typeof p === 'string' ? p : ''); }
+  displayProductFn(p: any): string { return p?.productName || (typeof p === 'string' ? p : ''); }
 
   removeItem(index: number): void {
     if (this.items.length > 1) {
@@ -405,5 +467,9 @@ export class PoForm implements OnInit, OnDestroy {
         this.notification.showStatus(false, err.error?.message || 'Error saving PO.');
       }
     });
+  }
+
+  goBack() {
+    this.router.navigate(['/app/inventory/polist']);
   }
 }

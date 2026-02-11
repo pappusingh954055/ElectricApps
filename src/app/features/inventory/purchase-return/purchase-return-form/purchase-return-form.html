@@ -11,16 +11,12 @@
         <p class="subtitle">Manage supplier returns and debit notes</p>
       </div>
       <div class="header-actions">
-        <!-- Added type="button" to prevent accidental submits on Cancel -->
-        <button mat-stroked-button color="warn" class="cancel-btn" type="button" (click)="router.navigate(['/app/inventory/purchase-return'])">
-          Cancel
+        <button mat-button class="back-btn" type="button" (click)="router.navigate(['/app/inventory/purchase-return'])">
+          <mat-icon>arrow_back</mat-icon> Cancel
         </button>
-        <button mat-raised-button color="primary" class="confirm-btn"
+        <button mat-flat-button class="save-btn"
                 [disabled]="!returnForm.valid || items.length === 0" (click)="onSubmit()">
-          <div class="btn-content">
-            <span class="material-icons">save</span>
-            <span>Confirm & Generate</span>
-          </div>
+          <mat-icon>save</mat-icon> Confirm & Generate
         </button>
       </div>
     </div>

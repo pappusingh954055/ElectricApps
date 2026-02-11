@@ -1,6 +1,6 @@
 /* ENTERPRISE GRID SYSTEM - UPDATED RESPONSIVE VERSION */
 .master-container {
-  padding: 24px;
+  padding: 10px 24px 24px;
   background-color: #f8fafc;
   // min-height: 100vh;
   box-sizing: border-box;
@@ -13,9 +13,9 @@
   .actions {
     display: flex !important;
     align-items: center !important; 
-    justify-content: flex-end !important;
+    justify-content: space-between !important;
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
     width: 100%;
     flex-wrap: wrap; // Mobile par buttons niche aa jayenge [cite: 2026-01-22]
 
@@ -51,6 +51,26 @@
         color: #94a3b8 !important;
         box-shadow: none !important;
         cursor: not-allowed;
+      }
+    }
+
+    .back-btn {
+      color: #64748b !important;
+      font-weight: 600 !important;
+      border-radius: 8px !important;
+      height: 42px !important;
+      padding: 0 16px !important;
+      
+      mat-icon {
+        margin-right: 4px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      &:hover {
+        background-color: #f1f5f9 !important;
+        color: #1e293b !important;
       }
     }
 
@@ -96,7 +116,7 @@
     padding: 24px;
     border-radius: 8px;
     border: 1px solid #e2e8f0;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
 
     .header-grid {
@@ -115,6 +135,10 @@
       }
     }
 
+    .description-field {
+      grid-column: span 1;
+    }
+    
     .full-width-field {
       grid-column: 1 / -1;
       margin-top: 8px;
@@ -171,6 +195,7 @@
   // }
 
   .table-section-card {
+    margin-top: 20px;
 
   .table-responsive-box {
     width: 100%;
@@ -207,6 +232,20 @@
     }
   }
 
+  .btn-sm-responsive {
+    height: 34px !important;
+    font-size: 13px !important;
+    padding: 0 12px !important;
+    border-radius: 8px !important;
+    
+    mat-icon {
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
+      margin-right: 4px !important;
+    }
+  }
+
   // MOBILE MEDIA QUERIES [cite: 2026-01-22]
   @media (max-width: 1024px) {
     .header-form-card .header-grid {
@@ -219,7 +258,7 @@
     
     .actions {
       justify-content: center !important;
-      gap: 8px;
+      gap: 12px;
     }
 
     .header-form-card {
@@ -227,6 +266,15 @@
       .header-grid {
         grid-template-columns: 1fr; // Mobile pe sab line se [cite: 2026-01-22]
         gap: 16px;
+      }
+    }
+    
+    .table-section-card {
+      padding: 0;
+      border: none;
+      
+      .enterprise-table {
+        min-width: 800px !important; /* Mobile pe thoda kam min-width taaki scroll bar manage ho jaye */
       }
     }
   }

@@ -12,6 +12,7 @@ import { StatusDialogComponent } from '../../../shared/components/status-dialog-
 import { SaleOrderService } from '../service/saleorder.service';
 import { Router } from '@angular/router';
 import { customerService } from '../../master/customer-component/customer.service';
+import { ProductSelectionDialogComponent } from '../../../shared/components/product-selection-dialog/product-selection-dialog';
 
 @Component({
   selector: 'app-so-form',
@@ -101,6 +102,53 @@ export class SoForm implements OnInit, OnDestroy {
 
     this.items.push(row);
     this.setupFilter(this.items.length - 1);
+  }
+
+  openBulkAddDialog() {
+    const dialogRef = this.dialog.open(ProductSelectionDialogComponent, {
+      width: '1000px',
+      height: '600px',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe((selectedProducts: any[]) => {
+      if (selectedProducts && selectedProducts.length > 0) {
+        selectedProducts.forEach(product => {
+          // Check if product already exists in the list
+          const exists = this.items.controls.some(control => control.get('productId')?.value === product.id);
+
+          if (!exists) {
+            const row = this.fb.group({
+              productSearch: [product, Validators.required],
+              productId: [product.id, Validators.required],
+              qty: [1, [Validators.required, Validators.min(1)]],
+              unit: [product.unit || 'PCS'],
+              rate: [product.saleRate || 0, [Validators.required, Validators.min(0.01)]],
+              discountPercent: [0],
+              gstPercent: [product.defaultGst || 0],
+              taxAmount: [0],
+              total: [{ value: 0, disabled: true }],
+              availableStock: [product.currentStock || 0],
+            });
+            this.items.push(row);
+            const index = this.items.length - 1;
+            this.setupFilter(index);
+            this.updateTotal(index);
+          }
+        });
+
+        // Remove the first empty row if it was not used
+        if (this.items.length > 1) {
+          const firstRow = this.items.at(0);
+          if (!firstRow.get('productId')?.value) {
+            this.items.removeAt(0);
+          }
+        }
+
+        this.calculateGrandTotal();
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   private setupFilter(index: number): void {

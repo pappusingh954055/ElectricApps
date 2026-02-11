@@ -22,9 +22,66 @@ $border-color: #e2e8f0;
   gap: 16px;
 
   .header-actions {
-    display: flex;
-    gap: 16px; // Explicit gap between buttons
-    align-items: center;
+    display: flex !important;
+    align-items: center !important; 
+    justify-content: flex-end !important;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    .save-btn {
+      background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+      color: white !important;
+      box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39) !important;
+      border-radius: 12px !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.5px !important;
+      height: 42px !important;
+      padding: 0 24px !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border: none;
+      
+      mat-icon {
+        margin-right: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
+      }
+
+      &:disabled {
+        background: #e2e8f0 !important;
+        color: #94a3b8 !important;
+        box-shadow: none !important;
+        cursor: not-allowed;
+      }
+    }
+
+    .back-btn {
+      color: #64748b !important;
+      font-weight: 600 !important;
+      border-radius: 8px !important;
+      height: 42px !important;
+      padding: 0 16px !important;
+      
+      mat-icon {
+        margin-right: 4px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      &:hover {
+        background-color: #f1f5f9 !important;
+        color: #1e293b !important;
+      }
+    }
   }
 
   .title {

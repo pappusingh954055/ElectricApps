@@ -10,14 +10,12 @@ import { GridRequest } from '../../../../shared/models/grid-request.model';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
-import { PricelistForm } from '../pricelist-form/pricelist-form';
-import { MatDrawer } from '@angular/material/sidenav';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 
 @Component({
   selector: 'app-pricelist-list',
   standalone: true, // Ensure standalone if used
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, ServerDatagridComponent, PricelistForm],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule, ServerDatagridComponent],
   providers: [DatePipe],
   templateUrl: './pricelist-list.html',
   styleUrl: './pricelist-list.scss',
@@ -60,8 +58,7 @@ export class PricelistList implements OnInit {
     private datePipe: DatePipe,
     private cdr: ChangeDetectorRef) { }
 
-  @ViewChild('drawer') drawer!: MatDrawer; // Drawer ka access lene ke liye
-  selectedId: string | null = null; // ID store karne ke liye
+  selectedId: string | null = null;
 
   ngOnInit(): void {
     this.loadPriceLists({
@@ -157,25 +154,18 @@ export class PricelistList implements OnInit {
 
   // Jab Grid mein Edit click hoga [cite: 2026-01-22]
   onEditClicked(event: any) {
-
-
-    // 1. Row ki ID save karein [cite: 2026-01-22]
-    this.selectedId = event.id || event.data?.id;
-
-    // 2. Drawer ko open karein [cite: 2026-01-22]
-    if (this.drawer) {
-      this.drawer.open();
+    const id = event.id || event.data?.id;
+    if (id) {
+      this.router.navigate(['/app/master/pricelists/edit', id]);
     }
   }
 
 
-  openCreateDrawer() {
-    this.selectedId = null;
-    this.drawer.open();
+  openCreatePage() {
+    this.router.navigate(['/app/master/pricelists/add']);
   }
 
   handleFormAction(event: any) {
-
-    this.drawer.close();
+    this.loadPriceLists(this.lastRequest);
   }
 }

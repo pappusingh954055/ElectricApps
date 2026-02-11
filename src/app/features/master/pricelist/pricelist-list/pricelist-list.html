@@ -1,45 +1,29 @@
-<mat-drawer-container class="list-container">
-  
-  <mat-drawer #drawer mode="over" position="end" class="side-drawer">
-    <div class="drawer-header">
-      <h2>{{ selectedId ? 'Edit Price List' : 'Add Price List' }}</h2>
-      <button mat-icon-button (click)="drawer.close()"><mat-icon>close</mat-icon></button>
+<div class="list-container">
+  <div class="header-actions">
+    <h1>All Price Lists</h1>
+    <div class="d-flex gap-3">
+      <button *ngIf="selectedRows.length > 0" mat-flat-button class="delete-action-btn" (click)="confirmBulkDelete()" [disabled]="loading">
+        <mat-icon>delete_sweep</mat-icon>
+        Delete Selected ({{selectedRows.length}})
+      </button>
+      <button *ngIf="selectedRows.length === 0" mat-flat-button class="main-add-btn" (click)="openCreatePage()" [disabled]="loading">
+        <mat-icon>add</mat-icon>
+        New List
+      </button>
     </div>
-
-    <app-pricelist-form
-      [editId]="selectedId" 
-      (actionComplete)="handleFormAction($event)">
-    </app-pricelist-form>
-  </mat-drawer>
-
-  <mat-drawer-content class="drawer-body">
-    <div class="header-actions">
-      <h1>All Price Lists</h1>
-      <div class="d-flex gap-3">
-        <button *ngIf="selectedRows.length > 0" mat-flat-button class="delete-action-btn" (click)="confirmBulkDelete()" [disabled]="loading">
-          <mat-icon>delete_sweep</mat-icon>
-          Delete Selected ({{selectedRows.length}})
-        </button>
-        <button *ngIf="selectedRows.length === 0" mat-flat-button class="main-add-btn" (click)="openCreateDrawer()" [disabled]="loading">
-          <mat-icon>add</mat-icon>
-          New List
-        </button>
-      </div>
-    </div>
-     
-    <div class="grid-wrapper">
-      <app-server-datagrid 
-        gridKey="pricelist-grid"
-        [columns]="columns" 
-        [data]="data" 
-        [totalCount]="totalCount" 
-        [loading]="loading"
-        (loadData)="loadPriceLists($event)" 
-        (selectionChange)="onSelectionChange($event)"
-        (delete)="deletePriceList($event[0])"
-        (editAction)="onEditClicked($event)">
-      </app-server-datagrid>
-    </div>
-  </mat-drawer-content>
-
-</mat-drawer-container>
+  </div>
+   
+  <div class="grid-wrapper">
+    <app-server-datagrid 
+      gridKey="pricelist-grid"
+      [columns]="columns" 
+      [data]="data" 
+      [totalCount]="totalCount" 
+      [loading]="loading"
+      (loadData)="loadPriceLists($event)" 
+      (selectionChange)="onSelectionChange($event)"
+      (delete)="deletePriceList($event[0])"
+      (editAction)="onEditClicked($event)">
+    </app-server-datagrid>
+  </div>
+</div>

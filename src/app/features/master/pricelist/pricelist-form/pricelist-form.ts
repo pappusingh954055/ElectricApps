@@ -10,6 +10,7 @@ import { Observable, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, finalize, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
+import { ProductSelectionDialogComponent } from '../../../../shared/components/product-selection-dialog/product-selection-dialog';
 
 @Component({
   selector: 'app-pricelist-form',
@@ -63,22 +64,17 @@ export class PricelistForm implements OnInit, OnChanges {
   ngOnInit(): void {
     this.initForm();
 
-    // Check mapping: Pehle Input check karein (Drawer ke liye), phir URL params
     const id = this.editId || this.route.snapshot.params['id'];
 
     if (id) {
       this.loadPriceList(id);
     } else {
-      // FIX: Sirf naye entry ke waqt ek row add hogi
       this.addItemRow();
     }
 
-    // Price Type change listener
     this.priceListForm.get('priceType')?.valueChanges.subscribe(type => {
       this.updateAllRates(type);
     });
-
-    // NOTE: Yahan se extra addItemRow() aur duplicate subscription hata diye gaye hain taaki double row na aaye.
   }
 
   initForm() {
@@ -109,6 +105,50 @@ export class PricelistForm implements OnInit, OnChanges {
       }
     });
     this.cdr.detectChanges();
+  }
+
+  openBulkAddDialog() {
+    const dialogRef = this.dialog.open(ProductSelectionDialogComponent, {
+      width: '850px',
+      maxWidth: '95vw',
+      disableClose: false
+    });
+
+    dialogRef.afterClosed().subscribe((selectedProducts: any[]) => {
+      if (selectedProducts && selectedProducts.length > 0) {
+        // Clear the first empty row if it's untouched
+        if (this.items.length === 1 && !this.items.at(0).get('productId')?.value) {
+          this.items.removeAt(0);
+        }
+
+        selectedProducts.forEach(product => {
+          const isDuplicate = this.items.controls.some(control => control.get('productId')?.value === product.id);
+          if (!isDuplicate) {
+            this.addProductToForm(product);
+          }
+        });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  addProductToForm(product: any) {
+    const priceType = this.priceListForm.get('priceType')?.value;
+    const defaultRate = priceType === 'SALES' ? (product.mrp || 0) : (product.basePurchasePrice || 0);
+
+    const itemRow = this.fb.group({
+      productId: [product.id, Validators.required],
+      productSearch: [product, Validators.required],
+      unit: [{ value: product.unit || product.uomName || product.uom || '-', disabled: true }],
+      discountPercent: [0, [Validators.min(0), Validators.max(100)]],
+      rate: [defaultRate, [Validators.required, Validators.min(0)]],
+      minQty: [1, [Validators.required, Validators.min(1)]],
+      maxQty: [999999, Validators.required]
+    });
+
+    this.items.push(itemRow);
+    const index = this.items.length - 1;
+    this.setupSearch(index);
   }
 
   addItemRow() {
@@ -160,10 +200,8 @@ export class PricelistForm implements OnInit, OnChanges {
   }
 
   onProductSelect(event: any, index: number) {
-    console.log('onProductSelect triggered', event);
     const selectedProduct = event.option.value;
 
-    // 1. Duplicate Product Check
     const isDuplicate = this.items.controls.some((control, i) => {
       return i !== index && control.get('productId')?.value === selectedProduct.id;
     });
@@ -173,11 +211,10 @@ export class PricelistForm implements OnInit, OnChanges {
         width: '350px',
         data: {
           isSuccess: false,
-          message: `Duplicate Product! "${selectedProduct.name}" is already added to the list.`
+          message: `Duplicate Product! "${selectedProduct.productName}" is already added to the list.`
         }
       });
 
-      // Reset current row
       this.items.at(index).patchValue({
         productId: null,
         productSearch: '',
@@ -187,20 +224,16 @@ export class PricelistForm implements OnInit, OnChanges {
       return;
     }
 
-    // 2. Logic for Default Rate based on Price Type
     const priceType = this.priceListForm.get('priceType')?.value;
     const defaultRate = priceType === 'SALES' ? (selectedProduct.mrp || 0) : (selectedProduct.basePurchasePrice || 0);
 
-    // 3. Patch Values (Checking for unit or uomName)
-    // NOTE: Agar selectedProduct.unit undefined hai to check karein product object mein key kya hai
     this.items.at(index).patchValue({
       productId: selectedProduct.id,
-      productSearch: selectedProduct, // Important: Autocomplete ke liye object hi pass karein agar displayWith hai
+      productSearch: selectedProduct,
       unit: selectedProduct.unit || selectedProduct.uomName || selectedProduct.uom || '-',
       rate: defaultRate
-    }, { emitEvent: false }); // Circular loop se bachne ke liye
+    }, { emitEvent: false });
 
-    // 4. Force UI Update
     setTimeout(() => {
       this.cdr.markForCheck();
       this.cdr.detectChanges();
@@ -208,7 +241,7 @@ export class PricelistForm implements OnInit, OnChanges {
   }
 
   displayFn(product: any): string {
-    return product ? (typeof product === 'string' ? product : product.name) : '';
+    return product ? (typeof product === 'string' ? product : product.productName) : '';
   }
 
   removeItem(index: number) {
@@ -236,12 +269,11 @@ export class PricelistForm implements OnInit, OnChanges {
     const finalPayload = {
       ...rawValues,
       id: currentId || undefined,
-      remarks: rawValues.description, // Map description back to remarks for backend
+      remarks: rawValues.description,
       validFrom: new Date(rawValues.validFrom).toISOString(),
       validTo: rawValues.validTo ? new Date(rawValues.validTo).toISOString() : null,
       createdBy: currentUserId,
       priceListItems: rawValues.priceListItems.map((item: any) => ({
-        
         ...item,
         productSearch: undefined
       }))
@@ -263,7 +295,7 @@ export class PricelistForm implements OnInit, OnChanges {
           }
         }).afterClosed().subscribe(() => {
           this.actionComplete.emit(true);
-          if (!this.editId) this.router.navigate(['/app/master/pricelist']);
+          if (!this.editId) this.router.navigate(['/app/master/pricelists']);
         });
       },
       error: (err) => {
@@ -277,7 +309,7 @@ export class PricelistForm implements OnInit, OnChanges {
 
   onCancel() {
     this.actionComplete.emit(false);
-    if (!this.editId) this.router.navigate(['/app/master/pricelist']);
+    this.router.navigate(['/app/master/pricelists']);
   }
 
   onFieldFocus(event: FocusEvent, fieldType: string) {
@@ -307,7 +339,7 @@ export class PricelistForm implements OnInit, OnChanges {
         code: data.code,
         applicableGroup: data.applicableGroup,
         currency: data.currency,
-        description: data.remarks, // Map remarks from backend to description
+        description: data.remarks,
         validFrom: new Date(data.validFrom),
         validTo: data.validTo ? new Date(data.validTo) : null,
         isActive: data.isActive
@@ -319,7 +351,6 @@ export class PricelistForm implements OnInit, OnChanges {
       const listData = data.items || data.priceListItems || [];
 
       listData.forEach((item: any, index: number) => {
-        console.log('item', item);
         const row = this.fb.group({
           productId: [item.productId, Validators.required],
           productSearch: [item.productName || '', Validators.required],
@@ -338,5 +369,4 @@ export class PricelistForm implements OnInit, OnChanges {
       }
     });
   }
-
 }
