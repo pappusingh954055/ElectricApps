@@ -43,6 +43,12 @@ export class SubCategoryService {
     getById(id: string): Observable<SubCategory> {
         return this.api.get<SubCategory>(`subcategories/${id}`);
     }
+
+    uploadExcel(file: File): Observable<any> {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.api.post('subcategories/upload-excel', formData);
+    }
 }
 
 

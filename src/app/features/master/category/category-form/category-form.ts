@@ -74,25 +74,49 @@ export class CategoryForm implements OnInit {
   onFileSelected(event: any): void {
     const file: File = event.target.files[0];
     if (file) {
-      const validExtensions = ['.xlsx', '.xls'];
+      // 1. Extension Check
+      const validExtensions = ['.xlsx', '.xls', '.csv'];
       const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      const isExtensionValid = validExtensions.includes(fileExtension);
 
-      if (!validExtensions.includes(fileExtension)) {
-        this.dialog.open(StatusDialogComponent, {
-          data: {
-            isSuccess: false,
-            message: 'Invalid file format. Please upload an Excel file (.xlsx, .xls).'
-          }
-        });
-        event.target.value = ''; // Reset input
-        this.selectedFileName = '';
-        this.selectedFile = null;
+      if (!isExtensionValid) {
+        this.showError('Invalid file extension. Please upload .xlsx, .xls, or .csv file.');
+        this.resetFile(event.target);
+        return;
+      }
+
+      // 2. File Size Check (Max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        this.showError('File size exceeds 5MB limit.');
+        this.resetFile(event.target);
+        return;
+      }
+
+      // 3. MIME Type Check
+      const validMimeTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+        'application/vnd.ms-excel', // .xls
+        'text/csv', 'application/csv', 'text/x-csv', 'application/x-csv', 'text/comma-separated-values', 'text/x-comma-separated-values', // .csv
+        'application/vnd.oasis.opendocument.spreadsheet', // .ods
+        '' // Sometimes CSV has empty mime type on Windows
+      ];
+
+      if (file.type && !validMimeTypes.includes(file.type)) {
+        this.showError('Invalid file format (MIME type mismatch).');
+        this.resetFile(event.target);
         return;
       }
 
       this.selectedFile = file;
       this.selectedFileName = file.name;
     }
+  }
+
+  private showError(message: string): void {
+    this.dialog.open(StatusDialogComponent, {
+      data: { isSuccess: false, message: message }
+    });
   }
 
   downloadTemplate() {

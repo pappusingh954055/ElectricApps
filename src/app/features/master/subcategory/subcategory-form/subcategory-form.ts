@@ -202,4 +202,109 @@ export class SubcategoryForm implements OnInit, OnDestroy {
   onCancel() {
     this.router.navigate(['/app/master/subcategories']);
   }
+
+  selectedFile: File | null = null;
+  selectedFileName: string = '';
+
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (file) {
+      // 1. Extension Check
+      const validExtensions = ['.xlsx', '.xls', '.csv'];
+      const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      const isExtensionValid = validExtensions.includes(fileExtension);
+
+      if (!isExtensionValid) {
+        this.showError('Invalid file extension. Please upload .xlsx, .xls, or .csv file.');
+        this.resetFileInput(event);
+        return;
+      }
+
+      // 2. File Size Check (Max 5MB)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        this.showError('File size exceeds 5MB limit.');
+        this.resetFileInput(event);
+        return;
+      }
+
+      // 3. MIME Type Check
+      const validMimeTypes = [
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+        'application/vnd.ms-excel', // .xls
+        'text/csv', 'application/csv', 'text/x-csv', 'application/x-csv', 'text/comma-separated-values', 'text/x-comma-separated-values', // .csv
+        'application/vnd.oasis.opendocument.spreadsheet', // .ods
+        '' // Sometimes CSV has empty mime type on Windows
+      ];
+
+      // If file.type is present, check it. If empty (common for CSV), trust extension if strictly .csv
+      if (file.type && !validMimeTypes.includes(file.type)) {
+        this.showError('Invalid file format (MIME type mismatch).');
+        this.resetFileInput(event);
+        return;
+      }
+
+      this.selectedFile = file;
+      this.selectedFileName = file.name;
+    }
+  }
+
+  private showError(message: string): void {
+    this.dialog.open(StatusDialogComponent, {
+      data: { isSuccess: false, message: message }
+    });
+  }
+
+  private resetFileInput(event: any): void {
+    event.target.value = '';
+    this.selectedFileName = '';
+    this.selectedFile = null;
+  }
+
+  downloadTemplate() {
+    const link = document.createElement('a');
+    link.href = '/assets/templates/subcategory_template.xlsx';
+    link.download = 'subcategory_template.xlsx';
+    link.click();
+  }
+
+  uploadExcel(): void {
+    if (!this.selectedFile) return;
+
+    this.loading = true;
+
+    this.subcategorySvc.uploadExcel(this.selectedFile).subscribe({
+      next: (res) => {
+        this.loading = false;
+        this.dialog.open(StatusDialogComponent, {
+          data: {
+            isSuccess: true,
+            // message: res.message || 'File uploaded successfully'
+            message: 'File uploaded successfully'
+          }
+        }).afterClosed().subscribe(() => {
+          this.router.navigate(['/app/master/subcategories']);
+        });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.dialog.open(StatusDialogComponent, {
+          data: {
+            isSuccess: false,
+            message: err.error?.message ?? 'Upload failed. Please ensure the Excel/CSV structure is correct.'
+          }
+        });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  resetFile(input?: HTMLInputElement): void {
+    this.selectedFile = null;
+    this.selectedFileName = '';
+    if (input) {
+      input.value = '';
+    }
+  }
 }
