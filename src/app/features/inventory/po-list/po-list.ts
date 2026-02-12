@@ -114,7 +114,10 @@ export class PoList implements OnInit {
     this.itemColumns = [
       { field: 'productName', header: 'Product Name', width: 200, sortable: true, isFilterable: true, isResizable: true },
       { field: 'qty', header: 'Ordered Qty', width: 80, align: 'left' },
-      { field: 'receivedQty', header: 'Received Qty', width: 80, align: 'left' },
+      { field: 'receivedQty', header: 'Received Qty', width: 80, align: 'left', cell: (row) => row.receivedQty || 0 },
+      { field: 'pendingQty', header: 'Pending Qty', width: 80, align: 'left', cell: (row) => row.pendingQty || 0 },
+      { field: 'rejectedQty', header: 'Rejected Qty', width: 80, align: 'left', cell: (row) => row.rejectedQty || 0 },
+      { field: 'acceptedQty', header: 'Accepted Qty', width: 80, align: 'left', cell: (row) => row.acceptedQty || 0 },
       { field: 'unit', header: 'Unit', width: 80, align: 'left' },
       {
         field: 'rate', header: 'Rate', width: 100, align: 'left',

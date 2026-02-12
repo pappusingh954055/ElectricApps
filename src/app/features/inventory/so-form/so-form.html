@@ -71,7 +71,7 @@
                 <mat-option *ngFor="let p of filteredProducts[i] | async" [value]="p">
                   <div class="d-flex justify-content-between align-items-center w-100">
                     <div>
-                      <span>{{p.name}}</span>
+                      <span>{{p.productName || p.name}}</span>
                       <small class="text-muted mx-1">({{p.sku}})</small>
                     </div>
                     <small [class]="p.currentStock > 0 ? 'text-success fw-bold' : 'text-danger fw-bold'">

@@ -268,10 +268,12 @@
                         </td>
                         <td *ngFor="let cCol of childColumns" [style.text-align]="cCol.align">
                           <span [ngClass]="{
-                            'qty-success': cCol.field === 'receivedQty' && childRow.receivedQty >= childRow.qty && childRow.qty > 0,
-                            'qty-warning': cCol.field === 'receivedQty' && childRow.receivedQty > 0 && childRow.receivedQty < childRow.qty
+                            'qty-success': (cCol.field === 'receivedQty' && childRow.receivedQty >= childRow.qty && childRow.qty > 0) || (cCol.field === 'acceptedQty' && childRow.acceptedQty > 0),
+                            'qty-warning': cCol.field === 'receivedQty' && childRow.receivedQty > 0 && childRow.receivedQty < childRow.qty,
+                            'qty-danger': cCol.field === 'rejectedQty' && childRow.rejectedQty > 0,
+                            'qty-pending': cCol.field === 'pendingQty' && (childRow.pendingQty > 0 || childRow.qty > childRow.receivedQty)
                           }">
-                            {{ childRow[cCol.field] }}
+                            {{ cCol.cell ? cCol.cell(childRow) : childRow[cCol.field] }}
                           </span>
                         </td>
                         <td>

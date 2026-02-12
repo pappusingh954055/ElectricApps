@@ -167,12 +167,12 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
               productId: [product.id, Validators.required],
               qty: [1, [Validators.required, Validators.min(1)]],
               unit: [product.unit || 'PCS'],
-              rate: [product.saleRate || 0, [Validators.required, Validators.min(0.01)]],
+              rate: [product.rate || product.saleRate || 0, [Validators.required, Validators.min(0.01)]],
               discountPercent: [0],
-              gstPercent: [product.defaultGst || 0],
+              gstPercent: [product.defaultGst || product.gstPercent || 0],
               taxAmount: [0],
               total: [{ value: 0, disabled: true }],
-              availableStock: [product.currentStock || 0],
+              availableStock: [product.currentStock || product.availableStock || 0],
             });
             this.items.push(row);
             const index = this.items.length - 1;
@@ -203,7 +203,7 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
       debounceTime(300),
       distinctUntilChanged(),
       switchMap(value => {
-        if (typeof value !== 'string' || value.length < 2) return of([]);
+        if (typeof value !== 'string' || value.length < 1) return of([]);
         this.isProductLoading[index] = true;
         return this.productService.searchProducts(value).pipe(
           finalize(() => this.isProductLoading[index] = false),
@@ -214,17 +214,53 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
     );
   }
 
-  displayProductFn(p: any): string { return p?.name || ''; }
+  displayProductFn(p: any): string {
+    if (!p) return '';
+    if (typeof p === 'string') return p;
+    return p.productName || p.name || '';
+  }
 
   onProductChange(index: number, event: any): void {
     const p = event.option.value;
     if (p) {
+      // Check for duplicate product
+      const isDuplicate = this.items.controls.some((control, i) =>
+        i !== index && control.get('productId')?.value === p.id
+      );
+
+      if (isDuplicate) {
+        this.dialog.open(StatusDialogComponent, {
+          width: '350px',
+          data: {
+            isSuccess: false,
+            title: 'Duplicate Product',
+            message: `"${p.productName || p.name}" is already added to the list.`
+          }
+        });
+
+        // Reset the current row
+        const row = this.items.at(index);
+        row.patchValue({
+          productSearch: '',
+          productId: null,
+          unit: '',
+          rate: 0,
+          qty: 1,
+          gstPercent: 0,
+          taxAmount: 0,
+          total: 0,
+          availableStock: 0
+        }, { emitEvent: false });
+
+        return;
+      }
+
       const row = this.items.at(index);
       row.patchValue({
         productId: p.id,
-        unit: p.unit || 'PCS', // Ensure unit is patched
-        rate: p.saleRate || 0,
-        gstPercent: p.defaultGst || 0,
+        unit: p.unit || 'PCS',
+        rate: p.rate || p.saleRate || p.price || 0,
+        gstPercent: p.defaultGst || p.gstPercent || 0,
         availableStock: p.currentStock || 0
       });
       this.updateTotal(index);
@@ -357,7 +393,7 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
         const val = (item as FormGroup).getRawValue();
         return {
           productId: val.productId,
-          productName: val.productSearch?.name || val.productSearch || '',
+          productName: val.productSearch?.productName || val.productSearch?.name || (typeof val.productSearch === 'string' ? val.productSearch : ''),
           qty: Number(val.qty),
           unit: val.unit || 'PCS', // Ensure unit is not null
           rate: Number(val.rate),

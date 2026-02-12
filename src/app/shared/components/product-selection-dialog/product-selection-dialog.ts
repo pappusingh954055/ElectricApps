@@ -325,6 +325,9 @@ export class ProductSelectionDialogComponent implements OnInit, OnDestroy {
       pageSize: this.pageSize,
       search: this.searchQuery || '',
       filter: this.searchQuery || '', // fallback key
+      term: this.searchQuery || '',   // another fallback key
+      termSearch: this.searchQuery || '',
+      searchTerm: this.searchQuery || '',
       sortBy: 'ProductName',
       sortDirection: 'asc' as 'asc' | 'desc'
     };
