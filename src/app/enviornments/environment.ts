@@ -5,7 +5,7 @@ export const environment = {
     auth: 'https://localhost:7125/api/auth',
     supplier: 'https://localhost:7224/api/suppliers',
     company: 'https://localhost:7065/api',
-    identity: 'https://localhost:7125/api', // Identity microservice base
+    identity: 'https://localhost:7125/api',
     customer: 'https://localhost:7173/api',
     sales: 'https://localhost:7091/api'
   },
@@ -18,4 +18,3 @@ export const environment = {
   CustomerApiBaseUrl: 'https://localhost:7173/api',
   SalesApiBaseUrl: 'https://localhost:7091/api'
 };
-

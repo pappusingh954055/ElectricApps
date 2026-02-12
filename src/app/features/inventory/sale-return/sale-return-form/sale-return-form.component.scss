@@ -275,3 +275,10 @@ input[type=number] {
         min-width: 1000px; // Extra columns ki wajah se width badhayi hai
     }
 }
+
+.dropdown-loader {
+    display: flex;
+    align-items: center;
+    padding-right: 8px;
+    height: 100%;
+}

@@ -11,7 +11,7 @@
                     <mat-icon>picture_as_pdf</mat-icon> Export PDF
                 </button>
 
-                <button mat-raised-button class="cancel-btn" type="button" (click)="goBack()">Cancel</button>
+                <!-- <button mat-raised-button class="cancel-btn" type="button" (click)="goBack()">Cancel</button> -->
                 <button mat-raised-button class="save-btn" type="submit" form="saleReturnForm" [disabled]="isLoading || returnForm.invalid">
                     <mat-icon *ngIf="!isLoading">save</mat-icon>
                     <mat-icon *ngIf="isLoading" class="spinning">sync</mat-icon>
@@ -45,6 +45,9 @@
                                 {{ cust.name }}
                             </mat-option>
                         </mat-select>
+                        <div matSuffix *ngIf="isLoadingCustomers" class="dropdown-loader">
+                            <mat-spinner diameter="18"></mat-spinner>
+                        </div>
                         <mat-error *ngIf="returnForm.get('customerId')?.invalid">
                             Customer is required
                         </mat-error>
@@ -57,6 +60,9 @@
                                 {{so.soNumber}}
                             </mat-option>
                         </mat-select>
+                        <div matSuffix *ngIf="isLoadingSaleOrders" class="dropdown-loader">
+                            <mat-spinner diameter="18"></mat-spinner>
+                        </div>
                         <mat-error *ngIf="returnForm.get('saleOrderId')?.hasError('required')">
                             Sale Order is required
                         </mat-error>

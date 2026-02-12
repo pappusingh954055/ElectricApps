@@ -36,6 +36,8 @@ export class SaleReturnFormComponent implements OnInit {
     isEditMode = false;
     returnId: number | null = null;
     isLoading = false;
+    isLoadingCustomers = false;
+    isLoadingSaleOrders = false;
 
     itemsDataSource = new MatTableDataSource<AbstractControl>();
     displayedColumns: string[] = ['productName', 'quantity', 'rate', 'itemCondition', 'reason', 'returnQty', 'tax', 'total'];
@@ -62,14 +64,18 @@ export class SaleReturnFormComponent implements OnInit {
     }
 
     loadCustomersLookup() {
-
+        this.isLoadingCustomers = true;
         this.customerService.getCustomersLookup().subscribe({
             next: (data) => {
                 this.customers = data;
+                this.isLoadingCustomers = false;
                 this.cdr.detectChanges();
             },
-            error: (err) => console.error("Customer load fail:", err)
-
+            error: (err) => {
+                console.error("Customer load fail:", err);
+                this.isLoadingCustomers = false;
+                this.cdr.detectChanges();
+            }
         });
     }
 
@@ -79,12 +85,18 @@ export class SaleReturnFormComponent implements OnInit {
         this.clearItems();
 
         if (customerId) {
+            this.isLoadingSaleOrders = true;
             this.saleOrderService.getOrdersByCustomer(customerId).subscribe({
                 next: (data) => {
                     this.saleOrders = data;
+                    this.isLoadingSaleOrders = false;
                     this.cdr.detectChanges();
                 },
-                error: (err) => console.error("Orders load error:", err)
+                error: (err) => {
+                    console.error("Orders load error:", err);
+                    this.isLoadingSaleOrders = false;
+                    this.cdr.detectChanges();
+                }
             });
         }
     }
