@@ -35,8 +35,8 @@
         </div>
       </mat-menu>
 
-      <!-- Contextual Action Buttons -->
-      <div class="contextual-buttons-group" *ngIf="selection.hasValue()">
+      <!-- Contextual Action Buttons (Show only when more than one record is selected) -->
+      <div class="contextual-buttons-group" *ngIf="selection.selected.length > 1">
         <button mat-raised-button color="warn" *ngIf="userRole !== 'Manager' && userRole !== 'Warehouse'" (click)="onBulkDeleteClick()" class="bulk-action-btn">
           <mat-icon>delete_sweep</mat-icon> Bulk Delete
         </button>

@@ -38,39 +38,56 @@
 }
 
 
-/* po-list.scss */
+app-enterprise-hierarchical-grid {
+  display: flex !important;
+  flex: 1 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+}
 
-::ng-deep .enterprise-hierarchical-grid {
+::ng-deep .enterprise-grid-container {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
 
-  /* Table layout ko strict karein */
-  .mat-table {
-    width: 100% !important;
-    table-layout: fixed !important;
-    border-collapse: collapse !important;
-  }
+  .responsive-table-wrapper {
+    flex: 1 !important;
+    overflow-y: hidden !important; /* Default hidden */
+    overflow-x: hidden !important; /* Force hide horizontal scrollbar */
+    position: relative;
+    max-height: calc(100vh - 380px) !important;
+    padding-bottom: 30px !important; // Add some padding to see the last record clearly
+    
+    &:hover {
+      overflow-y: auto !important; /* Show on hover */
+    }
 
-  /* Minimize gaps between collapsed rows safely */
-  tr.detail-row {
-    height: 0 !important;
-    td {
-       padding: 0 !important;
-       border: none !important;
-       line-height: 0;
+    /* Scrollbar Styling for hover effect */
+    &::-webkit-scrollbar {
+      width: 6px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: transparent;
+      border-radius: 10px;
+    }
+    &:hover::-webkit-scrollbar-thumb {
+      background: rgba(0, 0, 0, 0.2);
     }
   }
 
-  /* Ensure internal container fills the space */
-  .enterprise-grid-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
+  /* Table width and layout fix to prevent horizontal scroll */
+  .mat-table {
+    width: 100% !important;
+    min-width: unset !important;
+    table-layout: auto !important;
   }
 
-  .responsive-table-wrapper {
-    flex: 1;
-    max-height: none !important;
-    overflow-y: auto;
+  /* Force Sticky Header */
+  .mat-mdc-header-row, .mat-header-row {
+    position: sticky !important;
+    top: 0;
+    z-index: 100 !important;
+    background: #ffffff !important;
   }
 
   /* Header aur Cell ki alignment aur padding match karein */
