@@ -162,7 +162,7 @@
           </div>
 
           <div class="save-btn-container">
-            <button mat-raised-button color="primary" (click)="saveDraft()" [disabled]="poForm.invalid || isLoading">
+            <button mat-raised-button color="primary" class="save-btn" (click)="saveDraft()" [disabled]="poForm.invalid || isLoading">
               @if (isLoading) {
               <div class="loader-overlay">
                 <mat-spinner diameter="24" style="margin-right: 8px;"></mat-spinner>
@@ -174,4 +174,12 @@
       </div>
     </div>
   </form>
+
+  <!-- Floating Scroll to Top/Bottom Button -->
+  <button mat-fab color="primary" class="scroll-top-btn" 
+    *ngIf="items.length > 1" 
+    (click)="toggleScroll()"
+    [@fadeInOut]>
+    <mat-icon>{{ isAtTop ? 'keyboard_arrow_down' : 'keyboard_arrow_up' }}</mat-icon>
+  </button>
 </mat-card>

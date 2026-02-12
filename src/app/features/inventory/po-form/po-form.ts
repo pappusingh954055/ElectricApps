@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef, HostListener } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { MatDialog } from '@angular/material/dialog';
@@ -15,14 +15,63 @@ import { DateHelper } from '../../../shared/models/date-helper';
 import { NotificationService } from '../../shared/notification.service';
 import { ProductSelectionDialogComponent } from '../../../shared/components/product-selection-dialog/product-selection-dialog';
 
+import { trigger, transition, style, animate } from '@angular/animations';
+
 @Component({
   selector: 'app-po-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MaterialModule],
   templateUrl: './po-form.html',
   styleUrl: './po-form.scss',
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.5)' }),
+        animate('200ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0, transform: 'scale(0.5)' }))
+      ])
+    ])
+  ]
 })
-export class PoForm implements OnInit, OnDestroy {
+export class PoForm implements OnInit, OnDestroy, AfterViewInit {
+  isAtTop = true;
+  private scrollContainer: HTMLElement | null = null;
+  private scrollListener: any;
+
+  onScroll() {
+    if (this.scrollContainer) {
+      const { scrollTop } = this.scrollContainer;
+      // Agar ekdum top par hai toh Down Arrow (to go to bottom)
+      // Thoda bhi scroll kiya toh Up Arrow (to go back to top)
+      this.isAtTop = scrollTop < 50;
+      this.cdr.detectChanges();
+    }
+  }
+
+  toggleScroll() {
+    if (this.scrollContainer) {
+      if (this.isAtTop) {
+        // Scroll to Bottom
+        this.scrollContainer.scrollTo({ top: this.scrollContainer.scrollHeight, behavior: 'smooth' });
+      } else {
+        // Scroll to Top
+        this.scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }
+
+  ngAfterViewInit() {
+    // Layout scroller detect karein with small delay
+    setTimeout(() => {
+      this.scrollContainer = document.querySelector('.content');
+      if (this.scrollContainer) {
+        this.scrollListener = this.onScroll.bind(this);
+        this.scrollContainer.addEventListener('scroll', this.scrollListener);
+      }
+    }, 500);
+  }
   private fb = inject(FormBuilder);
   private dialog = inject(MatDialog);
   private cdr = inject(ChangeDetectorRef);
@@ -286,7 +335,7 @@ export class PoForm implements OnInit, OnDestroy {
 
     const isDuplicate = this.items.controls.some((ctrl, i) => i !== index && ctrl.get('productId')?.value === product.id);
     if (isDuplicate) {
-      this.notification.showStatus(false, `Product already added.`);
+      this.notification.showStatus(false, 'Product already added.');
       row.patchValue({ productId: null, productSearch: '' });
       return;
     }
@@ -411,7 +460,13 @@ export class PoForm implements OnInit, OnDestroy {
       subscribe(data => this.priceLists = data);
   }
 
-  ngOnDestroy() { this.destroy$.next(); this.destroy$.complete(); }
+  ngOnDestroy() {
+    if (this.scrollContainer && this.scrollListener) {
+      this.scrollContainer.removeEventListener('scroll', this.scrollListener);
+    }
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   saveDraft() {
     const formValue = this.poForm.getRawValue();

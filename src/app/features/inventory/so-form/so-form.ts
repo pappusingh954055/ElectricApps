@@ -1,9 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, OnDestroy, AfterViewInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { Observable, of, Subject } from 'rxjs';
-import { startWith, map, catchError, debounceTime, distinctUntilChanged, finalize, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, finalize, switchMap, takeUntil } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { CustomerComponent } from '../../master/customer-component/customer-component';
 
@@ -13,6 +13,7 @@ import { SaleOrderService } from '../service/saleorder.service';
 import { Router } from '@angular/router';
 import { customerService } from '../../master/customer-component/customer.service';
 import { ProductSelectionDialogComponent } from '../../../shared/components/product-selection-dialog/product-selection-dialog';
+import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
   selector: 'app-so-form',
@@ -20,8 +21,51 @@ import { ProductSelectionDialogComponent } from '../../../shared/components/prod
   imports: [ReactiveFormsModule, CommonModule, MaterialModule],
   templateUrl: './so-form.html',
   styleUrl: './so-form.scss',
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.5)' }),
+        animate('200ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0, transform: 'scale(0.5)' }))
+      ])
+    ])
+  ]
 })
-export class SoForm implements OnInit, OnDestroy {
+export class SoForm implements OnInit, OnDestroy, AfterViewInit {
+  isAtTop = true;
+  private scrollContainer: HTMLElement | null = null;
+  private scrollListener: any;
+
+  onScroll() {
+    if (this.scrollContainer) {
+      const { scrollTop } = this.scrollContainer;
+      this.isAtTop = scrollTop < 50;
+      this.cdr.detectChanges();
+    }
+  }
+
+  toggleScroll() {
+    if (this.scrollContainer) {
+      if (this.isAtTop) {
+        this.scrollContainer.scrollTo({ top: this.scrollContainer.scrollHeight, behavior: 'smooth' });
+      } else {
+        this.scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.scrollContainer = document.querySelector('.content');
+      if (this.scrollContainer) {
+        this.scrollListener = this.onScroll.bind(this);
+        this.scrollContainer.addEventListener('scroll', this.scrollListener);
+      }
+    }, 500);
+  }
+
   private fb = inject(FormBuilder);
   private cdr = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);

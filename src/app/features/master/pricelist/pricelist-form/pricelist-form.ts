@@ -1,14 +1,14 @@
-import { ChangeDetectorRef, Component, EventEmitter, inject, Input, OnInit, Output, OnChanges, SimpleChanges } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, inject, Input, OnInit, Output, OnChanges, SimpleChanges, AfterViewInit, OnDestroy } from '@angular/core';
+import { trigger, transition, style, animate } from '@angular/animations';
 import { Validators, FormBuilder, ReactiveFormsModule, FormGroup, FormArray, FormControl } from '@angular/forms';
-import { PriceListService } from '../service/pricelist.service';
-import { ProductService } from '../../product/service/product.service';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
-
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, of } from 'rxjs';
+import { Observable, of, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, finalize, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
+import { PriceListService } from '../service/pricelist.service';
+import { ProductService } from '../../product/service/product.service';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { ProductSelectionDialogComponent } from '../../../../shared/components/product-selection-dialog/product-selection-dialog';
 
@@ -18,8 +18,59 @@ import { ProductSelectionDialogComponent } from '../../../../shared/components/p
   imports: [CommonModule, ReactiveFormsModule, MaterialModule],
   templateUrl: './pricelist-form.html',
   styleUrl: './pricelist-form.scss',
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'scale(0.5)' }),
+        animate('200ms ease-out', style({ opacity: 1, transform: 'scale(1)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0, transform: 'scale(0.5)' }))
+      ])
+    ])
+  ]
 })
-export class PricelistForm implements OnInit, OnChanges {
+export class PricelistForm implements OnInit, OnChanges, AfterViewInit, OnDestroy {
+  isAtTop = true;
+  private scrollContainer: HTMLElement | null = null;
+  private scrollListener: any;
+  private destroy$ = new Subject<void>();
+
+  onScroll() {
+    if (this.scrollContainer) {
+      const { scrollTop } = this.scrollContainer;
+      this.isAtTop = scrollTop < 50;
+      this.cdr.detectChanges();
+    }
+  }
+
+  toggleScroll() {
+    if (this.scrollContainer) {
+      if (this.isAtTop) {
+        this.scrollContainer.scrollTo({ top: this.scrollContainer.scrollHeight, behavior: 'smooth' });
+      } else {
+        this.scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => {
+      this.scrollContainer = document.querySelector('.content');
+      if (this.scrollContainer) {
+        this.scrollListener = this.onScroll.bind(this);
+        this.scrollContainer.addEventListener('scroll', this.scrollListener);
+      }
+    }, 500);
+  }
+
+  ngOnDestroy(): void {
+    if (this.scrollContainer && this.scrollListener) {
+      this.scrollContainer.removeEventListener('scroll', this.scrollListener);
+    }
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
   priceListForm!: FormGroup;
   filteredProducts: any[][] = [];
   loadingRowIndex: number | null = null;
