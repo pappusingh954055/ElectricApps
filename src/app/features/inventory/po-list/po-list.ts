@@ -98,13 +98,13 @@ export class PoList implements OnInit {
         cell: (row: any) => this.datePipe.transform(row.expectedDeliveryDate, 'MM/dd/yyyy')
       },
       { field: 'createdBy', header: 'Created By', sortable: true, isFilterable: true, isResizable: true, width: 150 },
-      { field: 'supplierName', header: 'Supplier Name', sortable: true, isResizable: true, width: 200, isFilterable: true },
+      { field: 'supplierName', header: 'Supplier Name', sortable: true, isResizable: true, width: 150, isFilterable: true },
       {
         field: 'grandTotal',
         header: 'Grand Total',
         sortable: true,
         isResizable: true,
-        width: 130,
+        width: 100,
         align: 'left',
         cell: (row: any) => this.currencyPipe.transform(row.grandTotal, 'INR', 'symbol', '1.2-2')
       },

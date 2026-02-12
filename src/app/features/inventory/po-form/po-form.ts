@@ -89,6 +89,8 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   isProductLoading: boolean[] = [];
   suppliers: Supplier[] = [];
   priceLists: any[] = [];
+  isLoadingSuppliers = false;
+  isLoadingPriceLists = false;
   isLoading = false;
   grandTotal = 0;
   totalTaxAmount = 0;
@@ -447,7 +449,12 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   }
 
   loadNextPoNumber() { this.inventoryService.getNextPoNumber().subscribe(res => this.poForm.patchValue({ PoNumber: res.poNumber })); }
-  loadSuppliers() { this.supplierService.getSuppliers().subscribe(data => this.suppliers = data); }
+  loadSuppliers() {
+    this.isLoadingSuppliers = true;
+    this.supplierService.getSuppliers().pipe(
+      finalize(() => this.isLoadingSuppliers = false)
+    ).subscribe(data => this.suppliers = data);
+  }
 
   // loadAllPriceLists() 
   // { 
@@ -456,8 +463,10 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   // }
 
   bindDropdownPriceList() {
-    this.inventoryService.getPriceListsForDropdown().
-      subscribe(data => this.priceLists = data);
+    this.isLoadingPriceLists = true;
+    this.inventoryService.getPriceListsForDropdown().pipe(
+      finalize(() => this.isLoadingPriceLists = false)
+    ).subscribe(data => this.priceLists = data);
   }
 
   ngOnDestroy() {

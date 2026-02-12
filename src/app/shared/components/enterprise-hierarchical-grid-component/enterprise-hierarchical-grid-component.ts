@@ -124,14 +124,21 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   // }
 
   isRowSelectable(row: any): boolean {
+    const data = this.dataSource.data || [];
+
     if (this.userRole === 'Manager') {
-      return row.status === 'Submitted';
+      const submittedCount = data.filter(r => r.status === 'Submitted').length;
+      return row.status === 'Submitted' && submittedCount > 1;
     }
+
     if (this.userRole === 'Warehouse') {
-      return row.status === 'Approved';
+      const approvedCount = data.filter(r => r.status === 'Approved').length;
+      return row.status === 'Approved' && approvedCount > 1;
     }
-    // Default to User behavior (Draft only)
-    return row.status === 'Draft';
+
+    // Default to User behavior: Only selectable if Draft AND there are multiple Drafts
+    const draftCount = data.filter(r => r.status === 'Draft').length;
+    return row.status === 'Draft' && draftCount > 1;
   }
 
   isAllSelected(): boolean {

@@ -19,6 +19,9 @@
               {{ s.name }}
             </mat-option>
           </mat-select>
+          <div matSuffix *ngIf="isLoadingSuppliers" class="dropdown-loader">
+            <mat-spinner diameter="18"></mat-spinner>
+          </div>
         </mat-form-field>
       </div>
 
@@ -35,6 +38,9 @@
               {{ pl.name }}
             </mat-option>
           </mat-select>
+          <div matSuffix *ngIf="isLoadingPriceLists" class="dropdown-loader">
+            <mat-spinner diameter="18"></mat-spinner>
+          </div>
           <mat-hint *ngIf="isPriceListAutoSelected" style="color: green; font-size: 10px;">
             Auto-linked from Supplier
           </mat-hint>

@@ -790,7 +790,7 @@ div[style*="display: flex"] {
 }
 /* Actions Column Optimization */
 .mat-column-actions {
-  width: 130px !important; /* Mobile par thoda adjust karega */
+  width: 160px !important; /* Adjusted to fit 3 icons comfortably */
   
   @media (max-width: 600px) {
     width: 100px !important;
@@ -806,7 +806,7 @@ div[style*="display: flex"] {
 }
 /* Actions Column Styling [cite: 2026-01-22] */
 .actions-header {
-  width: 140px !important;
+  width: 160px !important;
   text-align: center;
 }
 
