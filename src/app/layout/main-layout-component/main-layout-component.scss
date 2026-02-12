@@ -184,12 +184,25 @@ mat-accordion {
 }
 
 .toolbar-title {
-  font-size: 1.25rem;
-  font-weight: 800;
-  // color: #111827; // Removed
-  letter-spacing: -0.025em;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   margin-left: 16px;
-  // Removed gradient text to ensure visibility on primary color
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: 'Inter', sans-serif;
+  
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    margin-left: 12px;
+  }
+  
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+    margin-left: 8px;
+    max-width: 180px; // Constraint width on very small screens to prevent pushing icons
+  }
 }
 
 .breadcrumb {

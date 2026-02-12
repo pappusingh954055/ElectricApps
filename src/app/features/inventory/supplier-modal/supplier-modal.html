@@ -1,9 +1,9 @@
 <div class="modal-container">
   <div mat-dialog-title class="modal-header">
     <h2 class="title-text">Add New Supplier</h2>
-    <button mat-icon-button (click)="onCancel()" class="close-btn" type="button">
+    <div class="close-btn" (click)="onCancel()">
       <mat-icon>close</mat-icon>
-    </button>
+    </div>
   </div>
 
   <mat-dialog-content class="modal-body">
@@ -46,10 +46,10 @@
         </div>
 
         <div class="col-12">
-          <mat-form-field appearance="outline" class="w-100">
+          <mat-form-field appearance="outline">
             <mat-label>Address</mat-label>
             <mat-icon matPrefix>location_on</mat-icon>
-            <textarea matInput formControlName="address" rows="2" placeholder="Full address"></textarea>
+            <input matInput formControlName="address" placeholder="Full address">
           </mat-form-field>
         </div>
 
@@ -64,8 +64,8 @@
   </mat-dialog-content>
 
   <mat-dialog-actions align="end" class="modal-footer">
-    <button mat-stroked-button color="warn" (click)="onCancel()" type="button">Cancel</button>
-    <button mat-flat-button color="primary" [disabled]="supplierForm.invalid || loading" (click)="onSave()"
+    <button mat-raised-button (click)="onCancel()" type="button">Cancel</button>
+    <button mat-raised-button color="primary" [disabled]="supplierForm.invalid || loading" (click)="onSave()"
       class="ms-2 px-4 save-btn">
       <mat-spinner diameter="20" *ngIf="loading" class="me-2 d-inline-block"></mat-spinner>
       Save Supplier

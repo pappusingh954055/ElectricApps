@@ -1,6 +1,6 @@
 /* ================= CARD & GLOBAL ================= */
 mat-card {
-  padding: 24px;
+  padding: 16px; /* Reduced padding */
   border-radius: 12px;
   background: #ffffff;
 }
@@ -11,7 +11,7 @@ mat-card {
   align-items: center !important; 
   justify-content: space-between !important;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 12px; /* Reduced margin */
   width: 100%;
   flex-wrap: wrap;
 
@@ -126,26 +126,55 @@ mat-card {
 }
 
 .po-header-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px; /* Compact gap */
+  margin-bottom: 12px; /* Reduced margin */
+  align-items: center; /* Ensures vertical centering */
 }
 
 .field-item {
   display: flex;
   align-items: center;
   gap: 4px;
+  flex: 1 1 200px;
 }
 
 /* Supplier button alignment */
-.field-item button[mat-icon-button] {
-  margin-top: -4px;
+.add-btn-circle {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background-color: #3f51b5; /* Primary */
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+  
+  mat-icon {
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(63, 81, 181, 0.3);
+    background-color: #303f9f;
+  }
 }
 
 /* ================= ITEMS TABLE SECTION ================= */
 .items-section {
-  margin-top: 15px;
+  margin-top: 8px; /* Reduced margin */
 }
 
 .item-row {
@@ -156,10 +185,10 @@ mat-card {
   align-items: center;
   /* Fields ko barabar line mein lane ke liye */
   background: #fcfcfc;
-  padding: 12px;
+  padding: 8px; /* Reduced padding */
   border: 1px solid #f0f0f0;
   border-radius: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 8px; /* Reduced margin */
   transition: all 0.2s ease;
 }
 
