@@ -1,7 +1,7 @@
 <div class="menu-form-container">
   <div class="dialog-header">
     <h2 mat-dialog-title>{{ data.menu ? 'Edit Menu' : 'Create New Menu' }}</h2>
-    <button mat-icon-button mat-dialog-close>
+    <button mat-icon-button mat-dialog-close class="close-btn">
       <mat-icon>close</mat-icon>
     </button>
   </div>
@@ -57,8 +57,8 @@
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">
-    <button mat-button mat-dialog-close class="cancel-btn">Cancel</button>
-    <button mat-flat-button color="primary" class="save-btn" [disabled]="menuForm.invalid || loading" (click)="save()">
+    <button mat-raised-button mat-dialog-close class="cancel-btn">Cancel</button>
+    <button mat-raised-button color="primary" class="save-btn" [disabled]="menuForm.invalid || loading" (click)="save()">
       <mat-icon *ngIf="!loading">save</mat-icon>
       <mat-spinner diameter="20" *ngIf="loading"></mat-spinner>
       {{ data.menu ? 'Update' : 'Create' }} Menu

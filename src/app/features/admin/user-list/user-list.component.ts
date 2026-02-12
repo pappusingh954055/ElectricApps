@@ -18,7 +18,7 @@ import { MatPaginator } from '@angular/material/paginator';
     <div class="list-container">
       <div class="header-actions">
         <h1>User Management</h1>
-        <button mat-flat-button class="main-add-btn" (click)="createUser()">
+        <button mat-raised-button class="main-add-btn" (click)="createUser()">
            <mat-icon>add</mat-icon> Create User
         </button>
       </div>

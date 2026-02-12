@@ -11,6 +11,38 @@
       margin: 0;
       font-weight: 700;
       color: #1e293b;
+      font-size: 1.25rem;
+    }
+
+    .close-btn {
+      color: #991b1b !important;
+      background: #fef2f2 !important;
+      border-radius: 50% !important;
+      width: 32px !important;
+      height: 32px !important;
+      min-width: 32px !important;
+      padding: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      line-height: 1 !important;
+      transition: all 0.2s ease;
+
+      mat-icon {
+        font-size: 20px !important;
+        width: 20px !important;
+        height: 20px !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+
+      &:hover {
+        background: #fee2e2 !important;
+        transform: scale(1.1);
+      }
     }
   }
 
@@ -69,7 +101,12 @@
 }
 
 ::ng-deep .mat-mdc-dialog-container {
+  --mdc-dialog-container-shape: 20px;
+  background-color: transparent !important;
+  
   .mdc-dialog__surface {
     border-radius: 20px !important;
+    overflow: hidden !important;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
   }
 }
