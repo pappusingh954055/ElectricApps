@@ -52,33 +52,27 @@ app-enterprise-hierarchical-grid {
 
   .responsive-table-wrapper {
     flex: 1 !important;
-    overflow-y: hidden !important; /* Default hidden */
-    overflow-x: hidden !important; /* Force hide horizontal scrollbar */
+    overflow-x: auto !important; /* Enable horizontal scroll */
+    overflow-y: auto !important; /* Enable vertical scroll always */
     position: relative;
-    max-height: calc(100vh - 380px) !important;
-    padding-bottom: 30px !important; // Add some padding to see the last record clearly
+    max-height: calc(100vh - 340px) !important;
+    padding-bottom: 80px !important; /* Increased space to ensure last record is fully visible above paginator */
     
-    &:hover {
-      overflow-y: auto !important; /* Show on hover */
-    }
-
-    /* Scrollbar Styling for hover effect */
+    /* Scrollbar Styling */
     &::-webkit-scrollbar {
       width: 6px;
+      height: 6px;
     }
     &::-webkit-scrollbar-thumb {
-      background: transparent;
-      border-radius: 10px;
-    }
-    &:hover::-webkit-scrollbar-thumb {
       background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
     }
   }
 
-  /* Table width and layout fix to prevent horizontal scroll */
+  /* Table width and layout fix to allow horizontal scroll */
   .mat-table {
     width: 100% !important;
-    min-width: unset !important;
+    min-width: 1200px !important; /* Ensure table is wider than mobile screen to allow scroll */
     table-layout: auto !important;
   }
 
@@ -95,8 +89,8 @@ app-enterprise-hierarchical-grid {
   td.mat-cell {
     padding: 0 10px !important;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    overflow: visible !important; /* Allow content to be seen */
+    text-overflow: clip !important;
     box-sizing: border-box !important;
     vertical-align: middle !important;
   }
@@ -138,7 +132,8 @@ app-enterprise-hierarchical-grid {
   }
 
   .mat-column-actions {
-    width: auto;
+    width: 160px !important;
+    min-width: 160px !important;
   }
 }
 
@@ -233,10 +228,11 @@ app-enterprise-hierarchical-grid {
 
 @media (max-width: 768px) {
 
-  /* Mobile par table wrap na ho [cite: 2026-01-22] */
+  /* Table base style matches wrapper */
   .mat-table {
-    display: block;
-    overflow-x: auto;
+    display: table !important; /* Keep as table for hierarchical layout */
+    width: 100% !important;
+    min-width: 1200px !important;
   }
 }
 

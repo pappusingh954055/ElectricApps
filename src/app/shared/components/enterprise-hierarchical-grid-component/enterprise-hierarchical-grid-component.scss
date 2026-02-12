@@ -72,6 +72,7 @@
 }
 
 
+app-search-input,
 .modern-datepicker {
   width: 250px;
   
@@ -584,17 +585,33 @@ th.child-th {
 
   .detail-panel.is-expanded {
     padding: 8px;
-    max-height: 2500px;
+    max-height: none !important; /* Allow content to grow naturally */
+    overflow: visible !important;
   }
 
   .responsive-table-wrapper {
-    overflow-x: auto;
+    overflow-x: auto !important;
+    overflow-y: auto !important;
     width: 100%;
     display: block;
     position: relative;
-    /* Sticky positioning ke liye zaroori hai */
+    -webkit-overflow-scrolling: touch; /* Smooth scroll for iOS */
   }
 
+  /* Match grid actions width on mobile */
+  .mat-column-actions, .actions-header {
+    width: 120px !important;
+    min-width: 120px !important;
+  }
+}
+
+.child-table-scroll {
+  width: 100%;
+  overflow-x: auto !important;
+  overflow-y: hidden;
+  padding: 5px;
+  display: block;
+  -webkit-overflow-scrolling: touch;
 }
 
 .child-header {

@@ -1,7 +1,11 @@
-
 :host {
     display: block;
-    width: 250px;
+    width: 100%; /* Flexible by default */
+    max-width: 500px; /* Optional cap */
 }
-.search-box { width: 100%; min-width: 250px; }
+
+.mat-mdc-form-field {
+    width: 100%;
+}
+
 ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
