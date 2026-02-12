@@ -197,10 +197,12 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
     this.emitSelection();
   }
   emitSelection(): void {
-    this.onSelectionChange.emit({
+    const selectionData = {
       parents: this.selection.selected,
       children: this.childSelection.selected
-    });
+    };
+    this.onSelectionChange.emit(selectionData);
+    this.selectionChanged.emit(this.selection.selected); // Emit array for parent
   }
 
   // --- Drag & Drop ---
@@ -306,13 +308,13 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
       width: '400px',
       data: {
         title: 'Remove Purchase Order',
-        // PO Number dikhana achha hota hai user confirmation ke liye
         message: `Do you want to remove PO: ${row.poNumber}?`,
-        buttonText: { ok: 'Remove', cancel: 'Keep' }
+        confirmText: 'Remove',
+        cancelText: 'Keep',
+        confirmColor: 'warn'
       }
     });
 
-    // 3. Modal close hone par action
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.deleteRecord.emit(row);
@@ -367,7 +369,9 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
       data: {
         title: 'Remove Purchase Order(s)',
         message: `Do you want to remove ${selectedRows.length} selected orders?`,
-        buttonText: { ok: 'Remove', cancel: 'Keep' }
+        confirmText: 'Remove',
+        cancelText: 'Keep',
+        confirmColor: 'warn'
       }
     });
 

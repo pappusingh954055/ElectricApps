@@ -192,13 +192,19 @@ export class PoList implements OnInit {
 
   // --- 1. SINGLE PARENT DELETE (Row Trash Icon) ---
   onDeleteSingleParentRecord(row: any) {
+    if (row.status !== 'Draft' && row.status !== 'Rejected') {
+      this.notification.showStatus(false, `Only Draft or Rejected orders can be deleted. Current status: ${row.status}`);
+      return;
+    }
+
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '400px',
       data: {
         title: 'Delete Purchase Order',
         message: `Do you want to delete the PO No: ${row.poNumber}? This will delete all items.`,
-        confirmText: 'Yes',
-        cancelText: 'No'
+        confirmText: 'Yes, Delete',
+        cancelText: 'No',
+        confirmColor: 'warn'
       }
     });
 
@@ -210,13 +216,17 @@ export class PoList implements OnInit {
             this.isLoading = false;
             if (res.success) {
               this.notification.showStatus(true, `PO: ${row.poNumber} deleted!`);
+              if (this.grid) this.grid.selection.clear();
               this.loadData(this.currentGridState);
+            } else {
+              this.notification.showStatus(false, res.message || 'Error: PO not deleted.');
             }
             this.cdr.detectChanges();
           },
-          error: () => {
+          error: (err) => {
             this.isLoading = false;
-            this.notification.showStatus(false, 'Error: PO not deleted.');
+            const errorMsg = err.error?.message || err.message || 'Error: PO not deleted.';
+            this.notification.showStatus(false, errorMsg);
             this.cdr.detectChanges();
           }
         });
@@ -238,14 +248,17 @@ export class PoList implements OnInit {
         this.isLoading = false;
         if (res.success) {
           this.notification.showStatus(true, `${selectedRows.length} Orders deleted.`);
-          this.selection.clear(); // Important cleanup
+          if (this.grid) this.grid.selection.clear();
           this.loadData(this.currentGridState);
+        } else {
+          this.notification.showStatus(false, res.message || 'Error: Bulk delete failed.');
         }
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
         this.isLoading = false;
-        this.notification.showStatus(false, 'Error: Bulk delete failed.');
+        const errorMsg = err.error?.message || err.message || 'Error: Bulk delete failed.';
+        this.notification.showStatus(false, errorMsg);
         this.cdr.detectChanges();
       }
     });
@@ -278,12 +291,15 @@ export class PoList implements OnInit {
               this.notification.showStatus(true, 'Items removed successfully.');
               if (event.isBulk) this.childSelection.clear(); // Clear child selections
               this.loadData(this.currentGridState);
+            } else {
+              this.notification.showStatus(false, res.message || 'Error removing items.');
             }
             this.cdr.detectChanges();
           },
-          error: () => {
+          error: (err) => {
             this.isLoading = false;
-            this.notification.showStatus(false, 'Error removing items.');
+            const errorMsg = err.error?.message || err.message || 'Error removing items.';
+            this.notification.showStatus(false, errorMsg);
             this.cdr.detectChanges();
           }
         });

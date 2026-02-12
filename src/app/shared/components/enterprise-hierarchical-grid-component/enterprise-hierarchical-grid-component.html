@@ -41,7 +41,7 @@
           <mat-icon>delete_sweep</mat-icon> Bulk Delete
         </button>
 
-        <button mat-raised-button color="accent" *ngIf="userRole === 'User'" (click)="onBulkApproveClick()" class="bulk-action-btn glass-btn">
+        <button mat-raised-button  *ngIf="userRole === 'User'" (click)="onBulkApproveClick()" class="bulk-action-btn glass-btn success-btn">
           <mat-icon>done_all</mat-icon> Submit Approval
         </button>
 
@@ -71,7 +71,7 @@
       <mat-icon class="empty-icon">manage_search</mat-icon>
       <h3 class="empty-title">No Records Found</h3>
       <p class="empty-subtitle">We couldn't find any records matching your search criteria.</p>
-      <button mat-stroked-button color="primary" (click)="clearGlobalSearch()" *ngIf="globalSearchQuery">Clear Search</button>
+      <button mat-raised-button color="primary" (click)="clearGlobalSearch()" *ngIf="globalSearchQuery">Clear Search</button>
     </div>
   </div>
 
@@ -206,7 +206,7 @@
               <div class="child-grid-wrapper" *ngIf="element === expandedElement">
                 <div class="child-header" style="display: flex; justify-content: space-between; align-items: center;">
                   <span class="child-title">Detailed Line Items</span>
-                  <button mat-flat-button color="warn" size="small" *ngIf="childSelection.hasValue()"
+                  <button mat-raised-button color="warn" size="small" *ngIf="childSelection.hasValue()"
                     (click)="onBulkDeleteChildItems(element)"
                     style="line-height: 28px; height: 30px; font-size: 12px; margin-right: 15px;">
                     <mat-icon style="font-size: 16px; width: 16px; height: 16px;">delete_sweep</mat-icon>

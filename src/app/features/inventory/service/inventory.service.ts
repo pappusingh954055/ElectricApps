@@ -31,7 +31,7 @@ export class InventoryService {
 
     getPriceListsForDropdown(): Observable<any[]> {
         return this.api.get<any[]>('pricelists/dropdown');
-    }   
+    }
 
     // 2. Kisi specific Price List se product ka rate aur discount nikalne ke liye
     getPriceListRate(priceListId: string, productId: number): Observable<any> {
@@ -67,7 +67,7 @@ export class InventoryService {
 
 
     bulkDeletePurchaseOrders(ids: number[]): Observable<any> {
-        return this.api.post('PurchaseOrders/bulk-delete-orders', { ids });
+        return this.api.post('PurchaseOrders/bulk-delete-orders', {ids} );
     }
 
     /**

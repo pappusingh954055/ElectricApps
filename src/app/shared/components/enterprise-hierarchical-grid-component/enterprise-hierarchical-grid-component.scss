@@ -62,6 +62,13 @@
   gap: 12px;
   flex-shrink: 0;
   justify-content: flex-end;
+  
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
 }
 
 
@@ -108,11 +115,15 @@
 }
 
 .success-btn {
-  background-color: #10b981 !important;
+  background: #4caf50 !important; // Green from your theme colors
   color: white !important;
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3) !important;
+  border: none !important;
   
   &:hover {
-    background-color: #059669 !important;
+    background: #43a047 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(76, 175, 80, 0.4) !important;
   }
 }
 
@@ -131,6 +142,17 @@
   gap: 8px;
   flex-shrink: 0;
   animation: slideIn 0.3s ease-out;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    
+    .bulk-action-btn {
+      flex: 1;
+      min-width: 160px;
+    }
+  }
 }
 
 .toolbar-icon-btn {
@@ -461,14 +483,103 @@ th.child-th {
 @media (max-width: 768px) {
   .grid-toolbar {
     flex-direction: column;
-    gap: 12px;
-    padding: 12px;
+    gap: 10px;
+    padding: 10px;
     align-items: stretch;
   }
 
   .date-range-container {
     flex-direction: column;
     gap: 8px;
+    width: 100%;
+    
+    app-search-input {
+      width: 100%;
+    }
+    
+    .modern-datepicker {
+      width: 100% !important;
+    }
+  }
+
+  .grid-toolbar {
+    flex-direction: column !important;
+    padding: 12px !important;
+    gap: 12px !important;
+    height: auto !important;
+    min-height: unset !important;
+  }
+
+  .date-range-container {
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+    
+    app-search-input, 
+    .modern-datepicker {
+      width: 100% !important;
+    }
+  }
+
+  .right-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 10px !important;
+    margin-top: 5px;
+
+    // Manage Columns Icon
+    & > button[mat-icon-button] {
+      align-self: flex-end !important;
+      height: 32px !important;
+      width: 32px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+  }
+
+  .contextual-buttons-group {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+    width: 100% !important;
+    
+    .bulk-action-btn {
+      flex: 1 1 calc(50% - 4px) !important;
+      height: 40px !important;
+      font-size: 11px !important;
+      padding: 0 10px !important;
+      margin: 0 !important;
+      min-width: 130px !important;
+      border-radius: 8px !important;
+      
+      mat-icon {
+        font-size: 18px !important;
+        width: 18px !important;
+        height: 18px !important;
+      }
+    }
+  }
+
+  .main-add-btn {
+    width: 100% !important;
+    height: 40px !important;
+    font-size: 11px !important;
+    margin: 0 !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-transform: uppercase;
+    font-weight: 600;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.3) !important; // Restore shadow for raised look
+
+    mat-icon {
+      font-size: 18px !important;
+      width: 18px !important;
+      height: 18px !important;
+      margin-right: 6px !important;
+    }
   }
 
   .detail-panel.is-expanded {
