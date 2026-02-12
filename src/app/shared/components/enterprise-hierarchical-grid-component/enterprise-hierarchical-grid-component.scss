@@ -1049,3 +1049,13 @@ div[style*="display: flex"] {
   margin: 0 0 24px 0;
   line-height: 1.5;
 }
+
+.qty-success {
+  color: #2e7d32 !important;
+  font-weight: bold;
+}
+
+.qty-warning {
+  color: #ed6c02 !important;
+  font-weight: bold;
+}

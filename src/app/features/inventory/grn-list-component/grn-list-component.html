@@ -30,7 +30,6 @@
                 <mat-icon class="empty-icon">folder_off</mat-icon>
                 <h3 class="empty-title">No GRN Records Found</h3>
                 <p class="empty-subtitle">We couldn't find any Goods Receipt Notes matching your search.</p>
-                <!-- Optional: Add Clear Search button if search is active -->
                 <button mat-stroked-button color="primary" (click)="searchControl.setValue('')" *ngIf="searchControl.value">Clear Search</button>
             </div>
         </div>
@@ -95,17 +94,18 @@
                                         <thead>
                                             <tr>
                                                 <th>Product Name</th>
-                                                <th>Received Qty</th>
-                                                <th>Rejected Qty</th>
-                                                <th>Rate</th>
+                                                <th class="text-center">Ordered Qty</th> <th class="text-center">Received Qty</th>
+                                                <th class="text-center">Pending Qty</th> <th class="text-center">Rejected Qty</th>
+                                                <th class="text-right">Rate</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             <tr *ngFor="let item of row.items">
                                                 <td>{{item.productName}}</td>
-                                                <td>{{item.receivedQty}}</td>
-                                                <td [class.text-danger]="item.rejectedQty > 0">{{item.rejectedQty}}</td>
-                                                <td>{{item.unitRate | currency:'INR'}}</td>
+                                                <td class="text-center">{{item.orderedQty}}</td> <td class="text-center"><b>{{item.receivedQty}}</b></td>
+                                                <td class="text-center" [class.text-success]="item.pendingQty === 0">{{item.pendingQty}}</td> 
+                                                <td class="text-center" [class.text-danger]="item.rejectedQty > 0">{{item.rejectedQty}}</td>
+                                                <td class="text-right">{{item.unitRate | currency:'INR'}}</td>
                                             </tr>
                                         </tbody>
                                     </table>

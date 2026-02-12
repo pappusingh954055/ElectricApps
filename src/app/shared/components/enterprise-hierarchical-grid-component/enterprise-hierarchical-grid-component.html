@@ -266,7 +266,13 @@
                             [checked]="childSelection.isSelected(childRow)" [disabled]="element.status !== 'Draft'">
                           </mat-checkbox>
                         </td>
-                        <td *ngFor="let cCol of childColumns" [style.text-align]="cCol.align">{{ childRow[cCol.field] }}
+                        <td *ngFor="let cCol of childColumns" [style.text-align]="cCol.align">
+                          <span [ngClass]="{
+                            'qty-success': cCol.field === 'receivedQty' && childRow.receivedQty >= childRow.qty && childRow.qty > 0,
+                            'qty-warning': cCol.field === 'receivedQty' && childRow.receivedQty > 0 && childRow.receivedQty < childRow.qty
+                          }">
+                            {{ childRow[cCol.field] }}
+                          </span>
                         </td>
                         <td>
                           <div *ngIf="!childSelection.hasValue()"

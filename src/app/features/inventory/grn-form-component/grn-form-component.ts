@@ -6,7 +6,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { InventoryService } from '../service/inventory.service';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
-import { of } from 'rxjs';
 
 @Component({
   selector: 'app-grn-form-component',
@@ -41,9 +40,6 @@ export class GrnFormComponent implements OnInit {
       if (params['id']) {
         this.resetFormBeforeLoad();
         this.poId = +params['id'];
-        this.isFromPopup = false;
-
-        // Logic Update: View mode mein id ko grnHeaderId ki tarah treat karein
         if (this.isViewMode) {
           this.loadPOData(0, this.poId);
         } else {
@@ -57,7 +53,6 @@ export class GrnFormComponent implements OnInit {
         this.resetFormBeforeLoad();
         this.poId = +params['poId'];
         this.isFromPopup = true;
-
         if (params['poNo']) {
           this.grnForm.patchValue({ poNumber: params['poNo'] });
         }
@@ -81,12 +76,11 @@ export class GrnFormComponent implements OnInit {
     });
   }
 
-  // Logic Update: Parameter handle for View vs Add mode
   loadPOData(id: number, grnHeaderId: number | null = null) {
     this.inventoryService.getPODataForGRN(id, grnHeaderId).subscribe({
       next: (res) => {
         if (!res) return;
-
+        console.log('pendingqtycheck:', res);
         this.grnForm.patchValue({
           grnNumber: res.grnNumber || 'AUTO-GEN',
           poNumber: res.poNumber,
@@ -96,12 +90,7 @@ export class GrnFormComponent implements OnInit {
 
         if (res.items && res.items.length > 0) {
           this.mapItems(res.items);
-        } else if (this.isFromPopup) {
-          this.inventoryService.getPOItemsForGRN(id).subscribe(popupItems => {
-            this.mapItems(popupItems);
-          });
         }
-
         this.forceLockTable();
       }
     });
@@ -120,15 +109,14 @@ export class GrnFormComponent implements OnInit {
       const pending = Number(item.pendingQty || item.PendingQty || 0);
       const rate = Number(item.unitRate || item.unitPrice || item.UnitPrice || 0);
 
+      // LOGIC: Naya GRN banate waqt default receivedQty pendingQty ke barabar honi chahiye
       const received = this.isViewMode
         ? Number(item.receivedQty || item.ReceivedQty || 0)
         : pending;
 
       const rejected = Number(item.rejectedQty || item.RejectedQty || 0);
 
-      const accepted = this.isViewMode
-        ? Number(item.acceptedQty || item.AcceptedQty || (received - rejected))
-        : (received - rejected);
+      const accepted = received - rejected;
 
       return {
         ...item,
@@ -155,6 +143,7 @@ export class GrnFormComponent implements OnInit {
     const rejectedQty = Number(item.rejectedQty || 0);
     const unitRate = Number(item.unitRate || 0);
 
+    // VALIDATION: Pending se zyada received nahi ho sakta
     if (enteredQty > pendingQty) {
       item.receivedQty = pendingQty;
       this.showValidationError(`Received quantity cannot exceed the pending quantity (${pendingQty}).`);
@@ -171,7 +160,6 @@ export class GrnFormComponent implements OnInit {
 
     item.acceptedQty = Math.max(0, enteredQty - rejectedQty);
     item.total = item.acceptedQty * unitRate;
-
     this.calculateGrandTotal();
   }
 
@@ -188,7 +176,6 @@ export class GrnFormComponent implements OnInit {
 
   saveGRN() {
     if (this.grnForm.invalid || this.items.length === 0 || this.isViewMode) return;
-
     const currentUserId = localStorage.getItem('email') || '';
 
     const grnData = {
