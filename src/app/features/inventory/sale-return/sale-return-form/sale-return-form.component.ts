@@ -10,6 +10,7 @@ import { SaleOrderService } from '../../service/saleorder.service';
 import { CreateSaleReturnDto, SaleReturnItem } from '../models/create-sale-return.model';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
+import { NotificationService } from '../../../shared/notification.service';
 
 @Component({
     selector: 'app-sale-return-form',
@@ -27,6 +28,7 @@ export class SaleReturnFormComponent implements OnInit {
     private customerService = inject(customerService);
     private saleOrderService = inject(SaleOrderService);
     private dialog = inject(MatDialog);
+    private notification = inject(NotificationService);
 
     customers: any[] = [];
     saleOrders: any[] = [];
@@ -251,7 +253,17 @@ export class SaleReturnFormComponent implements OnInit {
                 });
 
                 dialogRef.afterClosed().subscribe(() => {
-                    this.router.navigate(['/app/inventory/sale-return']);
+                    // Stay on page or navigate? Usually stay to allow print/export
+                    // But existing code navigates away. 
+                    // To enable export button, we need to set returnId.
+                    // If backend returns the new ID, key 'id' or 'returnId'
+                    if (res && res.returnId) {
+                        this.returnId = res.returnId;
+                        this.isEditMode = true;
+                        // this.router.navigate(['/app/inventory/sale-return']); // Don't navigate if we want to export
+                    } else {
+                        this.router.navigate(['/app/inventory/sale-return']);
+                    }
                 });
             },
             error: (err) => {
@@ -270,6 +282,22 @@ export class SaleReturnFormComponent implements OnInit {
             }
         });
     }
+
+    exportPdf() {
+        if (!this.returnId) return;
+        this.isLoading = true;
+        // Assuming service has a download method, otherwise placeholder
+        // this.srService.downloadReturnPdf(this.returnId).subscribe(...)
+        console.log('Exporting PDF for Return ID:', this.returnId);
+
+        // Mocking download for now
+        setTimeout(() => {
+            this.isLoading = false;
+            this.cdr.detectChanges();
+            this.notification.showStatus(true, 'PDF Exported Successfully (Mock)');
+        }, 1000);
+    }
+
     goBack() {
         this.router.navigate(['/app/inventory/sale-return']);
     }

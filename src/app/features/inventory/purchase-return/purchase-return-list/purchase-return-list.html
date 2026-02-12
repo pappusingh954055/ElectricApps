@@ -1,16 +1,16 @@
 <div class="container-fluid">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="page-title m-0">Purchase Return (Debit Note)</h2>
+  <div class="header-actions">
+    <h1 class="page-title m-0">Purchase Return (Debit Note)</h1>
     <div class="d-flex gap-2">
-      <button mat-flat-button 
-        class="export-action-btn"
+      <button mat-raised-button 
+        class="export-action-btn" 
         (click)="exportToExcel()" 
         [disabled]="isExportLoading || dataSource.data.length === 0">
         <mat-icon *ngIf="!isExportLoading">download</mat-icon>
         <mat-spinner diameter="20" *ngIf="isExportLoading" class="me-2"></mat-spinner>
         Export Excel
       </button>
-      <button mat-flat-button class="main-add-btn" (click)="navigateToCreate()" [disabled]="isTableLoading">
+      <button mat-raised-button class="main-add-btn" (click)="navigateToCreate()" [disabled]="isTableLoading">
         <mat-icon>add</mat-icon> New Return
       </button>
     </div>
@@ -43,66 +43,78 @@
         <mat-date-range-picker #picker></mat-date-range-picker>
       </mat-form-field>
 
-      <button mat-flat-button class="filter-btn" (click)="loadReturns()">
+      <button mat-raised-button class="filter-btn" (click)="loadReturns()">
         Apply
       </button>
     </div>
 
-    <div class="table-responsive" [style.visibility]="isTableLoading ? 'hidden' : 'visible'">
-      <table mat-table [dataSource]="dataSource" matSort (matSortChange)="loadReturns()">
-        
-        <ng-container matColumnDef="returnNumber">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header> RETURN # </th>
-          <td mat-cell *matCellDef="let row" class="text-primary fw-bold"> {{row.returnNumber}} </td>
-        </ng-container>
+    <!-- Empty State -->
+    <div class="empty-state-container" *ngIf="!isTableLoading && dataSource.data.length === 0">
+      <div class="empty-state-content">
+        <mat-icon class="empty-icon">assignment_return</mat-icon>
+        <h3 class="empty-title">No Purchase Returns Found</h3>
+        <p class="empty-subtitle">We couldn't find any return records matching your search criteria.</p>
+        <button mat-stroked-button color="primary" (click)="searchKey=''; loadReturns()" *ngIf="searchKey">Clear Search</button>
+      </div>
+    </div>
 
-        <ng-container matColumnDef="returnDate">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header> DATE </th>
-          <td mat-cell *matCellDef="let row"> {{row.returnDate | date:'mediumDate'}} </td>
-        </ng-container>
-
-        <ng-container matColumnDef="supplierName">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header> SUPPLIER </th>
-          <td mat-cell *matCellDef="let row"> {{row.supplierName}} </td>
-        </ng-container>
-
-        <ng-container matColumnDef="grnRef">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header> GRN REF </th>
-          <td mat-cell *matCellDef="let row"> {{row.grnRef}} </td>
-        </ng-container>
-
-        <ng-container matColumnDef="totalAmount">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header> AMOUNT </th>
-          <td mat-cell *matCellDef="let row"> {{row.totalAmount | currency:'INR'}} </td>
-        </ng-container>
-
-       <ng-container matColumnDef="status">
-  <th mat-header-cell *matHeaderCellDef mat-sort-header> STATUS </th>
-  <td mat-cell *matCellDef="let row">
-    <span class="status-badge" 
-          [ngClass]="{
-            'completed': row.status === 'Completed' || row.status === 'Confirmed'
-          }">
-      {{ row.status }}
-    </span>
-  </td>
-</ng-container>
-
-        <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef class="text-end pe-3"> ACTIONS </th>
-          <td mat-cell *matCellDef="let row" class="text-end pe-3">
-            <button mat-icon-button color="primary" title="View Details" style="margin-right: 10px;" (click)="viewDetails(row)">
-              <mat-icon>visibility</mat-icon>
-            </button>
-            <button mat-icon-button color="warn" title="Print/Download" (click)="printReturn(row)">
-              <mat-icon>print</mat-icon>
-            </button>
-          </td>
-        </ng-container>
-
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover-row"></tr>
-      </table>
+    <div [style.display]="(!isTableLoading && dataSource.data.length > 0) ? 'block' : 'none'">
+      <div class="table-responsive">
+        <table mat-table [dataSource]="dataSource" matSort (matSortChange)="loadReturns()">
+          
+          <ng-container matColumnDef="returnNumber">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> RETURN # </th>
+            <td mat-cell *matCellDef="let row" class="text-primary fw-bold"> {{row.returnNumber}} </td>
+          </ng-container>
+  
+          <ng-container matColumnDef="returnDate">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> DATE </th>
+            <td mat-cell *matCellDef="let row"> {{row.returnDate | date:'mediumDate'}} </td>
+          </ng-container>
+  
+          <ng-container matColumnDef="supplierName">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> SUPPLIER </th>
+            <td mat-cell *matCellDef="let row"> {{row.supplierName}} </td>
+          </ng-container>
+  
+          <ng-container matColumnDef="grnRef">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> GRN REF </th>
+            <td mat-cell *matCellDef="let row"> {{row.grnRef}} </td>
+          </ng-container>
+  
+          <ng-container matColumnDef="totalAmount">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> AMOUNT </th>
+            <td mat-cell *matCellDef="let row"> {{row.totalAmount | currency:'INR'}} </td>
+          </ng-container>
+  
+          <ng-container matColumnDef="status">
+    <th mat-header-cell *matHeaderCellDef mat-sort-header> STATUS </th>
+    <td mat-cell *matCellDef="let row">
+      <span class="status-badge" 
+            [ngClass]="{
+              'completed': row.status === 'Completed' || row.status === 'Confirmed'
+            }">
+        {{ row.status }}
+      </span>
+    </td>
+  </ng-container>
+  
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef class="text-end pe-3"> ACTIONS </th>
+            <td mat-cell *matCellDef="let row" class="text-end pe-3">
+              <button mat-icon-button color="primary" title="View Details" style="margin-right: 10px;" (click)="viewDetails(row)">
+                <mat-icon>visibility</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" title="Print/Download" (click)="printReturn(row)">
+                <mat-icon>print</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+  
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover-row"></tr>
+        </table>
+      </div>
 
       <mat-paginator [length]="totalRecords" 
                      [pageSize]="pageSize" 

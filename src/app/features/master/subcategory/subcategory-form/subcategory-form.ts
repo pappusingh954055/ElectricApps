@@ -15,7 +15,7 @@ import { map, startWith, takeUntil } from 'rxjs/operators';
 @Component({
   selector: 'app-subcategory-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, FormFooter],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule],
   templateUrl: './subcategory-form.html',
   styleUrl: './subcategory-form.scss',
 })

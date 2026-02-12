@@ -24,6 +24,13 @@
       <button mat-icon-button color="warn" *ngIf="selectedFileName" (click)="resetFile(fileInput)" matTooltip="Reset File">
         <mat-icon>close</mat-icon>
       </button>
+      <button mat-raised-button color="primary" *ngIf="!selectedFileName" (click)="onSave()" [disabled]="loading">
+        <mat-icon>save</mat-icon> {{ categoryId ? 'Update' : 'Save' }}
+      </button>
+
+      <button mat-stroked-button color="warn" (click)="onCancel()" *ngIf="!selectedFileName">
+        <mat-icon>close</mat-icon> Cancel
+      </button>
     </div>
   </div>
 
@@ -61,9 +68,5 @@
 
     </form>
   </mat-card-content>
-
-  <!-- ✅ FOOTER -->
-  <form-footer *ngIf="!selectedFileName" [loading]="loading" [saveLabel]="categoryId ? 'Update' : 'Save'" (save)="onSave()" (cancel)="onCancel()">
-  </form-footer>
 
 </mat-card>

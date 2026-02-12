@@ -325,3 +325,83 @@ $my-palettes: (
     height: 44px;
   }
 }
+/* =====================================================
+   12. GLOBAL CUSTOM BUTTON STYLES - PILL SHAPE & COLORS
+   (Excludes Datatables)
+===================================================== */
+
+/* 1. Base Shape for Page Buttons (Raised, Flat, Stroked) */
+.mat-mdc-raised-button,
+.mat-mdc-flat-button,
+.mat-mdc-stroked-button {
+  /* Exclude buttons inside tables (mdc-table, standard table, or grid cells) */
+  &:not(.mat-mdc-table *):not(table *) {
+    border-radius: 999px !important; /* Full rounded pill shape */
+    padding: 0 28px !important;     /* Wider, premium feel */
+    height: 44px !important;        /* Comfortable touch target */
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase;      /* Optional: matches Material Guidelines closer */
+    box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 
+                0 1px 3px rgba(0, 0, 0, 0.08) !important; /* Subtle premium shadow */
+    transition: all 0.2s ease-in-out !important;
+
+    &:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+    }
+  }
+}
+
+/* 2. Primary Action Buttons (SAVE - Blue) */
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-flat-button.mat-primary {
+  &:not(.mat-mdc-table *):not(table *) {
+    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%) !important; /* Gradient Blue */
+    color: white !important;
+  }
+}
+
+/* 3. Destructive/Warn Action Buttons (DELETE/CANCEL - Red) */
+.mat-mdc-raised-button.mat-warn,
+.mat-mdc-flat-button.mat-warn {
+  &:not(.mat-mdc-table *):not(table *) {
+    background: linear-gradient(135deg, #d32f2f 0%, #c62828 100%) !important; /* Gradient Red */
+    color: white !important;
+  }
+}
+
+/* 4. Stroked Blue Buttons (e.g. Download) */
+.mat-mdc-stroked-button.mat-primary {
+  &:not(.mat-mdc-table *):not(table *) {
+    color: #1565c0 !important;
+    border: 2px solid #1565c0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+
+    &:hover {
+      background-color: rgba(21, 101, 192, 0.04) !important;
+    }
+  }
+}
+
+/* 5. Stroked Red Buttons (e.g. Cancel) */
+.mat-mdc-stroked-button.mat-warn {
+  &:not(.mat-mdc-table *):not(table *) {
+    color: #c62828 !important;
+    border: 2px solid #c62828 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+
+    &:hover {
+      background-color: rgba(198, 40, 40, 0.04) !important;
+    }
+  }
+}
+
+/* 6. Fix for Icons inside buttons */
+.mat-mdc-button-base .mat-icon {
+  margin-right: 8px;
+  margin-left: -4px;
+}

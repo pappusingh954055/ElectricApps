@@ -1,14 +1,15 @@
-<div class="container-fluid mt-3">
-  <div class="d-flex justify-content-between align-items-center mb-3 px-2">
-    <h2 class="m-0 text-dark">Sale Order Management</h2>
+<div class="container-fluid">
+  <div class="header-actions">
+    <h1 class="page-title">Sale Order Management</h1>
     <div class="d-flex gap-2">
-      <button mat-flat-button class="export-action-btn" 
+      <button mat-raised-button color="warn" class="export-action-btn" 
               (click)="selection.hasValue() ? DownloadMultipleOrders(getSelectedIds()) : exportOrders()" 
-              [disabled]="isLoading">
+              [disabled]="isLoading"
+              *ngIf="dataSource.data.length > 0">
         <mat-icon>download</mat-icon> 
         {{ selection.hasValue() ? 'Export (' + selection.selected.length + ')' : 'Export Excel' }}
       </button>
-      <button mat-flat-button class="main-add-btn" *ngIf="!selection.hasValue()" (click)="createNewOrder()" [disabled]="isLoading">
+      <button mat-raised-button color="primary" class="main-add-btn" *ngIf="!selection.hasValue()" (click)="createNewOrder()" [disabled]="isLoading">
         <mat-icon>add</mat-icon> New Sale Order
       </button>
     </div>
@@ -19,126 +20,139 @@
       <mat-spinner diameter="40"></mat-spinner>
     </div>
 
-    <table mat-table [dataSource]="dataSource" matSort (matSortChange)="loadOrders()">
-      
-      <ng-container matColumnDef="select">
-        <th mat-header-cell *matHeaderCellDef>
-          <mat-checkbox (change)="$event ? masterToggle() : null"
-                        [checked]="selection.hasValue() && isAllSelected()"
-                        [indeterminate]="selection.hasValue() && !isAllSelected()"
-                        color="primary">
-          </mat-checkbox>
-        </th>
-        <td mat-cell *matCellDef="let row">
-          <mat-checkbox (click)="$event.stopPropagation()"
-                        (change)="$event ? selection.toggle(row) : null"
-                        [checked]="selection.isSelected(row)"
-                        color="primary">
-          </mat-checkbox>
-        </td>
-      </ng-container>
+    <!-- Empty State -->
+    <div class="empty-state-container" *ngIf="!isLoading && dataSource.data.length === 0">
+      <div class="empty-state-content">
+        <mat-icon class="empty-icon">folder_off</mat-icon>
+        <h3 class="empty-title">No Records Found</h3>
+        <p class="empty-subtitle">We couldn't find any sale orders matching your search.</p>
+        <button mat-stroked-button color="primary" (click)="clearSearch()" *ngIf="searchKey">Clear Search</button>
+      </div>
+    </div>
 
-      <ng-container matColumnDef="soNumber">
-        <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragLockAxis="x">
-          <div class="header-with-filter">
-            <span mat-sort-header>Order #</span>
-            <button mat-icon-button [matMenuTriggerFor]="filterMenu" [matMenuTriggerData]="{placeholder: 'Search Order #'}" (click)="$event.stopPropagation()" class="small-filter-btn">
-              <mat-icon>filter_list</mat-icon>
-            </button>
-          </div>
+    <!-- Table & Paginator -->
+    <div [style.display]="(!isLoading && dataSource.data.length > 0) ? 'block' : 'none'">
+      <table mat-table [dataSource]="dataSource" matSort (matSortChange)="loadOrders()">
+        
+        <ng-container matColumnDef="select">
+          <th mat-header-cell *matHeaderCellDef>
+            <mat-checkbox (change)="$event ? masterToggle() : null"
+                          [checked]="selection.hasValue() && isAllSelected()"
+                          [indeterminate]="selection.hasValue() && !isAllSelected()"
+                          color="primary">
+            </mat-checkbox>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <mat-checkbox (click)="$event.stopPropagation()"
+                          (change)="$event ? selection.toggle(row) : null"
+                          [checked]="selection.isSelected(row)"
+                          color="primary">
+            </mat-checkbox>
+          </td>
+        </ng-container>
 
-        </th>
-        <td mat-cell *matCellDef="let row"> {{row.soNumber}} </td>
-      </ng-container>
+        <ng-container matColumnDef="soNumber">
+          <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragLockAxis="x">
+            <div class="header-with-filter">
+              <span mat-sort-header>Order #</span>
+              <button mat-icon-button [matMenuTriggerFor]="filterMenu" [matMenuTriggerData]="{placeholder: 'Search Order #'}" (click)="$event.stopPropagation()" class="small-filter-btn">
+                <mat-icon>filter_list</mat-icon>
+              </button>
+            </div>
 
-      <ng-container matColumnDef="soDate">
-        <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragLockAxis="x">
-          <div class="header-with-filter">
-            <span mat-sort-header>Date</span>
-            <button mat-icon-button [matMenuTriggerFor]="filterMenu" [matMenuTriggerData]="{placeholder: 'Search Date'}" (click)="$event.stopPropagation()" class="small-filter-btn">
-              <mat-icon>filter_list</mat-icon>
-            </button>
-          </div>
+          </th>
+          <td mat-cell *matCellDef="let row"> {{row.soNumber}} </td>
+        </ng-container>
 
-        </th>
-        <td mat-cell *matCellDef="let row"> {{row.soDate | date}} </td>
-      </ng-container>
+        <ng-container matColumnDef="soDate">
+          <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragLockAxis="x">
+            <div class="header-with-filter">
+              <span mat-sort-header>Date</span>
+              <button mat-icon-button [matMenuTriggerFor]="filterMenu" [matMenuTriggerData]="{placeholder: 'Search Date'}" (click)="$event.stopPropagation()" class="small-filter-btn">
+                <mat-icon>filter_list</mat-icon>
+              </button>
+            </div>
 
-      <ng-container matColumnDef="customerName">
-        <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragLockAxis="x">
-          <div class="header-with-filter">
-            <span mat-sort-header>Customer</span>
-            <button mat-icon-button [matMenuTriggerFor]="filterMenu" [matMenuTriggerData]="{placeholder: 'Search Customer'}" (click)="$event.stopPropagation()" class="small-filter-btn">
-              <mat-icon>filter_list</mat-icon>
-            </button>
-          </div>
+          </th>
+          <td mat-cell *matCellDef="let row"> {{row.soDate | date}} </td>
+        </ng-container>
 
-        </th>
-        <td mat-cell *matCellDef="let row"> {{row.customerName}} </td>
-      </ng-container>
+        <ng-container matColumnDef="customerName">
+          <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragLockAxis="x">
+            <div class="header-with-filter">
+              <span mat-sort-header>Customer</span>
+              <button mat-icon-button [matMenuTriggerFor]="filterMenu" [matMenuTriggerData]="{placeholder: 'Search Customer'}" (click)="$event.stopPropagation()" class="small-filter-btn">
+                <mat-icon>filter_list</mat-icon>
+              </button>
+            </div>
 
-      <ng-container matColumnDef="grandTotal">
-        <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragLockAxis="x">
-          <div class="header-with-filter">
-            <span mat-sort-header>Amount (Rate)</span>
-            <button mat-icon-button [matMenuTriggerFor]="filterMenu" [matMenuTriggerData]="{placeholder: 'Search Amount'}" (click)="$event.stopPropagation()" class="small-filter-btn">
-              <mat-icon>filter_list</mat-icon>
-            </button>
-          </div>
+          </th>
+          <td mat-cell *matCellDef="let row"> {{row.customerName}} </td>
+        </ng-container>
 
-        </th>
-        <td mat-cell *matCellDef="let row"> {{row.grandTotal | currency:'INR'}} </td>
-      </ng-container>
+        <ng-container matColumnDef="grandTotal">
+          <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragLockAxis="x">
+            <div class="header-with-filter">
+              <span mat-sort-header>Amount (Rate)</span>
+              <button mat-icon-button [matMenuTriggerFor]="filterMenu" [matMenuTriggerData]="{placeholder: 'Search Amount'}" (click)="$event.stopPropagation()" class="small-filter-btn">
+                <mat-icon>filter_list</mat-icon>
+              </button>
+            </div>
 
-      <ng-container matColumnDef="status">
-        <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragLockAxis="x">
-          <div class="header-with-filter">
-            <span mat-sort-header>Status</span>
-            <button mat-icon-button [matMenuTriggerFor]="filterMenu" [matMenuTriggerData]="{placeholder: 'Search Status'}" (click)="$event.stopPropagation()" class="small-filter-btn">
-              <mat-icon>filter_list</mat-icon>
-            </button>
-          </div>
+          </th>
+          <td mat-cell *matCellDef="let row"> {{row.grandTotal | currency:'INR'}} </td>
+        </ng-container>
 
-        </th>
-        <td mat-cell *matCellDef="let row">
-          <span class="status-badge" [ngClass]="row.status?.toLowerCase()">
-            {{row.status}}
-          </span>
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragLockAxis="x">
+            <div class="header-with-filter">
+              <span mat-sort-header>Status</span>
+              <button mat-icon-button [matMenuTriggerFor]="filterMenu" [matMenuTriggerData]="{placeholder: 'Search Status'}" (click)="$event.stopPropagation()" class="small-filter-btn">
+                <mat-icon>filter_list</mat-icon>
+              </button>
+            </div>
 
-      <ng-container matColumnDef="actions">
-        <th mat-header-cell *matHeaderCellDef> Actions </th>
-        <td mat-cell *matCellDef="let row">
-          <div class="d-flex align-items-center">
-            <button mat-icon-button color="primary" 
-                    *ngIf="row.status?.toLowerCase() === 'draft'" 
-                    (click)="confirmOrder(row)" 
-                    matTooltip="Confirm Order & Reduce Stock">
-              <mat-icon>check_circle</mat-icon>
-            </button>
+          </th>
+          <td mat-cell *matCellDef="let row">
+            <span class="status-badge" [ngClass]="row.status?.toLowerCase()">
+              {{row.status}}
+            </span>
+          </td>
+        </ng-container>
 
-            <button mat-icon-button color="accent" 
-                    (click)="viewOrder(row)" 
-                    matTooltip="View Order Details">
-              <mat-icon>visibility</mat-icon>
-            </button>
-          </div>
-        </td>
-      </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef> Actions </th>
+          <td mat-cell *matCellDef="let row">
+            <div class="d-flex align-items-center">
+              <button mat-icon-button color="primary" 
+                      *ngIf="row.status?.toLowerCase() === 'draft'" 
+                      (click)="confirmOrder(row)" 
+                      matTooltip="Confirm Order & Reduce Stock">
+                <mat-icon>check_circle</mat-icon>
+              </button>
 
-      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"
-          cdkDropList
-          cdkDropListOrientation="horizontal"
-          (cdkDropListDropped)="drop($event)"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="selection.toggle(row)"></tr>
-    </table>
+              <button mat-icon-button color="accent" 
+                      (click)="viewOrder(row)" 
+                      matTooltip="View Order Details">
+                <mat-icon>visibility</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
 
-  <mat-paginator [length]="totalRecords" 
-               [pageSize]="10"
-               [pageSizeOptions]="[5, 10, 25]" 
-               (page)="loadOrders()">
-</mat-paginator>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"
+            cdkDropList
+            cdkDropListOrientation="horizontal"
+            (cdkDropListDropped)="drop($event)"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="selection.toggle(row)"></tr>
+      </table>
+
+      <mat-paginator [length]="totalRecords" 
+                   [pageSize]="10"
+                   [pageSizeOptions]="[5, 10, 25]" 
+                   (page)="loadOrders()">
+      </mat-paginator>
+    </div>
 
     <!-- Filter Menu Template -->
     <mat-menu #filterMenu="matMenu" xPosition="before" [overlapTrigger]="false" class="filter-menu-panel">

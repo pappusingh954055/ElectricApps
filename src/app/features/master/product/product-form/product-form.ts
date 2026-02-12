@@ -15,7 +15,7 @@ import { map, startWith, takeUntil, finalize } from 'rxjs/operators';
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, FormFooter],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule],
   templateUrl: './product-form.html',
   styleUrl: './product-form.scss',
 })

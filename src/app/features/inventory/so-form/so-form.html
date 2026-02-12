@@ -5,7 +5,7 @@
         <button mat-button class="back-btn" (click)="goBack()">
           <mat-icon>arrow_back</mat-icon> Back
         </button>
-        <button mat-flat-button class="save-btn" (click)="Save()" [disabled]="soForm.invalid || hasZeroStockItems">
+        <button mat-raised-button color="primary" (click)="Save()" [disabled]="soForm.invalid || hasZeroStockItems">
           <mat-icon>save</mat-icon> Save Sale Order
         </button>
       </div>  

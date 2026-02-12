@@ -1,10 +1,17 @@
-/* ENTERPRISE GRID SYSTEM - UPDATED RESPONSIVE VERSION */
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
 .master-container {
   padding: 10px 24px 24px;
   background-color: #f8fafc;
-  // min-height: 100vh;
+  height: 100%;
+  overflow-y: auto;
   box-sizing: border-box;
- scrollbar-width: none;      /* Firefox */
+  scrollbar-width: none;      /* Firefox */
   -ms-overflow-style: none;   /* IE / Edge */
 
 

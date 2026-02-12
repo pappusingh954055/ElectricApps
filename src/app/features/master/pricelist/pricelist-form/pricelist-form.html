@@ -1,11 +1,18 @@
 <div [formGroup]="priceListForm" class="master-container">
-  <div class="actions">
-    <button mat-button class="back-btn me-2" (click)="onCancel()">
-      <mat-icon>arrow_back</mat-icon> Back
-    </button>
-    <button mat-flat-button class="save-btn" (click)="onSave()" [disabled]="priceListForm.invalid">
-      <mat-icon>save</mat-icon> {{ isEditMode ? 'Update Price List' : 'Save Price List' }}
-    </button>
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid #eee; background: #fff; margin-bottom: 16px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+    <h2 class="m-0 text-primary fw-bold" style="font-size: 1.2rem;">{{ isEditMode ? 'Edit' : 'Add' }} Price List</h2>
+    
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="loading || priceListForm.invalid">
+        <mat-icon *ngIf="!loading">save</mat-icon> 
+        <mat-spinner *ngIf="loading" diameter="18" style="display: inline-block; margin-right: 8px;"></mat-spinner>
+        {{ isEditMode ? 'Update' : 'Save' }}
+      </button>
+
+      <button mat-stroked-button color="warn" (click)="onCancel()">
+        <mat-icon>close</mat-icon> Cancel
+      </button>
+    </div>
   </div>
   <div class="header-form-card">
     <div class="header-grid">

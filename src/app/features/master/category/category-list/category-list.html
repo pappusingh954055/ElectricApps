@@ -5,11 +5,11 @@
   <div class="header-actions">
     <h1>All Categories</h1>
     <div class="d-flex gap-3">
-      <button *ngIf="selectedRows.length > 0" mat-flat-button class="delete-action-btn" (click)="confirmBulkDelete()" [disabled]="loading">
+      <button *ngIf="selectedRows.length > 0" mat-raised-button color="warn" (click)="confirmBulkDelete()" [disabled]="loading">
         <mat-icon>delete_sweep</mat-icon>
         Delete Selected ({{selectedRows.length}})
       </button>
-      <button *ngIf="selectedRows.length === 0" mat-flat-button class="main-add-btn" routerLink="/app/master/categories/add">
+      <button *ngIf="selectedRows.length === 0" mat-raised-button color="primary" routerLink="/app/master/categories/add">
         <mat-icon>add</mat-icon>
         New Category
       </button>

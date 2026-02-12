@@ -1,7 +1,17 @@
 <mat-card class="product-card shadow-sm">
-  <mat-card-header class="bg-light p-3 border-bottom">
-    <mat-card-title class="m-0 text-primary">Product Master</mat-card-title>
-  </mat-card-header>
+  <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid #eee;">
+    <h2 class="m-0 text-primary fw-bold" style="font-size: 1.2rem;">{{ isEditMode ? 'Edit' : 'Add' }} Product</h2>
+    
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="loading">
+        <mat-icon>save</mat-icon> {{ isEditMode ? 'Update' : 'Save' }}
+      </button>
+
+      <button mat-stroked-button color="warn" (click)="onCancel()">
+        <mat-icon>close</mat-icon> Cancel
+      </button>
+    </div>
+  </div>
 
   <mat-card-content class="pt-4">
     <form [formGroup]="productsForm" class="form-grid">
@@ -149,10 +159,4 @@
 
     </form>
   </mat-card-content>
-
-  <div class="card-footer border-top bg-light p-3">
-    <form-footer [loading]="loading" [saveLabel]="isEditMode ? 'Update' : 'Save'" (save)="onSave()" (cancel)="onCancel()">
-    </form-footer>
-  </div>
-
 </mat-card>

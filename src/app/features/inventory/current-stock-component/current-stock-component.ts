@@ -111,7 +111,7 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
         totalReceived: item.totalReceived,
         totalRejected: item.totalRejected,
         // ✅ Updated: Mapping totalSold from Backend DTO
-        totalSold: item.totalSold || 0, 
+        totalSold: item.totalSold || 0,
         availableStock: item.availableStock,
         unit: item.unit,
         lastRate: item.lastRate,
@@ -128,6 +128,7 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
   applyDateFilter() {
     this.paginator.pageIndex = 0;
     this.fetchDataStream().subscribe(data => {
+      this.isLoadingResults = false;
       if (data) {
         this.resultsLength = data.totalCount;
         this.handleDataUpdate(data.items);

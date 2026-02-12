@@ -3,8 +3,16 @@
         <div class="header-left">
             <h1>{{ isEditMode ? 'Edit' : 'New' }} Sale Return</h1>
             <div class="action-buttons">
-                <button mat-flat-button class="cancel-btn" type="button" (click)="goBack()">Cancel</button>
-                <button mat-flat-button class="save-btn" type="submit" form="saleReturnForm" [disabled]="isLoading || returnForm.invalid">
+                <!-- Export Button Added -->
+                <button mat-raised-button color="primary" class="export-pdf-btn" 
+                        type="button" 
+                        (click)="exportPdf()" 
+                        [disabled]="!returnId || isLoading">
+                    <mat-icon>picture_as_pdf</mat-icon> Export PDF
+                </button>
+
+                <button mat-raised-button class="cancel-btn" type="button" (click)="goBack()">Cancel</button>
+                <button mat-raised-button class="save-btn" type="submit" form="saleReturnForm" [disabled]="isLoading || returnForm.invalid">
                     <mat-icon *ngIf="!isLoading">save</mat-icon>
                     <mat-icon *ngIf="isLoading" class="spinning">sync</mat-icon>
                     {{ isLoading ? 'Saving...' : (isEditMode ? 'Update Return' : 'Save Return') }}

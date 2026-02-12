@@ -16,7 +16,7 @@ import { StatusDialogComponent } from '../../../../shared/components/status-dial
 
 @Component({
   selector: 'app-category-form',
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, FormFooter],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule],
   templateUrl: './category-form.html',
   styleUrl: './category-form.scss',
 })

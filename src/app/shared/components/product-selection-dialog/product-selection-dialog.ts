@@ -17,7 +17,7 @@ import { finalize, Subject, debounceTime, distinctUntilChanged, takeUntil } from
     <div class="product-selection-container">
       <div class="dialog-header">
         <h2 class="title">Select Products</h2>
-        <button mat-icon-button class="header-close-btn" (click)="close()"><mat-icon>close</mat-icon></button>
+        <button class="header-close-btn" (click)="close()"><mat-icon>close</mat-icon></button>
       </div>
 
       <div class="search-bar">
@@ -88,10 +88,10 @@ import { finalize, Subject, debounceTime, distinctUntilChanged, takeUntil } from
           <span class="text">products selected</span>
         </div>
         <div class="action-buttons">
-          <button mat-button class="back-btn" (click)="close()">
+          <button mat-raised-button class="back-btn" (click)="close()">
             <mat-icon>close</mat-icon> Cancel
           </button>
-          <button mat-flat-button class="save-btn" [disabled]="selection.isEmpty()" (click)="addSelected()">
+          <button mat-raised-button class="save-btn" [disabled]="selection.isEmpty()" (click)="addSelected()">
             <mat-icon>add_shopping_cart</mat-icon> Add Selected Products
           </button>
         </div>
@@ -125,7 +125,28 @@ import { finalize, Subject, debounceTime, distinctUntilChanged, takeUntil } from
       }
 
       .header-close-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
         color: #94a3b8;
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border-radius: 50% !important;
+
+        mat-icon {
+          font-size: 20px;
+          width: 20px;
+          height: 20px;
+          line-height: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
         &:hover {
           color: #ef4444;
           background: #fef2f2;

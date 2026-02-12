@@ -1,7 +1,7 @@
 <div class="list-container">
     <div class="header-actions">
         <h1>Sale Returns (Credit Notes)</h1>
-        <button mat-flat-button class="main-add-btn" (click)="navigateToCreate()" [disabled]="isTableLoading">
+        <button mat-raised-button class="main-add-btn" (click)="navigateToCreate()" [disabled]="isTableLoading">
             <mat-icon>add</mat-icon> New Return
         </button>
     </div>
@@ -54,8 +54,11 @@
     <div class="filter-section">
         <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
             <mat-label>Search</mat-label>
-            <input matInput (keyup)="applySearch($event)" placeholder="Search Returns" #input>
-            <mat-icon matSuffix>search</mat-icon>
+            <input matInput (keyup)="applySearch($event)" [(ngModel)]="searchKey" placeholder="Search Returns">
+            <button mat-icon-button matSuffix *ngIf="searchKey" (click)="searchKey=''; loadReturns()">
+                <mat-icon>close</mat-icon>
+            </button>
+            <mat-icon matSuffix *ngIf="!searchKey">search</mat-icon>
         </mat-form-field>
 
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -72,7 +75,7 @@
             <mat-datepicker #picker2></mat-datepicker>
         </mat-form-field>
 
-        <button mat-flat-button class="export-action-btn" (click)="exportToExcel()" [disabled]="isExportLoading || isTableLoading">
+        <button mat-raised-button class="export-action-btn" (click)="exportToExcel()" [disabled]="isExportLoading || isTableLoading || dataSource.data.length === 0">
             <mat-icon *ngIf="!isExportLoading">download</mat-icon>
             <mat-spinner *ngIf="isExportLoading" diameter="20"></mat-spinner>
             Export
@@ -84,61 +87,73 @@
             <mat-spinner diameter="50"></mat-spinner>
         </div>
 
-        <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)">
-            <ng-container matColumnDef="returnNumber">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Return No. </th>
-                <td mat-cell *matCellDef="let row" class="bold-text"> {{row.returnNumber}} </td>
-            </ng-container>
+        <!-- Empty State -->
+        <div class="empty-state-container" *ngIf="!isTableLoading && dataSource.data.length === 0">
+            <div class="empty-state-content">
+                <mat-icon class="empty-icon">assignment_return</mat-icon>
+                <h3 class="empty-title">No Sale Returns Found</h3>
+                <p class="empty-subtitle">We couldn't find any return records matching your search criteria.</p>
+                <button mat-stroked-button color="primary" (click)="searchKey=''; loadReturns()" *ngIf="searchKey">Clear Search</button>
+            </div>
+        </div>
 
-            <ng-container matColumnDef="returnDate">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
-                <td mat-cell *matCellDef="let row"> {{row.returnDate | date:'mediumDate'}} </td>
-            </ng-container>
+        <div [style.display]="(!isTableLoading && dataSource.data.length > 0) ? 'block' : 'none'">
+            <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)">
+                <ng-container matColumnDef="returnNumber">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Return No. </th>
+                    <td mat-cell *matCellDef="let row" class="bold-text"> {{row.returnNumber}} </td>
+                </ng-container>
 
-            <ng-container matColumnDef="customerName">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Customer </th>
-                <td mat-cell *matCellDef="let row"> {{row.customerName}} </td>
-            </ng-container>
+                <ng-container matColumnDef="returnDate">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
+                    <td mat-cell *matCellDef="let row"> {{row.returnDate | date:'mediumDate'}} </td>
+                </ng-container>
 
-            <ng-container matColumnDef="soRef">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> SO Ref </th>
-                <td mat-cell *matCellDef="let row"> {{row.soRef}} </td>
-            </ng-container>
+                <ng-container matColumnDef="customerName">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Customer </th>
+                    <td mat-cell *matCellDef="let row"> {{row.customerName}} </td>
+                </ng-container>
 
-            <ng-container matColumnDef="totalAmount">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Total </th>
-                <td mat-cell *matCellDef="let row" class="amount-cell"> {{row.totalAmount | currency:'INR'}} </td>
-            </ng-container>
+                <ng-container matColumnDef="soRef">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> SO Ref </th>
+                    <td mat-cell *matCellDef="let row"> {{row.soRef}} </td>
+                </ng-container>
 
-            <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
-                <td mat-cell *matCellDef="let row">
-                    <span class="status-badge" [ngClass]="row.status?.toLowerCase()">
-                        {{row.status}}
-                    </span>
-                </td>
-            </ng-container>
+                <ng-container matColumnDef="totalAmount">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Total </th>
+                    <td mat-cell *matCellDef="let row" class="amount-cell"> {{row.totalAmount | currency:'INR'}} </td>
+                </ng-container>
 
-            <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef> Actions </th>
-                <td mat-cell *matCellDef="let row">
-                    <div class="action-buttons">
-                        <button mat-icon-button color="primary" (click)="viewCreditNote(row)" matTooltip="View Details">
-                            <mat-icon>visibility</mat-icon>
-                        </button>
-                        <button mat-icon-button color="accent" (click)="printCreditNote(row)" matTooltip="Print Credit Note">
-                            <mat-icon>print</mat-icon>
-                        </button>
-                    </div>
-                </td>
-            </ng-container>
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+                    <td mat-cell *matCellDef="let row">
+                        <span class="status-badge" [ngClass]="row.status?.toLowerCase()">
+                            {{row.status}}
+                        </span>
+                    </td>
+                </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="element-row"></tr>
-        </table>
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef> Actions </th>
+                    <td mat-cell *matCellDef="let row">
+                        <div class="action-buttons">
+                            <button mat-icon-button color="primary" (click)="viewCreditNote(row)" matTooltip="View Details">
+                                <mat-icon>visibility</mat-icon>
+                            </button>
+                            <button mat-icon-button color="accent" (click)="printCreditNote(row)" matTooltip="Print Credit Note">
+                                <mat-icon>print</mat-icon>
+                            </button>
+                        </div>
+                    </td>
+                </ng-container>
 
-        <mat-paginator [length]="totalRecords" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 100]"
-            (page)="onPageChange($event)">
-        </mat-paginator>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="element-row"></tr>
+            </table>
+
+            <mat-paginator [length]="totalRecords" [pageSize]="pageSize" [pageSizeOptions]="[5, 10, 25, 100]"
+                (page)="onPageChange($event)">
+            </mat-paginator>
+        </div>
     </div>
 </div>
