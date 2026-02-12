@@ -56,7 +56,7 @@ export class SubcategoryForm implements OnInit, OnDestroy {
   private initForm(): void {
     this.subcategoryForm = this.fb.group({
       categoryId: [null, Validators.required],
-      categorySearch: [''], // For autocomplete input text
+      categorySearch: ['', Validators.required], // For autocomplete input text
       subcategoryName: ['', Validators.required],
       subcategoryCode: [''],
       defaultGst: [0, [Validators.min(0), Validators.max(100)]],

@@ -26,10 +26,10 @@
         <mat-icon>save</mat-icon> Save
       </button>
 
-      <button mat-icon-button color="warn" *ngIf="selectedFileName" (click)="resetFile(fileInput)" matTooltip="Reset File">
+    <!--   <button mat-icon-button color="warn" *ngIf="selectedFileName" (click)="resetFile(fileInput)" matTooltip="Reset File">
         <mat-icon>close</mat-icon>
       </button>
-
+ -->
       <!-- Cancel Button (Header) -->
       <button mat-stroked-button color="warn" (click)="onCancel()">
         <mat-icon>close</mat-icon> Cancel
@@ -62,12 +62,17 @@
           <mat-spinner diameter="18"></mat-spinner>
         </div>
 
-        <mat-error *ngIf="subcategoryForm.get('categoryId')?.hasError('required')">Category is required</mat-error>
+        <mat-error *ngIf="subcategoryForm.get('categorySearch')?.hasError('required') || subcategoryForm.get('categoryId')?.hasError('required')">
+          Category is required
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
         <mat-label>Subcategory Name *</mat-label>
         <input matInput formControlName="subcategoryName">
+        <mat-error *ngIf="subcategoryForm.get('subcategoryName')?.hasError('required')">
+          Subcategory Name is required
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline">
@@ -75,9 +80,9 @@
         <input matInput type="number" formControlName="defaultGst">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="full-width">
+      <mat-form-field appearance="outline">
         <mat-label>Description</mat-label>
-        <textarea matInput rows="3" formControlName="description"></textarea>
+        <textarea matInput rows="1" formControlName="description"></textarea>
       </mat-form-field>
 
       <mat-slide-toggle formControlName="isActive">
@@ -88,6 +93,6 @@
   </mat-card-content>
 
   <!-- ✅ FOOTER -->
-  <form-footer *ngIf="!selectedFileName" [loading]="loading" [saveLabel]="isEditMode ? 'Update' : 'Save'" (save)="onSave()" (cancel)="onCancel()">
+  <form-footer style="margin-bottom: 10px;" *ngIf="!selectedFileName" [loading]="loading" [saveLabel]="isEditMode ? 'Update' : 'Save'" (save)="onSave()" (cancel)="onCancel()">
   </form-footer>
 </mat-card>

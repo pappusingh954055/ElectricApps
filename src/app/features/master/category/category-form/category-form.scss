@@ -5,7 +5,7 @@
 /* Centered form card */
 mat-card {
   padding: 20px;
-  max-width: 800px;
+  max-width: 1000px;
   margin: auto;
 }
 
@@ -18,8 +18,14 @@ mat-card-title {
 /* Grid-based form layout */
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: 1fr 2fr;
   gap: 16px;
+}
+
+@media (max-width: 600px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* Full width controls (textarea etc.) */

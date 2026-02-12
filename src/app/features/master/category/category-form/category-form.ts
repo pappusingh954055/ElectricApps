@@ -167,7 +167,10 @@ export class CategoryForm implements OnInit {
   }
 
   onSave(): void {
-    if (this.categoryForm.invalid) return;
+    if (this.categoryForm.invalid) {
+      this.categoryForm.markAllAsTouched();
+      return;
+    }
 
     this.loading = true;
 
