@@ -267,7 +267,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
 
   initForm(): void {
     this.poForm = this.fb.group({
-      supplierId: [0, [Validators.required, Validators.min(1)]],
+      supplierId: [null, Validators.required],
       priceListId: [null, Validators.required],
       poDate: [new Date(), Validators.required],
       expectedDeliveryDate: [null],
@@ -453,7 +453,12 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
     this.isLoadingSuppliers = true;
     this.supplierService.getSuppliers().pipe(
       finalize(() => this.isLoadingSuppliers = false)
-    ).subscribe(data => this.suppliers = data);
+    ).subscribe(data => {
+      this.suppliers = data || [];
+      if (this.suppliers.length === 0) {
+        this.poForm.get('supplierId')?.markAsTouched();
+      }
+    });
   }
 
   // loadAllPriceLists() 
@@ -466,7 +471,12 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
     this.isLoadingPriceLists = true;
     this.inventoryService.getPriceListsForDropdown().pipe(
       finalize(() => this.isLoadingPriceLists = false)
-    ).subscribe(data => this.priceLists = data);
+    ).subscribe(data => {
+      this.priceLists = data || [];
+      if (this.priceLists.length === 0) {
+        this.poForm.get('priceListId')?.markAsTouched();
+      }
+    });
   }
 
   ngOnDestroy() {

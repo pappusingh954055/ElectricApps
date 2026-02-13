@@ -13,7 +13,7 @@
       <div class="field-item">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Select Supplier</mat-label>
-          <mat-select formControlName="supplierId" (selectionChange)="onSupplierChange($event.value)">
+          <mat-select formControlName="supplierId" (selectionChange)="onSupplierChange($event.value)" [disabled]="isLoadingSuppliers">
             <mat-option [value]="null">Please Select Supplier</mat-option>
             <mat-option *ngFor="let s of suppliers" [value]="s.id">
               {{ s.name }}
@@ -22,6 +22,9 @@
           <div matSuffix *ngIf="isLoadingSuppliers" class="dropdown-loader">
             <mat-spinner diameter="18"></mat-spinner>
           </div>
+          <mat-error *ngIf="suppliers.length === 0 && !isLoadingSuppliers">
+            No suppliers found.
+          </mat-error>
         </mat-form-field>
       </div>
 
@@ -32,7 +35,7 @@
       <div class="field-item">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Applicable Price List</mat-label>
-          <mat-select formControlName="priceListId" (selectionChange)="refreshAllItemRates($event.value)">
+          <mat-select formControlName="priceListId" (selectionChange)="refreshAllItemRates($event.value)" [disabled]="isLoadingPriceLists">
             <mat-option [value]="null">Please Select</mat-option>
             <mat-option *ngFor="let pl of priceLists" [value]="pl.id">
               {{ pl.name }}
@@ -41,6 +44,9 @@
           <div matSuffix *ngIf="isLoadingPriceLists" class="dropdown-loader">
             <mat-spinner diameter="18"></mat-spinner>
           </div>
+          <mat-error *ngIf="priceLists.length === 0 && !isLoadingPriceLists">
+            No price lists found.
+          </mat-error>
           <mat-hint *ngIf="isPriceListAutoSelected" style="color: green; font-size: 10px;">
             Auto-linked from Supplier
           </mat-hint>
