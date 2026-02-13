@@ -25,4 +25,8 @@ export class UserService {
     updateStatus(id: string, isActive: boolean): Observable<void> {
         return this.http.patch<void>(`${this.baseUrl}/${id}/status`, isActive);
     }
+
+    checkDuplicate(userName: string, email: string): Observable<{ exists: boolean, message: string }> {
+        return this.http.get<{ exists: boolean, message: string }>(`${this.baseUrl}/check-duplicate?userName=${userName}&email=${email}`);
+    }
 }

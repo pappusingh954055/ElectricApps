@@ -151,7 +151,11 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       this.inventoryService.getProductRate(product.id, priceListId).subscribe({
         next: (res: any) => {
           if (res) {
-            row.patchValue({ price: res.recommendedRate || res.rate, gstPercent: res.gstPercent || product.defaultGst });
+            row.patchValue({
+              price: res.recommendedRate || res.rate,
+              gstPercent: res.gstPercent || product.defaultGst,
+              discountPercent: res.discountPercent || 0
+            });
           }
           this.updateTotal(index);
         },
@@ -222,7 +226,8 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
             row.patchValue({
               price: res.recommendedRate || res.rate,
               gstPercent: res.gstPercent || data.gstPercent,
-              unit: res.unit || data.unit
+              unit: res.unit || data.unit,
+              discountPercent: res.discountPercent || 0
             });
           }
           this.updateTotal(index);
@@ -318,7 +323,11 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
         this.poService.getProductRate(prodId, priceListId).subscribe({
           next: (res: any) => {
             if (res) {
-              control.patchValue({ price: res.recommendedRate || res.rate, gstPercent: res.gstPercent });
+              control.patchValue({
+                price: res.recommendedRate || res.rate,
+                gstPercent: res.gstPercent,
+                discountPercent: res.discountPercent || 0
+              });
             }
             this.updateTotal(index);
           },
@@ -355,7 +364,11 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       this.inventoryService.getProductRate(product.id, priceListId).subscribe({
         next: (res: any) => {
           if (res) {
-            row.patchValue({ price: res.recommendedRate || res.rate, gstPercent: res.gstPercent });
+            row.patchValue({
+              price: res.recommendedRate || res.rate,
+              gstPercent: res.gstPercent,
+              discountPercent: res.discountPercent || 0
+            });
           }
           this.updateTotal(index);
         },
