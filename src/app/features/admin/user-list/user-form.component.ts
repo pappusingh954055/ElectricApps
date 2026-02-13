@@ -172,12 +172,15 @@ import { NotificationService } from '../../shared/notification.service';
     @media (max-width: 600px) {
       ::ng-deep .mat-mdc-dialog-container {
         width: 100vw !important;
-        height: 100vh !important;
         max-width: none !important;
         border-radius: 0 !important;
+        height: auto !important; /* Fix: Let it be sized by content */
+      }
+      mat-dialog-content {
+        padding-bottom: 20px !important; /* Ensure some space before buttons */
       }
       mat-dialog-actions {
-        padding-bottom: 30px !important;
+        padding-bottom: 24px !important;
       }
     }
   `]
