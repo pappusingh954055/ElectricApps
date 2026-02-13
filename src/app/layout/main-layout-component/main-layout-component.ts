@@ -76,7 +76,9 @@ export class MainLayoutComponent implements OnInit {
           this.companyTagline = profile.tagline || 'Inventory Management System';
 
           if (profile.logoUrl && !profile.logoUrl.startsWith('http')) {
-            this.companyLogoUrl = `${environment.CompanyRootUrl}/${profile.logoUrl}`;
+            // Remove leading slash from logoUrl if present to avoid double slashes
+            const cleanLogoUrl = profile.logoUrl.startsWith('/') ? profile.logoUrl.substring(1) : profile.logoUrl;
+            this.companyLogoUrl = `${environment.CompanyRootUrl}/${cleanLogoUrl}`;
           } else {
             this.companyLogoUrl = profile.logoUrl;
           }
