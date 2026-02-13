@@ -1,20 +1,20 @@
 export const environment = {
   production: false,
   api: {
-    inventory: 'https://localhost:7052/api',
-    auth: 'https://localhost:7125/api/auth',
-    supplier: 'https://localhost:7224/api/suppliers',
-    company: 'https://localhost:7065/api',
-    identity: 'https://localhost:7125/api',
-    customer: 'https://localhost:7173/api',
-    sales: 'https://localhost:7091/api'
+    inventory: 'http://localhost:5000/api/inventory',
+    auth: 'http://localhost:5000/api/identity/auth',
+    supplier: 'http://localhost:5000/api/suppliers',
+    company: 'http://localhost:5000/api/company',
+    identity: 'http://localhost:5000/api/identity',
+    customer: 'http://localhost:5000/api/customers',
+    sales: 'http://localhost:5000/api/sales'
   },
-  // Backward compatibility
-  ApiBaseUrl: 'https://localhost:7052/api',
-  LoginApiBaseUrl: 'https://localhost:7125/api/auth',
-  SupplierApiBaseUrl: 'https://localhost:7224/api/Supplier',
-  CompanyApiBaseUrl: 'https://localhost:7065/api',
-  CompanyRootUrl: 'https://localhost:7065',
-  CustomerApiBaseUrl: 'https://localhost:7173/api',
-  SalesApiBaseUrl: 'https://localhost:7091/api'
+  // Backward compatibility - Updating to Gateway ports
+  ApiBaseUrl: 'http://localhost:5000/api/inventory',
+  LoginApiBaseUrl: 'http://localhost:5000/api/identity/auth',
+  SupplierApiBaseUrl: 'http://localhost:5000/api/suppliers',
+  CompanyApiBaseUrl: 'http://localhost:5000/api/company',
+  CompanyRootUrl: 'http://localhost:5000/api/company',
+  CustomerApiBaseUrl: 'http://localhost:5000/api/customers',
+  SalesApiBaseUrl: 'http://localhost:5000/api/sales'
 };

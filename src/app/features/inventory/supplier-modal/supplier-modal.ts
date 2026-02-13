@@ -16,7 +16,7 @@ import { PriceListService } from '../../master/pricelist/service/pricelist.servi
 export class SupplierModalComponent implements OnInit {
 
   private fb = inject(FormBuilder);
-  private dialogRef = inject(MatDialogRef<SupplierComponent>);
+  private dialogRef = inject(MatDialogRef<SupplierModalComponent>);
   private supplierService = inject(SupplierService);
   private pricelistService = inject(PriceListService);
   private cdr = inject(ChangeDetectorRef);
@@ -65,10 +65,10 @@ export class SupplierModalComponent implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
     if (this.supplierForm.valid) {
-      const currentUserId = localStorage.getItem('userId') || '';
+      const currentEmail = localStorage.getItem('email') || localStorage.getItem('userId') || '';
       const supplierData = {
         ...this.supplierForm.value,
-        createdBy: currentUserId
+        createdBy: currentEmail
       };
 
       this.supplierService.addSupplier(supplierData).subscribe({
@@ -76,12 +76,7 @@ export class SupplierModalComponent implements OnInit {
 
           const newlyCreatedSupplier = {
             id: newId,
-            name: this.supplierForm.value.name,
-            phone: this.supplierForm.value.phone,
-            gstIn: this.supplierForm.value.gstIn,
-            address: this.supplierForm.value.address,
-            defaultpricelistId: this.supplierForm.value.defaultpricelistId ? Number(this.supplierForm.value.defaultpricelistId) : null, // <-- Ye zaroori hai
-            isActive: this.supplierForm.value.isActive
+            ...this.supplierForm.value
           };
 
           this.dialogRef.close(newlyCreatedSupplier);

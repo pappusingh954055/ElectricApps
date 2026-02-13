@@ -22,19 +22,20 @@ export interface Supplier {
 })
 export class SupplierService {
     private api = inject(ApiService);
-    private readonly baseUrl = environment.SupplierApiBaseUrl;
+    private readonly baseUrl = environment.api.supplier; // Use plural 'suppliers' as the gateway base
 
-    // Sare suppliers fetch karne ke liye (PO Dropdown ke liye)
+    // Fetch all suppliers (mapped to api/suppliers/Supplier in gateway)
     getSuppliers(): Observable<Supplier[]> {
-        return this.api.get<Supplier[]>('', this.baseUrl);
+        return this.api.get<Supplier[]>('Supplier', this.baseUrl);
     }
 
-
+    // Add new supplier (mapped to api/suppliers/Supplier in gateway)
     addSupplier(supplier: Supplier): Observable<Supplier> {
-        return this.api.post<Supplier>('', supplier, this.baseUrl);
+        return this.api.post<Supplier>('Supplier', supplier, this.baseUrl);
     }
 
+    // Get supplier by ID (mapped to api/suppliers/Supplier/{id} in gateway)
     getSupplierById(id: number): Observable<any> {
-        return this.api.get<any>(`${id}`, this.baseUrl);
+        return this.api.get<any>(`Supplier/${id}`, this.baseUrl);
     }
 }
