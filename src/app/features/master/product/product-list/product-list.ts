@@ -117,7 +117,7 @@ export class ProductList implements OnInit {
         productId: row.id,
         unit: row.unit,
         rate: row.basePurchasePrice || row.rate || 0,
-        gstPercent: row.defaultGst || 0,
+        gstPercent: row.defaultGst || row.gstPercent || 0,
         suggestedQty: row.minStock - row.currentStock > 0 ? row.minStock - row.currentStock : 10
       };
 
@@ -125,6 +125,24 @@ export class ProductList implements OnInit {
         state: { refillData }
       });
     }
+  }
+
+  // BULK REORDER: Selected products ko PO form mein transfer karne ke liye
+  bulkReorder() {
+    if (this.selectedRows.length === 0) return;
+
+    const refillData = this.selectedRows.map(row => ({
+      productName: row.productName,
+      productId: row.id,
+      unit: row.unit,
+      rate: row.basePurchasePrice || row.rate || 0,
+      gstPercent: row.defaultGst || row.gstPercent || 0,
+      suggestedQty: row.minStock - row.currentStock > 0 ? row.minStock - row.currentStock : 10
+    }));
+
+    this.router.navigate(['/app/inventory/polist/add'], {
+      state: { refillData }
+    });
   }
 
   clearFilter(): void {

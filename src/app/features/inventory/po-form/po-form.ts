@@ -100,6 +100,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   currentStatus = '';
   isEditMode: boolean = false;
   private refillData: any = null;
+  isReorder: boolean = false;
 
   openBulkAddDialog() {
     const dialogRef = this.dialog.open(ProductSelectionDialogComponent, {
@@ -185,10 +186,16 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       this.isEditMode = true;
       this.loadPODetails(id);
     } else if (this.refillData) {
-      // Dashboard redirection wala case
+      // Dashboard redirection wala case (Single or Bulk)
       this.isEditMode = false;
+      this.isReorder = true;
       this.loadNextPoNumber();
-      this.addRefillRow(this.refillData);
+
+      if (Array.isArray(this.refillData)) {
+        this.refillData.forEach(item => this.addRefillRow(item));
+      } else {
+        this.addRefillRow(this.refillData);
+      }
     } else {
       this.isEditMode = false;
       this.loadNextPoNumber();

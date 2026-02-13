@@ -12,6 +12,11 @@
   <div class="header-actions">
     <h1>All Products</h1>
     <div class="d-flex gap-3">
+      <button *ngIf="isLowStockFilterActive && selectedRows.length > 1" mat-raised-button class="reorder-action-btn" (click)="bulkReorder()">
+        <mat-icon>shopping_cart_checkout</mat-icon>
+        Bulk Reorder ({{selectedRows.length}})
+      </button>
+
       <button *ngIf="selectedRows.length > 0" mat-flat-button class="delete-action-btn" (click)="confirmBulkDelete()" [disabled]="loading">
         <mat-icon>delete_sweep</mat-icon>
         Delete Selected ({{selectedRows.length}})
