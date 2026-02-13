@@ -99,13 +99,18 @@
   width: 100%;
   position: relative;
 
+  /* Hides scrollbar UI but keeps functionality */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+
   &::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 0px; /* Hide vertical scrollbar */
+    height: 4px; /* Keep horizontal scrollbar very subtle */
+    background: transparent;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: #ccc;
+    background: rgba(0, 0, 0, 0.1);
     border-radius: 10px;
   }
 }

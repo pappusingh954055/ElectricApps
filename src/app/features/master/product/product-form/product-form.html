@@ -3,12 +3,40 @@
     <h2 class="m-0 text-primary fw-bold" style="font-size: 1.2rem;">{{ isEditMode ? 'Edit' : 'Add' }} Product</h2>
     
     <div class="actions">
-      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="loading">
+      <!-- File Info -->
+      <span *ngIf="selectedFileName" style="font-size: 0.9em; color: #666; margin-right: 12px;">
+        {{ selectedFileName }}
+      </span>
+
+      <!-- Download Template -->
+      <button mat-stroked-button color="primary" (click)="downloadTemplate()" *ngIf="!isEditMode">
+        <mat-icon>download</mat-icon> Template
+      </button>
+
+      <!-- Upload Excel Trigger -->
+      <button mat-stroked-button color="primary" (click)="fileInput.click()" *ngIf="!selectedFileName && !isEditMode">
+        <mat-icon>cloud_upload</mat-icon> Upload Excel
+      </button>
+
+      <!-- Hidden Input -->
+      <input #fileInput type="file" (change)="onFileSelected($event)" style="display: none;" accept=".xlsx, .xls, .csv">
+
+      <!-- Upload Actions (Visible when file selected) -->
+      <button mat-raised-button color="primary" *ngIf="selectedFileName" (click)="uploadExcel()">
+        <mat-icon>save</mat-icon> Batch Save
+      </button>
+
+      <!-- Normal Save -->
+      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="loading" *ngIf="!selectedFileName">
         <mat-icon>save</mat-icon> {{ isEditMode ? 'Update' : 'Save' }}
       </button>
 
-      <button mat-raised-button (click)="onCancel()">
+      <button mat-raised-button (click)="onCancel()" *ngIf="!selectedFileName">
         <mat-icon>close</mat-icon> Cancel
+      </button>
+
+      <button mat-icon-button color="warn" *ngIf="selectedFileName" (click)="resetFile(fileInput)" matTooltip="Reset File">
+        <mat-icon>close</mat-icon>
       </button>
     </div>
   </div>

@@ -64,5 +64,11 @@ export class ProductService {
     downloadLowStockPdf(): Observable<Blob> {
         return this.api.getBlob('products/export-low-stock-pdf');
     }
+
+    uploadExcel(file: File): Observable<any> {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.api.post('products/upload-excel', formData);
+    }
 }
 

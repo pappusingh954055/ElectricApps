@@ -230,6 +230,101 @@ export class ProductForm implements OnInit, OnDestroy {
     });
   }
 
+  // ============================
+  // 📁 BULK UPLOAD LOGIC
+  // ============================
+  selectedFile: File | null = null;
+  selectedFileName: string = '';
+
+  onFileSelected(event: any): void {
+    const file: File = event.target.files[0];
+    if (file) {
+      const validExtensions = ['.xlsx', '.xls', '.csv'];
+      const fileExtension = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+      if (!validExtensions.includes(fileExtension)) {
+        this.showError('Invalid file extension. Please upload .xlsx, .xls, or .csv file.');
+        this.resetFile(event.target);
+        return;
+      }
+
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        this.showError('File size exceeds 5MB limit.');
+        this.resetFile(event.target);
+        return;
+      }
+
+      this.selectedFile = file;
+      this.selectedFileName = file.name;
+      this.cdr.detectChanges();
+    }
+  }
+
+  private showError(message: string): void {
+    this.dialog.open(StatusDialogComponent, {
+      data: { isSuccess: false, message: message }
+    });
+  }
+
+  downloadTemplate() {
+    const link = document.createElement('a');
+    link.href = '/assets/templates/product_template.xlsx';
+    link.download = 'product_template.xlsx';
+    link.click();
+  }
+
+  uploadExcel(): void {
+    if (!this.selectedFile) return;
+
+    this.loading = true;
+    this.productService.uploadExcel(this.selectedFile).subscribe({
+      next: (res) => {
+        this.loading = false;
+        let finalMessage = res.message || res.Message || 'File uploaded successfully';
+        const errors = res.errors || res.Errors || [];
+
+        if (errors.length > 0) {
+          finalMessage += '\n\nRow-wise Status/Errors:\n' + errors.join('\n');
+        }
+
+        const successCountString = String(res.message || res.Message || '0');
+        const successCount = parseInt(successCountString) || 0;
+        const hasErrors = errors.length > 0;
+
+        this.dialog.open(StatusDialogComponent, {
+          data: {
+            isSuccess: !hasErrors,
+            message: finalMessage
+          }
+        }).afterClosed().subscribe(() => {
+          if (!hasErrors || successCount > 0) {
+            this.router.navigate(['/app/master/products']);
+          }
+        });
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.loading = false;
+        this.dialog.open(StatusDialogComponent, {
+          data: {
+            isSuccess: false,
+            message: err.error?.message ?? 'Upload failed. Please ensure the Excel structure is correct.'
+          }
+        });
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  resetFile(input?: any): void {
+    this.selectedFile = null;
+    this.selectedFileName = '';
+    if (input) {
+      if (input.value !== undefined) input.value = '';
+    }
+    this.cdr.detectChanges();
+  }
+
   private syncAutocomplete(catId: any, subId: any) {
     if (catId && this.categories.length > 0) {
       const cat = this.categories.find(c => c.id === catId);
