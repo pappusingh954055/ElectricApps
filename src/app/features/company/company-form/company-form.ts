@@ -38,7 +38,11 @@ export class CompanyForm implements OnInit {
             if (this.companyId) {
                 this.loadCompany();
             } else {
-                this.companyForm.reset({ isActive: true });
+                this.companyForm.reset({
+                    isActive: true,
+                    address: { id: 0, country: 'India' },
+                    bankInfo: { id: 0, accountType: 'Current' }
+                });
                 this.signatories.clear();
             }
         });
@@ -64,17 +68,19 @@ export class CompanyForm implements OnInit {
 
             // Address Nested Group
             address: this.fb.group({
+                id: [0],
                 addressLine1: ['', Validators.required],
                 addressLine2: [''],
                 city: ['', Validators.required],
                 state: ['', Validators.required],
-                stateCode: [''],
+                stateCode: ['', [Validators.required, Validators.maxLength(2)]],
                 pinCode: ['', [Validators.required, Validators.pattern('^[0-9]{6}$')]],
                 country: ['India', Validators.required]
             }),
 
             // Bank Info Nested Group
             bankInfo: this.fb.group({
+                id: [0],
                 bankName: ['', Validators.required],
                 branchName: [''],
                 accountNumber: ['', Validators.required],
@@ -114,7 +120,11 @@ export class CompanyForm implements OnInit {
         this.companyService.getById(+this.companyId).subscribe({
             next: (res) => {
                 // Reset form to base state before patching
-                this.companyForm.reset({ isActive: true });
+                this.companyForm.reset({
+                    isActive: true,
+                    address: { id: 0, country: 'India' },
+                    bankInfo: { id: 0, accountType: 'Current' }
+                });
 
                 // Clear and Re-populate Signatories
                 this.signatories.clear();
@@ -163,14 +173,17 @@ export class CompanyForm implements OnInit {
         request.subscribe({
             next: (res: any) => {
                 this.loading = false;
+                // Handle both object {id: 1} and primitive integer responses
+                const newId = (res && typeof res === 'object') ? res.id : res;
+
                 this.dialog.open(StatusDialogComponent, {
                     data: {
                         isSuccess: true,
-                        message: res.message || 'Company saved successfully'
+                        message: (res && res.message) || 'Company saved successfully'
                     }
                 }).afterClosed().subscribe(() => {
                     if (this.selectedLogo) {
-                        this.uploadLogo(res.id || +this.companyId!);
+                        this.uploadLogo(newId || +this.companyId!);
                     }
                     this.router.navigate(['/app/company']);
                 });
