@@ -134,14 +134,28 @@ export class CategoryForm implements OnInit {
     this.categorySvc.uploadExcel(this.selectedFile).subscribe({
       next: (res) => {
         this.loading = false;
+
+        let finalMessage = res.message || res.Message || 'File uploaded successfully';
+        const errors = res.errors || res.Errors || [];
+
+        if (errors.length > 0) {
+          finalMessage += '\n\nRow-wise Status/Errors:\n' + errors.join('\n');
+        }
+
+        // Determine success based on whether anything was uploaded
+        const successCountString = (res.message || res.Message || '0');
+        const successCount = parseInt(successCountString) || 0;
+        const hasErrors = errors.length > 0;
+
         this.dialog.open(StatusDialogComponent, {
           data: {
-            isSuccess: true,
-            // message: res.message || 'File uploaded successfully'
-            message: 'File uploaded successfully'
+            isSuccess: !hasErrors, // Show as error if any row failed
+            message: finalMessage
           }
         }).afterClosed().subscribe(() => {
-          this.router.navigate(['/app/master/categories']);
+          if (!hasErrors || successCount > 0) {
+            this.router.navigate(['/app/master/categories']);
+          }
         });
         this.cdr.detectChanges();
       },
@@ -150,7 +164,7 @@ export class CategoryForm implements OnInit {
         this.dialog.open(StatusDialogComponent, {
           data: {
             isSuccess: false,
-            message: err.error?.message ?? 'Upload failed'
+            message: err.error?.message ?? 'Upload failed. Please ensure the Excel/CSV structure is correct.'
           }
         });
         this.cdr.detectChanges();

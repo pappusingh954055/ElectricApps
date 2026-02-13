@@ -277,14 +277,17 @@ export class SubcategoryForm implements OnInit, OnDestroy {
       next: (res) => {
         this.loading = false;
 
-        let finalMessage = res.message || 'File uploaded successfully';
-        if (res.errors && res.errors.length > 0) {
-          finalMessage += '\n\nErrors:\n' + res.errors.join('\n');
+        let finalMessage = res.message || res.Message || 'File uploaded successfully';
+        const errors = res.errors || res.Errors || [];
+
+        if (errors.length > 0) {
+          finalMessage += '\n\nRow-wise Status/Errors:\n' + errors.join('\n');
         }
 
         // Determine success based on whether anything was uploaded
-        const successCount = parseInt(res.message) || 0;
-        const hasErrors = res.errors && res.errors.length > 0;
+        const successCountString = (res.message || res.Message || '0');
+        const successCount = parseInt(successCountString) || 0;
+        const hasErrors = errors.length > 0;
 
         this.dialog.open(StatusDialogComponent, {
           data: {

@@ -1,10 +1,15 @@
-/* ==============================
-    DATAGRID STYLES (FINAL VERSION)
-================================ */
+:host {
+  display: block;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
 .datagrid-container {
+  height: 100%;
+  width: 100%;
   position: relative;
   background: #fff;
-  border: 1px solid #ddd;
   border-radius: 8px;
   overflow: hidden;
   display: flex;
@@ -90,7 +95,7 @@
 /* TABLE WRAPPER */
 .table-wrapper {
   overflow: auto;
-  max-height: 500px;
+  flex: 1; /* Pushes paginator to the bottom by taking all available space */
   width: 100%;
   position: relative;
 
@@ -102,6 +107,19 @@
   &::-webkit-scrollbar-thumb {
     background: #ccc;
     border-radius: 10px;
+  }
+}
+
+/* PAGINATOR CUSTOMIZATION */
+::ng-deep .mat-mdc-paginator {
+  background: #f8fafc !important;
+  border-top: 1px solid #edf2f7;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important;
+  min-height: 48px !important;
+  
+  .mat-mdc-paginator-container {
+    padding: 0 16px !important;
   }
 }
 
