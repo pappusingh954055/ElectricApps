@@ -276,14 +276,25 @@ export class SubcategoryForm implements OnInit, OnDestroy {
     this.subcategorySvc.uploadExcel(this.selectedFile).subscribe({
       next: (res) => {
         this.loading = false;
+
+        let finalMessage = res.message || 'File uploaded successfully';
+        if (res.errors && res.errors.length > 0) {
+          finalMessage += '\n\nErrors:\n' + res.errors.join('\n');
+        }
+
+        // Determine success based on whether anything was uploaded
+        const successCount = parseInt(res.message) || 0;
+        const hasErrors = res.errors && res.errors.length > 0;
+
         this.dialog.open(StatusDialogComponent, {
           data: {
-            isSuccess: true,
-            // message: res.message || 'File uploaded successfully'
-            message: 'File uploaded successfully'
+            isSuccess: !hasErrors, // Show as error if any row failed
+            message: finalMessage
           }
         }).afterClosed().subscribe(() => {
-          this.router.navigate(['/app/master/subcategories']);
+          if (!hasErrors || successCount > 0) {
+            this.router.navigate(['/app/master/subcategories']);
+          }
         });
         this.cdr.detectChanges();
       },

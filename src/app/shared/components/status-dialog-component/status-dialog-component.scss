@@ -44,7 +44,7 @@
       font-size: 1.15rem;
       line-height: 1.6;
       color: #444;
-      white-space: normal;
+      white-space: pre-wrap; /* Honor newlines for multi-line error reports */
       word-break: break-word; /* Safe wrapping [cite: 2026-01-22] */
       margin: 0;
     }
