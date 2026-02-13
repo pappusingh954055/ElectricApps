@@ -51,8 +51,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       </form>
     </mat-dialog-content>
     <mat-dialog-actions align="end">
-      <button mat-button mat-dialog-close>Cancel</button>
-      <button mat-raised-button color="primary" [disabled]="userForm.invalid" (click)="save()">Create User</button>
+      <button mat-raised-button mat-dialog-close>Cancel</button>
+      <button mat-raised-button class="main-add-btn" [disabled]="userForm.invalid" (click)="save()">Create User</button>
     </mat-dialog-actions>
   `,
   styles: [`

@@ -6,11 +6,13 @@
 }
 
 .list-container {
-  /* Calculate height to fit in viewport: 100vh - (Toolbar + Breadcrumb + Footer + Padding/Buffer) */
-  height: calc(100vh - 220px);
+  height: calc(100vh - 180px); /* Slightly more space */
   width: 100%;
   background-color: #f8fafc;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  display: flex; /* Critical for flex:1 on child */
+  flex-direction: column;
+  padding: 0 24px 24px 24px;
+  box-sizing: border-box;
 }
 
 .side-drawer {
@@ -145,13 +147,13 @@ mat-drawer-content {
 
 .grid-wrapper {
   flex: 1;
-  overflow: auto;
+  overflow: hidden; /* Internal grid will handle its own scroll */
   display: flex;
   flex-direction: column;
   min-height: 0;
   background: white;
-  border-radius: 16px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
   border: 1px solid #e2e8f0;
 }
 
