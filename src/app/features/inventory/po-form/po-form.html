@@ -111,7 +111,7 @@
           </div>
           <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayProductFn" (optionSelected)="onProductChange(i, $event)">
             <mat-option *ngFor="let product of filteredProducts[i] | async" [value]="product">
-              <span>{{product.name}}</span> - <small>{{product.sku}}</small>
+              <span>{{product.productName || product.name}}</span> - <small>{{product.sku}}</small>
             </mat-option>
           </mat-autocomplete>
         </mat-form-field>

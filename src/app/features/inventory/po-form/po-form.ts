@@ -449,7 +449,10 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
     );
   }
 
-  displayProductFn(p: any): string { return p?.productName || (typeof p === 'string' ? p : ''); }
+  displayProductFn(p: any): string {
+    if (!p) return '';
+    return p.productName || p.name || (typeof p === 'string' ? p : '');
+  }
 
   removeItem(index: number): void {
     if (this.items.length > 1) {
