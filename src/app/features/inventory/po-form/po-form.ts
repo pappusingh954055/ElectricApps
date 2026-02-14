@@ -473,11 +473,18 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   }
 
   openSupplierModal() {
-    this.dialog.open(SupplierModalComponent, { width: '500px' }).afterClosed().subscribe(res => {
+    this.dialog.open(SupplierModalComponent, { width: '600px' }).afterClosed().subscribe(res => {
       if (res) {
-        this.suppliers.push(res);
-        this.poForm.patchValue({ supplierId: res.id });
-        this.onSupplierChange(res.id);
+        // supplier-modal returns the full supplier object or true (if edit)
+        // If it returns an object with ID, we add it to the list
+        if (res.id && res.name) {
+          this.suppliers = [...this.suppliers, res]; // Immutable update to trigger change detection if needed
+          this.poForm.patchValue({ supplierId: res.id });
+          this.onSupplierChange(res.id);
+        } else {
+          // Reload suppliers if we just got 'true' or some other signal, though usually for Add we get the object
+          this.loadSuppliers();
+        }
       }
     });
   }

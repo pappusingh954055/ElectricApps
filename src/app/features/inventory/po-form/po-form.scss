@@ -141,6 +141,7 @@ mat-card {
 }
 
 /* Supplier button alignment */
+/* Supplier button alignment */
 .add-btn-circle {
   flex-shrink: 0;
   width: 48px !important;
@@ -150,11 +151,13 @@ mat-card {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  background-color: #ffffff !important;
-  color: #3f51b5 !important;
+  
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important; /* Premium Gradient */
+  color: #ffffff !important; /* White Icon */
+  
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
-  border: 1px solid #e0e0e0 !important;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39) !important;
+  border: none !important;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
   
   mat-icon {
@@ -168,10 +171,9 @@ mat-card {
   }
 
   &:hover {
-    background-color: #f8fafc !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(63, 81, 181, 0.15) !important;
-    border-color: #3f51b5 !important;
+    transform: translateY(-2px) scale(1.05); /* Slight scale up */
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
+    filter: brightness(1.1);
   }
 
   &:active {
