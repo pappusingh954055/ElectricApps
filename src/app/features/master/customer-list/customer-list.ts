@@ -6,6 +6,8 @@ import { customerService } from '../customer-component/customer.service';
 import { GridColumn } from '../../../shared/models/grid-column.model';
 import { GridRequest } from '../../../shared/models/grid-request.model';
 import { ServerDatagridComponent } from '../../../shared/components/server-datagrid-component/server-datagrid-component';
+import { MatDialog } from '@angular/material/dialog';
+import { CustomerComponent } from '../customer-component/customer-component';
 
 @Component({
   selector: 'app-customer-list',
@@ -18,6 +20,7 @@ export class CustomerList implements OnInit {
   private router = inject(Router);
   private customerService = inject(customerService);
   private cdr = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
 
   loading = false;
   data: any[] = [];
@@ -58,10 +61,31 @@ export class CustomerList implements OnInit {
   }
 
   addCustomer() {
-    this.router.navigate(['/app/master/customers/add']);
+    const dialogRef = this.dialog.open(CustomerComponent, {
+      width: '600px',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadCustomers(this.lastRequest);
+      }
+    });
   }
 
   onEdit(row: any) {
-    this.router.navigate(['/app/master/customers/edit', row.id]);
+    // Current CustomerComponent doesn't fully support edit in modal yet based on param handling, 
+    // but the user asked to call the popup.
+    const dialogRef = this.dialog.open(CustomerComponent, {
+      width: '600px',
+      data: { id: row.id },
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadCustomers(this.lastRequest);
+      }
+    });
   }
 }

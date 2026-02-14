@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { Router, ActivatedRoute } from '@angular/router';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { customerService } from './customer.service';
 
 
@@ -19,6 +19,7 @@ export class CustomerComponent {
   readonly router = inject(Router);
   readonly route = inject(ActivatedRoute);
   readonly dialogRef = inject(MatDialogRef<CustomerComponent>, { optional: true });
+  readonly data = inject(MAT_DIALOG_DATA, { optional: true });
   private readonly cdr = inject(ChangeDetectorRef);
 
   // ⚠ keeping same service name as you used
@@ -40,10 +41,10 @@ export class CustomerComponent {
   });
 
   constructor() {
-    const id = this.route.snapshot.paramMap.get('id');
+    const id = this.route.snapshot.paramMap.get('id') || (this.data && this.data.id);
     if (id) {
       this.isEdit = true;
-      // Future: load customer by id
+      // Future: load customer by id if needed
     }
   }
 

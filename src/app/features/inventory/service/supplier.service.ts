@@ -42,4 +42,8 @@ export class SupplierService {
     getPaged(request: any): Observable<any> {
         return this.api.post<any>(`Supplier/paged`, request, this.baseUrl);
     }
+
+    updateSupplier(id: number, supplier: Supplier): Observable<Supplier> {
+        return this.api.put<Supplier>(`Supplier/${id}`, supplier, this.baseUrl);
+    }
 }

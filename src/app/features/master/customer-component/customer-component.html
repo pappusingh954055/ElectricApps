@@ -4,13 +4,13 @@
     <h2 class="m-0 text-primary fw-bold" style="font-size: 1.2rem;">{{ isEdit ? 'Edit Customer' : 'Add Customer' }}</h2>
     
     <div style="display: flex; align-items: center; gap: 12px;">
-      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="loading">
+      <button mat-raised-button class="save-btn" (click)="onSave()" [disabled]="loading">
         <mat-icon *ngIf="!loading">save</mat-icon> 
         <mat-spinner *ngIf="loading" diameter="18" style="display: inline-block; margin-right: 8px;"></mat-spinner>
         {{ isEdit ? 'Update' : 'Save' }}
       </button>
 
-      <button mat-raised-button (click)="cancel()">
+      <button mat-raised-button class="cancel-btn" (click)="cancel()">
         <mat-icon>close</mat-icon> Cancel
       </button>
     </div>

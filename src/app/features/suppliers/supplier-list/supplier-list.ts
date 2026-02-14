@@ -6,6 +6,8 @@ import { SupplierService } from '../../inventory/service/supplier.service';
 import { GridColumn } from '../../../shared/models/grid-column.model';
 import { GridRequest } from '../../../shared/models/grid-request.model';
 import { ServerDatagridComponent } from '../../../shared/components/server-datagrid-component/server-datagrid-component';
+import { MatDialog } from '@angular/material/dialog';
+import { SupplierModalComponent } from '../../inventory/supplier-modal/supplier-modal';
 
 @Component({
   selector: 'app-supplier-list',
@@ -18,6 +20,7 @@ export class SupplierList implements OnInit {
   private router = inject(Router);
   private supplierService = inject(SupplierService);
   private cdr = inject(ChangeDetectorRef);
+  private dialog = inject(MatDialog);
 
   loading = false;
   data: any[] = [];
@@ -64,10 +67,29 @@ export class SupplierList implements OnInit {
   }
 
   addSupplier() {
-    this.router.navigate(['/app/master/suppliers/add']);
+    const dialogRef = this.dialog.open(SupplierModalComponent, {
+      width: '600px',
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadSuppliers(this.lastRequest);
+      }
+    });
   }
 
   onEdit(row: any) {
-    this.router.navigate(['/app/master/suppliers/edit', row.id]);
+    const dialogRef = this.dialog.open(SupplierModalComponent, {
+      width: '600px',
+      data: { supplier: row },
+      disableClose: true
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadSuppliers(this.lastRequest);
+      }
+    });
   }
 }

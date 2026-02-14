@@ -82,13 +82,41 @@
     background-color: #f8f9fa;
     margin: 0 !important;
 
+    button[mat-raised-button]:not(.save-btn) {
+      border-radius: 12px !important;
+      font-weight: 600 !important;
+      height: 40px !important;
+      border: 1px solid #e2e8f0 !important;
+      background: white !important;
+      color: #64748b !important;
+    }
+
     .save-btn {
-      border-radius: 8px;
-      height: 40px;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+      color: white !important;
+      box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3) !important;
+      border-radius: 12px !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.5px !important;
+      height: 40px !important;
+      padding: 0 20px !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border: none !important;
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important;
+      }
+
+      &:disabled {
+        background: #e2e8f0 !important;
+        color: #94a3b8 !important;
+        box-shadow: none !important;
+        cursor: not-allowed;
+      }
 
       .d-inline-block {
         display: inline-block;
