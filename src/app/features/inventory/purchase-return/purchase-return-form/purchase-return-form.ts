@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core'; // CDR add kiya
-import { FormGroup, FormBuilder, Validators, FormArray, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormArray, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
@@ -11,7 +11,7 @@ import { MatDialog } from '@angular/material/dialog';
 @Component({
   selector: 'app-purchase-return-form',
   standalone: true,
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule],
   templateUrl: './purchase-return-form.html',
   styleUrl: './purchase-return-form.scss',
 })
@@ -61,39 +61,75 @@ export class PurchaseReturnForm implements OnInit {
     });
   }
 
+  receivedStockItems: any[] = [];
+  selectedReceivedProduct: any;
+
   onSupplierChange(supplierId: number) {
 
     this.items.clear();
     this.tableDataSource = [];
+    this.receivedStockItems = [];
 
+    // 1. Load Rejected Items (Auto-load)
     this.prService.getRejectedItems(supplierId).subscribe({
       next: (res) => {
-
         this.cdr.detectChanges();
         if (res && res.length > 0) {
-          setTimeout(() => {
-            res.forEach(item => {
-
-              this.items.push(this.fb.group({
-                productId: [item.productId],
-                productName: [item.productName],
-                grnRef: [item.grnRef],
-                maxQty: [item.rejectedQty],
-                returnQty: [0, [Validators.required, Validators.min(0), Validators.max(item.rejectedQty)]],
-                rate: [item.rate],
-                total: [0]
-              }));
-            });
-
-
-            this.tableDataSource = [...this.items.controls];
-            this.cdr.detectChanges();
+          res.forEach(item => {
+            this.addReturnItem(item, 'Rejected');
           });
+          this.tableDataSource = [...this.items.controls];
+          this.cdr.detectChanges();
         }
       },
-      error: (err) => this.snackBar.open("Items load nahi ho paye.", "Error"),
-      complete: () => this.cdr.detectChanges()
+      error: (err) => this.snackBar.open("Rejected items load nahi ho paye.", "Error")
     });
+
+    // 2. Load Received Stock (For Search/Select)
+    this.prService.getReceivedStock(supplierId).subscribe({
+      next: (data) => {
+        this.receivedStockItems = data || [];
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error("Error loading received stock", err)
+    });
+  }
+
+  addReturnItem(item: any, type: string) {
+    // Check duplication: Same Product + Same GRN Ref
+    const existing = this.items.controls.find(c =>
+      c.get('productId')?.value === item.productId &&
+      c.get('grnRef')?.value === item.grnRef
+    );
+
+    if (existing) {
+      if (type === 'Received') {
+        this.snackBar.open("Item already added to the list.", "Info", { duration: 2000 });
+      }
+      return;
+    }
+
+    this.items.push(this.fb.group({
+      productId: [item.productId],
+      productName: [item.productName],
+      grnRef: [item.grnRef],
+      maxQty: [item.availableQty || item.rejectedQty],
+      returnQty: [0, [Validators.required, Validators.min(0), Validators.max(item.availableQty || item.rejectedQty)]],
+      rate: [item.rate],
+      total: [0],
+      itemType: [type] // Useful for UI differentiation
+    }));
+
+    this.tableDataSource = [...this.items.controls];
+    this.cdr.detectChanges();
+  }
+
+  onReceivedStockSelect(event: any) {
+    const item = event.value;
+    if (item) {
+      this.addReturnItem(item, 'Received');
+      this.selectedReceivedProduct = null;
+    }
   }
 
   calculateTotal(index: number) {

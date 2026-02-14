@@ -19,6 +19,10 @@ export class PurchaseReturnService {
         return this.api.get<any[]>(`PurchaseReturn/rejected-items/${supplierId}`);
     }
 
+    getReceivedStock(supplierId: number): Observable<any[]> {
+        return this.api.get<any[]>(`PurchaseReturn/get-received-stock/${supplierId}`);
+    }
+
     // Naya Return save karne ke liye [cite: 2026-02-03]
     savePurchaseReturn(data: any): Observable<any> {
         return this.api.post<any>('PurchaseReturn/create', data);
