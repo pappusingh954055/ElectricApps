@@ -1,15 +1,25 @@
-.full-width {
-  width: 100%;
+.list-container {
+  padding: 32px 24px 24px 24px;
 }
 
-.header {
+.header-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 24px;
+
+  .page-title {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.5px;
+  }
 }
 
-.active {
-  color: green;
-  font-weight: 500;
+.grid-wrapper {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
 }

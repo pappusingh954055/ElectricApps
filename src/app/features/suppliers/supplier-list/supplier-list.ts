@@ -1,27 +1,73 @@
+import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
 import { MaterialModule } from '../../../shared/material/material/material-module';
+import { Router } from '@angular/router';
+import { SupplierService } from '../../inventory/service/supplier.service';
+import { GridColumn } from '../../../shared/models/grid-column.model';
+import { GridRequest } from '../../../shared/models/grid-request.model';
+import { ServerDatagridComponent } from '../../../shared/components/server-datagrid-component/server-datagrid-component';
 
 @Component({
   selector: 'app-supplier-list',
-  imports: [CommonModule, MaterialModule],
+  standalone: true,
+  imports: [CommonModule, MaterialModule, ServerDatagridComponent],
   templateUrl: './supplier-list.html',
   styleUrl: './supplier-list.scss',
 })
-export class SupplierList {
- private router = inject(Router);
+export class SupplierList implements OnInit {
+  private router = inject(Router);
+  private supplierService = inject(SupplierService);
+  private cdr = inject(ChangeDetectorRef);
 
-  suppliers = [
-    { id: 1, name: 'ABC Electronics', phone: '9876543210', status: 'Active' },
-    { id: 2, name: 'XYZ Distributors', phone: '9123456780', status: 'Inactive' }
+  loading = false;
+  data: any[] = [];
+  totalCount = 0;
+  lastRequest!: GridRequest;
+
+  columns: GridColumn[] = [
+    { field: 'name', header: 'Supplier Name', sortable: true, width: 250, visible: true },
+    { field: 'phone', header: 'Phone', sortable: true, width: 150, visible: true },
+    { field: 'gstIn', header: 'GSTIN', sortable: true, width: 180, visible: true },
+    {
+      field: 'isActive',
+      header: 'Status',
+      width: 120,
+      visible: true,
+      cell: (row: any) => row.isActive ? 'Active' : 'Inactive'
+    }
   ];
 
-  addSupplier() {
-    this.router.navigate(['/app/suppliers/add']);
+  ngOnInit(): void {
+    this.loadSuppliers({
+      pageNumber: 1,
+      pageSize: 10,
+      sortDirection: 'desc'
+    });
   }
 
-  editSupplier(id: number) {
-    this.router.navigate(['/app/suppliers/edit', id]);
+  loadSuppliers(request: GridRequest): void {
+    this.lastRequest = request;
+    this.loading = true;
+    this.supplierService.getPaged(request).subscribe({
+      next: (res) => {
+        this.data = res.items;
+        this.totalCount = res.totalCount;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error(err);
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  addSupplier() {
+    this.router.navigate(['/app/master/suppliers/add']);
+  }
+
+  onEdit(row: any) {
+    this.router.navigate(['/app/master/suppliers/edit', row.id]);
   }
 }

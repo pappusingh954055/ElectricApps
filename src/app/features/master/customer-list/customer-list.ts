@@ -1,28 +1,67 @@
+import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { Router } from '@angular/router';
+import { customerService } from '../customer-component/customer.service';
+import { GridColumn } from '../../../shared/models/grid-column.model';
+import { GridRequest } from '../../../shared/models/grid-request.model';
+import { ServerDatagridComponent } from '../../../shared/components/server-datagrid-component/server-datagrid-component';
 
 @Component({
   selector: 'app-customer-list',
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule],
+  standalone: true,
+  imports: [CommonModule, MaterialModule, ServerDatagridComponent],
   templateUrl: './customer-list.html',
   styleUrl: './customer-list.scss',
 })
-export class CustomerList {
+export class CustomerList implements OnInit {
   private router = inject(Router);
+  private customerService = inject(customerService);
+  private cdr = inject(ChangeDetectorRef);
 
-  customers = [
-    { id: 1, name: 'Rahul Sharma', phone: '9876543210', type: 'Retail', status: 'Active' },
-    { id: 2, name: 'TechWorld Pvt Ltd', phone: '9123456789', type: 'Wholesale', status: 'Inactive' }
+  loading = false;
+  data: any[] = [];
+  totalCount = 0;
+  lastRequest!: GridRequest;
+
+  columns: GridColumn[] = [
+    { field: 'customerName', header: 'Customer Name', sortable: true, width: 250, visible: true },
+    { field: 'phone', header: 'Phone', sortable: true, width: 150, visible: true },
+    { field: 'customerType', header: 'Type', sortable: true, width: 150, visible: true },
+    { field: 'status', header: 'Status', sortable: true, width: 120, visible: true }
   ];
 
-  addCustomer() {
-    this.router.navigate(['/app/masters/customers/add']);
+  ngOnInit(): void {
+    this.loadCustomers({
+      pageNumber: 1,
+      pageSize: 10,
+      sortDirection: 'desc'
+    });
   }
 
-  editCustomer(id: number) {
-    this.router.navigate(['/app/masters/customers/edit', id]);
+  loadCustomers(request: GridRequest): void {
+    this.lastRequest = request;
+    this.loading = true;
+    this.customerService.getPaged(request).subscribe({
+      next: (res) => {
+        this.data = res.items;
+        this.totalCount = res.totalCount;
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error(err);
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  addCustomer() {
+    this.router.navigate(['/app/master/customers/add']);
+  }
+
+  onEdit(row: any) {
+    this.router.navigate(['/app/master/customers/edit', row.id]);
   }
 }

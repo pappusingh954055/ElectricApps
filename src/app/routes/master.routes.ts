@@ -45,6 +45,24 @@ export const MASTER_ROUTES: Routes = [
       { path: 'add', data: { breadcrumb: 'Add New' }, loadComponent: () => import('./../features/master/pricelist/pricelist-form/pricelist-form').then(m => m.PricelistForm) },
       { path: 'edit/:id', data: { breadcrumb: 'Edit' }, loadComponent: () => import('./../features/master/pricelist/pricelist-form/pricelist-form').then(m => m.PricelistForm) }
     ]
+  },
+
+  {
+    path: 'suppliers',
+    canActivate: [PermissionGuard],
+    data: { breadcrumb: 'Suppliers' },
+    children: [
+      { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('./../features/suppliers/supplier-list/supplier-list').then(m => m.SupplierList) },
+    ]
+  },
+
+  {
+    path: 'customers',
+    canActivate: [PermissionGuard],
+    data: { breadcrumb: 'Customers' },
+    children: [
+      { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('./../features/master/customer-list/customer-list').then(m => m.CustomerList) },
+    ]
   }
 
 ];

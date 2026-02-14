@@ -22,5 +22,8 @@ export class customerService {
     return this.api.get<any[]>('customers/lookup', this.baseUrl);
   }
 
+  getPaged(request: any): Observable<any> {
+    return this.api.post<any>('customers/paged', request, this.baseUrl);
+  }
 }
 

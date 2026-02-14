@@ -38,4 +38,8 @@ export class SupplierService {
     getSupplierById(id: number): Observable<any> {
         return this.api.get<any>(`Supplier/${id}`, this.baseUrl);
     }
+
+    getPaged(request: any): Observable<any> {
+        return this.api.post<any>(`Supplier/paged`, request, this.baseUrl);
+    }
 }
