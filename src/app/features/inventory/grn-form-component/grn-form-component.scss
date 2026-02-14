@@ -155,3 +155,60 @@
   background-color: #fff1f0;
 }
 
+// Premium Button Styles
+.save-btn {
+  background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39) !important;
+  border-radius: 24px !important; /* Pill style */
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  height: 40px !important;
+  padding: 0 24px !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: none !important;
+  
+  mat-icon {
+    margin-right: 8px;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
+  }
+
+  &:disabled {
+    background: #e2e8f0 !important;
+    color: #94a3b8 !important;
+    box-shadow: none !important;
+    cursor: not-allowed;
+  }
+}
+
+.cancel-btn {
+  border-radius: 24px !important; /* Pill style */
+  font-weight: 600 !important;
+  height: 40px !important;
+  padding: 0 24px !important;
+  border: 1px solid #e2e8f0 !important;
+  background: white !important;
+  color: #64748b !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  mat-icon {
+    margin-right: 8px;
+    color: #64748b !important;
+  }
+
+  &:hover {
+    background: #f8fafc !important;
+    color: #1e293b !important;
+  }
+}
+

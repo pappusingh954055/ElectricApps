@@ -14,7 +14,7 @@
         <button mat-button class="back-btn" type="button" (click)="router.navigate(['/app/inventory/purchase-return'])">
           <mat-icon>arrow_back</mat-icon> Cancel
         </button>
-        <button mat-raised-button color="primary"
+        <button mat-raised-button color="primary" class="save-btn"
                 [disabled]="!returnForm.valid || items.length === 0" (click)="onSubmit()">
           <mat-icon>save</mat-icon> Confirm & Generate
         </button>

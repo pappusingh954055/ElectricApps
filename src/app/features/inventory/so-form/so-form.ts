@@ -168,7 +168,7 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
               qty: [1, [Validators.required, Validators.min(1)]],
               unit: [product.unit || 'PCS'],
               rate: [product.rate || product.saleRate || 0, [Validators.required, Validators.min(0.01)]],
-              discountPercent: [0],
+              discountPercent: [product.discount || product.discountPercent || 0],
               gstPercent: [product.defaultGst || product.gstPercent || 0],
               taxAmount: [0],
               total: [{ value: 0, disabled: true }],
@@ -260,6 +260,7 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
         productId: p.id,
         unit: p.unit || 'PCS',
         rate: p.rate || p.saleRate || p.price || 0,
+        discountPercent: p.discount || p.discountPercent || 0,
         gstPercent: p.defaultGst || p.gstPercent || 0,
         availableStock: p.currentStock || 0
       });

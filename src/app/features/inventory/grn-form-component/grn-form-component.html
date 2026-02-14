@@ -4,8 +4,8 @@
       <h2 class="mat-h2">{{ isViewMode ? 'View GRN' : 'Create New GRN' }}</h2>
     </div>
     <div class="header-buttons">
-      <button mat-stroked-button color="warn" (click)="onCancel()">Cancel</button>
-      <button mat-flat-button color="primary" (click)="saveGRN()" [disabled]="!grnForm.valid || isViewMode">
+      <button mat-stroked-button class="cancel-btn" (click)="onCancel()">Cancel</button>
+      <button mat-flat-button class="save-btn" color="primary" (click)="saveGRN()" [disabled]="!grnForm.valid || isViewMode">
         <mat-icon>save</mat-icon> Save & Update Stock
       </button>
     </div>
