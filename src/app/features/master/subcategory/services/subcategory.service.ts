@@ -49,6 +49,14 @@ export class SubCategoryService {
         formData.append('file', file);
         return this.api.post('subcategories/upload-excel', formData);
     }
+
+    checkDuplicate(name: string, id: string | null = null): Observable<{ exists: boolean, message: string }> {
+        let url = `subcategories/check-duplicate?name=${encodeURIComponent(name)}`;
+        if (id) {
+            url += `&excludeId=${id}`;
+        }
+        return this.api.get<{ exists: boolean, message: string }>(url);
+    }
 }
 
 

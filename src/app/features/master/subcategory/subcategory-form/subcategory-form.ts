@@ -159,6 +159,33 @@ export class SubcategoryForm implements OnInit, OnDestroy {
       return;
     }
 
+    const subcategoryName = this.subcategoryForm.get('subcategoryName')?.value;
+    this.loading = true;
+
+    // Check for duplicate subcategory name before saving
+    this.subcategorySvc.checkDuplicate(subcategoryName, this.subCategoryId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
+        if (res.exists) {
+          this.loading = false;
+          this.cdr.detectChanges();
+          this.dialog.open(StatusDialogComponent, {
+            data: { isSuccess: false, message: res.message || 'Subcategory with this name already exists.' }
+          });
+        } else {
+          this.proceedWithSave();
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        this.cdr.detectChanges();
+        console.error('Duplicate check failed', err);
+        // Fallback or proceed
+        this.proceedWithSave();
+      }
+    });
+  }
+
+  private proceedWithSave(): void {
     this.loading = true;
     const formValue = this.subcategoryForm.value;
     const payload: SubCategory = {

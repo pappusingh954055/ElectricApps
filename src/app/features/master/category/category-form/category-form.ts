@@ -186,8 +186,34 @@ export class CategoryForm implements OnInit {
       return;
     }
 
+    const categoryName = this.categoryForm.get('categoryName')?.value;
     this.loading = true;
 
+    // Check for duplicate category name before saving
+    this.categorySvc.checkDuplicate(categoryName, this.categoryId).subscribe({
+      next: (res) => {
+        if (res.exists) {
+          this.loading = false;
+          this.cdr.detectChanges();
+          this.dialog.open(StatusDialogComponent, {
+            data: { isSuccess: false, message: res.message || 'Category with this name already exists.' }
+          });
+        } else {
+          this.proceedWithSave();
+        }
+      },
+      error: (err) => {
+        this.loading = false;
+        this.cdr.detectChanges();
+        console.error('Duplicate check failed', err);
+        // Fallback or proceed
+        this.proceedWithSave();
+      }
+    });
+  }
+
+  private proceedWithSave(): void {
+    this.loading = true;
     const payload: Category = {
       ...this.categoryForm.value,
       id: this.categoryId
