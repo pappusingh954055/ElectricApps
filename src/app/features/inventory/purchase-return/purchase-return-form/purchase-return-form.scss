@@ -278,31 +278,62 @@ table.clean-table {
     }
   }
 
-  .rejected-badge {
+  .type-badge {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .badge-rejected {
+    background-color: #fee2e2;
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+  }
+
+  .badge-accepted {
+    background-color: #dcfce7;
+    color: #15803d;
+    border: 1px solid #86efac;
+  }
+
+  .stock-badge {
     display: inline-flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 6px 12px;
     border-radius: 8px;
-    background-color: #fef2f2; // Red-50
-    border: 1px solid #fee2e2; // Red-200
     min-width: 60px;
     box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 
-    .rejected-value {
+    .value {
       font-weight: 700;
-      color: #dc2626; // Red-600
       font-size: 1.1rem;
       line-height: 1;
     }
     
-    .rejected-label {
-      color: #ef4444; // Red-500
+    .label {
       font-size: 0.65rem;
       font-weight: 600;
       letter-spacing: 0.5px;
       margin-top: 2px;
+    }
+
+    &.rejected-badge {
+      background-color: #fff1f2;
+      border: 1px solid #fecdd3;
+      .value { color: #be123c; }
+      .label { color: #fb7185; }
+    }
+
+    &.accepted-badge {
+      background-color: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      .value { color: #15803d; }
+      .label { color: #4ade80; }
     }
   }
   
