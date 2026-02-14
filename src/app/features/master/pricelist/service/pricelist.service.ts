@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { ApiService } from '../../../../shared/api.service';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { PriceListModel } from '../models/pricelist.model';
 import { GridRequest } from '../../../../shared/models/grid-request.model';
 import { GridResponse } from '../../../../shared/models/grid-response.model';
@@ -53,6 +54,22 @@ export class PriceListService {
 
     getPriceListById(id: string): Observable<any> {
         return this.api.get<any>(`pricelists/${id}`);
+    }
+
+    checkDuplicateName(name: string, excludeId?: string): Observable<boolean> {
+        return this.getPaged({ pageNumber: 1, pageSize: 100, search: name }).pipe(
+            map(response => response.items.some(item =>
+                item.name.toLowerCase() === name.toLowerCase() && (excludeId ? String(item.id) !== String(excludeId) : true)
+            ))
+        );
+    }
+
+    checkDuplicateCode(code: string, excludeId?: string): Observable<boolean> {
+        return this.getPaged({ pageNumber: 1, pageSize: 100, search: code }).pipe(
+            map(response => response.items.some(item =>
+                item.code.toLowerCase() === code.toLowerCase() && (excludeId ? String(item.id) !== String(excludeId) : true)
+            ))
+        );
     }
 }
 

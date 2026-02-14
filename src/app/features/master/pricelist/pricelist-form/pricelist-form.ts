@@ -4,7 +4,7 @@ import { Validators, FormBuilder, ReactiveFormsModule, FormGroup, FormArray, For
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, of, Subject } from 'rxjs';
+import { Observable, of, Subject, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, finalize, tap } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { PriceListService } from '../service/pricelist.service';
@@ -315,61 +315,103 @@ export class PricelistForm implements OnInit, OnChanges, AfterViewInit, OnDestro
 
     this.loading = true;
     const rawValues = this.priceListForm.getRawValue();
-    const currentUserId = localStorage.getItem('userId') || '00000000-0000-0000-0000-000000000000';
-
     const currentId = this.editId || this.route.snapshot.params['id'];
+    const name = rawValues.name;
+    const code = rawValues.code;
 
-    const finalPayload = {
-      ...rawValues,
-      id: currentId || undefined,
-      remarks: rawValues.description,
-      validFrom: new Date(rawValues.validFrom).toISOString(),
-      validTo: rawValues.validTo ? new Date(rawValues.validTo).toISOString() : null,
-      createdBy: currentUserId,
-      priceListItems: rawValues.priceListItems.map((item: any) => ({
-        ...item,
-        productSearch: undefined
-      }))
-    };
-
-    const request$ = currentId
-      ? this.priceListService.updatePriceList(currentId, finalPayload)
-      : this.priceListService.createPriceList(finalPayload);
-
-    request$.pipe(
-      finalize(() => { this.loading = false; this.cdr.detectChanges(); })
-    ).subscribe({
-      next: () => {
-        this.dialog.open(StatusDialogComponent, {
-          width: '350px',
-          data: {
-            isSuccess: true,
-            message: currentId ? 'Price List updated successfully!' : 'Price List saved successfully!'
-          }
-        }).afterClosed().subscribe(() => {
-          this.actionComplete.emit(true);
-          if (!this.editId) this.router.navigate(['/app/master/pricelists']);
-        });
-      },
-      error: (err) => {
-        let msg = 'Error occurred while saving.';
-        if (err.error && typeof err.error === 'string') {
-          msg = err.error; // Sometimes 500 returns plain text
-        } else if (err.error?.message) {
-          msg = err.error.message;
-        } else if (err.message) {
-          msg = err.message;
+    forkJoin([
+      this.priceListService.checkDuplicateName(name, currentId),
+      this.priceListService.checkDuplicateCode(code, currentId)
+    ]).subscribe({
+      next: ([isDuplicateName, isDuplicateCode]) => {
+        if (isDuplicateName) {
+          this.loading = false;
+          this.dialog.open(StatusDialogComponent, {
+            width: '400px',
+            data: {
+              isSuccess: false,
+              message: `Duplicate Price List Name! "${name}" already exists.`
+            }
+          });
+          this.cdr.detectChanges();
+          return;
         }
 
+        if (isDuplicateCode) {
+          this.loading = false;
+          this.dialog.open(StatusDialogComponent, {
+            width: '400px',
+            data: {
+              isSuccess: false,
+              message: `Duplicate Price List Code! "${code}" already exists.`
+            }
+          });
+          this.cdr.detectChanges();
+          return;
+        }
+
+        const currentUserId = localStorage.getItem('email') || '';
+        const finalPayload = {
+          ...rawValues,
+          id: currentId || undefined,
+          remarks: rawValues.description,
+          validFrom: new Date(rawValues.validFrom).toISOString(),
+          validTo: rawValues.validTo ? new Date(rawValues.validTo).toISOString() : null,
+          createdBy: currentUserId,
+          priceListItems: rawValues.priceListItems.map((item: any) => ({
+            ...item,
+            productSearch: undefined
+          }))
+        };
+
+        const request$ = currentId
+          ? this.priceListService.updatePriceList(currentId, finalPayload)
+          : this.priceListService.createPriceList(finalPayload);
+
+        request$.pipe(
+          finalize(() => { this.loading = false; this.cdr.detectChanges(); })
+        ).subscribe({
+          next: () => {
+            this.dialog.open(StatusDialogComponent, {
+              width: '350px',
+              data: {
+                isSuccess: true,
+                message: currentId ? 'Price List updated successfully!' : 'Price List saved successfully!'
+              }
+            }).afterClosed().subscribe(() => {
+              this.actionComplete.emit(true);
+              if (!this.editId) this.router.navigate(['/app/master/pricelists']);
+            });
+          },
+          error: (err) => {
+            let msg = 'Error occurred while saving.';
+            if (err.error && typeof err.error === 'string') {
+              msg = err.error; // Sometimes 500 returns plain text
+            } else if (err.error?.message) {
+              msg = err.error.message;
+            } else if (err.message) {
+              msg = err.message;
+            }
+
+            this.dialog.open(StatusDialogComponent, {
+              width: '450px', // Wider for detailed messages
+              data: { isSuccess: false, message: msg }
+            });
+          }
+        });
+      },
+      error: () => {
+        this.loading = false;
+        this.cdr.detectChanges();
         this.dialog.open(StatusDialogComponent, {
-          width: '450px', // Wider for detailed messages
-          data: { isSuccess: false, message: msg }
+          width: '450px',
+          data: { isSuccess: false, message: 'Failed to validate Price List. Please try again.' }
         });
       }
     });
   }
 
-  onCancel() {
+  cancel() {
     this.actionComplete.emit(false);
     this.router.navigate(['/app/master/pricelists']);
   }
