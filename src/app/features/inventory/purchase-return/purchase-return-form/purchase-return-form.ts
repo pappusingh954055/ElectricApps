@@ -52,23 +52,23 @@ export class PurchaseReturnForm implements OnInit {
 
   loadSuppliersWithRejections() {
     this.prService.getSuppliersWithRejections().subscribe({
-      next: (data) => this.suppliers = data,
-    
-      complete: () => this.cdr.detectChanges(),
-      
+      next: (data) => {
+        this.suppliers = data || [];
+        console.log("Suppliers with rejections:", this.suppliers);
+        this.cdr.detectChanges();
+      },
       error: (err) => console.error("Error loading suppliers", err)
     });
-      console.log("Suppliers with rejections:", this.suppliers);
   }
 
   onSupplierChange(supplierId: number) {
-     
+
     this.items.clear();
     this.tableDataSource = [];
 
     this.prService.getRejectedItems(supplierId).subscribe({
       next: (res) => {
-       
+
         this.cdr.detectChanges();
         if (res && res.length > 0) {
           setTimeout(() => {

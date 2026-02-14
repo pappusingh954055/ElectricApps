@@ -512,6 +512,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       subTotal: this.subTotal,
       totalTax: this.totalTaxAmount,
       status: 'Draft',
+      createdBy: userId,
       items: formValue.items.map((item: any) => ({
         productId: item.productId,
         qty: Number(item.qty),
