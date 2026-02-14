@@ -7,11 +7,11 @@
       <button mat-raised-button class="save-btn" (click)="onSave()" [disabled]="loading">
         <mat-icon *ngIf="!loading">save</mat-icon> 
         <mat-spinner *ngIf="loading" diameter="18" style="display: inline-block; margin-right: 8px;"></mat-spinner>
-        {{ isEdit ? 'Update' : 'Save' }}
+        {{ isEdit ? 'UPDATE' : 'SAVE' }}
       </button>
 
       <button mat-raised-button class="cancel-btn" (click)="cancel()">
-        <mat-icon>close</mat-icon> Cancel
+        <mat-icon>close</mat-icon> CANCEL
       </button>
     </div>
   </div>

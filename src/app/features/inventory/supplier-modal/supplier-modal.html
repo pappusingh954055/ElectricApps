@@ -1,8 +1,18 @@
 <div class="modal-container">
-  <div mat-dialog-title class="modal-header">
-    <h2 class="title-text">Add New Supplier</h2>
-    <div class="close-btn" (click)="onCancel()">
-      <mat-icon>close</mat-icon>
+  <div class="modal-header">
+    <h2 class="title-text">{{ isEdit ? 'Edit Supplier' : 'Add New Supplier' }}</h2>
+    
+    <div class="header-actions">
+      <button mat-raised-button class="save-btn" (click)="onSave()" [disabled]="loading">
+        <mat-spinner diameter="18" *ngIf="loading" class="me-2 d-inline-block"></mat-spinner>
+        <mat-icon *ngIf="!loading">save</mat-icon>
+        {{ isEdit ? 'UPDATE' : 'SAVE' }}
+      </button>
+
+      <button mat-raised-button class="cancel-btn" (click)="onCancel()" type="button">
+        <mat-icon>close</mat-icon> 
+        CANCEL
+      </button>
     </div>
   </div>
 
@@ -62,13 +72,4 @@
       </div>
     </form>
   </mat-dialog-content>
-
-  <mat-dialog-actions align="end" class="modal-footer">
-    <button mat-raised-button (click)="onCancel()" type="button">Cancel</button>
-    <button mat-raised-button color="primary" [disabled]="supplierForm.invalid || loading" (click)="onSave()"
-      class="ms-2 px-4 save-btn">
-      <mat-spinner diameter="20" *ngIf="loading" class="me-2 d-inline-block"></mat-spinner>
-      Save Supplier
-    </button>
-  </mat-dialog-actions>
 </div>

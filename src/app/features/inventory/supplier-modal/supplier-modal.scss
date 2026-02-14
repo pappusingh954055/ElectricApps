@@ -7,47 +7,72 @@
   .modal-header {
     margin: 0 !important;
     padding: 16px 24px !important;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    background-color: #f8f9fa;
+    border-bottom: 1px solid #eee;
+    background-color: white;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
 
     .title-text {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #1a202c;
       margin: 0;
+      color: #3f51b5; /* primary blue color */
+      font-size: 1.2rem;
+      font-weight: 700;
       letter-spacing: -0.025em;
     }
 
-    .close-btn {
-      position: absolute;
-      right: 12px;
-      top: 12px;
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+    .header-actions {
       display: flex;
       align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: #94a3b8;
-      transition: all 0.2s;
+      gap: 12px;
+    }
+  }
 
-      mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
+  .save-btn {
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3) !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    height: 40px !important;
+    padding: 0 20px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none !important;
 
-      &:hover {
-        background: #fef2f2;
-        color: #ef4444;
-      }
+    mat-icon {
+      margin-right: 8px;
+    }
+
+    &:hover:not(:disabled) {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important;
+    }
+
+    &:disabled {
+      background: #e2e8f0 !important;
+      color: #94a3b8 !important;
+      box-shadow: none !important;
+      cursor: not-allowed;
+    }
+  }
+
+  .cancel-btn {
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    height: 40px !important;
+    border: 1px solid #e2e8f0 !important;
+    background: white !important;
+    color: #64748b !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    mat-icon {
+      margin-right: 8px;
     }
   }
 
@@ -76,54 +101,6 @@
     }
   }
 
-  .modal-footer {
-    padding: 16px 24px !important;
-    border-top: 1px solid rgba(0, 0, 0, 0.08);
-    background-color: #f8f9fa;
-    margin: 0 !important;
-
-    button[mat-raised-button]:not(.save-btn) {
-      border-radius: 12px !important;
-      font-weight: 600 !important;
-      height: 40px !important;
-      border: 1px solid #e2e8f0 !important;
-      background: white !important;
-      color: #64748b !important;
-    }
-
-    .save-btn {
-      background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
-      color: white !important;
-      box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3) !important;
-      border-radius: 12px !important;
-      font-weight: 600 !important;
-      letter-spacing: 0.5px !important;
-      height: 40px !important;
-      padding: 0 20px !important;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      border: none !important;
-
-      &:hover:not(:disabled) {
-        transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important;
-      }
-
-      &:disabled {
-        background: #e2e8f0 !important;
-        color: #94a3b8 !important;
-        box-shadow: none !important;
-        cursor: not-allowed;
-      }
-
-      .d-inline-block {
-        display: inline-block;
-        vertical-align: middle;
-      }
-    }
-  }
 }
 
 // 📱 Responsive Mobile Styles
@@ -138,14 +115,19 @@
       padding: 12px 16px !important;
     }
 
-    .modal-footer {
-      flex-direction: column-reverse !important;
+    .modal-header {
       padding: 12px 16px !important;
+      flex-direction: column;
       gap: 12px;
-
-      button {
+      align-items: flex-start;
+      
+      .header-actions {
         width: 100%;
-        margin: 0 !important;
+        justify-content: space-between;
+        
+        button {
+          flex: 1;
+        }
       }
     }
   }
