@@ -43,8 +43,6 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   onScroll() {
     if (this.scrollContainer) {
       const { scrollTop } = this.scrollContainer;
-      // Agar ekdum top par hai toh Down Arrow (to go to bottom)
-      // Thoda bhi scroll kiya toh Up Arrow (to go back to top)
       this.isAtTop = scrollTop < 50;
       this.cdr.detectChanges();
     }
@@ -53,17 +51,14 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   toggleScroll() {
     if (this.scrollContainer) {
       if (this.isAtTop) {
-        // Scroll to Bottom
         this.scrollContainer.scrollTo({ top: this.scrollContainer.scrollHeight, behavior: 'smooth' });
       } else {
-        // Scroll to Top
         this.scrollContainer.scrollTo({ top: 0, behavior: 'smooth' });
       }
     }
   }
 
   ngAfterViewInit() {
-    // Layout scroller detect karein with small delay
     setTimeout(() => {
       this.scrollContainer = document.querySelector('.content');
       if (this.scrollContainer) {
@@ -72,6 +67,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       }
     }, 500);
   }
+
   private fb = inject(FormBuilder);
   private dialog = inject(MatDialog);
   private cdr = inject(ChangeDetectorRef);
@@ -101,6 +97,40 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   isEditMode: boolean = false;
   private refillData: any = null;
   isReorder: boolean = false;
+  reorderTooltipText: string = 'Items pre-filled from Reorder recommendations';
+
+  constructor() {
+    const navigation = this.router.getCurrentNavigation();
+    if (navigation?.extras.state) {
+      this.refillData = navigation.extras.state['refillData'];
+    }
+  }
+
+  ngOnInit(): void {
+    const id = this.route.snapshot.paramMap.get('id');
+    this.initForm();
+    this.loadSuppliers();
+    this.bindDropdownPriceList();
+
+    if (id && id !== '0') {
+      this.poId = id;
+      this.isEditMode = true;
+      this.loadPODetails(id);
+    } else if (this.refillData) {
+      this.isEditMode = false;
+      this.isReorder = true;
+      this.loadNextPoNumber();
+      if (Array.isArray(this.refillData)) {
+        this.refillData.forEach(item => this.addRefillRow(item));
+      } else {
+        this.addRefillRow(this.refillData);
+      }
+    } else {
+      this.isEditMode = false;
+      this.loadNextPoNumber();
+      this.addRow();
+    }
+  }
 
   openBulkAddDialog() {
     const dialogRef = this.dialog.open(ProductSelectionDialogComponent, {
@@ -111,11 +141,9 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((selectedProducts: any[]) => {
       if (selectedProducts && selectedProducts.length > 0) {
-        // Clear first empty row if untouched
         if (this.items.length === 1 && !this.items.at(0).get('productId')?.value) {
           this.items.removeAt(0);
         }
-
         selectedProducts.forEach(product => {
           const isDuplicate = this.items.controls.some(control => control.get('productId')?.value === product.id);
           if (!isDuplicate) {
@@ -138,7 +166,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       unit: [product.unit || 'PCS', Validators.required],
       price: [product.basePurchasePrice || 0, [Validators.required, Validators.min(1)]],
       discountPercent: [0],
-      gstPercent: [product.defaultGst || product.gstPercent || 0],
+      gstPercent: [product.defaultGst || product.gstPercent || 0], // GST Product Master se
       taxAmount: [{ value: 0, disabled: true }],
       total: [{ value: 0, disabled: true }],
       id: [0]
@@ -154,7 +182,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
           if (res) {
             row.patchValue({
               price: res.recommendedRate || res.rate,
-              gstPercent: res.gstPercent || product.defaultGst,
+              // Note: GST Product Master wala hi rahega, Discount PriceList se aayega
               discountPercent: res.discount || res.discountPercent || 0
             });
           }
@@ -167,43 +195,6 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  constructor() {
-    // Redirection se aane wala data pakadne ke liye
-    const navigation = this.router.getCurrentNavigation();
-    if (navigation?.extras.state) {
-      this.refillData = navigation.extras.state['refillData'];
-    }
-  }
-
-  ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
-    this.initForm();
-    this.loadSuppliers();
-    this.bindDropdownPriceList();
-
-    if (id && id !== '0') {
-      this.poId = id;
-      this.isEditMode = true;
-      this.loadPODetails(id);
-    } else if (this.refillData) {
-      // Dashboard redirection wala case (Single or Bulk)
-      this.isEditMode = false;
-      this.isReorder = true;
-      this.loadNextPoNumber();
-
-      if (Array.isArray(this.refillData)) {
-        this.refillData.forEach(item => this.addRefillRow(item));
-      } else {
-        this.addRefillRow(this.refillData);
-      }
-    } else {
-      this.isEditMode = false;
-      this.loadNextPoNumber();
-      this.addRow();
-    }
-  }
-
-  // NAYA METHOD: Dashboard data ko row mein convert karne ke liye
   private addRefillRow(data: any) {
     const index = this.items.length;
     const row = this.fb.group({
@@ -213,10 +204,9 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       unit: [{ value: data.unit || 'PCS', disabled: false }],
       price: [data.rate || 0, [Validators.required, Validators.min(1)]],
       discountPercent: [0],
-      gstPercent: [data.gstPercent || 18],
+      gstPercent: [data.gstPercent || 18], // GST from Master
       taxAmount: [{ value: 0, disabled: true }],
       total: [{ value: 0, disabled: true }],
-      amount: [0],
       id: [0]
     });
 
@@ -224,7 +214,6 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
     this.isProductLoading[index] = false;
     this.setupFilter(index);
 
-    // Auto-rate fetch logic if Price List exists
     const pListId = this.poForm.get('priceListId')?.value;
     if (pListId && data.productId) {
       this.inventoryService.getProductRate(data.productId, pListId).subscribe({
@@ -232,16 +221,12 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
           if (res) {
             row.patchValue({
               price: res.recommendedRate || res.rate,
-              gstPercent: res.gstPercent || data.gstPercent,
-              unit: res.unit || data.unit,
-              discountPercent: res.discount || res.discountPercent || 0
+              discountPercent: res.discount || res.discountPercent || 0 // Discount from PriceList
             });
           }
           this.updateTotal(index);
         },
-        error: () => {
-          this.updateTotal(index);
-        }
+        error: () => this.updateTotal(index)
       });
     } else {
       this.updateTotal(index);
@@ -262,8 +247,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
           expectedDeliveryDate: DateHelper.toDateObject(res.expectedDeliveryDate),
           remarks: res.remarks || ''
         });
-        const itemsArray = this.items;
-        itemsArray.clear();
+        this.items.clear();
         if (res.items) {
           res.items.forEach((item: any, idx: number) => this.addEditRow(item, idx));
         }
@@ -330,10 +314,9 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
         this.inventoryService.getProductRate(prodId, priceListId).subscribe({
           next: (res: any) => {
             if (res) {
-              console.log("pricelist: ", res);
               control.patchValue({
                 price: res.recommendedRate || res.rate,
-                gstPercent: res.gstPercent,
+                // GST constant from Master, Discount from PriceList
                 discountPercent: res.discount || res.discountPercent || 0
               });
             }
@@ -364,7 +347,8 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       productSearch: product,
       unit: product.unit || 'PCS',
       price: product.basePurchasePrice || 0,
-      gstPercent: product.defaultGst || 0,
+      gstPercent: product.defaultGst || product.gstPercent || 0, // Master GST
+      discountPercent: 0,
       qty: 1
     });
 
@@ -374,8 +358,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
           if (res) {
             row.patchValue({
               price: res.recommendedRate || res.rate,
-              gstPercent: res.gstPercent,
-              discountPercent: res.discount || res.discountPercent || 0
+              discountPercent: res.discount || res.discountPercent || 0 // PriceList Discount
             });
           }
           this.updateTotal(index);
@@ -394,8 +377,10 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
     const discPercent = Number(row.get('discountPercent')?.value || 0);
     const gstPercent = Number(row.get('gstPercent')?.value || 0);
 
+    // Business Logic Calculation
     const amount = qty * price;
-    const taxableAmount = amount - (amount * discPercent / 100);
+    const discountAmount = (amount * discPercent) / 100;
+    const taxableAmount = amount - discountAmount;
     const taxAmt = (taxableAmount * gstPercent) / 100;
     const rowTotal = taxableAmount + taxAmt;
 
@@ -413,17 +398,6 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
     this.grandTotal = Number(totalWithTax.toFixed(2));
     this.subTotal = Number((this.grandTotal - this.totalTaxAmount).toFixed(2));
     this.cdr.detectChanges();
-  }
-
-  get reorderTooltipText(): string {
-    if (!this.items || this.items.length === 0) return '';
-    return this.items.controls
-      .map((control, index) => {
-        const product = control.get('productSearch')?.value;
-        const productName = typeof product === 'string' ? product : (product?.productName || product?.name || 'Unknown Item');
-        return `${index + 1}. ${productName}`;
-      })
-      .join('\n');
   }
 
   addRow(): void {
@@ -449,7 +423,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       debounceTime(300),
       distinctUntilChanged(),
       switchMap(value => {
-        const str = typeof value === 'string' ? value : value?.productName;
+        const str = typeof value === 'string' ? value : value?.productName || value?.name;
         if (!str || str.length < 2) return of([]);
         this.isProductLoading[index] = true;
         return this.productService.searchProducts(str).pipe(
@@ -475,17 +449,12 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
 
   openSupplierModal() {
     this.dialog.open(SupplierModalComponent, { width: '600px' }).afterClosed().subscribe(res => {
-      if (res) {
-        // supplier-modal returns the full supplier object or true (if edit)
-        // If it returns an object with ID, we add it to the list
-        if (res.id && res.name) {
-          this.suppliers = [...this.suppliers, res]; // Immutable update to trigger change detection if needed
-          this.poForm.patchValue({ supplierId: res.id });
-          this.onSupplierChange(res.id);
-        } else {
-          // Reload suppliers if we just got 'true' or some other signal, though usually for Add we get the object
-          this.loadSuppliers();
-        }
+      if (res && res.id) {
+        this.suppliers = [...this.suppliers, res];
+        this.poForm.patchValue({ supplierId: res.id });
+        this.onSupplierChange(res.id);
+      } else {
+        this.loadSuppliers();
       }
     });
   }
@@ -493,32 +462,12 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   loadNextPoNumber() { this.inventoryService.getNextPoNumber().subscribe(res => this.poForm.patchValue({ PoNumber: res.poNumber })); }
   loadSuppliers() {
     this.isLoadingSuppliers = true;
-    this.supplierService.getSuppliers().pipe(
-      finalize(() => this.isLoadingSuppliers = false)
-    ).subscribe(data => {
-      this.suppliers = data || [];
-      if (this.suppliers.length === 0) {
-        this.poForm.get('supplierId')?.markAsTouched();
-      }
-    });
+    this.supplierService.getSuppliers().pipe(finalize(() => this.isLoadingSuppliers = false)).subscribe(data => this.suppliers = data || []);
   }
-
-  // loadAllPriceLists() 
-  // { 
-  //   this.inventoryService.getPriceLists().
-  //   subscribe(data => this.priceLists = data); 
-  // }
 
   bindDropdownPriceList() {
     this.isLoadingPriceLists = true;
-    this.inventoryService.getPriceListsForDropdown().pipe(
-      finalize(() => this.isLoadingPriceLists = false)
-    ).subscribe(data => {
-      this.priceLists = data || [];
-      if (this.priceLists.length === 0) {
-        this.poForm.get('priceListId')?.markAsTouched();
-      }
-    });
+    this.inventoryService.getPriceListsForDropdown().pipe(finalize(() => this.isLoadingPriceLists = false)).subscribe(data => this.priceLists = data || []);
   }
 
   ngOnDestroy() {
@@ -531,23 +480,19 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
 
   saveDraft() {
     const formValue = this.poForm.getRawValue();
-
     if (formValue.expectedDeliveryDate) {
       const poDate = new Date(formValue.poDate);
       const deliveryDate = new Date(formValue.expectedDeliveryDate);
-      poDate.setHours(0, 0, 0, 0);
-      deliveryDate.setHours(0, 0, 0, 0);
-
+      poDate.setHours(0, 0, 0, 0); deliveryDate.setHours(0, 0, 0, 0);
       if (deliveryDate < poDate) {
-        this.notification.showStatus(false, 'Expected Delivery Date must be greater than or equal to PO Date.');
+        this.notification.showStatus(false, 'Expected Delivery Date mismatch.');
         return;
       }
     }
 
     const hasZeroPrice = formValue.items.some((item: any) => Number(item.price) <= 0);
-
     if (this.poForm.invalid || hasZeroPrice) {
-      this.notification.showStatus(false, hasZeroPrice ? 'Rate must be greater than 0.' : 'Please fill all required fields.');
+      this.notification.showStatus(false, 'Check required fields and rates.');
       return;
     }
 
@@ -559,13 +504,10 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       supplierId: Number(formValue.supplierId),
       supplierName: supplier ? supplier.name : 'Unknown',
       priceListId: formValue.priceListId,
-      priceList: this.priceLists.find(p => p.id === formValue.priceListId) || null,
       poDate: DateHelper.toLocalISOString(formValue.poDate),
       expectedDeliveryDate: DateHelper.toLocalISOString(formValue.expectedDeliveryDate),
       poNumber: formValue.PoNumber,
-      remarks: formValue.remarks || 'No remarks provided',
-      createdBy: userId,
-      updatedBy: userId,
+      remarks: formValue.remarks || '',
       grandTotal: this.grandTotal,
       subTotal: this.subTotal,
       totalTax: this.totalTaxAmount,
@@ -575,8 +517,8 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
         qty: Number(item.qty),
         unit: item.unit || 'PCS',
         rate: Number(item.price),
-        gstPercent: Number(item.gstPercent),
-        discountPercent: Number(item.discountPercent),
+        gstPercent: Number(item.gstPercent), // Saved from Master
+        discountPercent: Number(item.discountPercent), // Saved from PriceList
         taxAmount: Number(item.taxAmount),
         total: Number(item.total)
       }))
@@ -591,12 +533,10 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       },
       error: (err) => {
         this.isLoading = false;
-        this.notification.showStatus(false, err.error?.message || 'Error saving PO.');
+        this.notification.showStatus(false, 'Error saving PO.');
       }
     });
   }
 
-  goBack() {
-    this.router.navigate(['/app/inventory/polist']);
-  }
+  goBack() { this.router.navigate(['/app/inventory/polist']); }
 }
