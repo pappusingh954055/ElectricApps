@@ -3,13 +3,13 @@
     <h2 class="m-0 text-primary fw-bold" style="font-size: 1.2rem;">{{ isEditMode ? 'Edit' : 'Add' }} Price List</h2>
     
     <div class="actions">
-      <button mat-raised-button color="primary" (click)="onSave()" [disabled]="loading || priceListForm.invalid">
+      <button mat-raised-button class="submit-btn" (click)="onSave()" [disabled]="loading || priceListForm.invalid">
         <mat-icon *ngIf="!loading">save</mat-icon> 
         <mat-spinner *ngIf="loading" diameter="18" style="display: inline-block; margin-right: 8px;"></mat-spinner>
         {{ isEditMode ? 'Update' : 'Save' }}
       </button>
 
-      <button mat-raised-button (click)="onCancel()">
+      <button mat-raised-button class="cancel-btn" (click)="onCancel()">
         <mat-icon>close</mat-icon> Cancel
       </button>
     </div>
