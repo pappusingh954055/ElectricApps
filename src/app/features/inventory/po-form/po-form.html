@@ -92,7 +92,9 @@
           <mat-icon style="vertical-align: middle; font-size: 18px; width: 18px; height: 18px;">check_circle</mat-icon>
           {{items.length}} Item(s) added successfully
         </span>
-        <span *ngIf="items.length > 0 && isReorder" style="color: #800000; font-weight: 600; font-size: 13px;">
+        <span *ngIf="items.length > 0 && isReorder" 
+          style="color: #800000; font-weight: 600; font-size: 13px; cursor: help;"
+          [matTooltip]="reorderTooltipText" matTooltipClass="reorder-tooltip">
           <mat-icon style="vertical-align: middle; font-size: 18px; width: 18px; height: 18px;">shopping_cart</mat-icon>
           {{items.length}} Item(s) added from Reorder Cart
         </span>

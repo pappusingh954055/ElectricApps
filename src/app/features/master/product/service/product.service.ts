@@ -70,5 +70,13 @@ export class ProductService {
         formData.append('file', file);
         return this.api.post('products/upload-excel', formData);
     }
+
+    checkDuplicate(name: string, id: string | null = null): Observable<{ exists: boolean, message: string }> {
+        let url = `products/check-duplicate?name=${encodeURIComponent(name)}`;
+        if (id) {
+            url += `&excludeId=${id}`;
+        }
+        return this.api.get<{ exists: boolean, message: string }>(url);
+    }
 }
 

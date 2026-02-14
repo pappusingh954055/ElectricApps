@@ -414,6 +414,17 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
     this.cdr.detectChanges();
   }
 
+  get reorderTooltipText(): string {
+    if (!this.items || this.items.length === 0) return '';
+    return this.items.controls
+      .map((control, index) => {
+        const product = control.get('productSearch')?.value;
+        const productName = typeof product === 'string' ? product : (product?.productName || product?.name || 'Unknown Item');
+        return `${index + 1}. ${productName}`;
+      })
+      .join('\n');
+  }
+
   addRow(): void {
     const row = this.fb.group({
       productSearch: ['', Validators.required],

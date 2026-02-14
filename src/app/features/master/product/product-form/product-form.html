@@ -45,7 +45,7 @@
     <form [formGroup]="productsForm" class="form-grid">
 
       <!-- 🔍 Category Autocomplete -->
-      <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+      <mat-form-field appearance="outline" class="search-field">
         <mat-label>Category *</mat-label>
         <input type="text"
                placeholder="Search Category"
@@ -60,10 +60,13 @@
         <div matSuffix *ngIf="isSearchingCategories || (loading && !isEditMode)" class="input-spinner">
           <mat-spinner diameter="18"></mat-spinner>
         </div>
+        <mat-error *ngIf="productsForm.get('categorySearch')?.hasError('required')">
+          Category is required
+        </mat-error>
       </mat-form-field>
 
       <!-- 🔍 Subcategory Autocomplete -->
-      <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+      <mat-form-field appearance="outline" class="search-field">
         <mat-label>Subcategory *</mat-label>
         <input type="text"
                placeholder="Search Subcategory"
@@ -78,11 +81,20 @@
         <div matSuffix *ngIf="isSearchingSubcategories || loading" class="input-spinner">
           <mat-spinner diameter="18"></mat-spinner>
         </div>
+        <mat-error *ngIf="productsForm.get('subcategorySearch')?.hasError('required')">
+          Subcategory is required
+        </mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-form-field appearance="outline">
         <mat-label>Product Name *</mat-label>
         <input matInput formControlName="productName" placeholder="e.g. Dell Latitude 5420">
+        <mat-error *ngIf="productsForm.get('productName')?.hasError('required')">
+          Product name is required
+        </mat-error>
+        <mat-error *ngIf="productsForm.get('productName')?.hasError('maxlength')">
+          Exceeds 30 characters limit
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -90,12 +102,15 @@
         <input matInput formControlName="sku" placeholder="e.g. PROD-001">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-form-field appearance="outline">
         <mat-label>Brand</mat-label>
         <input matInput formControlName="brand" placeholder="e.g. Dell / HP">
+        <mat-error *ngIf="productsForm.get('brand')?.hasError('maxlength')">
+          Exceeds 30 characters limit
+        </mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+      <mat-form-field appearance="outline" class="search-field">
         <mat-label>Unit(UOM) *</mat-label>
         <input type="text"
                placeholder="Search Unit"
@@ -110,12 +125,18 @@
         <div matSuffix *ngIf="isSearchingUnits" class="input-spinner">
           <mat-spinner diameter="18"></mat-spinner>
         </div>
+        <mat-error *ngIf="productsForm.get('unit')?.hasError('required')">
+          Unit is required
+        </mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-form-field appearance="outline">
         <mat-label>Base Purchase Price *</mat-label>
         <input matInput type="number" formControlName="basePurchasePrice" placeholder="0.00">
         <span matPrefix>&nbsp;₹&nbsp;</span>
+        <mat-error *ngIf="productsForm.get('basePurchasePrice')?.hasError('required')">
+          Price is required
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -130,7 +151,7 @@
         <span matPrefix>&nbsp;₹&nbsp;</span>
       </mat-form-field>
       
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-form-field appearance="outline">
         <mat-label>GST % *</mat-label>
         <mat-select formControlName="defaultGst">
           <mat-option [value]="0">0% (Exempted)</mat-option>
@@ -139,6 +160,9 @@
           <mat-option [value]="18">18%</mat-option>
           <mat-option [value]="28">28%</mat-option>
         </mat-select>
+        <mat-error *ngIf="productsForm.get('defaultGst')?.hasError('required')">
+          GST is required
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -161,13 +185,16 @@
         </mat-slide-toggle>
       </div>
 
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-form-field appearance="outline">
         <mat-label>Product Type *</mat-label>
         <mat-select formControlName="productType">
           <mat-option [value]="1">Finished</mat-option>
           <mat-option [value]="2">Goods</mat-option>
           <mat-option [value]="3">Raw Material</mat-option>
         </mat-select>
+        <mat-error *ngIf="productsForm.get('productType')?.hasError('required')">
+          Type is required
+        </mat-error>
       </mat-form-field>
 
       <mat-form-field appearance="outline" subscriptSizing="dynamic">

@@ -546,3 +546,11 @@ hr {
   padding-right: 8px;
   height: 100%;
 }
+/* ================= REORDER TOOLTIP ================= */
+::ng-deep .reorder-tooltip {
+  white-space: pre-line !important;
+  font-size: 12px !important;
+  line-height: 1.5 !important;
+  padding: 8px 12px !important;
+  max-width: 400px !important;
+}
