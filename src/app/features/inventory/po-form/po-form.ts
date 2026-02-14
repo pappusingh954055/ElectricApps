@@ -155,7 +155,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
             row.patchValue({
               price: res.recommendedRate || res.rate,
               gstPercent: res.gstPercent || product.defaultGst,
-              discountPercent: res.discountPercent || 0
+              discountPercent: res.discount || res.discountPercent || 0
             });
           }
           this.updateTotal(index);
@@ -234,7 +234,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
               price: res.recommendedRate || res.rate,
               gstPercent: res.gstPercent || data.gstPercent,
               unit: res.unit || data.unit,
-              discountPercent: res.discountPercent || 0
+              discountPercent: res.discount || res.discountPercent || 0
             });
           }
           this.updateTotal(index);
@@ -327,13 +327,14 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
     this.items.controls.forEach((control, index) => {
       const prodId = control.get('productId')?.value;
       if (prodId && priceListId) {
-        this.poService.getProductRate(prodId, priceListId).subscribe({
+        this.inventoryService.getProductRate(prodId, priceListId).subscribe({
           next: (res: any) => {
             if (res) {
+              console.log("pricelist: ", res);
               control.patchValue({
                 price: res.recommendedRate || res.rate,
                 gstPercent: res.gstPercent,
-                discountPercent: res.discountPercent || 0
+                discountPercent: res.discount || res.discountPercent || 0
               });
             }
             this.updateTotal(index);
@@ -374,7 +375,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
             row.patchValue({
               price: res.recommendedRate || res.rate,
               gstPercent: res.gstPercent,
-              discountPercent: res.discountPercent || 0
+              discountPercent: res.discount || res.discountPercent || 0
             });
           }
           this.updateTotal(index);
