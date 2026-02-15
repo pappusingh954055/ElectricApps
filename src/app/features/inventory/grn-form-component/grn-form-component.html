@@ -43,25 +43,25 @@
         <table class="grn-items-table">
           <thead>
             <tr>
-              <th>Product Name</th>
-              <th class="text-center" style="white-space: nowrap; width: 100px;">Ordered(PO) Qty</th>
-              <th class="text-center" style="white-space: nowrap; width: 80px;">Pending Qty</th>
-              <th class="text-center" width="75">Received Qty</th>
-              <th class="text-center" width="75">Rejected Qty</th>
-              <th class="text-center" width="90">Accepted Qty</th>
-              <th class="text-right">Unit Rate</th>
-              <th class="text-center">DISC %</th>
-              <th class="text-center">GST %</th>
-              <th class="text-right">TAX AMT</th>
-              <th class="text-right">Total</th>
+              <th class="col-product">Product Name</th>
+              <th class="text-center" style="width: 80px;">PO Qty</th>
+              <th class="text-center" style="width: 70px;">Pend. Qty</th>
+              <th class="text-center" style="width: 80px;">Recv. Qty</th>
+              <th class="text-center" style="width: 80px;">Rej. Qty</th>
+              <th class="text-center" style="width: 80px;">Accpt. Qty</th>
+              <th class="text-right" style="width: 100px;">Unit Rate</th>
+              <th class="text-center" style="width: 60px;">DISC %</th>
+              <th class="text-center" style="width: 60px;">GST %</th>
+              <th class="text-right" style="width: 100px;">TAX AMT</th>
+              <th class="text-right" style="width: 100px;">Total</th>
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let item of items; let i = index">
-              <td>{{item.productName}}</td>
+              <td class="col-product text-wrap">{{item.productName}}</td>
               <td class="text-center">{{item.orderedQty}}</td>
               <td class="text-center text-primary"><b>{{item.pendingQty}}</b></td>
-              <td>
+              <td class="text-center">
                 <mat-form-field appearance="outline" class="dense-input" subscriptSizing="dynamic">
                   <input matInput type="number" 
                          [(ngModel)]="item.receivedQty" 
@@ -71,7 +71,7 @@
                          min="0">
                 </mat-form-field>
               </td>
-              <td>
+              <td class="text-center">
                 <mat-form-field appearance="outline" class="dense-input" subscriptSizing="dynamic">
                   <input matInput type="number" 
                          [(ngModel)]="item.rejectedQty" 
@@ -98,8 +98,8 @@
         </mat-form-field>
         
         <div class="grand-total-box">
-          <span class="label">Grand Total:</span>
-          <span class="value">{{calculateGrandTotal() | currency:'INR'}}</span>
+          <span class="total-label">Grand Total:</span>
+          <span class="total-amount">{{calculateGrandTotal() | currency:'INR'}}</span>
         </div>
       </div>
     </mat-card-content>
