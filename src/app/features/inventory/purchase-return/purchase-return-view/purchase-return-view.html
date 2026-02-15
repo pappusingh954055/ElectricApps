@@ -7,18 +7,18 @@
       <div class="company-text">
         <h1>{{companyInfo?.name || 'ELECTRIC INVENTORY'}}</h1>
         <div class="meta-row" *ngIf="companyInfo?.address">
-          {{companyInfo?.address?.addressLine1}}, {{companyInfo?.address?.city}} - {{companyInfo?.address?.pinCode}}
-        </div>
-        <div class="meta-row">
-          Ph: {{companyInfo?.primaryPhone}} | {{companyInfo?.primaryEmail}}
+          <span>{{companyInfo?.address?.addressLine1}}, {{companyInfo?.address?.city}}</span>
+          <span class="divider">|</span>
+          <span>Ph: {{companyInfo?.primaryPhone}}</span>
         </div>
       </div>
     </div>
 
     <div class="order-title-group">
       <h2>RETURN #{{data.returnNumber}}</h2>
-      <span class="status-pill fail" *ngIf="data.status === 'Draft'">{{data.status}}</span>
-      <span class="status-pill success" *ngIf="data.status === 'Completed' || data.status === 'Confirmed'">{{data.status}}</span>
+      <div class="status-pill" [ngClass]="(data.status === 'Completed' || data.status === 'Confirmed') ? 'success' : 'fail'">
+        {{data.status}}
+      </div>
     </div>
 
     <button mat-icon-button mat-dialog-close class="close-btn">
