@@ -12,8 +12,11 @@ $border: #e5e7eb;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     color: $text-dark;
     background: white;
-    max-width: 900px; 
+    max-width: 950px; 
+    width: 65vw;
     margin: 0 auto;
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 .header-p {
@@ -80,8 +83,8 @@ $border: #e5e7eb;
     }
 
     .close-btn {
-        width: 32px !important;
-        height: 32px !important;
+        width: 40px !important;
+        height: 40px !important;
         border-radius: 50% !important;
         background: #f1f5f9 !important; /* Slightly darker to see better */
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
@@ -191,17 +194,26 @@ $border: #e5e7eb;
             color: $text-medium;
             text-transform: uppercase;
             letter-spacing: 0.05em;
-            padding: 12px 16px;
-            border-bottom: 2px solid $border;
+            padding: 14px 12px;
+            border-bottom: 2px solid #3b82f6; // Blue accent for header
+            white-space: nowrap;
+            background-color: #f8fafc;
         }
 
         td {
-            padding: 12px 16px;
-            border-bottom: 1px solid $border;
+            padding: 16px 12px;
+            border-bottom: 1px solid #f1f5f9;
             color: $text-dark;
             font-size: 14px;
             vertical-align: middle;
-            word-wrap: break-word;
+            
+            &.text-center, &.text-end {
+                white-space: nowrap;
+            }
+        }
+
+        tr:hover td {
+            background-color: #fcfdfe;
         }
 
         tr:last-child td { border-bottom: none; }
@@ -209,11 +221,13 @@ $border: #e5e7eb;
         .text-center { text-align: center; }
         .text-end { text-align: right; }
         
-        // Column Widths
-        .col-product { width: 50%; }
-        .col-qty { width: 15%; }
+        // Column Widths - Balanced for all 6 columns
+        .col-product { width: 32%; }
+        .col-qty { width: 12%; }
         .col-rate { width: 15%; }
-        .col-total { width: 20%; }
+        .col-disc { width: 11%; }
+        .col-tax { width: 11%; }
+        .col-total { width: 19%; }
     }
 }
 
@@ -258,8 +272,9 @@ $border: #e5e7eb;
             
             .value { 
                 color: $primary; 
-                font-size: 24px; 
+                font-size: 28px; 
                 font-weight: 800;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.05);
             }
         }
     }
