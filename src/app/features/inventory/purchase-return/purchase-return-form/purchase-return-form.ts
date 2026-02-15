@@ -63,12 +63,15 @@ export class PurchaseReturnForm implements OnInit {
 
   receivedStockItems: any[] = [];
   selectedReceivedProduct: any;
+  isLoadingStock: boolean = false;
 
   onSupplierChange(supplierId: number) {
+    if (!supplierId) return;
 
     this.items.clear();
     this.tableDataSource = [];
     this.receivedStockItems = [];
+    this.isLoadingStock = true;
 
     // 1. Load Rejected Items (Auto-load)
     this.prService.getRejectedItems(supplierId).subscribe({
@@ -82,16 +85,20 @@ export class PurchaseReturnForm implements OnInit {
           this.cdr.detectChanges();
         }
       },
-      error: (err) => this.snackBar.open("Rejected items load nahi ho paye.", "Error")
+      error: () => { }
     });
 
     // 2. Load Received Stock (For Search/Select)
     this.prService.getReceivedStock(supplierId).subscribe({
       next: (data) => {
         this.receivedStockItems = data || [];
+        this.isLoadingStock = false;
         this.cdr.detectChanges();
       },
-      error: (err) => console.error("Error loading received stock", err)
+      error: () => {
+        this.isLoadingStock = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
