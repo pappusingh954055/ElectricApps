@@ -40,7 +40,7 @@ export class SaleReturnFormComponent implements OnInit {
     isLoadingSaleOrders = false;
 
     itemsDataSource = new MatTableDataSource<AbstractControl>();
-    displayedColumns: string[] = ['productName', 'quantity', 'rate', 'discount', 'itemCondition', 'reason', 'returnQty', 'tax', 'total'];
+    displayedColumns: string[] = ['productName', 'quantity', 'rate', 'itemCondition', 'reason', 'returnQty', 'discount', 'tax', 'total'];
 
     constructor() {
         this.returnForm = this.fb.group({
