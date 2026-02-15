@@ -76,6 +76,7 @@ export class PurchaseReturnView implements OnInit {
             <td>${item.productName}</td>
             <td style="text-align: center;">${item.returnQty}</td>
             <td style="text-align: right;">${this.currencyPipe.transform(item.rate, 'INR')}</td>
+            <td style="text-align: center;">${item.gstPercent}%</td>
             <td style="text-align: right;">${this.currencyPipe.transform(item.totalAmount, 'INR')}</td>
         </tr>
     `).join('');
@@ -157,8 +158,9 @@ export class PurchaseReturnView implements OnInit {
                         <tr>
                             <th style="text-align: center;">#</th>
                             <th>Product Description</th>
-                            <th style="text-align: center;">Qty</th>
+                            <th style="text-align: center;">Return Qty</th>
                             <th style="text-align: right;">Rate</th>
+                            <th style="text-align: center;">Tax (%)</th>
                             <th style="text-align: right;">Total</th>
                         </tr>
                     </thead>
