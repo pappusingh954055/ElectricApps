@@ -54,6 +54,8 @@
                     <th class="col-product">Product Description</th>
                     <th class="col-qty text-center">Qty</th>
                     <th class="col-rate text-right">Rate</th>
+                    <th class="col-disc text-center">Disc %</th>
+                    <th class="col-gst text-center">GST %</th>
                     <th class="col-total text-right">Total</th>
                 </tr>
             </thead>
@@ -62,6 +64,8 @@
                     <td>{{item.productName}}</td>
                     <td class="text-center">{{item.qty}}</td>
                     <td class="text-right">{{item.rate | currency:'INR':'':'1.2-2'}}</td>
+                    <td class="text-center">{{item.discountPercent || 0}}%</td>
+                    <td class="text-center">{{item.gstPercent || 0}}%</td>
                     <td class="text-right">{{item.total | currency:'INR':'':'1.2-2'}}</td>
                 </tr>
             </tbody>
