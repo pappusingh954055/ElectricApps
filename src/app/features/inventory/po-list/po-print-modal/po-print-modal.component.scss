@@ -14,35 +14,19 @@ $border: #e5e7eb;
 }
 
 .print-content {
-  padding: 40px;
+  padding: 30px 40px;
   max-width: 850px;
   margin: 0 auto;
   background: white;
-  max-height: 65vh; // Set a fixed height for scrolling
-  overflow-y: auto !important; // Enable vertical scroll
-  
-  // Custom Scrollbar for premium look
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  &::-webkit-scrollbar-thumb {
-    background: #cbd5e1;
-    border-radius: 10px;
-    &:hover {
-      background: #94a3b8;
-    }
-  }
+  overflow-y: visible; // Let the table-container handle internal scroll
 }
 
 .header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
-    margin-bottom: 48px;
-    padding-bottom: 24px;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
     border-bottom: 1px solid $border;
 
     .logo-section {
@@ -99,14 +83,14 @@ $border: #e5e7eb;
 }
 
 .po-info-card {
-    margin-bottom: 48px;
+    margin-bottom: 15px;
 
     .info-row {
         display: grid;
         grid-template-columns: repeat(3, 1fr); // 3 Equal columns for spaced layout
-        gap: 32px;
+        gap: 20px;
         background-color: $bg-light;
-        padding: 24px;
+        padding: 12px 24px;
         border-radius: 6px;
         border: 1px solid $border;
 
@@ -133,14 +117,37 @@ $border: #e5e7eb;
 }
 
 .table-container {
-  margin-bottom: 40px;
+  margin-bottom: 20px;
+  max-height: 380px; // Limit height so scrollbar appears after ~5-6 records
+  overflow-y: auto;
+  border: 1px solid $border;
+  border-radius: 4px;
+
+  // Custom Scrollbar for Table
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+    &:hover {
+      background: #94a3b8;
+    }
+  }
   
   .items-table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed; // Enforce strict column widths
+      table-layout: fixed; 
       
       th {
+          position: sticky;
+          top: 0;
+          background: #f8fafc;
+          z-index: 2;
           text-align: left;
           font-size: 11px;
           font-weight: 700;
