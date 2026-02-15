@@ -153,6 +153,7 @@
                   <tr>
                     <th>Date</th>
                     <th>PO Reference</th>
+                    <th>GRNNumber</th>
                     <th>Product</th> 
                     <th>Supplier Source</th>
                     <th>Received</th>
@@ -163,6 +164,7 @@
                   <tr *ngFor="let h of element.history">
                     <td>{{h.receivedDate | date:'mediumDate'}}</td>
                     <td><span class="po-link">#{{h.poNumber}}</span></td>
+                    <td>{{h.grnNumber}}</td>
                     <td>{{h.productName}}</td> 
                     <td>{{h.supplierName}}</td>
                     <td class="font-600">{{h.receivedQty}}</td>

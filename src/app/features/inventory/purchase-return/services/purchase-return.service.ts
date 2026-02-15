@@ -10,8 +10,8 @@ export class PurchaseReturnService {
     private api = inject(ApiService);
 
     // Supplier ke rejected items mangwane ke liye
-    getSuppliersWithRejections(): Observable<any[]> {
-        return this.api.get<any[]>('PurchaseReturn/suppliers-with-rejections');
+    GetSuppliersForPurchaseReturnAsync(): Observable<any[]> {
+        return this.api.get<any[]>('PurchaseReturn/suppliers-purchase-return');
     }
 
     // 2. Supplier select hone ke baad items ke liye

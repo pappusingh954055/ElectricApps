@@ -34,7 +34,7 @@ export class PurchaseReturnForm implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
-    this.loadSuppliersWithRejections();
+    this.GetSuppliersForPurchaseReturnAsync();
   }
 
   initForm() {
@@ -50,8 +50,8 @@ export class PurchaseReturnForm implements OnInit {
     return this.returnForm.get('items') as FormArray;
   }
 
-  loadSuppliersWithRejections() {
-    this.prService.getSuppliersWithRejections().subscribe({
+  GetSuppliersForPurchaseReturnAsync() {
+    this.prService.GetSuppliersForPurchaseReturnAsync().subscribe({
       next: (data) => {
         this.suppliers = data || [];
         console.log("Suppliers with rejections:", this.suppliers);
