@@ -120,7 +120,12 @@ export class PurchaseReturnForm implements OnInit {
       const pName = item.productName || item.ProductName || '';
       const avail = item.availableQty ?? item.AvailableQty ?? 0;
       const rate = item.rate ?? item.Rate ?? 0;
-      const rDate = item.receivedDate || item.ReceivedDate || item.podate || new Date();
+      let rDate = item.receivedDate || item.ReceivedDate || item.podate || new Date();
+
+      // UTC to Local Conversion: Append 'Z' if missing to force UTC interpretation
+      if (typeof rDate === 'string' && !rDate.includes('Z') && !rDate.includes('+')) {
+        rDate = rDate.replace(' ', 'T') + 'Z';
+      }
 
       if (!groups[ref]) {
         groups[ref] = {
