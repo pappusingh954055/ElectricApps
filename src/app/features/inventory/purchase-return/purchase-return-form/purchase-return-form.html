@@ -75,21 +75,21 @@
              </div>
 
              <!-- Hierarchical Stock List (Accordion) -->
-             <div class="hierarchical-stock-list" *ngIf="filteredGroupedStock.length > 0">
+              <div class="hierarchical-stock-list" *ngIf="filteredGroupedStock.length > 0">
                 <div class="grn-group-wrapper" *ngFor="let group of filteredGroupedStock">
-                   <div class="grn-header" (click)="toggleGrn(group.grnRef)" [class.expanded]="expandedGrns.has(group.grnRef)">
+                   <div class="grn-header" (click)="toggleGrn(group.grnRef)" [class.expanded]="expandedGrn === group.grnRef">
                       <div class="grn-info">
-                         <mat-icon class="folder-icon">{{expandedGrns.has(group.grnRef) ? 'folder_open' : 'folder'}}</mat-icon>
+                         <mat-icon class="folder-icon">{{expandedGrn === group.grnRef ? 'folder_open' : 'folder'}}</mat-icon>
                          <span class="grn-ref">{{group.grnRef}}</span>
                          <span class="grn-date">{{group.receivedDate | date:'medium'}}</span>
                       </div>
                       <div class="grn-meta">
                          <span class="item-count">{{group.items.length}} Items</span>
-                         <mat-icon class="arrow-icon">{{expandedGrns.has(group.grnRef) ? 'expand_less' : 'expand_more'}}</mat-icon>
+                         <mat-icon class="arrow-icon">{{expandedGrn === group.grnRef ? 'expand_less' : 'expand_more'}}</mat-icon>
                       </div>
                    </div>
                    
-                   <div class="grn-content" *ngIf="expandedGrns.has(group.grnRef)">
+                   <div class="grn-content" *ngIf="expandedGrn === group.grnRef">
                       <div class="stock-item-row" *ngFor="let item of group.items">
                          <mat-checkbox [(ngModel)]="item.selected" [ngModelOptions]="{standalone: true}" 
                                        (change)="onItemToggle(item)" color="primary">

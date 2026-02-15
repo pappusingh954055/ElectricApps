@@ -64,7 +64,7 @@ export class PurchaseReturnForm implements OnInit {
   groupedReceivedStock: any[] = []; // Hierarchy: GRN -> Items
   filteredGroupedStock: any[] = []; // For Search results
   stockSearchText: string = '';
-  expandedGrns: Set<string> = new Set();
+  expandedGrn: string | null = null; // Single expand behavior
   isLoadingStock: boolean = false;
 
   onSupplierChange(supplierId: number) {
@@ -75,7 +75,7 @@ export class PurchaseReturnForm implements OnInit {
     this.receivedStockItems = [];
     this.groupedReceivedStock = [];
     this.filteredGroupedStock = [];
-    this.expandedGrns.clear();
+    this.expandedGrn = null;
     this.isLoadingStock = true;
 
     // 1. Load Rejected Items (Auto-load)
@@ -175,10 +175,10 @@ export class PurchaseReturnForm implements OnInit {
   }
 
   toggleGrn(grnRef: string) {
-    if (this.expandedGrns.has(grnRef)) {
-      this.expandedGrns.delete(grnRef);
+    if (this.expandedGrn === grnRef) {
+      this.expandedGrn = null; // Collapse if already open
     } else {
-      this.expandedGrns.add(grnRef);
+      this.expandedGrn = grnRef; // Expand new one, automatically collapses old one
     }
     this.cdr.detectChanges();
   }
