@@ -189,6 +189,7 @@ export class PurchaseReturnList implements OnInit {
             <td>${item.productName}</td>
             <td style="text-align: center;">${item.returnQty}</td>
             <td style="text-align: right;">${this.currencyPipe.transform(item.rate, 'INR')}</td>
+            <td style="text-align: center;">${item.discountPercent}%</td>
             <td style="text-align: center;">${item.gstPercent}%</td>
             <td style="text-align: right;">${this.currencyPipe.transform(item.totalAmount, 'INR')}</td>
         </tr>
@@ -272,6 +273,7 @@ export class PurchaseReturnList implements OnInit {
                         <th>Product Description</th>
                         <th style="text-align: center;">Return Qty</th>
                         <th style="text-align: right;">Rate</th>
+                        <th style="text-align: center;">Disc (%)</th>
                         <th style="text-align: center;">Tax (%)</th>
                         <th style="text-align: right;">Total</th>
                     </tr>

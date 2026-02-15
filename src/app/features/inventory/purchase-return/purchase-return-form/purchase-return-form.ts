@@ -18,7 +18,7 @@ import { MatDialog } from '@angular/material/dialog';
 export class PurchaseReturnForm implements OnInit {
   returnForm!: FormGroup;
   suppliers: any[] = [];
-  displayedColumns: string[] = ['product', 'rejectedQty', 'returnQty', 'rate', 'total', 'actions'];
+  displayedColumns: string[] = ['product', 'rejectedQty', 'returnQty', 'rate', 'discount', 'gst', 'taxAmount', 'total', 'actions'];
   tableDataSource: any[] = []; // Explicit data source for MatTable binding
 
   // CDR inject kiya taaki table bind ho sake [cite: 2026-02-03]
@@ -135,6 +135,8 @@ export class PurchaseReturnForm implements OnInit {
       item.productName = pName.trim() === '' ? "Product-" + item.productId.substring(0, 8) : pName;
       item.availableQty = avail;
       item.rate = rate;
+      item.gstPercent = item.gstPercent ?? item.GstPercent ?? 0;
+      item.discountPercent = item.discountPercent ?? item.DiscountPercent ?? 0;
       item.receivedDate = rDate;
 
       item.selected = this.isItemInGrid(item);
@@ -215,18 +217,27 @@ export class PurchaseReturnForm implements OnInit {
       return true; // Is duplicate
     }
 
-    this.items.push(this.fb.group({
+    const maxQty = item.availableQty || item.rejectedQty || 0;
+    const group = this.fb.group({
       productId: [item.productId],
       productName: [item.productName],
       grnRef: [item.grnRef],
-      maxQty: [item.availableQty || item.rejectedQty],
-      returnQty: [0, [Validators.required, Validators.min(0), Validators.max(item.availableQty || item.rejectedQty)]],
+      maxQty: [maxQty],
+      returnQty: [maxQty, [Validators.required, Validators.min(0), Validators.max(maxQty)]], // Auto-fill max qty
       rate: [item.rate],
+      discountPercent: [item.discountPercent || 0],
+      gstPercent: [item.gstPercent || 0],
+      taxAmount: [0],
       total: [0],
-      itemType: [type] // Useful for UI differentiation
-    }));
+      itemType: [type]
+    });
 
+    this.items.push(group);
     this.tableDataSource = [...this.items.controls];
+
+    // Calculate total immediately
+    this.calculateTotal(this.items.length - 1);
+
     this.cdr.detectChanges();
     return false; // Not a duplicate
   }
@@ -235,7 +246,18 @@ export class PurchaseReturnForm implements OnInit {
     const item = this.items.at(index);
     const qty = item.get('returnQty')?.value || 0;
     const rate = item.get('rate')?.value || 0;
-    item.get('total')?.setValue(qty * rate);
+    const discPer = item.get('discountPercent')?.value || 0;
+    const gstPer = item.get('gstPercent')?.value || 0;
+
+    const baseAmount = qty * rate;
+    const discountAmt = baseAmount * (discPer / 100);
+    const taxableAmount = baseAmount - discountAmt;
+    const taxAmt = taxableAmount * (gstPer / 100);
+    const total = taxableAmount + taxAmt;
+
+    item.get('taxAmount')?.setValue(taxAmt);
+    item.get('total')?.setValue(total);
+    this.cdr.detectChanges();
   }
 
   onSubmit() {
@@ -253,7 +275,17 @@ export class PurchaseReturnForm implements OnInit {
       supplierId: rawData.supplierId,
       returnDate: rawData.returnDate,
       remarks: rawData.remarks,
-      items: itemsToReturn
+      items: itemsToReturn.map((item: any) => ({
+        productId: item.productId,
+        productName: item.productName,
+        grnRef: item.grnRef,
+        returnQty: item.returnQty,
+        rate: item.rate,
+        discountPercent: item.discountPercent,
+        gstPercent: item.gstPercent,
+        taxAmount: item.taxAmount,
+        totalAmount: item.total
+      }))
     };
 
     this.prService.savePurchaseReturn(payload).subscribe({

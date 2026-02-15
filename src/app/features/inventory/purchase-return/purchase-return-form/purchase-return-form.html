@@ -156,10 +156,10 @@
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="qty-input compact-input d-inline-block" *ngIf="element">
                 <input matInput type="number" min="0" [max]="element.value.maxQty" 
                        [formControl]="getControl(element, 'returnQty')" (input)="calculateTotal(i)" class="text-center fw-bold">
-                <mat-error *ngIf="getControl(element, 'returnQty')?.hasError('max')" style="font-size: 9px; white-space: nowrap;">
+                <mat-error *ngIf="getControl(element, 'returnQty').hasError('max')" style="font-size: 9px; white-space: nowrap;">
                   Max: {{element.value.maxQty}}
                 </mat-error>
-                <mat-error *ngIf="getControl(element, 'returnQty')?.hasError('min')" style="font-size: 9px; white-space: nowrap;">
+                <mat-error *ngIf="getControl(element, 'returnQty').hasError('min')" style="font-size: 9px; white-space: nowrap;">
                   Min: 0
                 </mat-error>
               </mat-form-field>
@@ -171,6 +171,27 @@
             <th mat-header-cell *matHeaderCellDef class="text-end"> Rate </th>
             <td mat-cell *matCellDef="let element" class="text-end text-secondary fw-medium"> 
               {{element.value.rate | currency:'INR'}} 
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="discount">
+            <th mat-header-cell *matHeaderCellDef class="text-center"> Dis (%) </th>
+            <td mat-cell *matCellDef="let element" class="text-center text-secondary"> 
+              {{element.value.discountPercent}}%
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="gst">
+            <th mat-header-cell *matHeaderCellDef class="text-center"> GST (%) </th>
+            <td mat-cell *matCellDef="let element" class="text-center text-secondary"> 
+              {{element.value.gstPercent}}%
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="taxAmount">
+            <th mat-header-cell *matHeaderCellDef class="text-end"> Tax Amt </th>
+            <td mat-cell *matCellDef="let element" class="text-end text-secondary"> 
+              {{element.value.taxAmount | currency:'INR'}}
             </td>
           </ng-container>
 
