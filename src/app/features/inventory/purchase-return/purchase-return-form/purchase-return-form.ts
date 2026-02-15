@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core'; // CDR add kiya
-import { FormGroup, FormBuilder, Validators, FormArray, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormArray, FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
@@ -54,7 +54,6 @@ export class PurchaseReturnForm implements OnInit {
     this.prService.GetSuppliersForPurchaseReturnAsync().subscribe({
       next: (data) => {
         this.suppliers = data || [];
-        console.log("Suppliers with rejections:", this.suppliers);
         this.cdr.detectChanges();
       },
       error: (err) => console.error("Error loading suppliers", err)
@@ -62,7 +61,7 @@ export class PurchaseReturnForm implements OnInit {
   }
 
   receivedStockItems: any[] = [];
-  selectedReceivedProduct: any;
+  receivedStockControl = new FormControl<any[]>([]);
   isLoadingStock: boolean = false;
 
   onSupplierChange(supplierId: number) {
@@ -71,6 +70,7 @@ export class PurchaseReturnForm implements OnInit {
     this.items.clear();
     this.tableDataSource = [];
     this.receivedStockItems = [];
+    this.receivedStockControl.setValue([]);
     this.isLoadingStock = true;
 
     // 1. Load Rejected Items (Auto-load)
@@ -103,17 +103,13 @@ export class PurchaseReturnForm implements OnInit {
   }
 
   addReturnItem(item: any, type: string) {
-    // Check duplication: Same Product + Same GRN Ref
-    const existing = this.items.controls.find(c =>
+    const existingIndex = this.items.controls.findIndex(c =>
       c.get('productId')?.value === item.productId &&
       c.get('grnRef')?.value === item.grnRef
     );
 
-    if (existing) {
-      if (type === 'Received') {
-        this.snackBar.open("Item already added to the list.", "Info", { duration: 2000 });
-      }
-      return;
+    if (existingIndex !== -1) {
+      return true; // Is duplicate
     }
 
     this.items.push(this.fb.group({
@@ -129,13 +125,39 @@ export class PurchaseReturnForm implements OnInit {
 
     this.tableDataSource = [...this.items.controls];
     this.cdr.detectChanges();
+    return false; // Not a duplicate
   }
 
   onReceivedStockSelect(event: any) {
-    const item = event.value;
-    if (item) {
-      this.addReturnItem(item, 'Received');
-      this.selectedReceivedProduct = null;
+    const selectedItems = event.value as any[];
+    if (!selectedItems || selectedItems.length === 0) return;
+
+    const duplicates: string[] = [];
+
+    selectedItems.forEach(item => {
+      const isDuplicate = this.addReturnItem(item, 'Received');
+      if (isDuplicate) {
+        duplicates.push(item.productName);
+      }
+    });
+
+    if (duplicates.length > 0) {
+      const uniqueDuplicates = [...new Set(duplicates)];
+      const message = `The following items are already in the list and will be removed from selection: \n${uniqueDuplicates.join(', ')}`;
+
+      const dialogRef = this.dialog.open(StatusDialogComponent, {
+        width: '400px',
+        data: { isSuccess: false, message },
+        disableClose: false // Permiting backdrop close or manual close
+      });
+
+      dialogRef.afterClosed().subscribe(() => {
+        // Remove duplicates from the select control value
+        const currentVal = this.receivedStockControl.value || [];
+        const filtered = currentVal.filter(v => !uniqueDuplicates.includes(v.productName));
+        this.receivedStockControl.setValue(filtered);
+        this.cdr.detectChanges();
+      });
     }
   }
 

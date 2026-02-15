@@ -62,12 +62,17 @@
           <div class="search-container">
              <mat-form-field appearance="outline" class="w-100 custom-field search-field" style="margin-bottom: 0;">
                 <mat-label>{{isLoadingStock ? 'Loading stock, please wait...' : 'Search & Add Received Stock (Accepted Items)'}}</mat-label>
-                <mat-select [(ngModel)]="selectedReceivedProduct" [ngModelOptions]="{standalone: true}" 
+                <mat-select [formControl]="receivedStockControl" multiple
                             (selectionChange)="onReceivedStockSelect($event)" 
                             [disabled]="isLoadingStock || !returnForm.get('supplierId')?.value">
+                    <mat-select-trigger>
+                        {{receivedStockControl.value ? 'Selected ' + receivedStockControl.value.length + ' items' : ''}}
+                    </mat-select-trigger>
                     <mat-option *ngFor="let item of receivedStockItems" [value]="item">
                        <div class="stock-item-option" style="display: flex; justify-content: space-between; width: 100%;">
-                          <span class="p-name fw-bold">{{item.productName}}</span>
+                          <div style="display: flex; align-items: center;">
+                             <span class="p-name fw-bold">{{item.productName}}</span>
+                          </div>
                           <span class="p-meta text-secondary" style="font-size: 11px;">GRN: {{item.grnRef}} | Available: <b>{{item.availableQty}}</b></span>
                        </div>
                     </mat-option>
