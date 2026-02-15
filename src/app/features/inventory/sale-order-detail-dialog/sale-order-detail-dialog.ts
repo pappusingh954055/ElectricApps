@@ -79,9 +79,11 @@ export class SaleOrderDetailDialog implements OnInit {
         <tr>
             <td style="text-align: center;">${index + 1}</td>
             <td>${item.productName}</td>
-            <td style="text-align: center;">${item.qty}</td>
+            <td style="text-align: center;">${item.qty} <small>(${item.unit || 'Nos'})</small></td>
             <td style="text-align: right;">${this.currencyPipe.transform(item.rate, 'INR')}</td>
-            <td style="text-align: right;">${this.currencyPipe.transform(item.qty * item.rate, 'INR')}</td>
+            <td style="text-align: center;">${item.discountPercent || 0}%</td>
+            <td style="text-align: center;">${item.gstPercent || 0}%</td>
+            <td style="text-align: right;">${this.currencyPipe.transform(item.total || (item.qty * item.rate), 'INR')}</td>
         </tr>
     `).join('');
 
@@ -158,6 +160,8 @@ export class SaleOrderDetailDialog implements OnInit {
                             <th>Product Name</th>
                             <th style="text-align: center;">Qty</th>
                             <th style="text-align: right;">Rate</th>
+                            <th style="text-align: center;">Disc</th>
+                            <th style="text-align: center;">GST (%)</th>
                             <th style="text-align: right;">Total</th>
                         </tr>
                     </thead>

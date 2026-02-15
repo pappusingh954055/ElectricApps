@@ -161,7 +161,9 @@ export class SoList implements OnInit {
     this.saleOrderService.getSaleOrderById(row.id).subscribe({
       next: (res) => {
         this.isLoading = false;
-        this.dialog.open(SaleOrderDetailDialog, { width: '800px', data: res });
+        // Merge list data (row) with detail data (res) to ensure customerName is preserved
+        const dialogData = { ...row, ...res };
+        this.dialog.open(SaleOrderDetailDialog, { width: '800px', data: dialogData });
         this.cdr.detectChanges();
       },
       error: (err) => {

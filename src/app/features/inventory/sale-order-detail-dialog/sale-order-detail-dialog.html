@@ -16,8 +16,8 @@
     </div>
 
     <div class="order-title-group">
-      <h2>ORDER #{{data.soNumber}}</h2>
-      <span class="status-pill" [ngClass]="data.status?.toLowerCase()">{{data.status}}</span>
+      <h2>ORDER #{{data.soNumber || data.SONumber}}</h2>
+      <span class="status-pill" [ngClass]="(data.status || data.Status)?.toLowerCase()">{{data.status || data.Status}}</span>
     </div>
 
     <button mat-icon-button mat-dialog-close class="close-btn">
@@ -32,15 +32,15 @@
     <div class="info-card">
       <div class="info-group">
         <label>Customer Name</label>
-        <div class="value">{{data.customerName || 'N/A'}}</div>
+        <div class="value">{{(data.customerName || data.CustomerName || data.customer?.customerName || data.customer?.name) || 'N/A'}}</div>
       </div>
       <div class="info-group">
         <label>Order Date</label>
-        <div class="value">{{data.soDate | date:'dd MMM yyyy'}}</div>
+        <div class="value">{{(data.soDate || data.SODate) | date:'dd MMM yyyy'}}</div>
       </div>
       <div class="info-group">
         <label>Current Status</label>
-        <div class="value status-badge" [ngClass]="data.status?.toLowerCase()">{{data.status}}</div>
+        <div class="value status-badge" [ngClass]="(data.status || data.Status)?.toLowerCase()">{{data.status || data.Status}}</div>
       </div>
     </div>
 
@@ -53,16 +53,23 @@
             <th class="col-product">Product Name</th>
             <th class="col-qty text-center">Qty</th>
             <th class="col-rate text-right">Rate</th>
+            <th class="col-disc text-center">Disc</th>
+            <th class="col-gst text-center">GST (%)</th>
             <th class="col-total text-right">Total</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let item of data.items; let i = index">
-            <td class="text-center text-muted">{{i + 1}}</td>
-            <td>{{item.productName}}</td>
-            <td class="text-center">{{item.qty}}</td>
-            <td class="text-right">{{item.rate | currency:'INR':'symbol':'1.2-2'}}</td>
-            <td class="text-right">{{(item.qty * item.rate) | currency:'INR':'symbol':'1.2-2'}}</td>
+            <td class="col-idx text-center text-muted">{{i + 1}}</td>
+            <td class="col-product">{{item.productName || item.ProductName}}</td>
+            <td class="col-qty text-center">
+                <div class="qty-val">{{item.qty || item.Qty}}</div>
+                <div class="unit-val">{{item.unit || item.Unit || 'Nos'}}</div>
+            </td>
+            <td class="col-rate text-right">{{(item.rate || item.Rate) | currency:'INR':'symbol':'1.0-2'}}</td>
+            <td class="col-disc text-center">{{item.discountPercent || item.DiscountPercent || 0}}%</td>
+            <td class="col-gst text-center">{{item.gstPercent || item.GSTPercent || 0}}%</td>
+            <td class="col-total text-right">{{(item.total || item.Total || ((item.qty || item.Qty) * (item.rate || item.Rate))) | currency:'INR':'symbol':'1.0-2'}}</td>
           </tr>
         </tbody>
       </table>
@@ -72,15 +79,15 @@
     <div class="invoice-summary">
         <div class="summary-row">
             <span class="label">Sub Total</span>
-            <span class="value">{{(data.subTotal || 0) | currency:'INR':'symbol':'1.2-2'}}</span>
+            <span class="value">{{((data.subTotal || data.SubTotal) || 0) | currency:'INR':'symbol':'1.2-2'}}</span>
         </div>
         <div class="summary-row">
             <span class="label">Total Tax</span>
-            <span class="value">{{(data.totalTax || 0) | currency:'INR':'symbol':'1.2-2'}}</span>
+            <span class="value">{{((data.totalTax || data.TotalTax) || 0) | currency:'INR':'symbol':'1.2-2'}}</span>
         </div>
         <div class="summary-row grand-total">
             <span class="label">Grand Total</span>
-            <span class="value">{{(data.grandTotal || 0) | currency:'INR':'symbol':'1.2-2'}}</span>
+            <span class="value">{{((data.grandTotal || data.GrandTotal) || 0) | currency:'INR':'symbol':'1.2-2'}}</span>
         </div>
     </div>
 
