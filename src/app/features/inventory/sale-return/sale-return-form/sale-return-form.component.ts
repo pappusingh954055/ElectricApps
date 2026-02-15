@@ -186,13 +186,22 @@ export class SaleReturnFormComponent implements OnInit {
         const taxRate = +group.get('taxRate')?.value || 0;
         const discountPercent = +group.get('discountPercent')?.value || 0;
 
-        // Apply Discount first
+        // 1. Calculate Discount
         const discountAmountPerUnit = rate * (discountPercent / 100);
         const netRate = rate - discountAmountPerUnit;
+        const totalDiscountAmount = qty * discountAmountPerUnit;
 
-        const baseAmount = qty * netRate; // Total after discount
-        const taxAmount = baseAmount * (taxRate / 100);
-        const total = baseAmount + taxAmount;
+        // 2. Calculate Base Amount (Taxable Value) - GST fits on Transaction Value
+        const taxableAmount = qty * netRate;
+
+        // 3. Calculate Tax on Taxable Amount
+        const taxAmount = taxableAmount * (taxRate / 100);
+
+        // 4. Final Total
+        const total = taxableAmount + taxAmount;
+
+        // Debug Log
+        // console.log(`Rate: ${rate}, Qty: ${qty}, Disc%: ${discountPercent}, NetRate: ${netRate}, Taxable: ${taxableAmount}, Tax: ${taxAmount}, Total: ${total}`);
 
         group.patchValue({ amount: total }, { emitEvent: false });
     }
