@@ -1,7 +1,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 200px); /* Vertical balance for all views */
+  height: calc(100vh - 120px); /* Increased available height */
   overflow: hidden;
 }
 
@@ -22,8 +22,8 @@
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding: 8px 0;
-  margin-bottom: 24px;
+  padding: 4px 0;
+  margin-bottom: 12px; /* Reduced from 24px */
   flex-shrink: 0;
 }
 
@@ -151,13 +151,15 @@
 .row-detail-container {
   overflow: hidden;
   background: #ffffff;
-  margin: 0 15px 15px 15px;
+  margin: 0 8px 8px 8px; /* Reduced margin */
   border: 1px solid #e0e4e9;
   border-radius: 6px;
 }
 
 .grn-detail-summary {
-  padding: 12px;
+  padding: 12px 16px 20px 16px; /* Increased bottom padding */
+  overflow-y: visible; 
+  pointer-events: auto;
 
   .summary-header {
     display: flex;
@@ -202,6 +204,15 @@
   padding: 0 8px !important;
 }
 
+.inner-paginator-wrapper {
+  margin-top: 8px;
+  border-top: 1px solid #f0f0f0;
+  
+  ::ng-deep .mat-mdc-paginator {
+    background: transparent !important;
+  }
+}
+
 /* Row Hover Effects [cite: 2026-01-22] */
 .element-row:hover {
   background-color: #f0f4ff !important;
@@ -230,8 +241,16 @@
   flex-direction: column;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   flex: 1;
+  min-height: 0; /* Critical for flex child to be scrollable */
+}
+
+.table-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .loading-shade {
@@ -251,8 +270,27 @@
 .table-responsive {
   flex: 1;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: auto; 
   -webkit-overflow-scrolling: touch;
+  background: #ffffff;
+  
+  /* Remove fixed max-height and let flexbox handle it [cite: 2026-02-15] */
+  min-height: 0;
+}
+
+/* Ensure sticky header works [cite: 2026-02-15] */
+.mat-mdc-table {
+  width: 100%;
+}
+
+/* Fix sticky header z-index and background [cite: 2026-02-15] */
+::ng-deep {
+  .mat-mdc-header-row .mat-mdc-header-cell {
+    position: sticky;
+    top: 0;
+    z-index: 10 !important;
+    background-color: #f8fafc !important;
+  }
 }
 
 /* Responsiveness for Mobile [cite: 2026-01-22] */

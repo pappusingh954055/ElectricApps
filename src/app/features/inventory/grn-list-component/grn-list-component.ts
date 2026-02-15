@@ -14,6 +14,26 @@ import { MatDialog } from '@angular/material/dialog';
 import { GrnPrintDialogComponent } from '../grn-print-dialog/grn-print-dialog.component';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 
+export interface GRNItem {
+  productName: string;
+  orderedQty: number;
+  receivedQty: number;
+  pendingQty: number;
+  rejectedQty: number;
+  unitRate: number;
+}
+
+export interface GRNListRow {
+  id: number;
+  grnNo: string;
+  refPO: string;
+  supplierName: string;
+  receivedDate: string | Date;
+  status: string;
+  totalRejected: number;
+  items: GRNItem[];
+}
+
 @Component({
   selector: 'app-grn-list-component',
   standalone: true,
@@ -32,15 +52,19 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 export class GrnListComponent implements OnInit, AfterViewInit {
   // Columns matching Backend DTO
   displayedColumns: string[] = ['grnNo', 'refPO', 'supplierName', 'receivedDate', 'status', 'actions'];
-  dataSource = new MatTableDataSource<any>([]);
+  dataSource = new MatTableDataSource<GRNListRow>([]);
 
   // Expansion variable jo HTML ko chahiye
-  expandedElement: any | null;
+  expandedElement: GRNListRow | null = null;
 
   // Search and Pagination states
   resultsLength = 0;
   isLoadingResults = true;
   searchControl = new FormControl('');
+
+  // Child Table Paging variables
+  innerPageIndex = 0;
+  innerPageSize = 10;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -110,8 +134,9 @@ export class GrnListComponent implements OnInit, AfterViewInit {
           this.resultsLength = data.totalCount;
 
           // Har row ke liye totalRejected calculate kar rahe hain taaki status badge sahi dikhe
-          return data.items.map((item: any) => ({
+          return data.items.map((item: any): GRNListRow => ({
             ...item,
+            items: item.items || [],
             totalRejected: item.items?.reduce((acc: number, curr: any) => acc + (curr.rejectedQty || 0), 0) || 0
           }));
         })
@@ -119,6 +144,24 @@ export class GrnListComponent implements OnInit, AfterViewInit {
         this.dataSource.data = data;
         console.log('GRN Data Loaded:', data);
       });
+  }
+
+  toggleRow(row: GRNListRow) {
+    if (this.expandedElement === row) {
+      this.expandedElement = null;
+    } else {
+      this.expandedElement = row;
+      this.innerPageIndex = 0; // Reset paging when expanding new row
+    }
+  }
+
+  onInnerPageChange(event: any) {
+    this.innerPageIndex = event.pageIndex;
+    this.innerPageSize = event.pageSize;
+  }
+
+  getRowItems(row: any): GRNItem[] {
+    return (row as GRNListRow).items || [];
   }
 
   // Navigation Logic
