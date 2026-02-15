@@ -256,18 +256,19 @@ $border-color: #e2e8f0;
                    }
                 }
 
-                .item-details {
-                   display: flex;
-                   flex-direction: column;
+                .item-details-inline {
+                   display: inline-block;
                    margin-left: 8px;
+                   vertical-align: middle;
 
-                   .item-name { font-weight: 600; color: #334155; font-size: 0.9rem; }
-                   .item-avail { color: #94a3b8; font-size: 0.75rem; margin-top: 2px; }
+                   .item-name { font-weight: 600; color: #334155; }
+                   .item-avail { color: #64748b; font-size: 0.8rem; }
                 }
              }
           }
        }
     }
+
 
     .no-results {
        text-align: center;

@@ -91,10 +91,10 @@
                    <div class="grn-content" *ngIf="expandedGrns.has(group.grnRef)">
                       <div class="stock-item-row" *ngFor="let item of group.items">
                          <mat-checkbox [(ngModel)]="item.selected" (change)="onItemToggle(item)" color="primary">
-                            <div class="item-details">
-                               <span class="item-name">{{item.productName}}</span>
-                               <span class="item-avail">Avail: <b>{{item.availableQty}}</b> | Rate: <b>{{item.rate | currency:'INR'}}</b></span>
-                            </div>
+                            <span class="item-details-inline">
+                               <strong class="item-name">{{item.productName}}</strong> 
+                               <small class="item-avail text-secondary"> (Avail: {{item.availableQty}} | Rate: {{item.rate | currency:'INR'}})</small>
+                            </span>
                          </mat-checkbox>
                       </div>
                    </div>

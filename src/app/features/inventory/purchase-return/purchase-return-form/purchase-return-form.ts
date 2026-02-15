@@ -112,23 +112,29 @@ export class PurchaseReturnForm implements OnInit {
     const groups: { [key: string]: any } = {};
 
     this.receivedStockItems.forEach(item => {
-      if (!groups[item.grnRef]) {
-        groups[item.grnRef] = {
-          grnRef: item.grnRef,
-          receivedDate: item.receivedDate || item.podate || new Date(), // Using datetime for sorting
+      const ref = item.grnRef || 'N/A';
+      if (!groups[ref]) {
+        groups[ref] = {
+          grnRef: ref,
+          receivedDate: item.receivedDate || item.podate || new Date(),
           items: []
         };
       }
-      // Add selection state
+      // Explicitly ensure properties exist for binding
       item.selected = this.isItemInGrid(item);
-      groups[item.grnRef].items.push(item);
+      groups[ref].items.push(item);
     });
 
-    // Convert to array and Sort by Date DESC
-    this.groupedReceivedStock = Object.values(groups).sort((a, b) =>
-      new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime()
-    );
+    // Sorting: Date Descending, then GRN Ref Descending
+    this.groupedReceivedStock = Object.values(groups).sort((a: any, b: any) => {
+      const dateB = new Date(b.receivedDate).getTime();
+      const dateA = new Date(a.receivedDate).getTime();
+      if (dateB !== dateA) return dateB - dateA;
+      return b.grnRef.localeCompare(a.grnRef);
+    });
+
     this.filteredGroupedStock = [...this.groupedReceivedStock];
+    this.cdr.detectChanges();
   }
 
   isItemInGrid(item: any): boolean {
@@ -148,6 +154,7 @@ export class PurchaseReturnForm implements OnInit {
         g.items.some((i: any) => i.productName.toLowerCase().includes(search))
       );
     }
+    this.cdr.detectChanges();
   }
 
   toggleGrn(grnRef: string) {
@@ -156,6 +163,7 @@ export class PurchaseReturnForm implements OnInit {
     } else {
       this.expandedGrns.add(grnRef);
     }
+    this.cdr.detectChanges();
   }
 
   onItemToggle(item: any) {
