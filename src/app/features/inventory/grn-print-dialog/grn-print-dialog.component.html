@@ -79,6 +79,7 @@
               <th class="text-right">Ordered Qty</th>
               <th class="text-right">Received Qty</th>
               <th class="text-right">Rate</th>
+              <th class="text-right">Disc %</th>
               <th class="text-right">GST %</th>
               <th class="text-right">Amount</th>
             </tr>
@@ -91,6 +92,7 @@
               <td class="text-right">{{item.orderedQty}}</td>
               <td class="text-right">{{item.receivedQty}}</td>
               <td class="text-right">{{item.unitRate | currency:'INR'}}</td>
+              <td class="text-right">{{item.discountPercent || 0}}%</td>
               <td class="text-right">{{item.gstPercentage}}%</td>
               <td class="text-right">{{item.total | currency:'INR'}}</td>
             </tr>
@@ -103,16 +105,16 @@
         <div class="totals-table">
           <div class="total-row">
             <span>Sub-total</span>
-            <span>{{grnData.subTotal | currency:'INR'}}</span>
+            <span>{{(grnData.subTotal || grnData.SubTotal || 0) | currency:'INR'}}</span>
           </div>
           <div class="total-row">
             <span>Tax (GST)</span>
-            <span>{{grnData.totalTaxAmount | currency:'INR'}}</span>
+            <span>{{(grnData.totalTaxAmount || grnData.TotalTaxAmount || 0) | currency:'INR'}}</span>
           </div>
           <mat-divider></mat-divider>
           <div class="total-row grand-total">
             <span>TOTAL AMOUNT</span>
-            <span>{{(grnData.subTotal + grnData.totalTaxAmount) | currency:'INR'}}</span>
+            <span>{{(grnData.totalAmount || grnData.TotalAmount || (grnData.subTotal + grnData.totalTaxAmount)) | currency:'INR'}}</span>
           </div>
         </div>
       </div>

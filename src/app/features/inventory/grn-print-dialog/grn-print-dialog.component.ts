@@ -58,7 +58,16 @@ export class GrnPrintDialogComponent implements OnInit {
     this.inventoryService.getGrnPrintData(this.data.grnNo).subscribe({
       next: (res: any) => {
         this.grnData = res;
-        console.log('GRN Print Data:', this.grnData);
+        console.log('--- GRN PRINT DEBUG START ---');
+        console.log('Header Data:', {
+          grnNumber: res.grnNumber,
+          subTotal: res.subTotal,
+          totalTaxAmount: res.totalTaxAmount,
+          totalAmount: res.totalAmount
+        });
+        console.log('Items List:');
+        console.table(res.items);
+        console.log('--- GRN PRINT DEBUG END ---');
         this.loading = false;
         this.cdr.detectChanges();
       },
