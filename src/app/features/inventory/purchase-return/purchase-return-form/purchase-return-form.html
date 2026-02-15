@@ -60,32 +60,55 @@
     <mat-card class="professional-card search-section-card">
        <div class="card-body search-card-body">
           <div class="search-container">
-             <mat-form-field appearance="outline" class="w-100 custom-field search-field" style="margin-bottom: 0;">
-                <mat-label>{{isLoadingStock ? 'Loading stock, please wait...' : 'Search & Add Received Stock (Accepted Items)'}}</mat-label>
-                <mat-select [formControl]="receivedStockControl" multiple
-                            (selectionChange)="onReceivedStockSelect($event)" 
-                            [disabled]="isLoadingStock || !returnForm.get('supplierId')?.value">
-                    <mat-select-trigger>
-                        {{receivedStockControl.value ? 'Selected ' + receivedStockControl.value.length + ' items' : ''}}
-                    </mat-select-trigger>
-                    <mat-option *ngFor="let item of receivedStockItems" [value]="item">
-                       <div class="stock-item-option" style="display: flex; justify-content: space-between; width: 100%;">
-                          <div style="display: flex; align-items: center;">
-                             <span class="p-name fw-bold">{{item.productName}}</span>
-                          </div>
-                          <span class="p-meta text-secondary" style="font-size: 11px;">GRN: {{item.grnRef}} | Available: <b>{{item.availableQty}}</b></span>
-                       </div>
-                    </mat-option>
-                    <mat-option *ngIf="receivedStockItems.length === 0 && !isLoadingStock" disabled>No received stock found for this supplier</mat-option>
-                </mat-select>
-                <mat-icon matPrefix [color]="isLoadingStock ? 'accent' : 'primary'" [class.rotating]="isLoadingStock" style="margin-right: 8px;">
-                   {{isLoadingStock ? 'sync' : 'search'}}
-                </mat-icon>
-                <mat-hint>{{isLoadingStock ? 'Fetching data from server...' : 'Choose products that were previously accepted into warehouse'}}</mat-hint>
-             </mat-form-field>
+             <!-- GRN Based Search Header -->
+             <div class="search-header-row">
+                <mat-form-field appearance="outline" class="flex-grow-1 custom-field search-field">
+                   <mat-label>Search by GRN Number or Product Name</mat-label>
+                   <input matInput [(ngModel)]="stockSearchText" (input)="filterStock()" 
+                          [disabled]="isLoadingStock || suppliers.length === 0"
+                          placeholder="Ex: GRN-2026-...">
+                   <mat-icon matPrefix [color]="isLoadingStock ? 'accent' : 'primary'" [class.rotating]="isLoadingStock">
+                      {{isLoadingStock ? 'sync' : 'search'}}
+                   </mat-icon>
+                </mat-form-field>
+             </div>
+
+             <!-- Hierarchical Stock List (Accordion) -->
+             <div class="hierarchical-stock-list" *ngIf="filteredGroupedStock.length > 0">
+                <div class="grn-group-wrapper" *ngFor="let group of filteredGroupedStock">
+                   <div class="grn-header" (click)="toggleGrn(group.grnRef)" [class.expanded]="expandedGrns.has(group.grnRef)">
+                      <div class="grn-info">
+                         <mat-icon class="folder-icon">{{expandedGrns.has(group.grnRef) ? 'folder_open' : 'folder'}}</mat-icon>
+                         <span class="grn-ref">{{group.grnRef}}</span>
+                         <span class="grn-date">{{group.receivedDate | date:'medium'}}</span>
+                      </div>
+                      <div class="grn-meta">
+                         <span class="item-count">{{group.items.length}} Items</span>
+                         <mat-icon class="arrow-icon">{{expandedGrns.has(group.grnRef) ? 'expand_less' : 'expand_more'}}</mat-icon>
+                      </div>
+                   </div>
+                   
+                   <div class="grn-content" *ngIf="expandedGrns.has(group.grnRef)">
+                      <div class="stock-item-row" *ngFor="let item of group.items">
+                         <mat-checkbox [(ngModel)]="item.selected" (change)="onItemToggle(item)" color="primary">
+                            <div class="item-details">
+                               <span class="item-name">{{item.productName}}</span>
+                               <span class="item-avail">Avail: <b>{{item.availableQty}}</b> | Rate: <b>{{item.rate | currency:'INR'}}</b></span>
+                            </div>
+                         </mat-checkbox>
+                      </div>
+                   </div>
+                </div>
+             </div>
+
+             <div class="no-results" *ngIf="filteredGroupedStock.length === 0 && !isLoadingStock">
+                <mat-icon>inventory_2</mat-icon>
+                <p>No received stock found for selection.</p>
+             </div>
           </div>
        </div>
     </mat-card>
+
 
     <!-- Items Table Card -->
     <mat-card class="professional-card items-section">

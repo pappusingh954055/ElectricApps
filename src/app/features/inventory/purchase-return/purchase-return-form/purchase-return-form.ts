@@ -60,8 +60,11 @@ export class PurchaseReturnForm implements OnInit {
     });
   }
 
-  receivedStockItems: any[] = [];
-  receivedStockControl = new FormControl<any[]>([]);
+  receivedStockItems: any[] = []; // Raw flat list
+  groupedReceivedStock: any[] = []; // Hierarchy: GRN -> Items
+  filteredGroupedStock: any[] = []; // For Search results
+  stockSearchText: string = '';
+  expandedGrns: Set<string> = new Set();
   isLoadingStock: boolean = false;
 
   onSupplierChange(supplierId: number) {
@@ -70,7 +73,9 @@ export class PurchaseReturnForm implements OnInit {
     this.items.clear();
     this.tableDataSource = [];
     this.receivedStockItems = [];
-    this.receivedStockControl.setValue([]);
+    this.groupedReceivedStock = [];
+    this.filteredGroupedStock = [];
+    this.expandedGrns.clear();
     this.isLoadingStock = true;
 
     // 1. Load Rejected Items (Auto-load)
@@ -92,6 +97,7 @@ export class PurchaseReturnForm implements OnInit {
     this.prService.getReceivedStock(supplierId).subscribe({
       next: (data) => {
         this.receivedStockItems = data || [];
+        this.groupStockByGrn();
         this.isLoadingStock = false;
         this.cdr.detectChanges();
       },
@@ -100,6 +106,78 @@ export class PurchaseReturnForm implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  groupStockByGrn() {
+    const groups: { [key: string]: any } = {};
+
+    this.receivedStockItems.forEach(item => {
+      if (!groups[item.grnRef]) {
+        groups[item.grnRef] = {
+          grnRef: item.grnRef,
+          receivedDate: item.receivedDate || item.podate || new Date(), // Using datetime for sorting
+          items: []
+        };
+      }
+      // Add selection state
+      item.selected = this.isItemInGrid(item);
+      groups[item.grnRef].items.push(item);
+    });
+
+    // Convert to array and Sort by Date DESC
+    this.groupedReceivedStock = Object.values(groups).sort((a, b) =>
+      new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime()
+    );
+    this.filteredGroupedStock = [...this.groupedReceivedStock];
+  }
+
+  isItemInGrid(item: any): boolean {
+    return this.items.controls.some(c =>
+      c.get('productId')?.value === item.productId &&
+      c.get('grnRef')?.value === item.grnRef
+    );
+  }
+
+  filterStock() {
+    const search = this.stockSearchText.toLowerCase().trim();
+    if (!search) {
+      this.filteredGroupedStock = [...this.groupedReceivedStock];
+    } else {
+      this.filteredGroupedStock = this.groupedReceivedStock.filter(g =>
+        g.grnRef.toLowerCase().includes(search) ||
+        g.items.some((i: any) => i.productName.toLowerCase().includes(search))
+      );
+    }
+  }
+
+  toggleGrn(grnRef: string) {
+    if (this.expandedGrns.has(grnRef)) {
+      this.expandedGrns.delete(grnRef);
+    } else {
+      this.expandedGrns.add(grnRef);
+    }
+  }
+
+  onItemToggle(item: any) {
+    if (item.selected) {
+      // Add to grid if not exists
+      const isDuplicate = this.addReturnItem(item, 'Received');
+      if (isDuplicate) {
+        this.openDialog(false, `${item.productName} is already added.`);
+        item.selected = true; // Stay checked
+      }
+    } else {
+      // Remove from grid
+      const index = this.items.controls.findIndex(c =>
+        c.get('productId')?.value === item.productId &&
+        c.get('grnRef')?.value === item.grnRef
+      );
+      if (index !== -1) {
+        this.items.removeAt(index);
+        this.tableDataSource = [...this.items.controls];
+      }
+    }
+    this.cdr.detectChanges();
   }
 
   addReturnItem(item: any, type: string) {
@@ -128,39 +206,6 @@ export class PurchaseReturnForm implements OnInit {
     return false; // Not a duplicate
   }
 
-  onReceivedStockSelect(event: any) {
-    const selectedItems = event.value as any[];
-    if (!selectedItems || selectedItems.length === 0) return;
-
-    const duplicates: string[] = [];
-
-    selectedItems.forEach(item => {
-      const isDuplicate = this.addReturnItem(item, 'Received');
-      if (isDuplicate) {
-        duplicates.push(item.productName);
-      }
-    });
-
-    if (duplicates.length > 0) {
-      const uniqueDuplicates = [...new Set(duplicates)];
-      const message = `The following items are already in the list and will be removed from selection: \n${uniqueDuplicates.join(', ')}`;
-
-      const dialogRef = this.dialog.open(StatusDialogComponent, {
-        width: '400px',
-        data: { isSuccess: false, message },
-        disableClose: false // Permiting backdrop close or manual close
-      });
-
-      dialogRef.afterClosed().subscribe(() => {
-        // Remove duplicates from the select control value
-        const currentVal = this.receivedStockControl.value || [];
-        const filtered = currentVal.filter(v => !uniqueDuplicates.includes(v.productName));
-        this.receivedStockControl.setValue(filtered);
-        this.cdr.detectChanges();
-      });
-    }
-  }
-
   calculateTotal(index: number) {
     const item = this.items.at(index);
     const qty = item.get('returnQty')?.value || 0;
@@ -175,7 +220,6 @@ export class PurchaseReturnForm implements OnInit {
     const itemsToReturn = rawData.items.filter((item: any) => item.returnQty > 0);
 
     if (itemsToReturn.length === 0) {
-
       this.openDialog(false, 'At least one item must be returned.');
       return;
     }
@@ -209,7 +253,6 @@ export class PurchaseReturnForm implements OnInit {
     });
   }
 
-
   openDialog(isSuccess: boolean, message: string) {
     this.dialog.open(StatusDialogComponent, {
       width: '400px',
@@ -222,17 +265,17 @@ export class PurchaseReturnForm implements OnInit {
     this.items.removeAt(index);
     this.tableDataSource = [...this.items.controls];
 
-    // If it was a received item, remove it from the select control as well
-    if (itemToRemove.itemType === 'Received') {
-      const currentVal = this.receivedStockControl.value || [];
-      const filtered = currentVal.filter(v =>
-        !(v.productId === itemToRemove.productId && v.grnRef === itemToRemove.grnRef)
-      );
-      this.receivedStockControl.setValue(filtered);
+    // Update selection state in the raw list for synchronization
+    const stockItem = this.receivedStockItems.find(i =>
+      i.productId === itemToRemove.productId && i.grnRef === itemToRemove.grnRef
+    );
+    if (stockItem) {
+      stockItem.selected = false;
     }
 
     this.cdr.detectChanges();
   }
 }
+
 
 
