@@ -120,9 +120,19 @@
     word-break: break-word;
 }
 
-.text-primary { color: #2563eb !important; }
-.text-secondary { color: #64748b !important; }
+.text-primary { color: #2563eb !important; } /* Clean Blue */
+.text-secondary { color: #64748b !important; } /* Muted Slate */
 .small { font-size: 11px !important; }
+
+.text-accepted { 
+    color: #059669 !important; /* Professional Emerald/Green */
+    font-weight: 600;
+}
+
+.text-total { 
+    color: #1a237e !important; /* Deep Indigo/Navy */
+    font-weight: 700;
+}
 
 /* Footer Section */
 .form-footer {

@@ -80,12 +80,12 @@
                          min="0">
                 </mat-form-field>
               </td>
-              <td class="text-center"><b>{{item.acceptedQty}}</b></td>
+              <td class="text-center text-accepted"><b>{{item.acceptedQty}}</b></td>
               <td class="text-right">{{item.unitRate | currency:'INR'}}</td>
               <td class="text-center text-secondary small">{{item.discountPercent}}%</td>
               <td class="text-center text-secondary small">{{item.gstPercent}}%</td>
               <td class="text-right text-secondary small">{{item.taxAmount | currency:'INR'}}</td>
-              <td class="text-right"><b>{{item.total | currency:'INR'}}</b></td>
+              <td class="text-right text-total"><b>{{item.total | currency:'INR'}}</b></td>
             </tr>
           </tbody>
         </table>
