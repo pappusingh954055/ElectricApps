@@ -32,7 +32,7 @@
     <div class="info-card">
       <div class="info-group">
         <label>Customer Name</label>
-        <div class="value">{{(data.customerName || data.CustomerName || data.customer?.customerName || data.customer?.name) || 'N/A'}}</div>
+        <div class="value">{{(data.customerName || data.CustomerName || data.customer?.customerName || data.customer?.name || data.name || data.Name) || 'N/A'}}</div>
       </div>
       <div class="info-group">
         <label>Order Date</label>
@@ -67,8 +67,8 @@
                 <div class="unit-val">{{item.unit || item.Unit || 'Nos'}}</div>
             </td>
             <td class="col-rate text-right">{{(item.rate || item.Rate) | currency:'INR':'symbol':'1.0-2'}}</td>
-            <td class="col-disc text-center">{{item.discountPercent || item.DiscountPercent || 0}}%</td>
-            <td class="col-gst text-center">{{item.gstPercent || item.GSTPercent || 0}}%</td>
+            <td class="col-disc text-center">{{item.discountPercent || item.DiscountPercent || item.discount || item.Discount || 0}}%</td>
+            <td class="col-gst text-center">{{item.gstPercent || item.GSTPercent || item.gst || item.GST || item.tax || item.Tax || 0}}%</td>
             <td class="col-total text-right">{{(item.total || item.Total || ((item.qty || item.Qty) * (item.rate || item.Rate))) | currency:'INR':'symbol':'1.0-2'}}</td>
           </tr>
         </tbody>

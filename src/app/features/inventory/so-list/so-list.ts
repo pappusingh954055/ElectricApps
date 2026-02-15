@@ -161,8 +161,15 @@ export class SoList implements OnInit {
     this.saleOrderService.getSaleOrderById(row.id).subscribe({
       next: (res) => {
         this.isLoading = false;
-        // Merge list data (row) with detail data (res) to ensure customerName is preserved
-        const dialogData = { ...row, ...res };
+        // Merge detail data (res) into list data (row) so that list properties (like customerName) 
+        // are preserved if they are missing or empty in the detail response.
+        const dialogData = { ...res, ...row };
+
+        // Ensure customerName is definitely taken from row if res doesn't have a valid one
+        if (!res.customerName && row.customerName) {
+          dialogData.customerName = row.customerName;
+        }
+
         this.dialog.open(SaleOrderDetailDialog, { width: '800px', data: dialogData });
         this.cdr.detectChanges();
       },
