@@ -5,37 +5,47 @@ $text-light: #9ca3af;
 $bg-light: #f9fafb;
 $border: #e5e7eb;
 
+:host {
+  display: block;
+  overflow-x: hidden !important;
+}
+
+::ng-deep .mat-mdc-dialog-container .mdc-dialog__surface {
+  overflow-x: hidden !important;
+}
+
 .dialog-container {
     display: flex;
     flex-direction: column;
-    width: 95vw;
-    max-width: 1000px;
+    width: 100%;
+    max-width: 900px; // Slightly narrower to ensure fit
     font-family: 'Inter', system-ui, sans-serif;
     color: $text-dark;
     background: white;
     box-sizing: border-box;
-    overflow: hidden; // Prevent outer scroll
+    border-radius: 8px;
+    overflow-x: hidden !important; // Force remove horizontal scroll
 }
 
 .header-p {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 16px 24px; // Reduced padding
+    padding: 12px 20px; // Very compact header
     border-bottom: 1px solid #f1f5f9;
     background: #ffffff;
-    gap: 15px;
+    gap: 12px;
 
     .company-header-group {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
         flex: 1;
         min-width: 0; 
 
         .dialog-logo {
-            width: 44px; // Slighly smaller logo
-            height: 44px;
+            width: 38px; // Smaller logo
+            height: 38px;
             object-fit: contain;
         }
 
@@ -43,7 +53,7 @@ $border: #e5e7eb;
             overflow: hidden;
             h1 {
                 margin: 0;
-                font-size: 16px; // More compact
+                font-size: 15px;
                 font-weight: 800;
                 color: #0f172a;
                 letter-spacing: -0.01em;
@@ -52,18 +62,13 @@ $border: #e5e7eb;
                 text-overflow: ellipsis;
             }
             .meta-row {
-                font-size: 13px;
-                color: $text-medium;
-                margin-top: 4px;
+                font-size: 11px;
+                color: #64748b;
+                margin-top: 2px;
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: 12px;
                 white-space: nowrap;
-
-                .divider {
-                    color: #cbd5e1;
-                    font-weight: 300;
-                }
             }
         }
     }
@@ -74,7 +79,7 @@ $border: #e5e7eb;
         
         h2 {
             margin: 0;
-            font-size: 18px; // More compact
+            font-size: 16px; // Compact title
             font-weight: 900;
             color: $primary;
         }
@@ -98,32 +103,64 @@ $border: #e5e7eb;
     .close-btn {
         margin-left: 10px;
         flex-shrink: 0;
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+        border-radius: 50% !important;
+        background: #fdf2f2 !important; 
+        border: 1px solid #fecaca !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 0 !important;
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1) !important;
+        transition: all 0.23s ease !important;
+        cursor: pointer;
+
+        mat-icon {
+            font-size: 18px !important;
+            width: 18px !important; // Explicit size
+            height: 18px !important; // Explicit size
+            line-height: normal !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            color: #ef4444 !important; // Red default
+            margin: 0 !important;
+        }
+
+        &:hover {
+            background: #ef4444 !important;
+            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3) !important;
+            transform: scale(1.05);
+            mat-icon { color: white !important; }
+        }
     }
 }
 
 .content-body {
-    padding: 12px 24px;
-    overflow-x: hidden;
+    padding: 10px 16px; 
+    overflow-x: hidden !important; 
     overflow-y: auto;
-    max-height: 55vh; // Cap height for scroll only if item list is huge
+    max-height: 60vh;
 }
 
 .info-card {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
     display: flex;
     flex-wrap: wrap;
-    gap: 20px;
+    gap: 15px;
     background-color: #f8fafc;
-    padding: 12px 20px;
-    border-radius: 8px;
+    padding: 10px 16px;
+    border-radius: 6px;
     border: 1px solid #e2e8f0;
 
     .info-group {
         display: flex;
         flex-direction: column;
-        gap: 2px;
+        gap: 1px;
         flex: 1;
-        min-width: 120px;
+        min-width: 110px;
 
         label {
             font-size: 11px;
@@ -163,22 +200,22 @@ $border: #e5e7eb;
         
         th {
             text-align: left;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 800;
             color: #475569;
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            padding: 10px 12px; // More compact
+            letter-spacing: 0.05em;
+            padding: 8px 6px; // Reduced padding
             border-bottom: 2px solid #3b82f6; 
             white-space: nowrap;
             background-color: #f8fafc;
         }
 
         td {
-            padding: 12px 12px; // More compact
+            padding: 10px 6px; // Reduced padding
             border-bottom: 1px solid #f1f5f9;
             color: #334155;
-            font-size: 13px;
+            font-size: 12px;
             vertical-align: middle;
             font-weight: 500;
             
@@ -196,12 +233,13 @@ $border: #e5e7eb;
         .text-center { text-align: center; }
         .text-end { text-align: right; }
         
+        // Optimized Widths to prevent cutoff
         .col-product { width: 32%; color: #1e293b; font-weight: 600; }
-        .col-qty { width: 12%; }
+        .col-qty { width: 8%; }
         .col-rate { width: 15%; }
-        .col-disc { width: 11%; }
-        .col-tax { width: 11%; }
-        .col-total { width: 19%; color: #0f172a; font-weight: 700; }
+        .col-disc { width: 10%; }
+        .col-tax { width: 10%; }
+        .col-total { width: 25%; color: #0f172a; font-weight: 700; }
     }
 }
 
