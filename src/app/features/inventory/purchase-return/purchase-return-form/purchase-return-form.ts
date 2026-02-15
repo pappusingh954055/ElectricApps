@@ -18,7 +18,7 @@ import { MatDialog } from '@angular/material/dialog';
 export class PurchaseReturnForm implements OnInit {
   returnForm!: FormGroup;
   suppliers: any[] = [];
-  displayedColumns: string[] = ['product', 'rejectedQty', 'returnQty', 'rate', 'total'];
+  displayedColumns: string[] = ['product', 'rejectedQty', 'returnQty', 'rate', 'total', 'actions'];
   tableDataSource: any[] = []; // Explicit data source for MatTable binding
 
   // CDR inject kiya taaki table bind ho sake [cite: 2026-02-03]
@@ -216,5 +216,23 @@ export class PurchaseReturnForm implements OnInit {
       data: { isSuccess, message }
     });
   }
+
+  removeItem(index: number) {
+    const itemToRemove = this.items.at(index).value;
+    this.items.removeAt(index);
+    this.tableDataSource = [...this.items.controls];
+
+    // If it was a received item, remove it from the select control as well
+    if (itemToRemove.itemType === 'Received') {
+      const currentVal = this.receivedStockControl.value || [];
+      const filtered = currentVal.filter(v =>
+        !(v.productId === itemToRemove.productId && v.grnRef === itemToRemove.grnRef)
+      );
+      this.receivedStockControl.setValue(filtered);
+    }
+
+    this.cdr.detectChanges();
+  }
 }
+
 

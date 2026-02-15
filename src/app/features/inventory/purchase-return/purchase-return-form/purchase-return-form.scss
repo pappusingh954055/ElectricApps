@@ -288,13 +288,14 @@ table.clean-table {
   }
   
   td.mat-cell {
-    padding: 16px 24px;
+    padding: 20px 24px; // Increased vertical padding
     color: #334155;
     border-bottom: 1px solid #f1f5f9;
     font-size: 0.95rem;
     vertical-align: middle;
     background-color: white; // Ensure default bg is white
   }
+
 
   .product-name {
     font-weight: 600;
