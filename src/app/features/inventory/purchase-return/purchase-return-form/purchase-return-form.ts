@@ -285,6 +285,10 @@ export class PurchaseReturnForm implements OnInit {
     });
   }
 
+  getControl(element: any, controlName: string): FormControl {
+    return element.get(controlName) as FormControl;
+  }
+
   removeItem(index: number) {
     const itemToRemove = this.items.at(index).value;
     this.items.removeAt(index);
