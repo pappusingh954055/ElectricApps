@@ -44,12 +44,15 @@
           <thead>
             <tr>
               <th>Product Name</th>
-              <th class="text-center">Ordered(PO) Qty</th>
-              <th class="text-center">Pending Qty</th>
-              <th class="text-center" width="150">Received Qty</th>
-              <th class="text-center" width="150">Rejected Qty</th>
-              <th class="text-center" width="150">Accepted Qty</th>
+              <th class="text-center" style="white-space: nowrap; width: 100px;">Ordered(PO) Qty</th>
+              <th class="text-center" style="white-space: nowrap; width: 80px;">Pending Qty</th>
+              <th class="text-center" width="75">Received Qty</th>
+              <th class="text-center" width="75">Rejected Qty</th>
+              <th class="text-center" width="90">Accepted Qty</th>
               <th class="text-right">Unit Rate</th>
+              <th class="text-center">DISC %</th>
+              <th class="text-center">GST %</th>
+              <th class="text-right">TAX AMT</th>
               <th class="text-right">Total</th>
             </tr>
           </thead>
@@ -79,6 +82,9 @@
               </td>
               <td class="text-center"><b>{{item.acceptedQty}}</b></td>
               <td class="text-right">{{item.unitRate | currency:'INR'}}</td>
+              <td class="text-center text-secondary small">{{item.discountPercent}}%</td>
+              <td class="text-center text-secondary small">{{item.gstPercent}}%</td>
+              <td class="text-right text-secondary small">{{item.taxAmount | currency:'INR'}}</td>
               <td class="text-right"><b>{{item.total | currency:'INR'}}</b></td>
             </tr>
           </tbody>

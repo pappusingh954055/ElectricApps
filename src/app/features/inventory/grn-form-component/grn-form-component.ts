@@ -118,6 +118,14 @@ export class GrnFormComponent implements OnInit {
 
       const accepted = received - rejected;
 
+      const discPer = Number(item.discountPercent || item.DiscountPercent || 0);
+      const gstPer = Number(item.gstPercent || item.GstPercent || 0);
+
+      const baseAmt = accepted * rate;
+      const discAmt = baseAmt * (discPer / 100);
+      const taxableAmt = baseAmt - discAmt;
+      const taxAmt = taxableAmt * (gstPer / 100);
+
       return {
         ...item,
         productId: item.productId || item.ProductId,
@@ -128,7 +136,10 @@ export class GrnFormComponent implements OnInit {
         rejectedQty: rejected,
         acceptedQty: accepted,
         unitRate: rate,
-        total: accepted * rate
+        discountPercent: discPer,
+        gstPercent: gstPer,
+        taxAmount: taxAmt,
+        total: taxableAmt + taxAmt
       };
     });
     this.calculateGrandTotal();
@@ -159,7 +170,19 @@ export class GrnFormComponent implements OnInit {
     }
 
     item.acceptedQty = Math.max(0, enteredQty - rejectedQty);
-    item.total = item.acceptedQty * unitRate;
+
+    // Financial Calculations
+    const discPer = Number(item.discountPercent || 0);
+    const gstPer = Number(item.gstPercent || 0);
+
+    const baseAmt = item.acceptedQty * unitRate;
+    const discAmt = baseAmt * (discPer / 100);
+    const taxableAmt = baseAmt - discAmt;
+    const taxAmt = taxableAmt * (gstPer / 100);
+
+    item.taxAmount = taxAmt;
+    item.total = taxableAmt + taxAmt;
+
     this.calculateGrandTotal();
   }
 
@@ -171,7 +194,7 @@ export class GrnFormComponent implements OnInit {
   }
 
   calculateGrandTotal(): number {
-    return this.items.reduce((acc, item) => acc + (Number(item.acceptedQty || 0) * Number(item.unitRate || 0)), 0);
+    return this.items.reduce((acc, item) => acc + (Number(item.total || 0)), 0);
   }
 
   saveGRN() {
@@ -193,7 +216,11 @@ export class GrnFormComponent implements OnInit {
         pendingQty: Number(item.pendingQty),
         rejectedQty: Number(item.rejectedQty),
         acceptedQty: Number(item.acceptedQty),
-        unitRate: Number(item.unitRate)
+        unitRate: Number(item.unitRate),
+        discountPercent: Number(item.discountPercent),
+        gstPercent: Number(item.gstPercent),
+        taxAmount: Number(item.taxAmount),
+        totalAmount: Number(item.total)
       }))
     };
 

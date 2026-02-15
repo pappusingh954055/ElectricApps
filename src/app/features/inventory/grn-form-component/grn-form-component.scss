@@ -57,8 +57,8 @@
 
     th {
         background: #eaeff5;
-        padding: 6px 8px; /* Header padding reduced */
-        font-size: 11px;
+        padding: 4px 6px; 
+        font-size: 10px;
         text-transform: uppercase;
         color: #555;
         text-align: left;
@@ -86,17 +86,19 @@
 }
 
 /* Input box inside table - sizing fixed for compact rows */
-.qty-input {
-    width: 70px;
-    height: 28px; /* Fixed height for small rows */
-    padding: 2px 6px;
-    margin: 2px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 13px;
-    &:focus {
-        border-color: #1a237e;
-        outline: none;
+.dense-input {
+    width: 100% !important;
+    min-width: unset !important;
+    
+    ::v-deep .mat-mdc-form-field-infix {
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
+        min-height: unset !important;
+    }
+
+    input {
+        text-align: center !important;
+        font-weight: 500 !important;
     }
 }
 
