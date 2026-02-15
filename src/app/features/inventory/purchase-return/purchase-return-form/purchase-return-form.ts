@@ -111,24 +111,41 @@ export class PurchaseReturnForm implements OnInit {
   groupStockByGrn() {
     const groups: { [key: string]: any } = {};
 
-    this.receivedStockItems.forEach(item => {
-      const ref = item.grnRef || 'N/A';
+    // Filter out items without a product ID or name to avoid empty UI rows
+    const validItems = this.receivedStockItems.filter(item => item && item.productId);
+
+    validItems.forEach(item => {
+      // Normalize properties (handle both PascalCase and camelCase from API)
+      const ref = item.grnRef || item.GrnRef || 'N/A';
+      const pName = item.productName || item.ProductName || '';
+      const avail = item.availableQty ?? item.AvailableQty ?? 0;
+      const rate = item.rate ?? item.Rate ?? 0;
+      const rDate = item.receivedDate || item.ReceivedDate || item.podate || new Date();
+
       if (!groups[ref]) {
         groups[ref] = {
           grnRef: ref,
-          receivedDate: item.receivedDate || item.podate || new Date(),
+          receivedDate: rDate,
           items: []
         };
       }
-      // Explicitly ensure properties exist for binding
+
+      // Update item with normalized values for UI binding
+      item.grnRef = ref;
+      item.productName = pName.trim() === '' ? "Product-" + item.productId.substring(0, 8) : pName;
+      item.availableQty = avail;
+      item.rate = rate;
+      item.receivedDate = rDate;
+
       item.selected = this.isItemInGrid(item);
       groups[ref].items.push(item);
     });
 
-    // Sorting: Date Descending, then GRN Ref Descending
+    // Sorting: Primary sorting by Received Date (DESC), secondary by GRN Ref (DESC)
     this.groupedReceivedStock = Object.values(groups).sort((a: any, b: any) => {
       const dateB = new Date(b.receivedDate).getTime();
       const dateA = new Date(a.receivedDate).getTime();
+
       if (dateB !== dateA) return dateB - dateA;
       return b.grnRef.localeCompare(a.grnRef);
     });
