@@ -55,6 +55,7 @@
                         <th>Item Description</th>
                         <th class="text-right">Qty</th>
                         <th class="text-right">Rate</th>
+                        <th class="text-right">Disc (%)</th>
                         <th class="text-right">Tax (%)</th>
                         <th class="text-right">Amount</th>
                     </tr>
@@ -63,16 +64,17 @@
                     <tr *ngFor="let item of creditNoteData.items; let i = index">
                         <td>{{ i + 1 }}</td>
                         <td>{{ item.productName }}</td>
-                        <td class="text-right">{{ item.returnQuantity }}</td>
+                        <td class="text-right">{{ item.returnQuantity || item.qty }}</td>
                         <td class="text-right">{{ item.rate | currency:'INR' }}</td>
-                        <td class="text-right">{{ item.taxRate }}%</td>
-                        <td class="text-right">{{ item.amount | currency:'INR' }}</td>
+                        <td class="text-right">{{ item.discountPercent || 0 }}%</td>
+                        <td class="text-right">{{ item.taxRate || item.taxPercent }}%</td>
+                        <td class="text-right">{{ item.amount || item.total | currency:'INR' }}</td>
                     </tr>
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="5" class="text-right"><strong>Total Amount:</strong></td>
-                        <td class="text-right"><strong>{{ creditNoteData.totalAmount | currency:'INR' }}</strong></td>
+                        <td colspan="6" class="text-right"><strong>Total Amount:</strong></td>
+                        <td class="text-right"><strong>{{ creditNoteData.totalAmount || creditNoteData.grandTotal | currency:'INR' }}</strong></td>
                     </tr>
                 </tfoot>
             </table>
