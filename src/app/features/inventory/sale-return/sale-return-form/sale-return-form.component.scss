@@ -124,21 +124,23 @@
         border-collapse: collapse; // Clean borders
 
         th {
-            background-color: #f5f5f5;
-            color: #333;
+            background-color: #fafafa; /* Lighter background */
+            color: #555;
+            font-size: 13px; /* Smaller font */
             font-weight: 600;
-            padding: 12px 8px;
+            text-transform: uppercase; /* Professional look */
+            letter-spacing: 0.5px;
+            padding: 12px 16px;
             text-align: left;
-            border-bottom: 2px solid #e0e0e0;
+            border-bottom: 1px solid #e0e0e0;
+            white-space: nowrap; /* Prevent wrapping */
         }
 
         td {
-            vertical-align: top;
-            padding-top: 4px; // Keep as requested
-            padding-bottom: 4px;
-            padding-left: 8px;
-            padding-right: 8px;
+            vertical-align: middle; /* Center alignment looks better */
+            padding: 8px 16px;
             border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
         }
 
         tr:hover {
@@ -147,10 +149,18 @@
 
         // Adjust small inputs if needed inside the new layout
         .small-input {
-            width: 100px;
+            width: 80px; /* Reduced from 100px */
             font-size: 13px;
         }
     }
+}
+
+.condition-input {
+    width: 150px; /* Reduced from 200px */
+}
+
+.reason-input {
+    width: 200px; /* Reduced from 300px */
 }
 
 .footer-summary {
@@ -260,15 +270,6 @@ input[type=number] {
             width: 100%;
         }
     }
-}
-.condition-input {
-    width: 200px;
-    font-size: 13px;
-}
-
-.reason-input {
-    width: 300px;
-    font-size: 13px;
 }
 
 .items-section {
