@@ -95,6 +95,11 @@
                     <td mat-cell *matCellDef="let element"> {{element.get('rate').value | currency:'INR'}} </td>
                 </ng-container>
 
+                <ng-container matColumnDef="discount">
+                    <th mat-header-cell *matHeaderCellDef> Disc % </th>
+                    <td mat-cell *matCellDef="let element"> {{element.get('discountPercent').value}}% </td>
+                </ng-container>
+
                 <ng-container matColumnDef="itemCondition">
                     <th mat-header-cell *matHeaderCellDef> Condition </th>
                     <td mat-cell *matCellDef="let element" [formGroup]="element">

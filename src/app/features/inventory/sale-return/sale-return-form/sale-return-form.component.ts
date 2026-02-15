@@ -40,7 +40,7 @@ export class SaleReturnFormComponent implements OnInit {
     isLoadingSaleOrders = false;
 
     itemsDataSource = new MatTableDataSource<AbstractControl>();
-    displayedColumns: string[] = ['productName', 'quantity', 'rate', 'itemCondition', 'reason', 'returnQty', 'tax', 'total'];
+    displayedColumns: string[] = ['productName', 'quantity', 'rate', 'discount', 'itemCondition', 'reason', 'returnQty', 'tax', 'total'];
 
     constructor() {
         this.returnForm = this.fb.group({
@@ -113,6 +113,7 @@ export class SaleReturnFormComponent implements OnInit {
                             productName: [item.productName],
                             quantity: [item.soldQty || item.quantity],
                             rate: [item.rate || item.unitPrice || 0],
+                            discountPercent: [item.discountPercent || 0], // Capture Discount
                             itemCondition: ['Good', Validators.required],
                             reason: [''],
                             returnQty: [0, [Validators.required, Validators.min(0), Validators.max(item.soldQty || item.quantity)]],
@@ -152,13 +153,14 @@ export class SaleReturnFormComponent implements OnInit {
         this.itemsDataSource.data = [];
     }
 
-    populateItems(items: any[]) {
+    populateItems(items: any[]) { // Used for Edit Mode
         items.forEach(item => {
             const itemGroup = this.fb.group({
                 productId: [item.productId],
                 productName: [item.productName],
                 quantity: [item.quantity],
                 rate: [item.unitPrice || item.rate],
+                discountPercent: [item.discountPercent || 0], // Capture Discount
                 itemCondition: ['Good', Validators.required],
                 reason: [''],
                 returnQty: [0, [Validators.required, Validators.min(0), Validators.max(item.quantity)]],
@@ -182,8 +184,13 @@ export class SaleReturnFormComponent implements OnInit {
         const qty = +group.get('returnQty')?.value || 0;
         const rate = +group.get('rate')?.value || 0;
         const taxRate = +group.get('taxRate')?.value || 0;
+        const discountPercent = +group.get('discountPercent')?.value || 0;
 
-        const baseAmount = qty * rate;
+        // Apply Discount first
+        const discountAmountPerUnit = rate * (discountPercent / 100);
+        const netRate = rate - discountAmountPerUnit;
+
+        const baseAmount = qty * netRate; // Total after discount
         const taxAmount = baseAmount * (taxRate / 100);
         const total = baseAmount + taxAmount;
 
@@ -204,6 +211,11 @@ export class SaleReturnFormComponent implements OnInit {
                 saleOrderId: res.saleOrderId,
                 remarks: res.remarks
             });
+            // Populate Items needs to handle existing return items structure
+            // Assuming res.returnItems contains necessary fields
+            // this.populateItems(res.returnItems); 
+            // Note: Currently populateItems is not called in loadReturnDetails in original code, 
+            // but if it were, it needs to be updated. The original code didn't call it.
             this.isLoading = false;
             this.cdr.detectChanges();
         });
@@ -224,15 +236,25 @@ export class SaleReturnFormComponent implements OnInit {
         // Backend ko wahi naam chahiye jo SaleReturnItem interface mein hain
         const mappedItems: SaleReturnItem[] = rawValue.items
             .filter((i: any) => i.returnQty > 0)
-            .map((i: any) => ({
-                productId: i.productId,
-                returnQty: i.returnQty,
-                unitPrice: i.rate,           // UI 'rate' -> Backend 'unitPrice'
-                taxPercentage: i.taxRate,    // UI 'taxRate' -> Backend 'taxPercentage'
-                totalAmount: i.amount,       // UI 'amount' -> Backend 'totalAmount'
-                reason: i.reason || 'No Reason',
-                itemCondition: i.itemCondition || 'Good'
-            }));
+            .map((i: any) => {
+                const qty = i.returnQty;
+                const rate = i.rate;
+                const discountPct = i.discountPercent || 0;
+                // Calculate Discount Amount for the returned quantity
+                const discountAmount = (rate * qty) * (discountPct / 100);
+
+                return {
+                    productId: i.productId,
+                    returnQty: qty,
+                    unitPrice: rate,
+                    discountPercent: discountPct,
+                    discountAmount: discountAmount,
+                    taxPercentage: i.taxRate,
+                    totalAmount: i.amount,
+                    reason: i.reason || 'No Reason',
+                    itemCondition: i.itemCondition || 'Good'
+                };
+            });
 
         if (mappedItems.length === 0) {
             alert("Please enter return quantity for at least one item.");

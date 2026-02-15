@@ -83,6 +83,7 @@ export class SaleReturnDetailsModal implements OnInit {
             <td>${item.productName}</td>
             <td style="text-align: center;">${item.qty}</td>
             <td style="text-align: right;">${this.currencyPipe.transform(item.rate, 'INR')}</td>
+            <td style="text-align: center;">${item.discountPercent || 0}%</td>
             <td style="text-align: center;">${item.taxPercent}%</td>
             <td style="text-align: right;">${this.currencyPipe.transform(item.total, 'INR')}</td>
         </tr>
@@ -160,6 +161,7 @@ export class SaleReturnDetailsModal implements OnInit {
                             <th>Product Name</th>
                             <th style="text-align: center;">Qty</th>
                             <th style="text-align: right;">Rate</th>
+                            <th style="text-align: center;">Disc%</th>
                             <th style="text-align: center;">Tax%</th>
                             <th style="text-align: right;">Total</th>
                         </tr>
@@ -174,6 +176,12 @@ export class SaleReturnDetailsModal implements OnInit {
                         <span class="label">Sub Total</span>
                         <span class="value">${subTotal}</span>
                     </div>
+                    ${this.data.totalDiscount > 0 ? `
+                        <div class="summary-row" style="color: red;">
+                            <span class="label">Discount</span>
+                            <span class="value">- ${this.currencyPipe.transform(this.data.totalDiscount, 'INR')}</span>
+                        </div>
+                    ` : ''}
                     <div class="summary-row">
                         <span class="label">Total Tax</span>
                         <span class="value">${totalTax}</span>

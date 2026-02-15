@@ -73,7 +73,19 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="6" class="text-right"><strong>Total Amount:</strong></td>
+                        <td colspan="6" class="text-right"><strong>Sub Total:</strong></td>
+                        <td class="text-right"><strong>{{ creditNoteData.subTotal | currency:'INR' }}</strong></td>
+                    </tr>
+                    <tr *ngIf="creditNoteData.totalDiscount > 0">
+                        <td colspan="6" class="text-right" style="color: red;"><strong>Discount:</strong></td>
+                        <td class="text-right" style="color: red;"><strong>- {{ creditNoteData.totalDiscount | currency:'INR' }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="6" class="text-right"><strong>Tax:</strong></td>
+                        <td class="text-right"><strong>{{ creditNoteData.totalTax | currency:'INR' }}</strong></td>
+                    </tr>
+                    <tr>
+                        <td colspan="6" class="text-right" style="border-top: 2px solid #333; font-size: 16px;"><strong>Grand Total:</strong></td>
                         <td class="text-right"><strong>{{ creditNoteData.totalAmount || creditNoteData.grandTotal | currency:'INR' }}</strong></td>
                     </tr>
                 </tfoot>
