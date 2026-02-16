@@ -54,6 +54,14 @@ export class FinanceService {
         return this.http.get(`${this.customerApi}/outstanding`);
     }
 
+    getTotalReceivables(): Observable<any> {
+        return this.http.get(`${this.customerApi}/outstanding-total`);
+    }
+
+    getTotalPayables(): Observable<any> {
+        return this.http.get(`${this.supplierApi}/pending-total`);
+    }
+
     // P&L Methods
     getProfitAndLossReport(filters: any): Observable<any> {
         // We aggregate data from Suppliers (Expenses/Payments) and Customers (Income/Receipts)

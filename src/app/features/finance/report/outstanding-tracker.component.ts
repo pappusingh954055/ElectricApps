@@ -7,6 +7,7 @@ import { MaterialModule } from '../../../shared/material/material/material-modul
 import { FinanceService } from '../service/finance.service';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { Router } from '@angular/router';
 
 export interface OutstandingData {
     customerId: number;
@@ -33,7 +34,8 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
 
     constructor(
         private financeService: FinanceService,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private router: Router
     ) { }
 
     ngOnInit() {
@@ -59,6 +61,21 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
                         status: 'error'
                     }
                 });
+            }
+        });
+    }
+
+    viewLedger(customerId: number) {
+        this.router.navigate(['/app/finance/customers/ledger'], {
+            queryParams: { customerId: customerId }
+        });
+    }
+
+    recordPayment(customer: any) {
+        this.router.navigate(['/app/finance/customers/receipt'], {
+            queryParams: {
+                customerId: customer.customerId,
+                amount: customer.pendingAmount
             }
         });
     }

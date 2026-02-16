@@ -11,163 +11,163 @@ import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 
 @Component({
-    selector: 'app-receipt-entry',
-    standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule],
-    templateUrl: './receipt-entry.component.html',
-    styleUrl: './receipt-entry.component.scss'
+  selector: 'app-receipt-entry',
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule],
+  templateUrl: './receipt-entry.component.html',
+  styleUrl: './receipt-entry.component.scss'
 })
 export class ReceiptEntryComponent implements OnInit {
-    customerControl = new FormControl('');
-    filteredCustomers!: Observable<any[]>;
-    customers: any[] = [];
-    isLoading: boolean = false;
-    currentBalance: number | null = null;
+  customerControl = new FormControl('');
+  filteredCustomers!: Observable<any[]>;
+  customers: any[] = [];
+  isLoading: boolean = false;
+  currentBalance: number | null = null;
 
-    receipt: any = {
-        customerId: null,
-        amount: null,
-        paymentMode: 'Cash',
-        referenceNumber: '',
-        paymentDate: new Date(),
-        remarks: '',
-        createdBy: 'Admin'
+  receipt: any = {
+    customerId: null,
+    amount: null,
+    paymentMode: 'Cash',
+    referenceNumber: '',
+    paymentDate: new Date(),
+    remarks: '',
+    createdBy: 'Admin'
+  };
+
+  constructor(
+    private financeService: FinanceService,
+    private customerService: customerService,
+    private route: ActivatedRoute,
+    private dialog: MatDialog
+  ) { }
+
+  ngOnInit() {
+    this.loadCustomers();
+    this.filteredCustomers = this.customerControl.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        const name = typeof value === 'string' ? value : (value as any)?.name;
+        return name ? this._filter(name as string) : this.customers.slice();
+      }),
+    );
+
+    // Check for query params (e.g. from Sales List)
+    this.route.queryParams.subscribe(params => {
+      if (params['customerId']) {
+        this.receipt.customerId = Number(params['customerId']);
+        if (params['amount']) this.receipt.amount = Number(params['amount']);
+        if (params['invoiceNo']) {
+          this.receipt.referenceNumber = params['invoiceNo'];
+          this.receipt.remarks = `Receipt for Invoice: ${params['invoiceNo']}`;
+        }
+
+        if (this.customers.length > 0) {
+          this.preselectCustomer(this.receipt.customerId);
+        }
+      }
+    });
+  }
+
+  private _filter(name: string): any[] {
+    const filterValue = name.toLowerCase();
+    return this.customers.filter(customer =>
+      ((customer as any).name as string).toLowerCase().includes(filterValue) ||
+      customer.id.toString().includes(filterValue)
+    );
+  }
+
+  displayFn(customer: any): string {
+    return customer && customer.name ? `${customer.name} (#${customer.id})` : '';
+  }
+
+  loadCustomers() {
+    this.customerService.getCustomersLookup().subscribe((data: any) => {
+      this.customers = Array.isArray(data) ? data : [];
+      if (this.receipt.customerId) {
+        this.preselectCustomer(this.receipt.customerId);
+      }
+    });
+  }
+
+  onCustomerSelected(event: any) {
+    const customer = event.option.value;
+    this.receipt.customerId = customer.id;
+    this.loadCustomerBalance(customer.id);
+  }
+
+  loadCustomerBalance(customerId: number) {
+    this.financeService.getCustomerLedger(customerId).subscribe(data => {
+      if (data && data.ledger && data.ledger.length > 0) {
+        this.currentBalance = data.ledger[0].balance;
+      } else {
+        this.currentBalance = 0;
+      }
+    });
+  }
+
+  preselectCustomer(id: number) {
+    const customer = this.customers.find(c => c.id === id);
+    if (customer) {
+      this.customerControl.setValue(customer);
+      this.loadCustomerBalance(id);
+    }
+  }
+
+  saveReceipt() {
+    if (!this.receipt.customerId || !this.receipt.amount) {
+      this.dialog.open(StatusDialogComponent, {
+        data: { isSuccess: false, message: 'Please select a customer and enter amount.' }
+      });
+      return;
+    }
+
+    this.isLoading = true;
+    const payload = {
+      ...this.receipt,
+      paymentDate: this.receipt.paymentDate instanceof Date ? this.receipt.paymentDate.toISOString() : this.receipt.paymentDate
     };
 
-    constructor(
-        private financeService: FinanceService,
-        private customerService: customerService,
-        private route: ActivatedRoute,
-        private dialog: MatDialog
-    ) { }
-
-    ngOnInit() {
-        this.loadCustomers();
-        this.filteredCustomers = this.customerControl.valueChanges.pipe(
-            startWith(''),
-            map(value => {
-                const name = typeof value === 'string' ? value : (value as any)?.name;
-                return name ? this._filter(name as string) : this.customers.slice();
-            }),
-        );
-
-        // Check for query params (e.g. from Sales List)
-        this.route.queryParams.subscribe(params => {
-            if (params['customerId']) {
-                this.receipt.customerId = Number(params['customerId']);
-                if (params['amount']) this.receipt.amount = Number(params['amount']);
-                if (params['invoiceNo']) {
-                    this.receipt.referenceNumber = params['invoiceNo'];
-                    this.receipt.remarks = `Receipt for Invoice: ${params['invoiceNo']}`;
-                }
-
-                if (this.customers.length > 0) {
-                    this.preselectCustomer(this.receipt.customerId);
-                }
-            }
+    this.financeService.recordCustomerReceipt(payload).subscribe({
+      next: (res) => {
+        this.isLoading = false;
+        const successDialog = this.dialog.open(StatusDialogComponent, {
+          data: {
+            isSuccess: true,
+            title: 'Success',
+            message: 'Receipt Recorded Successfully!',
+            actions: [
+              { label: 'Print Receipt', role: 'print', color: 'primary' },
+              { label: 'OK', role: 'ok' }
+            ]
+          }
         });
-    }
 
-    private _filter(name: string): any[] {
-        const filterValue = name.toLowerCase();
-        return this.customers.filter(customer =>
-            ((customer as any).name as string).toLowerCase().includes(filterValue) ||
-            customer.id.toString().includes(filterValue)
-        );
-    }
-
-    displayFn(customer: any): string {
-        return customer && customer.name ? `${customer.name} (#${customer.id})` : '';
-    }
-
-    loadCustomers() {
-        this.customerService.getAllCustomers().subscribe((data: any) => {
-            this.customers = Array.isArray(data) ? data : (data?.items || []);
-            if (this.receipt.customerId) {
-                this.preselectCustomer(this.receipt.customerId);
-            }
-        });
-    }
-
-    onCustomerSelected(event: any) {
-        const customer = event.option.value;
-        this.receipt.customerId = customer.id;
-        this.loadCustomerBalance(customer.id);
-    }
-
-    loadCustomerBalance(customerId: number) {
-        this.financeService.getCustomerLedger(customerId).subscribe(data => {
-            if (data && data.ledger && data.ledger.length > 0) {
-                this.currentBalance = data.ledger[0].balance;
-            } else {
-                this.currentBalance = 0;
-            }
-        });
-    }
-
-    preselectCustomer(id: number) {
-        const customer = this.customers.find(c => c.id === id);
-        if (customer) {
-            this.customerControl.setValue(customer);
-            this.loadCustomerBalance(id);
-        }
-    }
-
-    saveReceipt() {
-        if (!this.receipt.customerId || !this.receipt.amount) {
-            this.dialog.open(StatusDialogComponent, {
-                data: { isSuccess: false, message: 'Please select a customer and enter amount.' }
-            });
-            return;
-        }
-
-        this.isLoading = true;
-        const payload = {
-            ...this.receipt,
-            paymentDate: this.receipt.paymentDate instanceof Date ? this.receipt.paymentDate.toISOString() : this.receipt.paymentDate
+        const customer = this.customers.find(c => c.id === this.receipt.customerId);
+        const receiptData = {
+          ...this.receipt,
+          id: res.id || 'NEW',
+          customerName: customer ? customer.name : 'Customer'
         };
 
-        this.financeService.recordCustomerReceipt(payload).subscribe({
-            next: (res) => {
-                this.isLoading = false;
-                const successDialog = this.dialog.open(StatusDialogComponent, {
-                    data: {
-                        isSuccess: true,
-                        title: 'Success',
-                        message: 'Receipt Recorded Successfully!',
-                        actions: [
-                            { label: 'Print Receipt', role: 'print', color: 'primary' },
-                            { label: 'OK', role: 'ok' }
-                        ]
-                    }
-                });
-
-                const customer = this.customers.find(c => c.id === this.receipt.customerId);
-                const receiptData = {
-                    ...this.receipt,
-                    id: res.id || 'NEW',
-                    customerName: customer ? customer.name : 'Customer'
-                };
-
-                successDialog.afterClosed().subscribe(result => {
-                    if (result === 'print') {
-                        this.printVoucher(receiptData);
-                    }
-                    this.resetForm();
-                });
-            },
-            error: (err) => {
-                this.isLoading = false;
-                console.error(err);
-                this.dialog.open(StatusDialogComponent, {
-                    data: { isSuccess: false, message: 'Failed to record receipt.' }
-                });
-            }
+        successDialog.afterClosed().subscribe(result => {
+          if (result === 'print') {
+            this.printVoucher(receiptData);
+          }
+          this.resetForm();
         });
-    }
+      },
+      error: (err) => {
+        this.isLoading = false;
+        console.error(err);
+        this.dialog.open(StatusDialogComponent, {
+          data: { isSuccess: false, message: 'Failed to record receipt.' }
+        });
+      }
+    });
+  }
 
-    printVoucher(receipt: any) {
-        const printContent = `
+  printVoucher(receipt: any) {
+    const printContent = `
           <div style="font-family: sans-serif; padding: 40px; border: 2px solid #333; max-width: 800px; margin: auto;">
             <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
               <h1 style="margin: 0; color: #1976d2;">PAYMENT RECEIPT</h1>
@@ -225,9 +225,9 @@ export class ReceiptEntryComponent implements OnInit {
           </div>
         `;
 
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-            printWindow.document.write(`
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
             <html>
               <head>
                 <title>Payment Receipt - CR-${receipt.id}</title>
@@ -238,21 +238,21 @@ export class ReceiptEntryComponent implements OnInit {
               </body>
             </html>
           `);
-            printWindow.document.close();
-        }
+      printWindow.document.close();
     }
+  }
 
-    resetForm() {
-        this.receipt = {
-            customerId: null,
-            amount: null,
-            paymentMode: 'Cash',
-            referenceNumber: '',
-            paymentDate: new Date(),
-            remarks: '',
-            createdBy: 'Admin'
-        };
-        this.customerControl.setValue('');
-        this.currentBalance = null;
-    }
+  resetForm() {
+    this.receipt = {
+      customerId: null,
+      amount: null,
+      paymentMode: 'Cash',
+      referenceNumber: '',
+      paymentDate: new Date(),
+      remarks: '',
+      createdBy: 'Admin'
+    };
+    this.customerControl.setValue('');
+    this.currentBalance = null;
+  }
 }

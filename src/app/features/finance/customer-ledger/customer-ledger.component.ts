@@ -11,6 +11,7 @@ import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
     selector: 'app-customer-ledger',
@@ -37,7 +38,9 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
     constructor(
         private financeService: FinanceService,
         private customerService: customerService,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private route: ActivatedRoute,
+        private router: Router
     ) { }
 
     ngOnInit() {
@@ -71,6 +74,19 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
     loadCustomers() {
         this.customerService.getCustomersLookup().subscribe((data: any) => {
             this.customers = Array.isArray(data) ? data : [];
+
+            // Param check after load
+            this.route.queryParams.subscribe(params => {
+                if (params['customerId']) {
+                    const id = Number(params['customerId']);
+                    const customer = this.customers.find(c => c.id === id);
+                    if (customer) {
+                        this.customerControl.setValue(customer);
+                        this.customerId = id;
+                        this.loadLedger();
+                    }
+                }
+            });
         });
     }
 
@@ -120,5 +136,14 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
                 }
             });
         }
+    }
+    goToReceipt() {
+        if (!this.customerId) return;
+        this.router.navigate(['/app/finance/customers/receipt'], {
+            queryParams: {
+                customerId: this.customerId,
+                amount: this.currentBalance
+            }
+        });
     }
 }
