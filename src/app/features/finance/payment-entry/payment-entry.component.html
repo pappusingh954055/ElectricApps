@@ -16,57 +16,88 @@
         <mat-card-content>
             <form (ngSubmit)="savePayment()">
                 <div class="form-grid">
-                    <!-- Row 1 -->
-                    <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>Supplier ID</mat-label>
-                        <input matInput type="number" [(ngModel)]="payment.supplierId" name="supplierId" required placeholder="Enter Supplier ID">
-                        <mat-icon matSuffix>badge</mat-icon>
-                        <mat-hint>Enter the unique ID of the supplier</mat-hint>
-                    </mat-form-field>
+                    <!-- Row 1: Supplier & Balance -->
+                    <div class="col-12">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Select Supplier</mat-label>
+                            <input type="text"
+                                   matInput
+                                   [formControl]="supplierControl"
+                                   [matAutocomplete]="auto"
+                                   placeholder="Search Supplier Name">
+                            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onSupplierSelected($event)">
+                                <mat-option *ngFor="let supplier of filteredSuppliers | async" [value]="supplier">
+                                    {{supplier.name}} (ID: {{supplier.id}})
+                                </mat-option>
+                            </mat-autocomplete>
+                            <mat-icon matSuffix>search</mat-icon>
+                        </mat-form-field>
 
-                    <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>Amount (₹)</mat-label>
-                        <input matInput type="number" [(ngModel)]="payment.amount" name="amount" required placeholder="0.00" min="0">
-                        <mat-icon matSuffix>currency_rupee</mat-icon>
-                    </mat-form-field>
+                        <div *ngIf="currentBalance !== null" class="balance-display" [class.payable]="balanceType === 'Payable'" [class.advance]="balanceType === 'Advance'">
+                            <mat-icon>{{ balanceType === 'Payable' ? 'info' : 'check_circle' }}</mat-icon>
+                            <span>Current Balance: <strong>{{ currentBalance | currency:'INR' }}</strong> ({{ balanceType }})</span>
+                            <button mat-stroked-button color="primary" *ngIf="balanceType === 'Payable'" (click)="payFullDue()" type="button" class="pay-btn">
+                                Pay Full Due
+                            </button>
+                        </div>
+                    </div>
 
-                    <!-- Row 2 -->
-                    <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>Payment Mode</mat-label>
-                        <mat-select [(ngModel)]="payment.paymentMode" name="paymentMode" required>
-                            <mat-option value="Cash">
-                                <mat-icon>money</mat-icon> Cash
-                            </mat-option>
-                            <mat-option value="Bank">
-                                <mat-icon>account_balance</mat-icon> Bank Transfer
-                            </mat-option>
-                            <mat-option value="Check">
-                                <mat-icon>padding</mat-icon> Check
-                            </mat-option>
-                            <mat-option value="UPI">
-                                <mat-icon>qr_code</mat-icon> UPI
-                            </mat-option>
-                        </mat-select>
-                    </mat-form-field>
+                    <!-- Row 2: Amount, Mode, Ref -->
+                    <div class="col-4">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Amount (₹)</mat-label>
+                            <input matInput type="number" [(ngModel)]="payment.amount" name="amount" required placeholder="0.00" min="0">
+                            <mat-icon matSuffix>currency_rupee</mat-icon>
+                            <mat-hint *ngIf="currentBalance && payment.amount > currentBalance && balanceType === 'Payable'" class="text-warn">
+                                Note: Amount exceeds current balance.
+                            </mat-hint>
+                        </mat-form-field>
+                    </div>
 
-                    <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>Reference / Cheque No.</mat-label>
-                        <input matInput type="text" [(ngModel)]="payment.referenceNumber" name="ref" placeholder="e.g. TXN-8842">
-                        <mat-icon matSuffix>receipt_long</mat-icon>
-                    </mat-form-field>
+                    <div class="col-4">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Payment Mode</mat-label>
+                            <mat-select [(ngModel)]="payment.paymentMode" name="paymentMode" required>
+                                <mat-option value="Cash">
+                                    <mat-icon>money</mat-icon> Cash
+                                </mat-option>
+                                <mat-option value="Bank">
+                                    <mat-icon>account_balance</mat-icon> Bank Transfer
+                                </mat-option>
+                                <mat-option value="Check">
+                                    <mat-icon>padding</mat-icon> Check
+                                </mat-option>
+                                <mat-option value="UPI">
+                                    <mat-icon>qr_code</mat-icon> UPI
+                                </mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="col-4">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Reference / Cheque No.</mat-label>
+                            <input matInput type="text" [(ngModel)]="payment.referenceNumber" name="ref" placeholder="e.g. TXN-8842">
+                            <mat-icon matSuffix>receipt_long</mat-icon>
+                        </mat-form-field>
+                    </div>
                     
-                    <!-- Row 3 -->
-                     <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>Payment Date</mat-label>
-                        <input matInput [matDatepicker]="picker" [(ngModel)]="payment.paymentDate" name="paymentDate" required>
-                        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-                        <mat-datepicker #picker></mat-datepicker>
-                    </mat-form-field>
+                    <!-- Row 3: Date & Remarks -->
+                     <div class="col-4">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Payment Date</mat-label>
+                            <input matInput [matDatepicker]="picker" [(ngModel)]="payment.paymentDate" name="paymentDate" required>
+                            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-datepicker #picker></mat-datepicker>
+                        </mat-form-field>
+                    </div>
 
-                    <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>Remarks / Notes</mat-label>
-                        <textarea matInput [(ngModel)]="payment.remarks" name="remarks" rows="1" placeholder="Add additional notes..."></textarea>
-                    </mat-form-field>
+                    <div class="col-8">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Remarks / Notes</mat-label>
+                            <textarea matInput [(ngModel)]="payment.remarks" name="remarks" rows="1" placeholder="Add additional notes..."></textarea>
+                        </mat-form-field>
+                    </div>
                 </div>
 
                 <mat-divider></mat-divider>
@@ -80,6 +111,47 @@
                     </button>
                 </div>
             </form>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Recent Transactions Section -->
+    <mat-card class="history-card elevation-z2" *ngIf="recentTransactions.length > 0">
+        <mat-card-header>
+            <mat-card-title>Recent Transactions</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <table mat-table [dataSource]="recentTransactions" class="full-width-table">
+                <!-- Date Column -->
+                <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef> Date </th>
+                    <td mat-cell *matCellDef="let element"> {{element.transactionDate | date:'mediumDate'}} </td>
+                </ng-container>
+            
+                <!-- Description Column -->
+                <ng-container matColumnDef="description">
+                    <th mat-header-cell *matHeaderCellDef> Description </th>
+                    <td mat-cell *matCellDef="let element"> {{element.particulars || element.description}} </td>
+                </ng-container>
+            
+                <!-- Amount Column (Debit/Credit logic or just Amount) -->
+                <ng-container matColumnDef="amount">
+                    <th mat-header-cell *matHeaderCellDef> Amount </th>
+                    <td mat-cell *matCellDef="let element" [class.text-success]="element.credit > 0" [class.text-danger]="element.debit > 0">
+                        {{ (element.credit || element.debit) | currency:'INR' }} 
+                        <span *ngIf="element.credit > 0">(Cr)</span>
+                        <span *ngIf="element.debit > 0">(Dr)</span>
+                    </td>
+                </ng-container>
+
+                <!-- Balance Column -->
+                <ng-container matColumnDef="balance">
+                    <th mat-header-cell *matHeaderCellDef> Balance </th>
+                    <td mat-cell *matCellDef="let element"> {{element.balance | currency:'INR'}} </td>
+                </ng-container>
+            
+                <tr mat-header-row *matHeaderRowDef="['date', 'description', 'amount', 'balance']"></tr>
+                <tr mat-row *matRowDef="let row; columns: ['date', 'description', 'amount', 'balance'];"></tr>
+            </table>
         </mat-card-content>
     </mat-card>
 </div>
