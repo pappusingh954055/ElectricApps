@@ -1,18 +1,21 @@
-<div class="dialog-container" [class.success-border]="data.isSuccess" [class.error-border]="!data.isSuccess">
+<div class="dialog-container" [class.success-border]="data.isSuccess" [class.error-border]="!data.isSuccess && data.status !== 'warning'" [class.warning-border]="data.status === 'warning'">
   <div class="dialog-header">
-    <mat-icon [class.text-success]="data.isSuccess" [class.text-error]="!data.isSuccess">
-      {{ data.isSuccess ? 'check_circle' : 'report' }}
+    <mat-icon [class.text-success]="data.isSuccess" [class.text-error]="!data.isSuccess && data.status !== 'warning'" [class.text-warning]="data.status === 'warning'">
+      {{ data.isSuccess ? 'check_circle' : (data.status === 'warning' ? 'warning' : 'report') }}
     </mat-icon>
-    <h2 mat-dialog-title>{{ data.isSuccess ? 'Success' : 'Attention Required' }}</h2>
+    <h2 mat-dialog-title>{{ data.title || (data.isSuccess ? 'Success' : 'Attention Required') }}</h2>
   </div>
 
   <mat-dialog-content>
-    <p class="message-text">{{ data.message }}</p>
+    <p class="message-text" style="white-space: pre-line;">{{ data.message }}</p>
   </mat-dialog-content>
 
   <mat-dialog-actions align="end">
-    <button mat-flat-button [color]="data.isSuccess ? 'primary' : 'warn'" mat-dialog-close>
-      Ok
+    <button mat-button *ngIf="data.showCancel" [mat-dialog-close]="false">
+      {{ data.cancelText || 'No' }}
+    </button>
+    <button mat-flat-button [color]="data.isSuccess ? 'primary' : (data.status === 'warning' ? 'accent' : 'warn')" [mat-dialog-close]="true">
+      {{ data.confirmText || (data.showCancel ? 'Yes' : 'Ok') }}
     </button>
   </mat-dialog-actions>
 </div>

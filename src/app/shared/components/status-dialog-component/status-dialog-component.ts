@@ -11,5 +11,13 @@ import { CommonModule } from '@angular/common';
   styleUrl: './status-dialog-component.scss',
 })
 export class StatusDialogComponent {
-  constructor(@Inject(MAT_DIALOG_DATA) public data: { isSuccess: boolean, message: string }) { }
+  constructor(@Inject(MAT_DIALOG_DATA) public data: {
+    isSuccess: boolean,
+    message: string,
+    title?: string,
+    showCancel?: boolean,
+    confirmText?: string,
+    cancelText?: string,
+    status?: string // 'success', 'warning', 'error'
+  }) { }
 }

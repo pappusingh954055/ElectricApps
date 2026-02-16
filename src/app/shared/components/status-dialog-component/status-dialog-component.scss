@@ -8,6 +8,12 @@
   /* Standard Side Border [cite: 2026-01-22] */
   &.success-border { border-left: 10px solid #2e7d32; }
   &.error-border { border-left: 10px solid #d32f2f; }
+  &.warning-border { border-left: 10px solid #ff9800; }
+
+  .text-success { color: #2e7d32; }
+  .text-error { color: #d32f2f; }
+  .text-warning { color: #ff9800; }
+
 
   .dialog-header {
     display: flex;

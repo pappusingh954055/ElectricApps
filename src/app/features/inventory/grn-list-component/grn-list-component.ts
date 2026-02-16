@@ -54,7 +54,7 @@ export interface GRNListRow {
 })
 export class GrnListComponent implements OnInit, AfterViewInit {
   // Columns matching Backend DTO
-  displayedColumns: string[] = ['grnNo', 'refPO', 'supplierName', 'receivedDate', 'status', 'paymentStatus', 'actions'];
+  displayedColumns: string[] = ['grnNo', 'refPO', 'supplierName', 'receivedDate', 'totalAmount', 'status', 'paymentStatus', 'actions'];
   dataSource = new MatTableDataSource<GRNListRow>([]);
 
   // Expansion variable jo HTML ko chahiye

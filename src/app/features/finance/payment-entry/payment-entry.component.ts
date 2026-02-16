@@ -1,16 +1,17 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { FinanceService } from '../service/finance.service';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { SupplierService, Supplier } from '../../inventory/service/supplier.service';
-import { Observable } from 'rxjs';
-import { map, startWith } from 'rxjs/operators';
+import { Observable, Subscription } from 'rxjs';
+import { map, startWith, finalize } from 'rxjs/operators';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
   selector: 'app-payment-entry',
@@ -19,7 +20,7 @@ import { StatusDialogComponent } from '../../../shared/components/status-dialog-
   templateUrl: './payment-entry.component.html',
   styleUrl: './payment-entry.component.scss'
 })
-export class PaymentEntryComponent implements OnInit {
+export class PaymentEntryComponent implements OnInit, OnDestroy {
   payment: any = {
     supplierId: null,
     amount: null,
@@ -36,41 +37,38 @@ export class PaymentEntryComponent implements OnInit {
   currentBalance: number | null = null;
   balanceType: string = '';
   recentTransactions: any[] = [];
+  loadingCount: number = 0;
+  private routeSub!: Subscription;
 
   constructor(
     private financeService: FinanceService,
     private supplierService: SupplierService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private loadingService: LoadingService
   ) { }
+
+  private updateLoading(delta: number) {
+    this.loadingCount = Math.max(0, this.loadingCount + delta);
+    this.loadingService.setLoading(this.loadingCount > 0);
+  }
 
   ngOnInit() {
     this.loadSuppliers();
 
-    // Check for supplierId query param (from Pending Dues "Pay Now" button)
-    this.route.queryParams.subscribe(params => {
+    // Store subscription to clean up
+    this.routeSub = this.route.queryParams.subscribe(params => {
       const supplierId = params['supplierId'];
       const amount = params['amount'];
       const grnNumber = params['grnNumber'];
 
       if (supplierId) {
-        // Pre-select supplier after suppliers are loaded
-        setTimeout(() => {
-          this.preselectSupplier(Number(supplierId));
-
-          // Auto-fill amount if provided (from GRN)
-          if (amount) {
-            this.payment.amount = Number(amount);
-            console.log('✅ Auto-filled amount:', amount);
-          }
-
-          // Auto-fill remarks with GRN reference if provided
-          if (grnNumber) {
-            this.payment.remarks = `Payment for ${grnNumber}`;
-            console.log('✅ Auto-filled remarks:', this.payment.remarks);
-          }
-        }, 500);
+        // If suppliers are already loaded, select immediately. 
+        // Otherwise loadSuppliers will handle it when it finishes.
+        if (this.suppliers && this.suppliers.length > 0) {
+          this.handleQueryParams(supplierId, amount, grnNumber);
+        }
       }
     });
 
@@ -89,13 +87,39 @@ export class PaymentEntryComponent implements OnInit {
     );
   }
 
+  ngOnDestroy() {
+    if (this.routeSub) this.routeSub.unsubscribe();
+  }
+
   loadSuppliers() {
-    this.supplierService.getSuppliers().subscribe({
+    this.updateLoading(1);
+    this.supplierService.getSuppliers().pipe(
+      finalize(() => this.updateLoading(-1))
+    ).subscribe({
       next: (data) => {
         this.suppliers = data;
+        // Check for query params again after suppliers data is ready
+        const params = this.route.snapshot.queryParams;
+        if (params['supplierId']) {
+          this.handleQueryParams(params['supplierId'], params['amount'], params['grnNumber']);
+        }
       },
       error: (err) => console.error('Error loading suppliers', err)
     });
+  }
+
+  private handleQueryParams(supplierId: any, amount: any, grnNumber: any) {
+    this.preselectSupplier(Number(supplierId));
+
+    if (amount) {
+      this.payment.amount = Number(amount);
+      console.log('✅ Auto-filled amount:', amount);
+    }
+
+    if (grnNumber) {
+      this.payment.remarks = `Payment for ${grnNumber}`;
+      console.log('✅ Auto-filled remarks:', this.payment.remarks);
+    }
   }
 
   private _filter(name: string): Supplier[] {
@@ -125,11 +149,16 @@ export class PaymentEntryComponent implements OnInit {
 
 
   fetchBalance(supplierId: number) {
-    this.financeService.getSupplierLedger(supplierId).subscribe({
-      next: (data: any) => {
-        // The API returns List<SupplierLedger>.
+    this.updateLoading(1);
+    this.financeService.getSupplierLedger(supplierId).pipe(
+      finalize(() => this.updateLoading(-1))
+    ).subscribe({
+      next: (result: any) => {
+        // The API returns SupplierLedgerResultDto { ledger: SupplierLedger[] }
+        const data = Array.isArray(result) ? result : (result?.ledger || []);
+
         // We need the balance from the *first* (descending date) entry.
-        if (Array.isArray(data) && data.length > 0) {
+        if (data.length > 0) {
           const latestEntry = data[0];
           this.currentBalance = latestEntry.balance;
           this.balanceType = latestEntry.balance > 0 ? 'Payable' : 'Advance';
@@ -143,13 +172,14 @@ export class PaymentEntryComponent implements OnInit {
       },
       error: (err) => {
         console.error('Error fetching balance', err);
-        // Even on error (e.g. 404 for no ledger), default to 0 so UI shows something
+        // Reset state on error to avoid stuck indicator
         this.currentBalance = 0;
         this.balanceType = 'Clear';
-        this.recentTransactions = [];
       }
     });
   }
+
+
 
   payFullDue() {
     if (this.currentBalance && this.currentBalance > 0) {
@@ -192,9 +222,12 @@ export class PaymentEntryComponent implements OnInit {
   }
 
   performPayment() {
+    this.updateLoading(1);
     const payload = { ...this.payment, paymentDate: this.payment.paymentDate instanceof Date ? this.payment.paymentDate.toISOString() : this.payment.paymentDate };
 
-    this.financeService.recordSupplierPayment(payload).subscribe({
+    this.financeService.recordSupplierPayment(payload).pipe(
+      finalize(() => this.updateLoading(-1))
+    ).subscribe({
       next: (res) => {
         this.dialog.open(StatusDialogComponent, {
           data: {

@@ -89,7 +89,7 @@
 
                         <!-- Credit Column -->
                         <ng-container matColumnDef="credit">
-                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Credit (S upply) </th>
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Credit (Supply) </th>
                             <td mat-cell *matCellDef="let row" class="amount-cell text-primary"> 
                                 <span *ngIf="row.credit > 0">₹{{row.credit | number:'1.2-2'}}</span>
                                 <span *ngIf="row.credit === 0">-</span>
