@@ -9,6 +9,8 @@ import { MaterialModule } from '../../../shared/material/material/material-modul
 import { customerService } from '../../master/customer-component/customer.service';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators';
+import { MatDialog } from '@angular/material/dialog';
+import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 
 @Component({
     selector: 'app-customer-ledger',
@@ -34,7 +36,8 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
 
     constructor(
         private financeService: FinanceService,
-        private customerService: customerService
+        private customerService: customerService,
+        private dialog: MatDialog
     ) { }
 
     ngOnInit() {
@@ -56,7 +59,7 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
     private _filter(name: string): any[] {
         const filterValue = name.toLowerCase();
         return this.customers.filter(customer =>
-            ((customer as any).name as string).toLowerCase().includes(filterValue) ||
+            (customer.name as string).toLowerCase().includes(filterValue) ||
             customer.id.toString().includes(filterValue)
         );
     }
@@ -66,9 +69,15 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
     }
 
     loadCustomers() {
-        this.customerService.getAllCustomers().subscribe((data: any) => {
-            this.customers = Array.isArray(data) ? data : (data?.items || []);
+        this.customerService.getCustomersLookup().subscribe((data: any) => {
+            this.customers = Array.isArray(data) ? data : [];
         });
+    }
+
+    handleEnterKey() {
+        if (this.customerId) {
+            this.loadLedger();
+        }
     }
 
     onCustomerSelected(event: any) {
@@ -99,7 +108,13 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
                 error: (err) => {
                     this.isLoading = false;
                     console.error('Error fetching ledger:', err);
-                    alert('Failed to fetch ledger. Please check Customer ID.');
+                    this.dialog.open(StatusDialogComponent, {
+                        data: {
+                            isSuccess: false,
+                            message: 'Failed to fetch ledger. Please check Connection or Customer ID.',
+                            status: 'error'
+                        }
+                    });
                     this.ledgerData = null;
                     this.dataSource.data = [];
                 }

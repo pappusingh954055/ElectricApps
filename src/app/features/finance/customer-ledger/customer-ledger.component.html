@@ -14,7 +14,8 @@
                            placeholder="Ex. John Doe or ID"
                            matInput
                            [formControl]="customerControl"
-                           [matAutocomplete]="auto">
+                           [matAutocomplete]="auto"
+                           (keydown.enter)="handleEnterKey()">
                     <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onCustomerSelected($event)">
                         <mat-option *ngFor="let customer of filteredCustomers | async" [value]="customer">
                             <span>{{customer.name}}</span> |

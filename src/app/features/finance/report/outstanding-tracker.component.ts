@@ -5,6 +5,8 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { FinanceService } from '../service/finance.service';
+import { MatDialog } from '@angular/material/dialog';
+import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 
 export interface OutstandingData {
     customerId: number;
@@ -29,7 +31,10 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
 
-    constructor(private financeService: FinanceService) { }
+    constructor(
+        private financeService: FinanceService,
+        private dialog: MatDialog
+    ) { }
 
     ngOnInit() {
         this.loadOutstandingData();
@@ -47,7 +52,13 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
             },
             error: (err) => {
                 console.error('Error fetching outstanding tracker:', err);
-                // Fallback or empty state
+                this.dialog.open(StatusDialogComponent, {
+                    data: {
+                        isSuccess: false,
+                        message: 'Failed to load outstanding data. Please check your connection.',
+                        status: 'error'
+                    }
+                });
             }
         });
     }
