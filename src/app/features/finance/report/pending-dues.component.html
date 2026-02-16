@@ -19,7 +19,26 @@
         </mat-card-header>
 
         <mat-card-content>
-            <div class="table-container">
+            <!-- Loading Spinner -->
+            <div *ngIf="isLoading" class="loading-container" style="text-align: center; padding: 40px;">
+                <mat-spinner diameter="50"></mat-spinner>
+                <p style="margin-top: 16px;">Loading pending dues...</p>
+            </div>
+
+            <!-- Error Message -->
+            <div *ngIf="errorMessage && !isLoading" class="error-container" style="padding: 20px;">
+                <mat-card style="background-color: #ffebee; border-left: 4px solid #f44336;">
+                    <mat-card-content>
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <mat-icon color="warn">error</mat-icon>
+                            <span>{{errorMessage}}</span>
+                            <button mat-button color="primary" (click)="loadPendingDues()">Retry</button>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+
+            <div class="table-container" *ngIf="!isLoading && !errorMessage">
                 <table mat-table [dataSource]="dataSource" matSort>
 
                     <!-- ID Column -->
@@ -62,7 +81,7 @@
                     <ng-container matColumnDef="actions">
                         <th mat-header-cell *matHeaderCellDef> Actions </th>
                         <td mat-cell *matCellDef="let row">
-                            <button mat-flat-button color="primary" class="pay-btn">
+                            <button mat-flat-button color="primary" class="pay-btn" (click)="makePayment(row.supplierId)">
                                 <mat-icon>payment</mat-icon> Pay Now
                             </button>
                         </td>

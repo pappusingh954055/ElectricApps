@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { FinanceService } from '../service/finance.service';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { SupplierService, Supplier } from '../../inventory/service/supplier.service';
@@ -40,11 +41,23 @@ export class PaymentEntryComponent implements OnInit {
     private financeService: FinanceService,
     private supplierService: SupplierService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit() {
     this.loadSuppliers();
+
+    // Check for supplierId query param (from Pending Dues "Pay Now" button)
+    this.route.queryParams.subscribe(params => {
+      const supplierId = params['supplierId'];
+      if (supplierId) {
+        // Pre-select supplier after suppliers are loaded
+        setTimeout(() => {
+          this.preselectSupplier(Number(supplierId));
+        }, 500);
+      }
+    });
 
     this.filteredSuppliers = this.supplierControl.valueChanges.pipe(
       startWith(''),
@@ -83,6 +96,15 @@ export class PaymentEntryComponent implements OnInit {
     const supplier = event.option.value as Supplier;
     this.payment.supplierId = supplier.id;
     this.fetchBalance(supplier.id!);
+  }
+
+  preselectSupplier(supplierId: number) {
+    const supplier = this.suppliers.find(s => s.id === supplierId);
+    if (supplier) {
+      this.supplierControl.setValue(supplier);
+      this.payment.supplierId = supplier.id;
+      this.fetchBalance(supplier.id!);
+    }
   }
 
 

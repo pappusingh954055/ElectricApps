@@ -79,6 +79,9 @@
                             <button mat-icon-button (click)="$event.stopPropagation(); printGRN(row)" matTooltip="Print Receipt">
                                 <mat-icon>print</mat-icon>
                             </button>
+                            <button mat-icon-button color="accent" (click)="$event.stopPropagation(); makePayment(row)" matTooltip="Make Payment">
+                                <mat-icon>payment</mat-icon>
+                            </button>
                         </td>
                     </ng-container>
 

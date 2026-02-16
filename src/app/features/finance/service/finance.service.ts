@@ -19,7 +19,7 @@ export class FinanceService {
     }
 
     recordSupplierPayment(payment: any): Observable<any> {
-        return this.http.post(`${this.supplierApi}/payments`, payment);
+        return this.http.post(`${this.supplierApi}/payment-entry`, payment);
     }
 
     getPendingDues(): Observable<any> {

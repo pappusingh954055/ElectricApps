@@ -6,6 +6,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { InventoryService } from '../service/inventory.service';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
+import { GrnSuccessDialogComponent } from '../grn-success-dialog/grn-success-dialog.component';
 
 @Component({
   selector: 'app-grn-form-component',
@@ -19,6 +20,7 @@ export class GrnFormComponent implements OnInit {
   items: any[] = [];
   poId: number = 0;
   supplierId: number = 0;
+  supplierName: string = '';
   isFromPopup: boolean = false;
   isViewMode: boolean = false;
   private dialog = inject(MatDialog);
@@ -81,6 +83,11 @@ export class GrnFormComponent implements OnInit {
       next: (res) => {
         if (!res) return;
         console.log('pendingqtycheck:', res);
+
+        // Capture supplier details for payment navigation
+        this.supplierId = res.supplierId || 0;
+        this.supplierName = res.supplierName || '';
+
         this.grnForm.patchValue({
           grnNumber: res.grnNumber || 'AUTO-GEN',
           poNumber: res.poNumber,
@@ -199,6 +206,28 @@ export class GrnFormComponent implements OnInit {
 
   saveGRN() {
     if (this.grnForm.invalid || this.items.length === 0 || this.isViewMode) return;
+
+    // Show confirmation dialog first
+    const confirmDialog = this.dialog.open(StatusDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Confirm GRN Save',
+        message: `Are you sure you want to save this GRN and update stock?\n\nGrand Total: ₹${this.calculateGrandTotal().toFixed(2)}`,
+        status: 'warning',
+        isSuccess: false,
+        showCancel: true
+      }
+    });
+
+    confirmDialog.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return; // User cancelled
+
+      // User confirmed, proceed with save
+      this.performGRNSave();
+    });
+  }
+
+  performGRNSave() {
     const currentUserId = localStorage.getItem('email') || '';
 
     const grnData = {
@@ -225,12 +254,43 @@ export class GrnFormComponent implements OnInit {
     };
 
     this.inventoryService.saveGRN({ data: grnData }).subscribe({
-      next: () => {
+      next: (response: any) => {
+        const grnNumber = response?.grnNumber || 'AUTO-GEN';
+
+        // Show success dialog with payment option
+        const dialogRef = this.dialog.open(GrnSuccessDialogComponent, {
+          width: '500px',
+          disableClose: true,
+          data: {
+            grnNumber: grnNumber,
+            grandTotal: this.calculateGrandTotal(),
+            supplierId: this.supplierId,
+            supplierName: this.supplierName
+          }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+          if (result === 'make-payment') {
+            // Navigate to Payment Entry with supplier pre-selected
+            this.router.navigate(['/app/finance/suppliers/payment'], {
+              queryParams: { supplierId: this.supplierId }
+            });
+          } else {
+            // Navigate to GRN List
+            this.router.navigate(['/app/inventory/grn-list']);
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Error saving GRN:', err);
         this.dialog.open(StatusDialogComponent, {
           width: '350px',
-          data: { title: 'Success', message: 'Stock Updated Successfully!', status: 'success', isSuccess: true }
-        }).afterClosed().subscribe(() => {
-          this.router.navigate(['/app/inventory/current-stock']);
+          data: {
+            title: 'Error',
+            message: 'Failed to save GRN. Please try again.',
+            status: 'error',
+            isSuccess: false
+          }
         });
       }
     });

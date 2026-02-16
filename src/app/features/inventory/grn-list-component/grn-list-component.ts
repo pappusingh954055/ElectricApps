@@ -28,6 +28,7 @@ export interface GRNListRow {
   grnNo: string;
   refPO: string;
   supplierName: string;
+  supplierId: number;  // For payment navigation
   receivedDate: string | Date;
   status: string;
   totalRejected: number;
@@ -195,5 +196,16 @@ export class GrnListComponent implements OnInit, AfterViewInit {
         });
       }
     });
+  }
+
+  makePayment(grn: any) {
+    // Navigate to Payment Entry with supplier pre-selected
+    if (grn.supplierId) {
+      this.router.navigate(['/app/finance/suppliers/payment'], {
+        queryParams: { supplierId: grn.supplierId }
+      });
+    } else {
+      console.error('Supplier ID not found for GRN:', grn);
+    }
   }
 }

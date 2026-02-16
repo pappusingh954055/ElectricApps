@@ -35,26 +35,33 @@ export class SupplierLedgerComponent implements AfterViewInit {
         if (this.supplierId && this.supplierId > 0) {
             this.financeService.getSupplierLedger(this.supplierId).subscribe({
                 next: (data) => {
-                    this.ledgerData = data;
-                    if (data && data.ledger) {
-                        this.dataSource.data = data.ledger;
-                        // Calculate current balance (assuming last entry has latest balance or sum)
-                        // In this API, the ledger is ordered by date descending, so the first record is the latest
-                        if (data.ledger.length > 0) {
-                            this.currentBalance = data.ledger[0].balance;
-                        } else {
-                            this.currentBalance = 0;
-                        }
+                    // Backend returns List<SupplierLedger> directly, not { ledger: [...] }
+                    if (data && Array.isArray(data) && data.length > 0) {
+                        this.ledgerData = data;
+                        this.dataSource.data = data;
+
+                        // The ledger is ordered by date descending, first record has latest balance
+                        this.currentBalance = data[0].balance || 0;
                     } else {
+                        // No ledger entries yet (new supplier or no transactions)
+                        this.ledgerData = [];
                         this.dataSource.data = [];
                         this.currentBalance = 0;
                     }
                 },
                 error: (err) => {
                     console.error('Error fetching ledger:', err);
-                    alert('Failed to fetch ledger. Please check Supplier ID.');
-                    this.ledgerData = null;
-                    this.dataSource.data = [];
+
+                    // If 404, it means no ledger exists yet (valid state for new supplier)
+                    if (err.status === 404) {
+                        this.ledgerData = [];
+                        this.dataSource.data = [];
+                        this.currentBalance = 0;
+                    } else {
+                        alert('Failed to fetch ledger. Please check Supplier ID or network connection.');
+                        this.ledgerData = null;
+                        this.dataSource.data = [];
+                    }
                 }
             });
         }
