@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { FinanceService } from '../service/finance.service';
 import { forkJoin, finalize } from 'rxjs';
@@ -7,7 +8,7 @@ import { forkJoin, finalize } from 'rxjs';
 @Component({
     selector: 'app-pl-dashboard',
     standalone: true,
-    imports: [CommonModule, MaterialModule],
+    imports: [CommonModule, RouterModule, MaterialModule],
     templateUrl: './pl-dashboard.component.html',
     styleUrl: './pl-dashboard.component.scss'
 })
