@@ -1,6 +1,6 @@
 import { Component, ViewChild, AfterViewInit, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -8,17 +8,23 @@ import { ActivatedRoute } from '@angular/router';
 import { FinanceService } from '../service/finance.service';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { LoadingService } from '../../../core/services/loading.service';
-import { Subscription } from 'rxjs';
+import { SupplierService, Supplier } from '../../inventory/service/supplier.service';
+import { Observable, Subscription } from 'rxjs';
+import { map, startWith, finalize } from 'rxjs/operators';
 
 
 @Component({
     selector: 'app-supplier-ledger',
     standalone: true,
-    imports: [CommonModule, FormsModule, MaterialModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule],
     templateUrl: './supplier-ledger.component.html',
     styleUrl: './supplier-ledger.component.scss'
 })
 export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy {
+
+    supplierControl = new FormControl('');
+    filteredSuppliers!: Observable<Supplier[]>;
+    suppliers: Supplier[] = [];
 
     supplierId: number | null = null;
     ledgerData: any = null;
@@ -34,17 +40,68 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
     constructor(
         private financeService: FinanceService,
         private loadingService: LoadingService,
+        private supplierService: SupplierService,
         private route: ActivatedRoute
-    ) { }
+    ) {
+        this.loadSuppliers();
+    }
 
     ngOnInit() {
+        this.filteredSuppliers = this.supplierControl.valueChanges.pipe(
+            startWith(''),
+            map(value => {
+                if (typeof value === 'string') return value;
+                return (value as any)?.name || '';
+            }),
+            map(name => name ? this._filter(name) : this.suppliers.slice())
+        );
+
         this.routeSub = this.route.queryParams.subscribe(params => {
             const sid = params['supplierId'];
             if (sid) {
                 this.supplierId = Number(sid);
+                // Pre-select supplier in autocomplete if list is loaded
+                if (this.suppliers && this.suppliers.length > 0) {
+                    this.preselectSupplier(this.supplierId);
+                }
                 this.loadLedger();
             }
         });
+    }
+
+    private _filter(name: string): Supplier[] {
+        const filterValue = name.toLowerCase();
+        return this.suppliers.filter(supplier =>
+            (supplier.name && supplier.name.toLowerCase().includes(filterValue)) ||
+            (supplier.id && supplier.id.toString().includes(filterValue))
+        );
+    }
+
+    displayFn(supplier: Supplier): string {
+        return supplier && supplier.name ? `${supplier.name} (#${supplier.id})` : '';
+    }
+
+    loadSuppliers() {
+        this.supplierService.getSuppliers().subscribe(data => {
+            this.suppliers = data;
+            // If we have a supplierID from route, preselect it now
+            if (this.supplierId) {
+                this.preselectSupplier(this.supplierId);
+            }
+        });
+    }
+
+    onSupplierSelected(event: any) {
+        const supplier = event.option.value as Supplier;
+        this.supplierId = supplier.id!;
+        this.loadLedger();
+    }
+
+    preselectSupplier(id: number) {
+        const supplier = this.suppliers.find(s => s.id === id);
+        if (supplier) {
+            this.supplierControl.setValue(supplier as any);
+        }
     }
 
     ngOnDestroy() {

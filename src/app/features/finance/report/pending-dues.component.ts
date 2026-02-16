@@ -1,30 +1,45 @@
 import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { FinanceService } from '../service/finance.service';
 import { MaterialModule } from '../../../shared/material/material/material-module';
+import { LoadingService } from '../../../core/services/loading.service';
+import { SupplierService, Supplier } from '../../inventory/service/supplier.service';
+import { Observable } from 'rxjs';
+import { finalize, map, startWith, tap } from 'rxjs/operators';
 
 export interface DuesData {
-    supplierId: number;
-    supplierName: string;
-    pendingAmount: number;
-    status: string;
-    dueDate: string | Date;
+    supplierId?: number;
+    SupplierId?: number;
+    supplierName?: string;
+    SupplierName?: string;
+    pendingAmount?: number;
+    PendingAmount?: number;
+    status?: string;
+    Status?: string;
+    dueDate?: string | Date;
+    DueDate?: string | Date;
 }
 
 @Component({
     selector: 'app-pending-dues',
     standalone: true,
-    imports: [CommonModule, MaterialModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule],
     templateUrl: './pending-dues.component.html',
     styleUrl: './pending-dues.component.scss'
 })
 export class PendingDuesComponent implements AfterViewInit, OnInit {
+    searchControl = new FormControl('');
+    filteredOptions!: Observable<any[]>;
+    allDues: any[] = [];
+    suppliers: Supplier[] = [];
+
     displayedColumns: string[] = ['supplierId', 'supplierName', 'pendingAmount', 'dueDate', 'status', 'actions'];
-    dataSource = new MatTableDataSource<DuesData>([]);
+    dataSource = new MatTableDataSource<any>([]);
     isLoading = false;
     errorMessage = '';
 
@@ -33,11 +48,55 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
 
     constructor(
         private financeService: FinanceService,
+        private loadingService: LoadingService,
+        private supplierService: SupplierService,
         private router: Router
-    ) { }
+    ) {
+        this.loadSuppliers();
+    }
+
+    loadSuppliers() {
+        this.supplierService.getSuppliers().subscribe(data => {
+            this.suppliers = data;
+        });
+    }
 
     ngOnInit() {
         this.loadPendingDues();
+
+        // Custom filter predicate for table
+        this.dataSource.filterPredicate = (data: any, filter: string) => {
+            const name = (data.supplierName || '').toLowerCase();
+            const id = (data.supplierId || '').toString().toLowerCase();
+            const filterValue = filter.toLowerCase();
+            return name.includes(filterValue) || id.includes(filterValue);
+        };
+
+        // Setup Autocomplete (Searching from ALL suppliers)
+        this.filteredOptions = this.searchControl.valueChanges.pipe(
+            startWith(''),
+            tap(value => {
+                const val = value as any;
+                const searchStr = typeof value === 'string' ? value : (val?.name || '');
+                this.applyFilter(searchStr);
+            }),
+            map(value => {
+                const searchVal = value as any;
+                const filterValue = typeof value === 'string' ? value.toLowerCase() : (searchVal?.name || '').toLowerCase();
+                return this.suppliers.filter(supplier => {
+                    const name = supplier.name || '';
+                    const id = supplier.id || '';
+                    return name.toLowerCase().includes(filterValue) || id.toString().includes(filterValue);
+                });
+            })
+        );
+    }
+
+    displayFn(supplier: any): string {
+        if (!supplier) return '';
+        const name = supplier.name || supplier.supplierName || '';
+        const id = supplier.id || supplier.supplierId || '';
+        return name ? `${name} (#${id})` : '';
     }
 
     ngAfterViewInit() {
@@ -45,38 +104,61 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
         this.dataSource.sort = this.sort;
     }
 
+    private updateLoading(status: boolean) {
+        this.isLoading = status;
+        this.loadingService.setLoading(status);
+    }
+
     loadPendingDues() {
-        this.isLoading = true;
+        this.updateLoading(true);
         this.errorMessage = '';
 
-        this.financeService.getPendingDues().subscribe({
-            next: (data) => {
-                console.log('Pending Dues Response:', data);
-                this.dataSource.data = data || [];
-                this.isLoading = false;
+        this.financeService.getPendingDues().pipe(
+            finalize(() => this.updateLoading(false))
+        ).subscribe({
+            next: (data: any[]) => {
+                this.allDues = data || [];
+                this.dataSource.data = [...this.allDues];
+                if (this.dataSource.data.length === 0) {
+                    console.log('No pending dues found');
+                }
             },
             error: (err) => {
                 console.error('Error fetching pending dues:', err);
-                this.errorMessage = 'Failed to load pending dues. Please try again.';
+                this.errorMessage = 'Failed to load pending dues. Please check your connection.';
+                this.allDues = [];
                 this.dataSource.data = [];
-                this.isLoading = false;
             }
         });
     }
 
-    applyFilter(event: Event) {
-        const filterValue = (event.target as HTMLInputElement).value;
-        this.dataSource.filter = filterValue.trim().toLowerCase();
+    onOptionSelected(event: any) {
+        const supplier = event.option.value;
+        const name = supplier.name || supplier.supplierName || '';
+        this.applyFilter(name);
+    }
 
+    applyFilter(value: string) {
+        this.dataSource.filter = value.trim().toLowerCase();
         if (this.dataSource.paginator) {
             this.dataSource.paginator.firstPage();
         }
     }
 
     makePayment(supplierId: number) {
-        // Navigate to payment entry with supplier ID as query param
         this.router.navigate(['/app/finance/suppliers/payment'], {
             queryParams: { supplierId }
         });
+    }
+
+    viewLedger(supplierId: number) {
+        this.router.navigate(['/app/finance/suppliers/ledger'], {
+            queryParams: { supplierId }
+        });
+    }
+
+    clearSearch() {
+        this.searchControl.setValue('');
+        this.applyFilter('');
     }
 }

@@ -100,12 +100,20 @@
                                 <mat-icon>print</mat-icon>
                             </button>
                             
-                            <!-- Payment Button: Show only for Unpaid/Partial -->
+                            <!-- Payment Button: Show only for Unpaid -->
                             <button mat-icon-button color="accent" 
-                                    *ngIf="row.paymentStatus === 'Unpaid' || row.paymentStatus === 'Partial'"
+                                    *ngIf="row.paymentStatus === 'Unpaid'"
                                     (click)="$event.stopPropagation(); makePayment(row)" 
                                     matTooltip="Make Payment">
                                 <mat-icon>payment</mat-icon>
+                            </button>
+
+                            <!-- Partial Payment: Show pending icon -->
+                            <button mat-icon-button style="color: #f59e0b;" 
+                                    *ngIf="row.paymentStatus === 'Partial'"
+                                    (click)="$event.stopPropagation(); makePayment(row)" 
+                                    matTooltip="Remaining Payment Due">
+                                <mat-icon>pending</mat-icon>
                             </button>
                             
                             <!-- Payment Success Icon: Show for Paid -->

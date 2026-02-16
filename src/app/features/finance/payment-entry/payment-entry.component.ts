@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { FinanceService } from '../service/finance.service';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { SupplierService, Supplier } from '../../inventory/service/supplier.service';
@@ -46,6 +46,7 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private route: ActivatedRoute,
+    private router: Router,
     private loadingService: LoadingService
   ) { }
 
@@ -116,9 +117,12 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
       console.log('✅ Auto-filled amount:', amount);
     }
 
+    const poNumber = this.route.snapshot.queryParams['poNumber'];
+
     if (grnNumber) {
-      this.payment.remarks = `Payment for ${grnNumber}`;
-      console.log('✅ Auto-filled remarks:', this.payment.remarks);
+      this.payment.referenceNumber = grnNumber;
+      this.payment.remarks = `Payment for ${grnNumber}${poNumber ? ' (PO: ' + poNumber + ')' : ''}`;
+      console.log('✅ Auto-filled grn details:', { grnNumber, poNumber });
     }
   }
 
@@ -236,6 +240,11 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
           }
         });
         this.resetForm();
+
+        // If we came from GRN List, go back there
+        if (this.route.snapshot.queryParams['grnNumber']) {
+          this.router.navigate(['/app/inventory/grn-list']);
+        }
       },
       error: (err) => {
         console.error(err);

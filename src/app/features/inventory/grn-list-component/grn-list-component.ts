@@ -144,11 +144,6 @@ export class GrnListComponent implements OnInit, AfterViewInit {
           }));
         })
       ).subscribe(data => {
-        // TEMPORARY: For testing - Make first GRN "Paid" to see success icon
-        if (data.length > 0) {
-          data[0].paymentStatus = 'Paid'; // TEST ONLY - Remove after backend integration
-        }
-
         this.dataSource.data = data;
         console.log('GRN Data Loaded:', data);
       });
@@ -210,14 +205,18 @@ export class GrnListComponent implements OnInit, AfterViewInit {
     console.log('GRN Data:', grn);
     console.log('Supplier ID:', grn.supplierId);
 
-    // Navigate to Payment Entry with supplier pre-selected
+    // Navigate to Payment Entry with supplier pre-selected and balance amount
     if (grn.supplierId) {
       console.log('Navigating to payment with supplierId:', grn.supplierId);
+
+      const balanceAmount = (grn.totalAmount || 0) - (grn.paidAmount || 0);
+
       this.router.navigate(['/app/finance/suppliers/payment'], {
         queryParams: {
           supplierId: grn.supplierId,
-          amount: grn.totalAmount,
-          grnNumber: grn.grnNo
+          amount: balanceAmount > 0 ? balanceAmount : grn.totalAmount, // Use balance if exists, else total
+          grnNumber: grn.grnNo,
+          poNumber: grn.refPO
         }
       });
     } else {

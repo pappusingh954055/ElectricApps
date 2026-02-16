@@ -22,8 +22,19 @@ export class FinanceService {
         return this.http.post(`${this.supplierApi}/payment-entry`, payment);
     }
 
-    getPendingDues(): Observable<any> {
-        return this.http.get(`${this.supplierApi}/pending-dues`);
+    getPendingDues(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.supplierApi}/pending-dues`).pipe(
+            map(dues => {
+                if (!Array.isArray(dues)) return [];
+                return dues.map(d => ({
+                    supplierId: d.supplierId || d.SupplierId,
+                    supplierName: d.supplierName || d.SupplierName,
+                    pendingAmount: d.pendingAmount || d.PendingAmount,
+                    status: d.status || d.Status,
+                    dueDate: d.dueDate || d.DueDate
+                }));
+            })
+        );
     }
 
     // Customer Methods

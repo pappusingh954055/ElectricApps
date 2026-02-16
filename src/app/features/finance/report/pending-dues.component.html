@@ -10,40 +10,46 @@
                 <div class="header-content">
                     <span>Supplier Payables</span>
                     <mat-form-field appearance="outline" class="search-field">
-                        <mat-label>Search Supplier</mat-label>
-                        <input matInput (keyup)="applyFilter($event)" placeholder="Ex. ABC Supplies" #input>
-                        <mat-icon matSuffix>search</mat-icon>
+                        <mat-label>Search Supplier (Name or ID)</mat-label>
+                        <input type="text" 
+                               placeholder="Ex. ABC Supplies or #101" 
+                               matInput 
+                               [formControl]="searchControl" 
+                               [matAutocomplete]="auto">
+                        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onOptionSelected($event)">
+                            <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+                                {{option.name || option.supplierName}} (#{{option.id || option.supplierId}})
+                            </mat-option>
+                        </mat-autocomplete>
+                        <mat-icon matSuffix *ngIf="!searchControl.value">search</mat-icon>
+                        <button mat-icon-button matSuffix *ngIf="searchControl.value" (click)="clearSearch()" aria-label="Clear">
+                            <mat-icon>close</mat-icon>
+                        </button>
                     </mat-form-field>
                 </div>
             </mat-card-title>
         </mat-card-header>
 
         <mat-card-content>
-            <!-- Loading Spinner -->
-            <div *ngIf="isLoading" class="loading-container" style="text-align: center; padding: 40px;">
-                <mat-spinner diameter="50"></mat-spinner>
-                <p style="margin-top: 16px;">Loading pending dues...</p>
-            </div>
-
             <!-- Error Message -->
             <div *ngIf="errorMessage && !isLoading" class="error-container" style="padding: 20px;">
-                <mat-card style="background-color: #ffebee; border-left: 4px solid #f44336;">
+                <mat-card class="error-card">
                     <mat-card-content>
-                        <div style="display: flex; align-items: center; gap: 12px;">
+                        <div class="error-content">
                             <mat-icon color="warn">error</mat-icon>
                             <span>{{errorMessage}}</span>
-                            <button mat-button color="primary" (click)="loadPendingDues()">Retry</button>
+                            <button mat-stroked-button color="primary" (click)="loadPendingDues()">Retry</button>
                         </div>
                     </mat-card-content>
                 </mat-card>
             </div>
 
-            <div class="table-container" *ngIf="!isLoading && !errorMessage">
+            <div class="table-container" [class.hidden]="isLoading">
                 <table mat-table [dataSource]="dataSource" matSort>
 
                     <!-- ID Column -->
                     <ng-container matColumnDef="supplierId">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Supplier ID </th>
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> ID </th>
                         <td mat-cell *matCellDef="let row"> #{{row.supplierId}} </td>
                     </ng-container>
 
@@ -81,9 +87,14 @@
                     <ng-container matColumnDef="actions">
                         <th mat-header-cell *matHeaderCellDef> Actions </th>
                         <td mat-cell *matCellDef="let row">
-                            <button mat-flat-button color="primary" class="pay-btn" (click)="makePayment(row.supplierId)">
-                                <mat-icon>payment</mat-icon> Pay Now
-                            </button>
+                            <div class="action-buttons">
+                                <button mat-stroked-button color="primary" matTooltip="Pay Now" (click)="makePayment(row.supplierId)">
+                                    <mat-icon>payment</mat-icon> Pay
+                                </button>
+                                <button mat-icon-button color="accent" matTooltip="View Ledger" (click)="viewLedger(row.supplierId)">
+                                    <mat-icon>menu_book</mat-icon>
+                                </button>
+                            </div>
                         </td>
                     </ng-container>
 
@@ -92,11 +103,17 @@
 
                     <!-- Row shown when there is no matching data. -->
                     <tr class="mat-row" *matNoDataRow>
-                        <td class="mat-cell" colspan="4">No data matching the filter "{{input.value}}"</td>
+                        <td class="mat-cell empty-cell" colspan="6">
+                            <div class="no-data">
+                                <mat-icon>{{searchControl.value ? 'search_off' : 'payments'}}</mat-icon>
+                                <p>{{searchControl.value ? 'No matches found for "' + searchControl.value + '"' : 'No pending dues found for suppliers.'}}</p>
+                            </div>
+                        </td>
                     </tr>
                 </table>
             </div>
             <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of suppliers"></mat-paginator>
+
         </mat-card-content>
     </mat-card>
 </div>

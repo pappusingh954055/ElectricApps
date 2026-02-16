@@ -7,6 +7,7 @@ import { InventoryService } from '../service/inventory.service';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
 import { GrnSuccessDialogComponent } from '../grn-success-dialog/grn-success-dialog.component';
+import { FinanceService } from '../../finance/service/finance.service';
 
 @Component({
   selector: 'app-grn-form-component',
@@ -24,6 +25,7 @@ export class GrnFormComponent implements OnInit {
   isFromPopup: boolean = false;
   isViewMode: boolean = false;
   private dialog = inject(MatDialog);
+  private financeService = inject(FinanceService);
 
   constructor(
     private fb: FormBuilder,
@@ -85,13 +87,20 @@ export class GrnFormComponent implements OnInit {
         console.log('pendingqtycheck:', res);
 
         // Capture supplier details for payment navigation
-        this.supplierId = res.supplierId || 0;
-        this.supplierName = res.supplierName || '';
+        // Testing both camelCase and PascalCase to be safe
+        this.supplierId = res.supplierId || res.SupplierId || 0;
+        this.supplierName = res.supplierName || res.SupplierName || '';
+
+        console.log('✅ PO Data Loaded. Supplier Info:', {
+          id: this.supplierId,
+          name: this.supplierName,
+          originalRes: res
+        });
 
         this.grnForm.patchValue({
           grnNumber: res.grnNumber || 'AUTO-GEN',
           poNumber: res.poNumber,
-          supplierName: res.supplierName,
+          supplierName: this.supplierName,
           remarks: res.remarks || ''
         });
 
@@ -271,9 +280,10 @@ export class GrnFormComponent implements OnInit {
 
         dialogRef.afterClosed().subscribe(result => {
           if (result === 'make-payment') {
-            // Navigate to Payment Entry with supplier pre-selected
-            this.router.navigate(['/app/finance/suppliers/payment'], {
-              queryParams: { supplierId: this.supplierId }
+            this.performDirectPayment({
+              grnNumber: grnNumber,
+              grandTotal: this.calculateGrandTotal(),
+              supplierId: this.supplierId
             });
           } else {
             // Navigate to GRN List
@@ -294,6 +304,66 @@ export class GrnFormComponent implements OnInit {
         });
       }
     });
+  }
+
+  performDirectPayment(data: any) {
+    console.log('🚀 Initiating Direct Payment with data:', data);
+
+    if (!data.supplierId || data.supplierId <= 0) {
+      console.error('❌ Cannot perform direct payment: Supplier ID is invalid:', data.supplierId);
+      this.dialog.open(StatusDialogComponent, {
+        width: '400px',
+        data: {
+          isSuccess: false,
+          title: 'Payment Error',
+          message: `Cannot process payment. Supplier ID is missing or invalid (${data.supplierId}). Please try Recording Payment from the GRN list.`,
+          status: 'error'
+        }
+      });
+      this.router.navigate(['/app/inventory/grn-list']);
+      return;
+    }
+
+    const paymentPayload = {
+      supplierId: data.supplierId,
+      amount: data.grandTotal,
+      paymentMode: 'Cash', // Default to Cash for direct payment from GRN
+      referenceNumber: data.grnNumber,
+      paymentDate: new Date().toISOString(),
+      remarks: `Direct Payment for GRN: ${data.grnNumber}`,
+      createdBy: localStorage.getItem('email') || 'Admin'
+    };
+
+    // Add a small delay to ensure Purchase transaction is fully committed
+    setTimeout(() => {
+      this.financeService.recordSupplierPayment(paymentPayload).subscribe({
+        next: () => {
+          this.dialog.open(StatusDialogComponent, {
+            width: '350px',
+            data: {
+              isSuccess: true,
+              title: 'Payment Successful',
+              message: `Direct payment of ₹${data.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })} recorded for GRN ${data.grnNumber}.`,
+              status: 'success'
+            }
+          });
+          this.router.navigate(['/app/inventory/grn-list']);
+        },
+        error: (err) => {
+          console.error('Direct payment failed:', err);
+          this.dialog.open(StatusDialogComponent, {
+            width: '350px',
+            data: {
+              isSuccess: false,
+              title: 'Payment Failed',
+              message: 'GRN saved but direct payment failed. You can record it manually from the GRN list.',
+              status: 'error'
+            }
+          });
+          this.router.navigate(['/app/inventory/grn-list']);
+        }
+      });
+    }, 500);
   }
 
   goBack() { this.router.navigate(['/app/inventory/grn-list']); }
