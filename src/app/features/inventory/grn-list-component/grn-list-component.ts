@@ -31,6 +31,8 @@ export interface GRNListRow {
   supplierId: number;  // For payment navigation
   receivedDate: string | Date;
   status: string;
+  paymentStatus: string;  // Paid, Partial, Unpaid
+  totalAmount: number;    // GRN Total Amount
   totalRejected: number;
   items: GRNItem[];
 }
@@ -52,7 +54,7 @@ export interface GRNListRow {
 })
 export class GrnListComponent implements OnInit, AfterViewInit {
   // Columns matching Backend DTO
-  displayedColumns: string[] = ['grnNo', 'refPO', 'supplierName', 'receivedDate', 'status', 'actions'];
+  displayedColumns: string[] = ['grnNo', 'refPO', 'supplierName', 'receivedDate', 'status', 'paymentStatus', 'actions'];
   dataSource = new MatTableDataSource<GRNListRow>([]);
 
   // Expansion variable jo HTML ko chahiye
@@ -142,6 +144,11 @@ export class GrnListComponent implements OnInit, AfterViewInit {
           }));
         })
       ).subscribe(data => {
+        // TEMPORARY: For testing - Make first GRN "Paid" to see success icon
+        if (data.length > 0) {
+          data[0].paymentStatus = 'Paid'; // TEST ONLY - Remove after backend integration
+        }
+
         this.dataSource.data = data;
         console.log('GRN Data Loaded:', data);
       });
@@ -199,13 +206,23 @@ export class GrnListComponent implements OnInit, AfterViewInit {
   }
 
   makePayment(grn: any) {
+    console.log('=== Make Payment Clicked ===');
+    console.log('GRN Data:', grn);
+    console.log('Supplier ID:', grn.supplierId);
+
     // Navigate to Payment Entry with supplier pre-selected
     if (grn.supplierId) {
+      console.log('Navigating to payment with supplierId:', grn.supplierId);
       this.router.navigate(['/app/finance/suppliers/payment'], {
-        queryParams: { supplierId: grn.supplierId }
+        queryParams: {
+          supplierId: grn.supplierId,
+          amount: grn.totalAmount,
+          grnNumber: grn.grnNo
+        }
       });
     } else {
-      console.error('Supplier ID not found for GRN:', grn);
+      console.error('❌ Supplier ID not found for GRN:', grn);
+      alert(`Supplier ID missing for GRN: ${grn.grnNo}. Cannot make payment.`);
     }
   }
 }

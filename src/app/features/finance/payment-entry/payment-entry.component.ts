@@ -51,10 +51,25 @@ export class PaymentEntryComponent implements OnInit {
     // Check for supplierId query param (from Pending Dues "Pay Now" button)
     this.route.queryParams.subscribe(params => {
       const supplierId = params['supplierId'];
+      const amount = params['amount'];
+      const grnNumber = params['grnNumber'];
+
       if (supplierId) {
         // Pre-select supplier after suppliers are loaded
         setTimeout(() => {
           this.preselectSupplier(Number(supplierId));
+
+          // Auto-fill amount if provided (from GRN)
+          if (amount) {
+            this.payment.amount = Number(amount);
+            console.log('✅ Auto-filled amount:', amount);
+          }
+
+          // Auto-fill remarks with GRN reference if provided
+          if (grnNumber) {
+            this.payment.remarks = `Payment for ${grnNumber}`;
+            console.log('✅ Auto-filled remarks:', this.payment.remarks);
+          }
         }, 500);
       }
     });
@@ -152,6 +167,31 @@ export class PaymentEntryComponent implements OnInit {
       return;
     }
 
+    // Get supplier name for confirmation dialog
+    const supplier = this.suppliers.find(s => s.id === this.payment.supplierId);
+    const supplierName = supplier ? supplier.name : 'Unknown Supplier';
+
+    // Show confirmation dialog first
+    const confirmDialog = this.dialog.open(StatusDialogComponent, {
+      width: '450px',
+      data: {
+        title: 'Confirm Payment',
+        message: `Are you sure you want to record this payment?\n\nSupplier: ${supplierName}\nAmount: ₹${this.payment.amount.toLocaleString('en-IN')}\nMode: ${this.payment.paymentMode}`,
+        status: 'warning',
+        isSuccess: false,
+        showCancel: true
+      }
+    });
+
+    confirmDialog.afterClosed().subscribe(confirmed => {
+      if (!confirmed) return; // User cancelled
+
+      // User confirmed, proceed with payment
+      this.performPayment();
+    });
+  }
+
+  performPayment() {
     const payload = { ...this.payment, paymentDate: this.payment.paymentDate instanceof Date ? this.payment.paymentDate.toISOString() : this.payment.paymentDate };
 
     this.financeService.recordSupplierPayment(payload).subscribe({
