@@ -18,6 +18,7 @@ export class StatusDialogComponent {
     showCancel?: boolean,
     confirmText?: string,
     cancelText?: string,
-    status?: string // 'success', 'warning', 'error'
+    status?: string, // 'success', 'warning', 'error'
+    actions?: { label: string, role: string, color?: string }[]
   }) { }
 }

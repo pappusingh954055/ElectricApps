@@ -37,6 +37,10 @@ export class FinanceService {
         );
     }
 
+    getPaymentsReport(filters: any): Observable<any[]> {
+        return this.http.post<any[]>(`${this.supplierApi}/payments-report`, filters);
+    }
+
     // Customer Methods
     getCustomerLedger(customerId: number): Observable<any> {
         return this.http.get(`${this.customerApi}/ledger/${customerId}`);

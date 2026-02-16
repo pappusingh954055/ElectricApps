@@ -1,0 +1,113 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="mat-headline-4">Payment History Report</h1>
+        <p class="subtitle">Log of all payments made to suppliers.</p>
+    </div>
+
+    <!-- Filters Section -->
+    <mat-card class="filter-card elevation-z2">
+        <mat-card-content>
+            <div class="filter-container">
+                <mat-form-field appearance="outline">
+                    <mat-label>Start Date</mat-label>
+                    <input matInput [matDatepicker]="startPicker" [(ngModel)]="filters.startDate">
+                    <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #startPicker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline">
+                    <mat-label>End Date</mat-label>
+                    <input matInput [matDatepicker]="endPicker" [(ngModel)]="filters.endDate">
+                    <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #endPicker></mat-datepicker>
+                </mat-form-field>
+
+                <button mat-flat-button color="primary" (click)="loadReport()" [disabled]="isLoading">
+                    <mat-icon *ngIf="!isLoading">refresh</mat-icon>
+                    <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+                    Update Report
+                </button>
+
+                <div class="spacer"></div>
+
+                <mat-form-field appearance="outline" class="search-field">
+                    <mat-label>Search Supplier or Reference</mat-label>
+                    <input matInput (keyup)="applyFilter($event)" placeholder="Ex. Mahaveer">
+                    <mat-icon matSuffix>search</mat-icon>
+                </mat-form-field>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <!-- Table Section -->
+    <mat-card class="table-card elevation-z2">
+        <div class="loading-shade" *ngIf="isLoading">
+            <mat-spinner></mat-spinner>
+        </div>
+
+        <div class="table-container">
+            <table mat-table [dataSource]="dataSource" matSort>
+
+                <!-- Date Column -->
+                <ng-container matColumnDef="paymentDate">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Payment Date </th>
+                    <td mat-cell *matCellDef="let element"> {{element.paymentDate | date:'dd MMM yyyy'}} </td>
+                </ng-container>
+
+                <!-- Supplier Column -->
+                <ng-container matColumnDef="supplierName">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Supplier </th>
+                    <td mat-cell *matCellDef="let element">
+                        <div class="supplier-info">
+                            <span class="name">{{element.supplierName}}</span>
+                            <span class="id">#{{element.supplierId}}</span>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Mode Column -->
+                <ng-container matColumnDef="paymentMode">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Mode </th>
+                    <td mat-cell *matCellDef="let element">
+                        <span class="badge mode-{{element.paymentMode | lowercase}}">
+                            {{element.paymentMode}}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <!-- Reference Column -->
+                <ng-container matColumnDef="referenceNumber">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Reference </th>
+                    <td mat-cell *matCellDef="let element"> {{element.referenceNumber || '-'}} </td>
+                </ng-container>
+
+                <!-- Amount Column -->
+                <ng-container matColumnDef="amount">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header> Amount </th>
+                    <td mat-cell *matCellDef="let element" class="amount-cell"> ₹{{element.amount | number:'1.2-2'}} </td>
+                </ng-container>
+
+                <!-- Actions Column -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef> Receipt </th>
+                    <td mat-cell *matCellDef="let element">
+                        <button mat-icon-button color="primary" (click)="printVoucher(element)" matTooltip="Print Voucher">
+                            <mat-icon>print</mat-icon>
+                        </button>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                <!-- Row shown when there is no matching data. -->
+                <tr class="mat-row" *matNoDataRow>
+                    <td class="mat-cell" colspan="6" style="padding: 24px; text-align: center;">
+                        No payments found for the selected period
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <mat-paginator [pageSizeOptions]="[10, 25, 100]" aria-label="Select page of payments"></mat-paginator>
+    </mat-card>
+</div>

@@ -21,6 +21,11 @@ export const FINANCE_ROUTES: Routes = [
                 canActivate: [PermissionGuard],
                 loadComponent: () => import('../features/finance/report/pending-dues.component').then(m => m.PendingDuesComponent)
             },
+            {
+                path: 'payments-report',
+                canActivate: [PermissionGuard],
+                loadComponent: () => import('../features/finance/report/payment-report.component').then(m => m.PaymentReportComponent)
+            },
         ]
     },
     {

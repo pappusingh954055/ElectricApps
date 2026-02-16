@@ -1,0 +1,103 @@
+.page-container {
+    padding: 24px;
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.page-header {
+    margin-bottom: 24px;
+    h1 {
+        margin: 0;
+        color: #2c3e50;
+        font-weight: 500;
+    }
+    .subtitle {
+        color: #7f8c8d;
+        margin-top: 4px;
+    }
+}
+
+.filter-card {
+    margin-bottom: 24px;
+    .filter-container {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        flex-wrap: wrap;
+
+        .spacer { flex: 1; }
+        .search-field { width: 300px; }
+        
+        mat-form-field {
+            margin-bottom: -1.25em; // Align with buttons
+        }
+
+        button {
+            height: 52px;
+            padding: 0 24px;
+        }
+    }
+}
+
+.table-card {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.table-container {
+    max-height: 60vh;
+    overflow: auto;
+}
+
+table {
+    width: 100%;
+}
+
+.supplier-info {
+    display: flex;
+    flex-direction: column;
+    .name { font-weight: 500; color: #333; }
+    .id { font-size: 0.75rem; color: #888; }
+}
+
+.amount-cell {
+    font-weight: 600;
+    color: #2e7d32;
+    font-size: 1.05rem;
+}
+
+.loading-shade {
+    position: absolute;
+    top: 0; left: 0; bottom: 0; right: 0;
+    background: rgba(255, 255, 255, 0.7);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.badge {
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    &.mode-cash { background: #e8f5e9; color: #2e7d32; }
+    &.mode-bank { background: #e3f2fd; color: #1565c0; }
+    &.mode-check { background: #fff3e0; color: #ef6c00; }
+    &.mode-upi { background: #f3e5f5; color: #7b1fa2; }
+}
+
+@media print {
+    .page-header, .filter-card, .mat-paginator, .no-print {
+        display: none !important;
+    }
+    .page-container { padding: 0; }
+    .table-card { box-shadow: none !important; }
+}

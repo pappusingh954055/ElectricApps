@@ -9,12 +9,24 @@
         <mat-card-content>
             <div class="search-container">
                 <mat-form-field appearance="outline" class="search-field">
-                    <mat-label>Enter Customer ID</mat-label>
-                    <input matInput type="number" [(ngModel)]="customerId" placeholder="e.g. 501" (keyup.enter)="loadLedger()">
-                    <mat-icon matSuffix>search</mat-icon>
+                    <mat-label>Search Customer</mat-label>
+                    <input type="text"
+                           placeholder="Ex. John Doe or ID"
+                           matInput
+                           [formControl]="customerControl"
+                           [matAutocomplete]="auto">
+                    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onCustomerSelected($event)">
+                        <mat-option *ngFor="let customer of filteredCustomers | async" [value]="customer">
+                            <span>{{customer.name}}</span> |
+                            <small class="text-muted">ID: #{{customer.id}}</small>
+                        </mat-option>
+                    </mat-autocomplete>
+                    <mat-icon matSuffix>person_search</mat-icon>
                 </mat-form-field>
-                <button mat-flat-button color="primary" (click)="loadLedger()" [disabled]="!customerId">
-                    <mat-icon>download</mat-icon> Fetch Ledger
+                <button mat-flat-button color="primary" (click)="loadLedger()" [disabled]="!customerId || isLoading">
+                    <mat-icon *ngIf="!isLoading">download</mat-icon>
+                    <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+                    Fetch Ledger
                 </button>
             </div>
         </mat-card-content>

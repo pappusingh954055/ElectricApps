@@ -8,7 +8,12 @@
         <mat-card-header>
             <mat-card-title>
                 <div class="header-content">
-                    <span>Supplier Payables</span>
+                    <div class="title-group">
+                        <span>Supplier Payables</span>
+                        <button mat-button color="primary" routerLink="/app/finance/suppliers/payments-report" class="history-btn">
+                            <mat-icon>history</mat-icon> View Payment History
+                        </button>
+                    </div>
                     <mat-form-field appearance="outline" class="search-field">
                         <mat-label>Search Supplier (Name or ID)</mat-label>
                         <input type="text" 

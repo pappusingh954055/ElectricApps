@@ -16,12 +16,22 @@
         <mat-card-content>
             <form (ngSubmit)="saveReceipt()">
                 <div class="form-grid">
-                    <!-- Row 1 -->
                     <mat-form-field appearance="outline" class="full-width">
-                        <mat-label>Customer ID</mat-label>
-                        <input matInput type="number" [(ngModel)]="receipt.customerId" name="customerId" required placeholder="Enter Customer ID">
-                        <mat-icon matSuffix>person</mat-icon>
-                        <mat-hint>Enter the unique ID of the customer</mat-hint>
+                        <mat-label>Customer Selection</mat-label>
+                        <input type="text"
+                               placeholder="Search name or ID"
+                               matInput
+                               [formControl]="customerControl"
+                               [matAutocomplete]="auto"
+                               required>
+                        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onCustomerSelected($event)">
+                            <mat-option *ngFor="let customer of filteredCustomers | async" [value]="customer">
+                                <span>{{customer.name}}</span> |
+                                <small class="text-muted">ID: #{{customer.id}}</small>
+                            </mat-option>
+                        </mat-autocomplete>
+                        <mat-icon matSuffix>person_search</mat-icon>
+                        <mat-hint>Search and select correct customer</mat-hint>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="full-width">
@@ -29,6 +39,14 @@
                         <input matInput type="number" [(ngModel)]="receipt.amount" name="amount" required placeholder="0.00" min="0">
                         <mat-icon matSuffix>currency_rupee</mat-icon>
                     </mat-form-field>
+
+                    <!-- Balance Display (Conditional) -->
+                    <div class="balance-card full-width" *ngIf="currentBalance !== null" [class.settled]="currentBalance <= 0">
+                        <div class="balance-label">Current Outstanding</div>
+                        <div class="balance-value">
+                            ₹{{currentBalance | number:'1.2-2'}}
+                        </div>
+                    </div>
 
                     <!-- Row 2 -->
                     <mat-form-field appearance="outline" class="full-width">
@@ -72,11 +90,13 @@
                 <mat-divider></mat-divider>
 
                 <div class="actions">
-                    <button mat-button color="warn" type="button" (click)="resetForm()">
+                    <button mat-button color="warn" type="button" (click)="resetForm()" [disabled]="isLoading">
                         Reset Form
                     </button>
-                    <button mat-flat-button color="primary" type="submit" [disabled]="!receipt.customerId || !receipt.amount">
-                        <mat-icon>save</mat-icon> Save Receipt
+                    <button mat-flat-button color="primary" type="submit" [disabled]="!receipt.customerId || !receipt.amount || isLoading">
+                        <mat-icon *ngIf="!isLoading">save</mat-icon>
+                        <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+                        {{isLoading ? 'Saving...' : 'Save Receipt'}}
                     </button>
                 </div>
             </form>

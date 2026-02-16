@@ -40,8 +40,22 @@
                 align-items: center;
                 flex-wrap: wrap;
                 gap: 16px;
-                
-                span { font-size: 1.25rem; font-weight: 500; }
+                width: 100%;
+
+                .title-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    
+                    span { font-size: 1.25rem; font-weight: 500; }
+
+                    .history-btn {
+                        font-weight: 400;
+                        font-size: 0.85rem;
+                        height: 36px;
+                        line-height: 36px;
+                    }
+                }
                 
                 .search-field {
                     font-size: 14px;
