@@ -5,6 +5,7 @@ export const FINANCE_ROUTES: Routes = [
     {
         path: 'suppliers',
         children: [
+            { path: 'list', data: { breadcrumb: 'List' }, loadComponent: () => import('../features/finance/suppliers/supplier-list/supplier-list').then(m => m.SupplierList) },
             {
                 path: 'ledger',
                 canActivate: [PermissionGuard],
@@ -25,6 +26,7 @@ export const FINANCE_ROUTES: Routes = [
     {
         path: 'customers',
         children: [
+            { path: 'list', data: { breadcrumb: 'List' }, loadComponent: () => import('../features/master/customer-list/customer-list').then(m => m.CustomerList) },
             {
                 path: 'ledger',
                 canActivate: [PermissionGuard],

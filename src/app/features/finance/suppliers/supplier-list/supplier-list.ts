@@ -1,13 +1,17 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../../shared/material/material/material-module';
+
 import { Router } from '@angular/router';
-import { SupplierService } from '../../inventory/service/supplier.service';
-import { GridColumn } from '../../../shared/models/grid-column.model';
-import { GridRequest } from '../../../shared/models/grid-request.model';
-import { ServerDatagridComponent } from '../../../shared/components/server-datagrid-component/server-datagrid-component';
+
+
 import { MatDialog } from '@angular/material/dialog';
-import { SupplierModalComponent } from '../../inventory/supplier-modal/supplier-modal';
+
+import { MaterialModule } from '../../../../shared/material/material/material-module';
+import { ServerDatagridComponent } from '../../../../shared/components/server-datagrid-component/server-datagrid-component';
+import { SupplierModalComponent } from '../../../../features/inventory/supplier-modal/supplier-modal';
+import { GridColumn } from '../../../../shared/models/grid-column.model';
+import { GridRequest } from '../../../../shared/models/grid-request.model';
+import { SupplierService } from '../../../../features/inventory/service/supplier.service';
 
 @Component({
   selector: 'app-supplier-list',

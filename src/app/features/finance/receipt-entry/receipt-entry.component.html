@@ -1,0 +1,85 @@
+<div class="page-container">
+    <div class="page-header">
+        <h1 class="mat-headline-4">Receipt Entry</h1>
+        <p class="subtitle">Record customer payments and issue receipts.</p>
+    </div>
+
+    <mat-card class="entry-card elevation-z2">
+        <mat-card-header>
+            <div mat-card-avatar class="header-icon bg-success">
+                <mat-icon>receipt</mat-icon>
+            </div>
+            <mat-card-title>Recieve Payment</mat-card-title>
+            <mat-card-subtitle>Enter details of payment received from customer</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+            <form (ngSubmit)="saveReceipt()">
+                <div class="form-grid">
+                    <!-- Row 1 -->
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Customer ID</mat-label>
+                        <input matInput type="number" [(ngModel)]="receipt.customerId" name="customerId" required placeholder="Enter Customer ID">
+                        <mat-icon matSuffix>person</mat-icon>
+                        <mat-hint>Enter the unique ID of the customer</mat-hint>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Amount Received (₹)</mat-label>
+                        <input matInput type="number" [(ngModel)]="receipt.amount" name="amount" required placeholder="0.00" min="0">
+                        <mat-icon matSuffix>currency_rupee</mat-icon>
+                    </mat-form-field>
+
+                    <!-- Row 2 -->
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Payment Mode</mat-label>
+                        <mat-select [(ngModel)]="receipt.paymentMode" name="paymentMode" required>
+                            <mat-option value="Cash">
+                                <mat-icon>money</mat-icon> Cash
+                            </mat-option>
+                            <mat-option value="Bank">
+                                <mat-icon>account_balance</mat-icon> Bank Transfer
+                            </mat-option>
+                            <mat-option value="Check">
+                                <mat-icon>padding</mat-icon> Check
+                            </mat-option>
+                            <mat-option value="UPI">
+                                <mat-icon>qr_code</mat-icon> UPI
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Reference / Cheque No.</mat-label>
+                        <input matInput type="text" [(ngModel)]="receipt.referenceNumber" name="ref" placeholder="e.g. TXN-8842">
+                        <mat-icon matSuffix>receipt_long</mat-icon>
+                    </mat-form-field>
+                    
+                    <!-- Row 3 -->
+                     <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Receipt Date</mat-label>
+                        <input matInput [matDatepicker]="picker" [(ngModel)]="receipt.paymentDate" name="paymentDate" required>
+                        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                        <mat-datepicker #picker></mat-datepicker>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Remarks / Notes</mat-label>
+                        <textarea matInput [(ngModel)]="receipt.remarks" name="remarks" rows="1" placeholder="Add additional notes..."></textarea>
+                    </mat-form-field>
+                </div>
+
+                <mat-divider></mat-divider>
+
+                <div class="actions">
+                    <button mat-button color="warn" type="button" (click)="resetForm()">
+                        Reset Form
+                    </button>
+                    <button mat-flat-button color="primary" type="submit" [disabled]="!receipt.customerId || !receipt.amount">
+                        <mat-icon>save</mat-icon> Save Receipt
+                    </button>
+                </div>
+            </form>
+        </mat-card-content>
+    </mat-card>
+</div>

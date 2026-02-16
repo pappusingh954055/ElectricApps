@@ -47,20 +47,6 @@ export const MASTER_ROUTES: Routes = [
     ]
   },
 
-  {
-    path: 'suppliers',
-    data: { breadcrumb: 'Suppliers' },
-    children: [
-      { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('./../features/suppliers/supplier-list/supplier-list').then(m => m.SupplierList) },
-    ]
-  },
 
-  {
-    path: 'customers',
-    data: { breadcrumb: 'Customers' },
-    children: [
-      { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('./../features/master/customer-list/customer-list').then(m => m.CustomerList) },
-    ]
-  }
 
 ];

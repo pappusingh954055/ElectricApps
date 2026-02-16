@@ -1,0 +1,115 @@
+
+.page-container {
+    padding: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+    font-family: 'Roboto', sans-serif;
+    animation: fadeIn 0.4s ease-in-out;
+    height: 100%;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.page-header {
+    margin-bottom: 32px;
+    margin-top: 16px;
+    text-align: center;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 16px;
+    
+    h1 {
+        margin: 0;
+        font-weight: 500;
+        color: #1976d2; // Primary color
+        font-size: 2rem;
+    }
+    
+    .subtitle {
+        color: #757575;
+        font-size: 1rem;
+        margin-top: 8px;
+    }
+}
+
+.entry-card {
+    padding: 24px;
+    background: #ffffff;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    
+    mat-card-header {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #eeeeee;
+
+      .header-icon {
+        background-color: #e3f2fd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        mat-icon {
+            color: #1976d2;
+            font-size: 24px;
+        }
+      }
+
+      mat-card-title {
+        font-size: 1.25rem;
+        font-weight: 500;
+        margin-bottom: 4px;
+      }
+      
+      mat-card-subtitle {
+        font-size: 0.875rem;
+        color: #9e9e9e;
+      }
+    }
+
+    mat-card-content {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+    }
+}
+
+.span-col {
+    grid-column: span 2;
+    @media (max-width: 768px) {
+        grid-column: span 1;
+    }
+}
+
+.full-width {
+    width: 100%;
+}
+
+.actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    margin-top: 24px;
+    
+    button {
+        text-transform: uppercase;
+        font-weight: 500;
+        letter-spacing: 0.5px;
+    }
+}

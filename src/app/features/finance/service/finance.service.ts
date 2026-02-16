@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../enviornments/environment';
 
 @Injectable({
@@ -38,8 +39,19 @@ export class FinanceService {
         return this.http.get(`${this.customerApi}/outstanding`);
     }
 
-    // P&L Methods (Placeholder for now)
+    // P&L Methods
     getProfitAndLossReport(filters: any): Observable<any> {
-        return this.http.post(`${environment.api.inventory}/api/dashboard/p-and-l`, filters);
+        // We aggregate data from Suppliers (Expenses/Payments) and Customers (Income/Receipts)
+        const paymentReq = this.http.post<any>(`${this.supplierApi}/total-payments`, filters);
+        const receiptReq = this.http.post<any>(`${this.customerApi}/total-receipts`, filters);
+
+        return forkJoin([paymentReq, receiptReq]).pipe(
+            map(([paymentRes, receiptRes]) => {
+                return {
+                    totalIncome: receiptRes.totalReceipts,
+                    totalExpenses: paymentRes.totalPayments
+                };
+            })
+        );
     }
 }
