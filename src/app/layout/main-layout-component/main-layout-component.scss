@@ -653,7 +653,27 @@ button.notification-item {
   }
 
   .tree-invisible {
-    display: none;
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.5s ease-out, opacity 0.5s ease-out;
+  }
+
+  // Visible state animation
+  mat-nested-tree-node > div[role="group"]:not(.tree-invisible) {
+    max-height: 1000px;
+    opacity: 1;
+    transition: max-height 0.5s ease-in, opacity 0.5s ease-in;
+  }
+
+  // Icon rotation animation
+  .expand-icon {
+    transition: transform 0.5s ease-in-out;
+  }
+
+  // Smooth hover effects
+  .mat-tree-node-content {
+    transition: background-color 0.2s ease;
   }
 }
 

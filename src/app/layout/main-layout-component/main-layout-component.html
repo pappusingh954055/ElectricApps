@@ -44,14 +44,12 @@
 
       <!-- Expandable Node -->
       <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
-        <div class="mat-tree-node-content" matTreeNodeToggle style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; cursor: pointer;">
+        <div class="mat-tree-node-content" (click)="toggleNode(node)" style="display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; cursor: pointer;">
            <span class="menu-content" style="display: flex; align-items: center;">
              <mat-icon class="menu-icon" style="margin-right: 16px;">{{node.icon}}</mat-icon>
              <span class="menu-text">{{node.title}}</span>
            </span>
-           <button mat-icon-button matTreeNodeToggle [attr.aria-label]="'Toggle ' + node.title">
-             <mat-icon>{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}</mat-icon>
-           </button>
+           <mat-icon class="expand-icon">{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}</mat-icon>
         </div>
         <div [class.tree-invisible]="!treeControl.isExpanded(node)" role="group" style="padding-left: 20px;">
            <ng-container matTreeNodeOutlet></ng-container>

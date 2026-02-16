@@ -64,7 +64,7 @@
             </mat-card-header>
             <mat-card-content>
                 <h2 class="stat-value text-primary">₹{{ totalReceivables | number:'1.2-2' }}</h2>
-                <button mat-button color="primary" routerLink="/app/finance/report/outstanding">View Tracker</button>
+                <button mat-button color="primary" routerLink="/app/finance/customers/outstanding">View Tracker</button>
             </mat-card-content>
         </mat-card>
 
@@ -78,7 +78,7 @@
             </mat-card-header>
             <mat-card-content>
                 <h2 class="stat-value text-warn">₹{{ totalPayables | number:'1.2-2' }}</h2>
-                <button mat-button color="warn" routerLink="/app/finance/report/pending-dues">View Dues</button>
+                <button mat-button color="warn" routerLink="/app/finance/suppliers/dues">View Dues</button>
             </mat-card-content>
         </mat-card>
     </div>

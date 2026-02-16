@@ -60,6 +60,34 @@ export class MainLayoutComponent implements OnInit {
 
   hasChild = (_: number, node: MenuItem) => !!node.children && node.children.length > 0;
 
+  // Accordion-style toggle: Only one ROOT menu open at a time
+  toggleNode(node: MenuItem): void {
+    const isExpanded = this.treeControl.isExpanded(node);
+
+    if (!isExpanded) {
+      // Only collapse root-level siblings (not nested children)
+      const isRootNode = this.dataSource.data.includes(node);
+
+      if (isRootNode) {
+        // This is a root node - collapse all other root nodes
+        this.dataSource.data.forEach(rootNode => {
+          if (rootNode !== node) {
+            this.treeControl.collapse(rootNode);
+          }
+        });
+      }
+      // If it's a nested node (child), don't collapse anything - just expand it
+    }
+
+    // Toggle the clicked node
+    this.treeControl.toggle(node);
+  }
+
+  // Helper method to collapse all nodes (kept for future use)
+  private collapseAll(): void {
+    this.treeControl.collapseAll();
+  }
+
   ngOnInit(): void {
     this.userEmail = localStorage.getItem('email');
 
