@@ -42,8 +42,8 @@ export class FinanceService {
     }
 
     // Customer Methods
-    getCustomerLedger(customerId: number): Observable<any> {
-        return this.http.get(`${this.customerApi}/ledger/${customerId}`);
+    getCustomerLedger(request: any): Observable<any> {
+        return this.http.post(`${this.customerApi}/ledger`, request);
     }
 
     recordCustomerReceipt(receipt: any): Observable<any> {

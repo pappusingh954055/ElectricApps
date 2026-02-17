@@ -36,6 +36,20 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
     isDashboardLoading: boolean = true;
     private isFirstLoad: boolean = true;
 
+    // Server-side State
+    totalCount = 0;
+    pageSize = 10;
+    pageNumber = 1;
+    sortBy = 'TransactionDate';
+    sortOrder = 'desc';
+
+    filters = {
+        startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+        endDate: new Date(),
+        type: '',
+        reference: ''
+    };
+
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
 
@@ -75,8 +89,33 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
     }
 
     ngAfterViewInit() {
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
+        // Handled via onSortChange and onPageChange
+    }
+
+    onPageChange(event: any) {
+        this.pageNumber = event.pageIndex + 1;
+        this.pageSize = event.pageSize;
+        this.loadLedger();
+    }
+
+    onSortChange(event: any) {
+        this.sortBy = event.active || 'TransactionDate';
+        this.sortOrder = event.direction || 'desc';
+        this.pageNumber = 1;
+        if (this.paginator) this.paginator.pageIndex = 0;
+        this.loadLedger();
+    }
+
+    updateReport() {
+        this.pageNumber = 1;
+        if (this.paginator) this.paginator.pageIndex = 0;
+        this.loadLedger();
+    }
+
+    clearFilter(column: string) {
+        if (column === 'type') this.filters.type = '';
+        if (column === 'reference') this.filters.reference = '';
+        this.updateReport();
     }
 
     private _filter(name: string): any[] {
@@ -134,20 +173,32 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
     loadLedger() {
         if (this.customerId && this.customerId > 0) {
             this.isLoading = true;
-            this.financeService.getCustomerLedger(this.customerId).subscribe({
-                next: (data) => {
+
+            const request = {
+                customerId: this.customerId,
+                pageNumber: this.pageNumber,
+                pageSize: this.pageSize,
+                sortBy: this.sortBy,
+                sortOrder: this.sortOrder,
+                startDate: this.filters.startDate.toISOString(),
+                endDate: this.filters.endDate.toISOString(),
+                typeFilter: this.filters.type,
+                referenceFilter: this.filters.reference,
+                searchTerm: ''
+            };
+
+            this.financeService.getCustomerLedger(request).subscribe({
+                next: (data: any) => {
                     this.isLoading = false;
                     this.ledgerData = data;
                     if (data && data.ledger) {
-                        this.dataSource.data = data.ledger;
-                        if (data.ledger.length > 0) {
-                            this.currentBalance = data.ledger[0].balance;
-                        } else {
-                            this.currentBalance = 0;
-                        }
+                        this.dataSource.data = data.ledger.items || [];
+                        this.totalCount = data.ledger.totalCount || 0;
+                        this.currentBalance = data.currentBalance || 0;
                     } else {
                         this.dataSource.data = [];
                         this.currentBalance = 0;
+                        this.totalCount = 0;
                     }
 
                     if (this.isFirstLoad) {
@@ -160,15 +211,9 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
                 error: (err) => {
                     this.isLoading = false;
                     console.error('Error fetching ledger:', err);
-                    this.dialog.open(StatusDialogComponent, {
-                        data: {
-                            isSuccess: false,
-                            message: 'Failed to fetch ledger. Please check Connection or Customer ID.',
-                            status: 'error'
-                        }
-                    });
                     this.ledgerData = null;
                     this.dataSource.data = [];
+                    this.totalCount = 0;
 
                     if (this.isFirstLoad) {
                         this.isFirstLoad = false;
