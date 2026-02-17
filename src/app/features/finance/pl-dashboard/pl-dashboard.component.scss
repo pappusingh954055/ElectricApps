@@ -25,10 +25,12 @@
     }
 }
 
-.loading-overlay {
-    margin-bottom: 20px;
-    border-radius: 4px;
-    overflow: hidden;
+// Disabled content during loading - same as main dashboard
+.disabled-content {
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.5;
+    filter: blur(2px);
 }
 
 .stats-grid {

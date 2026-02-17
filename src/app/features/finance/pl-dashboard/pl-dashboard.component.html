@@ -1,12 +1,7 @@
-<div class="dashboard-container">
+<div class="dashboard-container" [class.disabled-content]="isDashboardLoading">
     <div class="page-header">
         <h1 class="mat-headline-4">Profit & Loss Dashboard</h1>
         <p class="subtitle">Financial overview and key performance metrics.</p>
-    </div>
-
-    <!-- Loading Indicator -->
-    <div class="loading-overlay" *ngIf="isLoading">
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     </div>
 
     <!-- Stats Cards -->

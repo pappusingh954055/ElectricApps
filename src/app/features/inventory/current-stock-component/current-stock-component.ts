@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef, inject } from '@angular/core';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { CommonModule } from '@angular/common';
 import { MatTableDataSource } from '@angular/material/table';
@@ -12,6 +12,7 @@ import { SelectionModel } from '@angular/cdk/collections';
 // Animation imports for smooth expansion
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
   selector: 'app-current-stock-component',
@@ -28,6 +29,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
   ],
 })
 export class CurrentStockComponent implements OnInit, AfterViewInit {
+  private loadingService = inject(LoadingService);
+
   // ✅ Updated: Added 'totalSold' in correct sequence for the table
   displayedColumns: string[] = ['select', 'productName', 'totalReceived', 'totalRejected', 'totalSold', 'availableStock', 'unitRate', 'actions'];
   stockDataSource = new MatTableDataSource<any>([]);
@@ -40,6 +43,8 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
 
   resultsLength = 0;
   isLoadingResults = true;
+  isDashboardLoading: boolean = true;
+  private isFirstLoad: boolean = true;
   lowStockCount: number = 0;
   totalInventoryValue: number = 0;
   searchValue: string = '';
@@ -59,6 +64,12 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
   ngAfterViewInit() {
     this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
 
+    // Global loader ON - same as dashboard/po-list pattern
+    this.isDashboardLoading = true;
+    this.isFirstLoad = true;
+    this.loadingService.setLoading(true);
+    this.cdr.detectChanges();
+
     // Initializing data stream with filters
     setTimeout(() => {
       merge(this.sort.sortChange, this.paginator.page)
@@ -69,6 +80,14 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
           }),
           map(data => {
             this.isLoadingResults = false;
+
+            // Pehli baar load hone ke baad global loader OFF
+            if (this.isFirstLoad) {
+              this.isFirstLoad = false;
+              this.isDashboardLoading = false;
+              this.loadingService.setLoading(false);
+            }
+
             if (!data) return [];
             this.resultsLength = data.totalCount;
             return data.items;
@@ -77,6 +96,17 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
           this.handleDataUpdate(items);
         });
     }, 0);
+
+    // Safety timeout - force stop loader after 10 seconds
+    setTimeout(() => {
+      if (this.isDashboardLoading) {
+        console.warn('[CurrentStock] Force stopping loader after 10s timeout');
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      }
+    }, 10000);
   }
 
   // Helper to fetch data using all current filters
@@ -94,6 +124,13 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
     ).pipe(
       catchError(() => {
         this.isLoadingResults = false;
+
+        // Pehli baar error pe bhi global loader OFF
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+        }
         return of(null);
       })
     );

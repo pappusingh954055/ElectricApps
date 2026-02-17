@@ -1,5 +1,5 @@
-<div class="table-container mat-elevation-z8">
-  <div class="loading-shade" *ngIf="isLoadingResults">
+<div class="table-container mat-elevation-z8" [class.disabled-content]="isDashboardLoading">
+  <div class="loading-shade" *ngIf="isLoadingResults && !isDashboardLoading">
     <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
   </div>
 

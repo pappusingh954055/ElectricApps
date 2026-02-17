@@ -18,6 +18,7 @@ import { StatusDialogComponent } from '../../../shared/components/status-dialog-
 import { ActionConfirmDialog } from '../../../shared/components/action-confirm-dialog/action-confirm-dialog';
 import { ReasonRejectDialog } from '../../../shared/components/reason-reject-dialog/reason-reject-dialog';
 import { PoPrintModalComponent } from './po-print-modal/po-print-modal.component';
+import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
   selector: 'app-po-list',
@@ -34,10 +35,14 @@ import { PoPrintModalComponent } from './po-print-modal/po-print-modal.component
   styleUrl: './po-list.scss',
 })
 export class PoList implements OnInit {
+  private loadingService = inject(LoadingService);
+
   public dataSource = new MatTableDataSource<any>([]);
   public totalRecords: number = 0;
   public pageSize: number = 10;
   public isLoading: boolean = false;
+  public isDashboardLoading: boolean = true;
+  private isFirstLoad: boolean = true;
 
   public poColumns: GridColumn[] = [];
   public itemColumns: GridColumn[] = [];
@@ -73,8 +78,22 @@ export class PoList implements OnInit {
 
     console.log('[PoList] Current User Role:', this.userRole);
 
-    // Iske baad apna data load karein
-    this.loadData(this.currentGridState);
+    // Global loader ON - Grid component khud triggerDataLoad karega
+    this.isDashboardLoading = true;
+    this.isFirstLoad = true;
+    this.loadingService.setLoading(true);
+    this.cdr.detectChanges();
+
+    // Safety timeout - force stop loader after 10 seconds
+    setTimeout(() => {
+      if (this.isDashboardLoading) {
+        console.warn('Force stopping loader after 10s timeout');
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      }
+    }, 10000);
   }
 
   private initColumns() {
@@ -173,11 +192,25 @@ export class PoList implements OnInit {
         this.dataSource.data = res.data || [];
         this.totalRecords = res.totalRecords || 0;
         this.isLoading = false;
+
+        // Pehli baar load hone ke baad global loader OFF
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+        }
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error('API Error:', err);
         this.isLoading = false;
+
+        // Pehli baar error pe bhi global loader OFF
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+        }
         this.cdr.detectChanges();
       }
     });

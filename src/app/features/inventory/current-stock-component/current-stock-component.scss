@@ -9,6 +9,14 @@
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+/* Disabled content during loading - same as dashboard */
+.disabled-content {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.5;
+  filter: blur(2px);
+}
+
 .table-container {
   margin: 12px;
   background: #fff;

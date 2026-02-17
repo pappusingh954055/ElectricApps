@@ -5,6 +5,14 @@
   overflow: hidden;
 }
 
+/* Disabled content during loading - same as dashboard */
+.disabled-content {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.5;
+  filter: blur(2px);
+}
+
 /* Container: Tight layout [cite: 2026-01-22] */
 .grn-main-wrapper {
   padding: 12px 20px;

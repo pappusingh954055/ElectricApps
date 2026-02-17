@@ -1,9 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { FinanceService } from '../service/finance.service';
 import { forkJoin, finalize } from 'rxjs';
+import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
     selector: 'app-pl-dashboard',
@@ -13,11 +14,14 @@ import { forkJoin, finalize } from 'rxjs';
     styleUrl: './pl-dashboard.component.scss'
 })
 export class PLDashboardComponent implements OnInit {
+    private cdr = inject(ChangeDetectorRef);
+    private loadingService = inject(LoadingService);
+
     totalIncome: number = 0;
     totalExpenses: number = 0;
     totalReceivables: number = 0;
     totalPayables: number = 0;
-    isLoading: boolean = false;
+    isDashboardLoading: boolean = true;
 
     // Add date filter later
     filters = {
@@ -32,26 +36,25 @@ export class PLDashboardComponent implements OnInit {
 
         // Safety timeout - force stop loader after 10 seconds
         setTimeout(() => {
-            if (this.isLoading) {
+            if (this.isDashboardLoading) {
                 console.warn('Force stopping loader after 10s timeout');
-                this.isLoading = false;
+                this.isDashboardLoading = false;
+                this.loadingService.setLoading(false);
+                this.cdr.detectChanges();
             }
         }, 10000);
     }
 
     loadStats() {
-        this.isLoading = true;
+        this.isDashboardLoading = true;
+        this.loadingService.setLoading(true); // Global loading ON
+        this.cdr.detectChanges();
 
         forkJoin({
             pl: this.financeService.getProfitAndLossReport(this.filters),
             receivables: this.financeService.getTotalReceivables(),
             payables: this.financeService.getTotalPayables()
-        }).pipe(
-            finalize(() => {
-                console.log('Finalize called - stopping loader');
-                this.isLoading = false;
-            })
-        ).subscribe({
+        }).subscribe({
             next: (results) => {
                 console.log('All Dashboard Data:', results);
 
@@ -70,11 +73,18 @@ export class PLDashboardComponent implements OnInit {
                 if (results.payables) {
                     this.totalPayables = results.payables.totalPending || results.payables.TotalPending || 0;
                 }
+
+                // Sab kuch load hone ke baad Loader OFF
+                this.isDashboardLoading = false;
+                this.loadingService.setLoading(false); // Global loading OFF
+                this.cdr.detectChanges();
             },
             error: (err) => {
                 console.error('Error loading dashboard stats:', err);
                 console.error('Error details:', JSON.stringify(err, null, 2));
-                this.isLoading = false;
+                this.isDashboardLoading = false;
+                this.loadingService.setLoading(false); // Global loading OFF on error
+                this.cdr.detectChanges();
             }
         });
     }

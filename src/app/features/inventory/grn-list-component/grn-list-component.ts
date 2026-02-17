@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef, inject } from '@angular/core';
+import { LoadingService } from '../../../core/services/loading.service';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatTableDataSource } from '@angular/material/table';
@@ -53,6 +54,8 @@ export interface GRNListRow {
   ],
 })
 export class GrnListComponent implements OnInit, AfterViewInit {
+  private loadingService = inject(LoadingService);
+
   // Columns matching Backend DTO
   displayedColumns: string[] = ['grnNo', 'refPO', 'supplierName', 'receivedDate', 'totalAmount', 'status', 'paymentStatus', 'actions'];
   dataSource = new MatTableDataSource<GRNListRow>([]);
@@ -63,6 +66,8 @@ export class GrnListComponent implements OnInit, AfterViewInit {
   // Search and Pagination states
   resultsLength = 0;
   isLoadingResults = true;
+  isDashboardLoading: boolean = true;
+  private isFirstLoad: boolean = true;
   searchControl = new FormControl('');
 
   // Child Table Paging variables
@@ -96,11 +101,28 @@ export class GrnListComponent implements OnInit, AfterViewInit {
     // Sorting change hone par page index reset karein [cite: 2026-01-22]
     this.sort.sortChange.subscribe(() => (this.paginator.pageIndex = 0));
 
+    // Global loader ON - same as dashboard/po-list pattern
+    this.isDashboardLoading = true;
+    this.isFirstLoad = true;
+    this.loadingService.setLoading(true);
+    this.cdr.detectChanges();
+
     // Merge Sort, Page aur Search events into one stream [cite: 2026-01-22]
     // Fix NG0100: Wrap in setTimeout to avoid ExpressionChangedAfterItHasBeenCheckedError
     setTimeout(() => {
       this.loadGRNData();
     });
+
+    // Safety timeout - force stop loader after 10 seconds
+    setTimeout(() => {
+      if (this.isDashboardLoading) {
+        console.warn('[GrnList] Force stopping loader after 10s timeout');
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      }
+    }, 10000);
   }
 
   loadGRNData() {
@@ -123,6 +145,13 @@ export class GrnListComponent implements OnInit, AfterViewInit {
               // Loader OFF: Agar API fail ho jaye
               this.isLoadingResults = false;
               this.searchControl.enable({ emitEvent: false });
+
+              // Pehli baar error pe bhi global loader OFF
+              if (this.isFirstLoad) {
+                this.isFirstLoad = false;
+                this.isDashboardLoading = false;
+                this.loadingService.setLoading(false);
+              }
               return of(null);
             })
           );
@@ -131,6 +160,13 @@ export class GrnListComponent implements OnInit, AfterViewInit {
           // Loader OFF: Success response aane par
           this.isLoadingResults = false;
           this.searchControl.enable({ emitEvent: false });
+
+          // Pehli baar load hone ke baad global loader OFF
+          if (this.isFirstLoad) {
+            this.isFirstLoad = false;
+            this.isDashboardLoading = false;
+            this.loadingService.setLoading(false);
+          }
           this.cdr.detectChanges();
           if (data === null) return [];
 

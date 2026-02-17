@@ -1,6 +1,6 @@
-<mat-card class="list-card">
+<mat-card class="list-card" [class.disabled-content]="isDashboardLoading">
   <div class="page-container">
-    <div class="loading-shade" *ngIf="isLoading">
+    <div class="loading-shade" *ngIf="isLoading && !isDashboardLoading">
       <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
     </div>
 

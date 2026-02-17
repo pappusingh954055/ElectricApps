@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angular/core';
+import { LoadingService } from '../../../core/services/loading.service';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { CommonModule } from '@angular/common';
 import { MatTableDataSource } from '@angular/material/table';
@@ -23,10 +24,14 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
   styleUrl: './so-list.scss',
 })
 export class SoList implements OnInit {
+  private loadingService = inject(LoadingService);
+
   displayedColumns: string[] = ['select', 'soNumber', 'soDate', 'customerName', 'grandTotal', 'status', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   isAdmin: boolean = false;
   isLoading: boolean = true;
+  isDashboardLoading: boolean = true;
+  private isFirstLoad: boolean = true;
 
   private cdr = inject(ChangeDetectorRef);
   private router = inject(Router);
@@ -45,7 +50,25 @@ export class SoList implements OnInit {
 
   ngOnInit() {
     this.checkUserRole();
+
+    // Global loader ON - same as dashboard/po-list pattern
+    this.isDashboardLoading = true;
+    this.isFirstLoad = true;
+    this.loadingService.setLoading(true);
+    this.cdr.detectChanges();
+
     this.loadOrders();
+
+    // Safety timeout - force stop loader after 10 seconds
+    setTimeout(() => {
+      if (this.isDashboardLoading) {
+        console.warn('[SoList] Force stopping loader after 10s timeout');
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      }
+    }, 10000);
   }
 
   // --- Selection Helper Logic (New) ---
@@ -86,10 +109,24 @@ export class SoList implements OnInit {
         this.totalRecords = res.totalCount;
 
         this.isLoading = false;
+
+        // Pehli baar load hone ke baad global loader OFF
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+        }
         this.cdr.detectChanges();
       },
       error: (err) => {
         this.isLoading = false;
+
+        // Pehli baar error pe bhi global loader OFF
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+        }
         this.cdr.detectChanges();
       }
     });

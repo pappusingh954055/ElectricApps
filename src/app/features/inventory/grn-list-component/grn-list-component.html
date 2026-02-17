@@ -1,4 +1,4 @@
-<div class="grn-main-wrapper">
+<div class="grn-main-wrapper" [class.disabled-content]="isDashboardLoading">
     <div class="header-container">
         <div class="title-section">
             <h1 class="mat-h1">Goods Receipt Notes (GRN)</h1>
@@ -21,7 +21,7 @@
 
     <div class="table-card mat-elevation-z3">
 
-        <div class="loading-shade" *ngIf="isLoadingResults">
+        <div class="loading-shade" *ngIf="isLoadingResults && !isDashboardLoading">
             <mat-spinner diameter="50"></mat-spinner>
         </div>
 
