@@ -158,12 +158,13 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
 
     const currentDue = this.route.snapshot.queryParams['currentDue'];
     if (currentDue) {
-      this.currentBalance = Number(currentDue);
+      const balance = Number(currentDue);
+      this.currentBalance = balance;
       console.log('✅ Using passed pending due:', this.currentBalance);
 
       // Ensure balance type is set correctly too
-      if (this.currentBalance > 0) this.balanceType = 'Payable';
-      else if (this.currentBalance < 0) this.balanceType = 'Advance';
+      if (balance > 0) this.balanceType = 'Payable';
+      else if (balance < 0) this.balanceType = 'Advance';
       else this.balanceType = 'Clear';
     }
 
@@ -214,7 +215,19 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
 
   fetchBalance(supplierId: number) {
     this.updateLoading(1);
-    this.financeService.getSupplierLedger(supplierId).pipe(
+
+    // The API expects a search request object, not just an ID
+    const request = {
+      supplierId: supplierId,
+      pageNumber: 1,
+      pageSize: 1, // We only need the latest balance
+      sortBy: 'TransactionDate',
+      sortOrder: 'desc',
+      startDate: new Date(2000, 0, 1).toISOString(), // Look back far enough
+      endDate: new Date().toISOString()
+    };
+
+    this.financeService.getSupplierLedger(request).pipe(
       finalize(() => {
         this.updateLoading(-1);
         if (this.isFirstLoad) {
@@ -226,17 +239,19 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
       })
     ).subscribe({
       next: (result: any) => {
-        // The API returns SupplierLedgerResultDto { ledger: SupplierLedger[] }
-        const data = Array.isArray(result) ? result : (result?.ledger || []);
-
-        // We need the balance from the *first* (descending date) entry.
-        if (data.length > 0) {
-          const latestEntry = data[0];
-          this.currentBalance = latestEntry.balance;
-          this.balanceType = latestEntry.balance > 0 ? 'Payable' : 'Advance';
-          this.recentTransactions = data.slice(0, 5); // Store last 5 transactions
+        // The API returns { ledger: { items: [], ... }, currentBalance: X }
+        if (result && result.ledger) {
+          const balance = result.currentBalance ?? 0;
+          this.currentBalance = balance;
+          this.balanceType = balance > 0 ? 'Payable' : (balance < 0 ? 'Advance' : 'Clear');
+          const items = (result.ledger.items || []).map((item: any) => {
+            if (item.transactionDate && typeof item.transactionDate === 'string' && !item.transactionDate.includes('Z')) {
+              item.transactionDate += 'Z';
+            }
+            return item;
+          });
+          this.recentTransactions = items;
         } else {
-          // First time payment or no history
           this.currentBalance = 0;
           this.balanceType = 'Clear';
           this.recentTransactions = [];
@@ -382,9 +397,13 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
 
   postPaymentActions() {
     this.resetForm();
-    // If we came from GRN List, go back there
-    if (this.route.snapshot.queryParams['grnNumber']) {
-      this.router.navigate(['/app/inventory/grn-list']);
+    // After payment, always a good idea to show the ledger
+    if (this.payment.supplierId) {
+      this.router.navigate(['/app/finance/suppliers/ledger'], {
+        queryParams: { supplierId: this.payment.supplierId }
+      });
+    } else {
+      this.router.navigate(['/app/finance/suppliers/payment']);
     }
   }
 

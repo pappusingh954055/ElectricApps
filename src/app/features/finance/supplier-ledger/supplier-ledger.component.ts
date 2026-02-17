@@ -213,7 +213,13 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
                 next: (result: any) => {
                     if (result && result.ledger) {
                         this.ledgerData = result;
-                        this.dataSource.data = result.ledger.items || [];
+                        const items = (result.ledger.items || []).map((item: any) => {
+                            if (item.transactionDate && typeof item.transactionDate === 'string' && !item.transactionDate.includes('Z')) {
+                                item.transactionDate += 'Z';
+                            }
+                            return item;
+                        });
+                        this.dataSource.data = items;
                         this.totalCount = result.ledger.totalCount || 0;
                         this.currentBalance = result.currentBalance || 0;
                     }

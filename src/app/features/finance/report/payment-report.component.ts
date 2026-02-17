@@ -220,7 +220,13 @@ export class PaymentReportComponent implements OnInit, AfterViewInit {
       })
     ).subscribe({
       next: (response: any) => {
-        this.dataSource.data = response.items || [];
+        const items = (response.items || []).map((item: any) => {
+          if (item.paymentDate && typeof item.paymentDate === 'string' && !item.paymentDate.includes('Z')) {
+            item.paymentDate += 'Z';
+          }
+          return item;
+        });
+        this.dataSource.data = items;
         this.totalCount = response.totalCount || 0;
       },
       error: (err) => {

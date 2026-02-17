@@ -192,7 +192,13 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
                     this.isLoading = false;
                     this.ledgerData = data;
                     if (data && data.ledger) {
-                        this.dataSource.data = data.ledger.items || [];
+                        const items = (data.ledger.items || []).map((item: any) => {
+                            if (item.transactionDate && typeof item.transactionDate === 'string' && !item.transactionDate.includes('Z')) {
+                                item.transactionDate += 'Z';
+                            }
+                            return item;
+                        });
+                        this.dataSource.data = items;
                         this.totalCount = data.ledger.totalCount || 0;
                         this.currentBalance = data.currentBalance || 0;
                     } else {

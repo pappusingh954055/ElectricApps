@@ -208,11 +208,18 @@ export class GrnListComponent implements OnInit, AfterViewInit {
             });
           });
 
-          return items.map((item: any): GRNListRow => ({
-            ...item,
-            items: item.items || [],
-            totalRejected: item.items?.reduce((acc: number, curr: any) => acc + (curr.rejectedQty || 0), 0) || 0
-          }));
+
+          return items.map((item: any): GRNListRow => {
+            // Normalize Date to UTC if it doesn't have timezone
+            if (item.receivedDate && typeof item.receivedDate === 'string' && !item.receivedDate.includes('Z')) {
+              item.receivedDate += 'Z';
+            }
+            return {
+              ...item,
+              items: item.items || [],
+              totalRejected: item.items?.reduce((acc: number, curr: any) => acc + (curr.rejectedQty || 0), 0) || 0
+            };
+          });
         })
       ).subscribe(data => {
         this.dataSource.data = data;
