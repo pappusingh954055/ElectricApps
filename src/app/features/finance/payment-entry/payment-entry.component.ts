@@ -150,6 +150,12 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
       this.payment.remarks = `Payment for ${grnNumber}${poNumber ? ' (PO: ' + poNumber + ')' : ''}`;
       console.log('✅ Auto-filled grn details:', { grnNumber, poNumber });
     }
+
+    // Auto-fill remarks if passed explicitly
+    const remarks = this.route.snapshot.queryParams['remarks'];
+    if (remarks) {
+      this.payment.remarks = decodeURIComponent(remarks);
+    }
   }
 
   private _filter(name: string): Supplier[] {
