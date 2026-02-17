@@ -184,7 +184,8 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
         this.router.navigate(['/app/finance/suppliers/payment'], {
             queryParams: {
                 supplierId: element.supplierId,
-                amount: element.pendingAmount
+                amount: element.pendingAmount,
+                currentDue: element.pendingAmount
             }
         });
     }

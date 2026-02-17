@@ -143,6 +143,17 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
       console.log('✅ Auto-filled amount:', amount);
     }
 
+    const currentDue = this.route.snapshot.queryParams['currentDue'];
+    if (currentDue) {
+      this.currentBalance = Number(currentDue);
+      console.log('✅ Using passed pending due:', this.currentBalance);
+
+      // Ensure balance type is set correctly too
+      if (this.currentBalance > 0) this.balanceType = 'Payable';
+      else if (this.currentBalance < 0) this.balanceType = 'Advance';
+      else this.balanceType = 'Clear';
+    }
+
     const poNumber = this.route.snapshot.queryParams['poNumber'];
 
     if (grnNumber) {
@@ -178,7 +189,11 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
     if (supplier) {
       this.supplierControl.setValue(supplier);
       this.payment.supplierId = supplier.id;
-      this.fetchBalance(supplier.id!);
+
+      // Only fetch balance if NOT already provided in URL
+      if (!this.route.snapshot.queryParams['currentDue']) {
+        this.fetchBalance(supplier.id!);
+      }
     }
   }
 
@@ -245,15 +260,55 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
     const supplier = this.suppliers.find(s => s.id === this.payment.supplierId);
     const supplierName = supplier ? supplier.name : 'Unknown Supplier';
 
-    // Show confirmation dialog first
+    // Confirm Dialog Logic
+    const currentDue = (this.currentBalance && this.currentBalance > 0) ? this.currentBalance : 0;
+    const payAmount = this.payment.amount;
+
+    let dialogTitle = 'Confirm Payment';
+    let dialogMessage = '';
+    let dialogStatus = 'success';
+    let isSuccess = true;
+    let confirmBtnText = 'Yes, Pay';
+
+    // 1. Advance Payment Case covers:
+    //    a) Paying when no dues (currentDue = 0)
+    //    b) Paying MORE than dues (payAmount > currentDue)
+    if (payAmount > currentDue) {
+      const advanceAmount = payAmount - currentDue;
+      const totalAdvance = (currentDue === 0) ? payAmount : advanceAmount;
+
+      dialogTitle = 'Confirm Advance Payment';
+      dialogStatus = 'warning';
+      isSuccess = false; // To show warning icon/color
+      confirmBtnText = 'Yes, Pay Advance';
+
+      if (currentDue === 0) {
+        // Case: No pending dues
+        dialogMessage = `⚠️ This supplier has NO pending dues.\n\nYou are paying:  ₹${payAmount.toLocaleString('en-IN')}\nCurrent Dues: - ₹0\n-----------------------\nAdvance Balance: ₹${payAmount.toLocaleString('en-IN')}\n\nThis entire amount will be saved as an ADVANCE.`;
+      } else {
+        // Case: Paying more than pending dues
+        dialogMessage = `⚠️ You are paying MORE than the due amount.\n\nYou are paying:  ₹${payAmount.toLocaleString('en-IN')}\nCurrent Dues: - ₹${currentDue.toLocaleString('en-IN')}\n-----------------------\nAdvance Balance: ₹${advanceAmount.toLocaleString('en-IN')}\n\nThis extra ₹${advanceAmount.toLocaleString('en-IN')} will be saved as an ADVANCE.`;
+      }
+
+    } else {
+      // 2. Standard Payment Case (Green Check)
+      dialogTitle = 'Confirm Payment';
+      dialogStatus = 'success';
+      isSuccess = true; // Shows Green Check
+      confirmBtnText = 'Yes, Pay';
+
+      dialogMessage = `Are you sure you want to record this payment?\n\nSupplier: ${supplierName}\nAmount: ₹${payAmount.toLocaleString('en-IN')}\nMode: ${this.payment.paymentMode}`;
+    }
+
     const confirmDialog = this.dialog.open(StatusDialogComponent, {
       width: '450px',
       data: {
-        title: 'Confirm Payment',
-        message: `Are you sure you want to record this payment?\n\nSupplier: ${supplierName}\nAmount: ₹${this.payment.amount.toLocaleString('en-IN')}\nMode: ${this.payment.paymentMode}`,
-        status: 'warning',
-        isSuccess: false,
-        showCancel: true
+        title: dialogTitle,
+        message: dialogMessage,
+        status: dialogStatus,
+        isSuccess: isSuccess,
+        showCancel: true,
+        confirmText: confirmBtnText
       }
     });
 
