@@ -192,8 +192,6 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
     }
 
     viewPaymentHistory(supplierId?: number) {
-        // If supplierId is provided (from row), use it.
-        // If not, check if a supplier is currently selected in the search box.
         const id = supplierId || (this.searchControl.value as any)?.supplierId || (this.searchControl.value as any)?.id;
 
         this.dialog.open(PaymentReportComponent, {
