@@ -14,8 +14,8 @@ export class FinanceService {
     constructor(private http: HttpClient) { }
 
     // Supplier Methods
-    getSupplierLedger(supplierId: number): Observable<any> {
-        return this.http.get(`${this.supplierApi}/ledger/${supplierId}`);
+    getSupplierLedger(request: any): Observable<any> {
+        return this.http.post(`${this.supplierApi}/ledger`, request);
     }
 
     recordSupplierPayment(payment: any): Observable<any> {

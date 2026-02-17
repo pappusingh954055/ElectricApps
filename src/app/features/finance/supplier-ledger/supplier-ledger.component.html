@@ -25,6 +25,26 @@
                     </mat-autocomplete>
                     <mat-icon matSuffix>search</mat-icon>
                 </mat-form-field>
+
+                <mat-form-field appearance="outline" class="date-field">
+                    <mat-label>Start Date</mat-label>
+                    <input matInput [matDatepicker]="startPicker" [(ngModel)]="filters.startDate">
+                    <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #startPicker></mat-datepicker>
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" class="date-field">
+                    <mat-label>End Date</mat-label>
+                    <input matInput [matDatepicker]="endPicker" [(ngModel)]="filters.endDate">
+                    <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
+                    <mat-datepicker #endPicker></mat-datepicker>
+                </mat-form-field>
+
+                <button mat-flat-button color="primary" class="refresh-btn" (click)="updateReport()" [disabled]="isLoading || !supplierId">
+                    <mat-icon *ngIf="!isLoading">refresh</mat-icon>
+                    <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+                    Update
+                </button>
                 <!-- Button removed as per user request -->
             </div>
         </mat-card-content>
@@ -55,10 +75,16 @@
         </mat-card>
 
         <!-- Transactions Table -->
-        <mat-card class="table-card elevation-z2">
+        <mat-card class="table-card elevation-z2" [class.is-loading]="isLoading">
+            <mat-progress-bar mode="indeterminate" color="primary" *ngIf="isLoading" class="top-loader"></mat-progress-bar>
+            
+            <div class="loading-shade" *ngIf="isLoading">
+                <mat-spinner diameter="45"></mat-spinner>
+            </div>
+
             <mat-card-content>
                 <div class="table-container">
-                    <table mat-table [dataSource]="dataSource" matSort class="full-width-table">
+                    <table mat-table [dataSource]="dataSource" matSort class="full-width-table" (matSortChange)="onSortChange($event)">
 
                         <!-- Date Column -->
                         <ng-container matColumnDef="transactionDate">
@@ -81,7 +107,7 @@
 
                         <!-- Reference Column -->
                         <ng-container matColumnDef="referenceId">
-                            <th mat-header-cell *matHeaderCellDef> Reference </th>
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header> Reference </th>
                             <td mat-cell *matCellDef="let row" class="ref-text"> {{row.referenceId}} </td>
                         </ng-container>
 
@@ -126,7 +152,12 @@
                         </tr>
                     </table>
                 </div>
-                <mat-paginator [pageSizeOptions]="[10, 25, 50, 100]" showFirstLastButtons></mat-paginator>
+                <mat-paginator [length]="totalCount" 
+                               [pageSize]="pageSize" 
+                               [pageSizeOptions]="[10, 25, 50, 100]" 
+                               (page)="onPageChange($event)"
+                               showFirstLastButtons>
+                </mat-paginator>
             </mat-card-content>
         </mat-card>
     </div>

@@ -35,6 +35,19 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
     private isFirstLoad: boolean = true;
     private routeSub!: Subscription;
 
+    // Server-side State
+    totalCount = 0;
+    pageSize = 10;
+    pageNumber = 1;
+    sortBy = 'TransactionDate';
+    sortOrder = 'desc';
+    isLoading = false;
+
+    filters = {
+        startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+        endDate: new Date()
+    };
+
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
@@ -137,45 +150,70 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
     }
 
     ngAfterViewInit() {
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
+        // We will assign paginator and sort in the template via event bindings
+        // or keep them for reference if needed.
+    }
+
+    onPageChange(event: any) {
+        this.pageNumber = event.pageIndex + 1;
+        this.pageSize = event.pageSize;
+        this.loadLedger();
+    }
+
+    onSortChange(event: any) {
+        this.sortBy = event.active || 'TransactionDate';
+        this.sortOrder = event.direction || 'desc';
+        this.pageNumber = 1;
+        if (this.paginator) this.paginator.pageIndex = 0;
+        this.loadLedger();
+    }
+
+    updateReport() {
+        this.pageNumber = 1;
+        if (this.paginator) this.paginator.pageIndex = 0;
+        this.loadLedger();
     }
 
     loadLedger() {
         if (this.supplierId && this.supplierId > 0) {
-            this.financeService.getSupplierLedger(this.supplierId).subscribe({
-                next: (result: any) => {
-                    // The API returns SupplierLedgerResultDto { supplierName: string, ledger: SupplierLedger[] }
-                    if (result && result.ledger && Array.isArray(result.ledger)) {
-                        this.ledgerData = result;
-                        this.dataSource.data = result.ledger;
+            this.isLoading = true;
 
-                        // The ledger is ordered by date descending, first record has latest balance
-                        if (result.ledger.length > 0) {
-                            this.currentBalance = result.ledger[0].balance || 0;
-                        } else {
-                            this.currentBalance = 0;
-                        }
-                    } else {
-                        // Handle case where result might be an array directly (fallback)
-                        const dataArray = Array.isArray(result) ? result : (result?.ledger || []);
-                        this.ledgerData = {
-                            supplierName: result?.supplierName || 'Unknown Supplier',
-                            ledger: dataArray
-                        };
-                        this.dataSource.data = dataArray;
-                        this.currentBalance = dataArray.length > 0 ? dataArray[0].balance : 0;
-                    }
+            const request = {
+                supplierId: this.supplierId,
+                pageNumber: this.pageNumber,
+                pageSize: this.pageSize,
+                sortBy: this.sortBy,
+                sortOrder: this.sortOrder,
+                startDate: this.filters.startDate.toISOString(),
+                endDate: this.filters.endDate.toISOString(),
+                searchTerm: '' // Can be hooked to a separate search input
+            };
 
+            this.financeService.getSupplierLedger(request).pipe(
+                finalize(() => {
+                    this.isLoading = false;
                     if (this.isFirstLoad) {
                         this.isFirstLoad = false;
                         this.isDashboardLoading = false;
                         this.loadingService.setLoading(false);
                     }
                     this.cdr.detectChanges();
+                })
+            ).subscribe({
+                next: (result: any) => {
+                    if (result && result.ledger) {
+                        this.ledgerData = result;
+                        this.dataSource.data = result.ledger.items || [];
+                        this.totalCount = result.ledger.totalCount || 0;
+                        this.currentBalance = result.currentBalance || 0;
+                    }
+
                 },
                 error: (err) => {
                     console.error('Error fetching ledger:', err);
+                    this.ledgerData = null;
+                    this.dataSource.data = [];
+                    this.totalCount = 0;
 
                     if (err.status === 404) {
                         this.ledgerData = { supplierName: 'Not Found', ledger: [] };
@@ -187,12 +225,6 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
                         alert('Failed to fetch ledger. Please check Supplier ID.');
                     }
 
-                    if (this.isFirstLoad) {
-                        this.isFirstLoad = false;
-                        this.isDashboardLoading = false;
-                        this.loadingService.setLoading(false);
-                    }
-                    this.cdr.detectChanges();
                 }
             });
         }
