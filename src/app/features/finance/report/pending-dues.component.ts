@@ -45,6 +45,7 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
     isLoading = false;
     isDashboardLoading = true;
     private isFirstLoad = true;
+
     errorMessage = '';
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
