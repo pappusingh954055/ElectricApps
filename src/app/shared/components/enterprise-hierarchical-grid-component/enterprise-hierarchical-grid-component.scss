@@ -837,11 +837,39 @@ div[style*="display: flex"] {
 }
 
 .po-actions-wrapper {
-  display: flex;
+  display: inline-flex;
   justify-content: center;
-  gap: 4px;
   align-items: center;
-  white-space: nowrap; /* Prevent buttons from wrapping to next line */
+  gap: 8px;
+  white-space: nowrap;
+  width: 100%;
+  height: 100%;
+
+  button[mat-icon-button] {
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    mat-icon {
+      font-size: 20px !important;
+      width: 20px !important;
+      height: 20px !important;
+      line-height: 20px !important;
+      margin: 0 !important;
+    }
+  }
+
+  /* standalone verification icon alignment */
+  & > mat-icon {
+    font-size: 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+    line-height: 22px !important;
+    margin-bottom: 2px; /* slight shift up to match button baseline */
+  }
 }
 
 /* Custom button colors [cite: 2026-01-22] */
