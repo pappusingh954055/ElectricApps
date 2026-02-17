@@ -263,3 +263,90 @@
         border-radius: 4px;
     }
 }
+
+// Header Filter Styles
+.header-with-filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 32px;
+    
+    ::ng-deep .mat-sort-header-container {
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .header-filter-btn {
+        width: 32px !important;
+        height: 32px !important;
+        line-height: 32px !important;
+        margin-left: 8px;
+        margin-top: 2px;
+        margin-bottom: 2px; // Added margin-bottom
+        border-radius: 50% !important;
+        background: #f0f2f5; // Subtle circle background
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        
+        mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            color: #757575;
+            transition: all 0.2s ease;
+            margin: 0 !important; // Ensure no default margin offsets centering
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        &:hover {
+            background: #e3f2fd !important;
+            mat-icon {
+                color: #1976d2;
+            }
+        }
+
+        &.active-filter {
+            background: #1976d2 !important;
+            mat-icon {
+                color: #ffffff;
+            }
+        }
+    }
+}
+
+// Global Menu Overrides for Filter
+::ng-deep .column-filter-menu {
+    min-width: 240px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+    overflow: hidden !important;
+}
+
+.filter-menu-content {
+    padding: 16px;
+    
+    mat-form-field {
+        width: 100%;
+        margin-bottom: 8px;
+        
+        ::ng-deep .mat-mdc-text-field-wrapper {
+            background-color: #f8f9fa;
+        }
+    }
+
+    .filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        
+        button {
+            height: 36px;
+            font-size: 13px;
+        }
+    }
+}

@@ -45,7 +45,9 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
 
     filters = {
         startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-        endDate: new Date()
+        endDate: new Date(),
+        type: '',
+        reference: ''
     };
 
 
@@ -174,6 +176,12 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
         this.loadLedger();
     }
 
+    clearFilter(column: string) {
+        if (column === 'type') this.filters.type = '';
+        if (column === 'reference') this.filters.reference = '';
+        this.updateReport();
+    }
+
     loadLedger() {
         if (this.supplierId && this.supplierId > 0) {
             this.isLoading = true;
@@ -186,7 +194,9 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
                 sortOrder: this.sortOrder,
                 startDate: this.filters.startDate.toISOString(),
                 endDate: this.filters.endDate.toISOString(),
-                searchTerm: '' // Can be hooked to a separate search input
+                typeFilter: this.filters.type,
+                referenceFilter: this.filters.reference,
+                searchTerm: ''
             };
 
             this.financeService.getSupplierLedger(request).pipe(
