@@ -11,6 +11,8 @@ import { LoadingService } from '../../../core/services/loading.service';
 import { SupplierService, Supplier } from '../../inventory/service/supplier.service';
 import { Observable } from 'rxjs';
 import { finalize, map, startWith, tap } from 'rxjs/operators';
+import { MatDialog } from '@angular/material/dialog';
+import { PaymentReportComponent } from './payment-report.component';
 
 export interface DuesData {
     supplierId?: number;
@@ -53,6 +55,7 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
         private loadingService: LoadingService,
         private supplierService: SupplierService,
         private router: Router,
+        private dialog: MatDialog,
         private cdr: ChangeDetectorRef
     ) {
         this.loadSuppliers();
@@ -188,9 +191,18 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
         });
     }
 
-    viewPaymentHistory(supplierId: number) {
-        this.router.navigate(['/app/finance/suppliers/payments-report'], {
-            queryParams: { supplierId }
+    viewPaymentHistory(supplierId?: number) {
+        // If supplierId is provided (from row), use it.
+        // If not, check if a supplier is currently selected in the search box.
+        const id = supplierId || (this.searchControl.value as any)?.supplierId || (this.searchControl.value as any)?.id;
+
+        this.dialog.open(PaymentReportComponent, {
+            width: '90vw',
+            maxWidth: '1200px',
+            maxHeight: '90vh',
+            data: { supplierId: id },
+            disableClose: true,
+            panelClass: 'professional-dialog'
         });
     }
 

@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Router, CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
 import { PermissionService } from '../services/permission.service';
 import { MenuService } from '../services/menu.service';
+import { AuthService } from '../services/auth.service';
 import { Observable, map, of, catchError } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../shared/components/status-dialog-component/status-dialog-component';
@@ -11,18 +12,19 @@ export class PermissionGuard implements CanActivate {
     private router = inject(Router);
     private permissionService = inject(PermissionService);
     private menuService = inject(MenuService);
+    private authService = inject(AuthService);
     private dialog = inject(MatDialog);
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> {
         console.log(`[PermissionGuard] Checking access for: ${state.url}`);
 
         return this.menuService.getMenu().pipe(
-            map(menus => {
+            map((menus: any[]) => {
                 if (!menus || menus.length === 0) {
                     console.error('[PermissionGuard] No menus loaded. Denying access to:', state.url);
                 }
 
-                const hasViewPermission = this.permissionService.checkPermissionWithData(menus, state.url, 'CanView');
+                const hasViewPermission = this.permissionService.checkPermissionWithData(menus as any, state.url, 'CanView');
 
                 console.log(`[PermissionGuard] Access result for ${state.url}:`, hasViewPermission);
 

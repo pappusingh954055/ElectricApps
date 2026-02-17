@@ -40,24 +40,26 @@ export class PermissionService {
     }
 
     private findMenuItemRecursive(items: MenuItem[], url: string): MenuItem | null {
+        const cleanUrl = this._normalize(url);
+        if (!cleanUrl) return null;
+
+        // Find the most specific (longest) match where the menu item's URL is a prefix of the current URL
+        // This ensures that reports like 'finance/suppliers/report' inherit from 'finance/suppliers'
+        return this._searchBestMatch(items, cleanUrl);
+    }
+
+    private _searchBestMatch(items: MenuItem[], targetUrl: string): MenuItem | null {
         let bestMatch: MenuItem | null = null;
-        let longestUrlMatch = -1;
+        let longestUrlMatchLen = -1;
 
         const search = (menuItems: MenuItem[]) => {
             for (const item of menuItems) {
-                if (item.url && item.url.trim() !== '') {
-                    const cleanUrl = url.split('?')[0].replace(/\/$/, '').replace(/^\//, '');
-                    const cleanItemUrl = item.url.split('?')[0].replace(/\/$/, '').replace(/^\//, '');
-
-                    // Check if current URL matches this menu item or is a sub-path of it
-                    const isExact = cleanUrl === cleanItemUrl;
-                    const isPrefix = cleanUrl.startsWith(cleanItemUrl + '/');
-                    const isSegment = cleanUrl.endsWith('/' + cleanItemUrl) || cleanUrl.includes('/' + cleanItemUrl + '/');
-
-                    if (isExact || isPrefix || isSegment) {
-                        // Pick the most specific match (the one with the longest URL)
-                        if (cleanItemUrl.length > longestUrlMatch) {
-                            longestUrlMatch = cleanItemUrl.length;
+                if (item.url) {
+                    const itemUrl = this._normalize(item.url);
+                    // Check if current target URL starts with the menu item's URL
+                    if (itemUrl !== '' && (targetUrl === itemUrl || targetUrl.startsWith(itemUrl + '/'))) {
+                        if (itemUrl.length > longestUrlMatchLen) {
+                            longestUrlMatchLen = itemUrl.length;
                             bestMatch = item;
                         }
                     }
@@ -72,6 +74,17 @@ export class PermissionService {
         search(items);
         return bestMatch;
     }
+
+    private _normalize(url: string | null | undefined): string {
+        if (!url) return '';
+        return url.split('?')[0]
+            .toLowerCase()
+            .replace(/\/$/, '')
+            .replace(/^\//, '')
+            .replace(/^app\//, '') // Standarize: internal routes often exclude 'app/' in DB but have it in browser
+            .trim();
+    }
+
 
     checkPermissionWithData(menus: MenuItem[], url: string, action: 'CanView' | 'CanAdd' | 'CanEdit' | 'CanDelete'): boolean {
         const menuItem = this.findMenuItemRecursive(menus, url);

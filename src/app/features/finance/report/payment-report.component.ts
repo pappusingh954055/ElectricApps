@@ -6,11 +6,13 @@ import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { FinanceService } from '../service/finance.service';
 import { MaterialModule } from '../../../shared/material/material/material-module';
-import { finalize } from 'rxjs/operators';
+import { finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { LoadingService } from '../../../core/services/loading.service';
 import { SupplierService, Supplier } from '../../inventory/service/supplier.service';
 import { Observable, map, startWith } from 'rxjs';
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { Optional, Inject } from '@angular/core';
 
 @Component({
   selector: 'app-payment-report',
@@ -24,7 +26,15 @@ export class PaymentReportComponent implements OnInit, AfterViewInit {
   dataSource = new MatTableDataSource<any>([]);
   isLoading = false;
   isDashboardLoading: boolean = true;
+  isDialog: boolean = false;
   private isFirstLoad: boolean = true;
+
+  // Server-side State
+  totalCount = 0;
+  pageSize = 10;
+  pageNumber = 1;
+  sortBy = 'PaymentDate';
+  sortOrder = 'desc';
 
   // Search & Autocomplete
   searchControl = new FormControl<string | any>('');
@@ -45,8 +55,15 @@ export class PaymentReportComponent implements OnInit, AfterViewInit {
 
   constructor(
     private financeService: FinanceService,
-    private route: ActivatedRoute
-  ) { }
+    private route: ActivatedRoute,
+    @Optional() public dialogRef: MatDialogRef<PaymentReportComponent>,
+    @Optional() @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    this.isDialog = !!this.dialogRef;
+    if (this.isDialog) {
+      this.isDashboardLoading = false;
+    }
+  }
 
   ngOnInit() {
     this.isDashboardLoading = true;
@@ -56,21 +73,28 @@ export class PaymentReportComponent implements OnInit, AfterViewInit {
     this.loadSuppliers();
     this.loadReport();
 
-    // Autocomplete filtering
+    // Autocomplete filtering (local for suppliers list)
     this.filteredSuppliers = this.searchControl.valueChanges.pipe(
       startWith(''),
       map(value => {
         const name = typeof value === 'string' ? value : value?.name;
+        if (name && typeof value === 'string') {
+          // If user is typing manually, we might want to reload report after some debounce
+          // But let's keep it simple for now and trigger on 'Update Report' or Autocomplete selection
+        }
         return name ? this._filter(name) : this.suppliers.slice();
       })
     );
 
-    // Custom filter predicate for the grid
-    this.dataSource.filterPredicate = (data, filter) => {
-      const searchStr = filter.toLowerCase();
-      return (data.supplierName || '').toLowerCase().includes(searchStr) ||
-        (data.referenceNumber || '').toLowerCase().includes(searchStr);
-    };
+    // Dynamic search with debounce
+    this.searchControl.valueChanges.pipe(
+      debounceTime(600),
+      distinctUntilChanged()
+    ).subscribe(value => {
+      this.pageNumber = 1;
+      if (this.paginator) this.paginator.pageIndex = 0;
+      this.loadReport();
+    });
 
     // Safety timeout
     setTimeout(() => {
@@ -95,8 +119,10 @@ export class PaymentReportComponent implements OnInit, AfterViewInit {
     this.supplierService.getSuppliers().subscribe(data => {
       this.suppliers = data || [];
 
-      // Check for query parameters after suppliers are loaded
-      const supplierId = this.route.snapshot.queryParams['supplierId'];
+      // Check for query parameters first, then dialog data
+      const supplierIdFromRoute = this.route.snapshot.queryParams['supplierId'];
+      const supplierId = supplierIdFromRoute || this.data?.supplierId;
+
       if (supplierId) {
         const supplier = this.suppliers.find(s => s.id === Number(supplierId));
         if (supplier) {
@@ -108,16 +134,33 @@ export class PaymentReportComponent implements OnInit, AfterViewInit {
   }
 
   onSupplierSelected(event: any) {
-    const supplier = event.option.value;
-    const searchName = supplier.name || '';
-    this.applyFilterValue(searchName);
+    // When a supplier is selected, valueChanges will already trigger from the setValue
+    // But we might want to ensure it reloads immediately if needed.
+    // However, to avoid double-loading, we just set the page and let the subscriber handle it
+    this.pageNumber = 1;
+    if (this.paginator) this.paginator.pageIndex = 0;
+    // We don't call loadReport() here because the valueChanges subscriber will catch it
+  }
+
+  onPageChange(event: any) {
+    this.pageNumber = event.pageIndex + 1;
+    this.pageSize = event.pageSize;
+    this.loadReport();
+  }
+
+  onSortChange(event: any) {
+    this.sortBy = event.active || 'PaymentDate';
+    this.sortOrder = event.direction || 'desc';
+    this.pageNumber = 1;
+    if (this.paginator) this.paginator.pageIndex = 0;
+    this.loadReport();
   }
 
   applyFilterValue(value: string) {
-    this.dataSource.filter = value.trim().toLowerCase();
-    if (this.dataSource.paginator) {
-      this.dataSource.paginator.firstPage();
-    }
+    // This is called when we want to search via free text
+    this.pageNumber = 1;
+    if (this.paginator) this.paginator.pageIndex = 0;
+    this.loadReport();
   }
 
   clearSearch() {
@@ -127,6 +170,12 @@ export class PaymentReportComponent implements OnInit, AfterViewInit {
 
   displayFn(supplier: any): string {
     return supplier && supplier.name ? supplier.name : '';
+  }
+
+  closeDialog() {
+    if (this.dialogRef) {
+      this.dialogRef.close();
+    }
   }
 
   get searchDisplayText(): string {
@@ -142,12 +191,24 @@ export class PaymentReportComponent implements OnInit, AfterViewInit {
 
   loadReport() {
     this.isLoading = true;
-    const payload = {
+
+    // Determine search term and supplier filter
+    const searchValue = this.searchControl.value;
+    const searchTerm = typeof searchValue === 'string' ? searchValue : '';
+    const supplierId = typeof searchValue === 'object' ? searchValue?.id : null;
+
+    const request = {
       startDate: this.filters.startDate.toISOString(),
-      endDate: this.filters.endDate.toISOString()
+      endDate: this.filters.endDate.toISOString(),
+      supplierId: supplierId,
+      searchTerm: searchTerm,
+      pageNumber: this.pageNumber,
+      pageSize: this.pageSize,
+      sortBy: this.sortBy,
+      sortOrder: this.sortOrder
     };
 
-    this.financeService.getPaymentsReport(payload).pipe(
+    this.financeService.getPaymentsReport(request).pipe(
       finalize(() => {
         this.isLoading = false;
         if (this.isFirstLoad) {
@@ -158,8 +219,9 @@ export class PaymentReportComponent implements OnInit, AfterViewInit {
         this.cdr.detectChanges();
       })
     ).subscribe({
-      next: (data) => {
-        this.dataSource.data = data || [];
+      next: (response: any) => {
+        this.dataSource.data = response.items || [];
+        this.totalCount = response.totalCount || 0;
       },
       error: (err) => {
         console.error('Error loading payments report', err);
@@ -184,7 +246,7 @@ export class PaymentReportComponent implements OnInit, AfterViewInit {
         <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
           <div>
             <strong>Voucher No:</strong> PV-${payment.id}<br>
-            <strong>Date:</strong> ${new Date(payment.paymentDate).toLocaleDateString()}
+            <strong>Date:</strong> ${new Date(payment.paymentDate).toLocaleString('en-IN', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
           </div>
           <div style="text-align: right;">
             <strong>Reference:</strong> ${payment.referenceNumber || 'N/A'}<br>

@@ -178,8 +178,9 @@
                     font-weight: 500;
 
                     &.payment {
-                        background-color: #e8f5e9;
-                        color: #2e7d32;
+                        background-color: #c8e6c9; // Slightly deeper green
+                        color: #1b5e20;           // Darker green text
+                        border: 1px solid #a5d6a7;
                     }
 
                     &.purchase {

@@ -37,8 +37,8 @@ export class FinanceService {
         );
     }
 
-    getPaymentsReport(filters: any): Observable<any[]> {
-        return this.http.post<any[]>(`${this.supplierApi}/payments-report`, filters);
+    getPaymentsReport(request: any): Observable<any> {
+        return this.http.post<any>(`${this.supplierApi}/payments-report`, request);
     }
 
     // Customer Methods
