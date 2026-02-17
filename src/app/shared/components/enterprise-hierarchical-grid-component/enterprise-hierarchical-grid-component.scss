@@ -9,6 +9,7 @@
 .enterprise-grid-container {
   width: 100%;
   height: 100%;
+  min-height: 0; // Ensures child containers can scroll
   border-radius: 12px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
   background: #ffffff;
@@ -69,6 +70,14 @@
     flex-wrap: wrap;
     gap: 8px;
   }
+}
+
+.main-grid-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
 }
 
 

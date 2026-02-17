@@ -75,7 +75,7 @@
     </div>
   </div>
 
-  <div [style.display]="(!isLoading && dataSource && dataSource.data.length > 0) ? 'block' : 'none'">
+  <div class="main-grid-content" [style.display]="(!isLoading && dataSource && dataSource.data.length > 0) ? 'flex' : 'none'">
     <div class="responsive-table-wrapper">
       <table mat-table [dataSource]="dataSource" multiTemplateDataRows matSort (matSortChange)="onSortChange($event)"
         cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="drop($event)">

@@ -106,7 +106,7 @@ export class PoList implements OnInit {
         sortable: true,
         isResizable: true,
         width: 120,
-        cell: (row: any) => this.datePipe.transform(row.poDate, 'MM/dd/yyyy')
+        cell: (row: any) => this.datePipe.transform(row.poDate, 'dd-MMM-yy hh:mm a', '+0530')
       },
       {
         field: 'expectedDeliveryDate',
@@ -189,7 +189,16 @@ export class PoList implements OnInit {
     this.poService.getPagedOrders(requestPayload).subscribe({
       next: (res) => {
         console.log('API PO List Response:', res);
-        this.dataSource.data = res.data || [];
+        const items = (res.data || []).map((item: any) => {
+          if (item.poDate && typeof item.poDate === 'string' && !item.poDate.includes('Z')) {
+            item.poDate += 'Z';
+          }
+          if (item.expectedDeliveryDate && typeof item.expectedDeliveryDate === 'string' && !item.expectedDeliveryDate.includes('Z')) {
+            item.expectedDeliveryDate += 'Z';
+          }
+          return item;
+        });
+        this.dataSource.data = items;
         this.totalRecords = res.totalRecords || 0;
         this.isLoading = false;
 
