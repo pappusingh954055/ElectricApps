@@ -34,6 +34,20 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
     dataSource = new MatTableDataSource<OutstandingData>([]);
     isDashboardLoading: boolean = true;
     private isFirstLoad: boolean = true;
+    isLoading: boolean = false;
+
+    // Server-side State
+    totalCount = 0;
+    pageSize = 10;
+    pageNumber = 1;
+    sortBy = 'CustomerName';
+    sortOrder = 'asc';
+    totalOutstandingAmount = 0;
+
+    filters = {
+        status: '',
+        customerName: ''
+    };
 
     // Search & Autocomplete
     searchControl = new FormControl<string | any>('');
@@ -58,10 +72,9 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
         this.isFirstLoad = true;
         this.loadingService.setLoading(true);
 
-        this.loadOutstandingData();
         this.loadCustomers();
 
-        // Autocomplete filtering
+        // Autocomplete filtering (Local for lookup)
         this.filteredCustomers = this.searchControl.valueChanges.pipe(
             startWith(''),
             map(value => {
@@ -70,18 +83,14 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
             })
         );
 
-        // Custom filter predicate
-        this.dataSource.filterPredicate = (data, filter) => {
-            const searchStr = filter.toLowerCase();
-            return data.customerName.toLowerCase().includes(searchStr) ||
-                data.customerId.toString().includes(searchStr);
-        };
+        // Param check or initial load
+        this.loadOutstandingData();
 
         // Safety timeout
         setTimeout(() => {
             if (this.isDashboardLoading) {
-                this.isDashboardLoading = false;
                 this.isFirstLoad = false;
+                this.isDashboardLoading = false;
                 this.loadingService.setLoading(false);
                 this.cdr.detectChanges();
             }
@@ -117,10 +126,33 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
     }
 
     applyFilterValue(value: string) {
-        this.dataSource.filter = value.trim().toLowerCase();
-        if (this.dataSource.paginator) {
-            this.dataSource.paginator.firstPage();
-        }
+        this.pageNumber = 1;
+        if (this.paginator) this.paginator.pageIndex = 0;
+        this.loadOutstandingData();
+    }
+
+    onPageChange(event: any) {
+        this.pageNumber = event.pageIndex + 1;
+        this.pageSize = event.pageSize;
+        this.loadOutstandingData();
+    }
+
+    onSortChange(event: any) {
+        this.sortBy = event.active || 'CustomerName';
+        this.sortOrder = event.direction || 'asc';
+        this.updateReport();
+    }
+
+    updateReport() {
+        this.pageNumber = 1;
+        if (this.paginator) this.paginator.pageIndex = 0;
+        this.loadOutstandingData();
+    }
+
+    clearFilter(column: string) {
+        if (column === 'status') this.filters.status = '';
+        if (column === 'customerName') this.filters.customerName = '';
+        this.updateReport();
     }
 
     displayFn(customer: any): string {
@@ -134,14 +166,36 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
     }
 
     ngAfterViewInit() {
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
+        // Handled via onSortChange/onPageChange
     }
 
     loadOutstandingData() {
-        this.financeService.getOutstandingTracker().subscribe({
-            next: (data) => {
-                this.dataSource.data = data;
+        this.isLoading = true;
+        const value = this.searchControl.value;
+        const searchTerm = typeof value === 'string' ? value : (value?.name || '');
+
+        const request = {
+            searchTerm: searchTerm,
+            statusFilter: this.filters.status,
+            customerNameFilter: this.filters.customerName,
+            pageNumber: this.pageNumber,
+            pageSize: this.pageSize,
+            sortBy: this.sortBy,
+            sortOrder: this.sortOrder
+        };
+
+        this.financeService.getOutstandingTracker(request).subscribe({
+            next: (res: any) => {
+                this.isLoading = false;
+                if (res && res.items) {
+                    this.dataSource.data = res.items.items || [];
+                    this.totalCount = res.items.totalCount || 0;
+                    this.totalOutstandingAmount = res.totalOutstandingAmount || 0;
+                } else {
+                    this.dataSource.data = [];
+                    this.totalCount = 0;
+                }
+
                 if (this.isFirstLoad) {
                     this.isFirstLoad = false;
                     this.isDashboardLoading = false;
@@ -150,14 +204,11 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
                 this.cdr.detectChanges();
             },
             error: (err) => {
+                this.isLoading = false;
                 console.error('Error fetching outstanding tracker:', err);
-                this.dialog.open(StatusDialogComponent, {
-                    data: {
-                        isSuccess: false,
-                        message: 'Failed to load outstanding data. Please check your connection.',
-                        status: 'error'
-                    }
-                });
+                this.dataSource.data = [];
+                this.totalCount = 0;
+
                 if (this.isFirstLoad) {
                     this.isFirstLoad = false;
                     this.isDashboardLoading = false;

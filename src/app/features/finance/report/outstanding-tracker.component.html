@@ -4,11 +4,22 @@
         <p class="subtitle">Monitor customer outstanding balances and payment statuses.</p>
     </div>
 
-    <mat-card class="table-card elevation-z2">
+    <mat-card class="table-card elevation-z2" [class.is-loading]="isLoading">
+        <mat-progress-bar mode="indeterminate" color="primary" *ngIf="isLoading" class="top-loader"></mat-progress-bar>
+            
+        <div class="loading-shade" *ngIf="isLoading">
+            <mat-spinner diameter="45"></mat-spinner>
+        </div>
+
         <mat-card-header>
             <mat-card-title>
                 <div class="header-content">
-                    <span>Customer Balances</span>
+                    <div class="title-group">
+                        <span>Customer Balances</span>
+                        <div class="grand-total" *ngIf="totalOutstandingAmount > 0">
+                            Total Outstanding: <span class="total-amount">₹{{totalOutstandingAmount | number:'1.2-2'}}</span>
+                        </div>
+                    </div>
                     <mat-form-field appearance="outline" class="search-field">
                         <mat-label>Search Customer</mat-label>
                         <input type="text" 
@@ -33,7 +44,7 @@
 
         <mat-card-content>
             <div class="table-container">
-                <table mat-table [dataSource]="dataSource" matSort>
+                <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)">
 
                     <!-- ID Column -->
                     <ng-container matColumnDef="customerId">
@@ -43,7 +54,26 @@
 
                     <!-- Name Column -->
                     <ng-container matColumnDef="customerName">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Customer Name </th>
+                        <th mat-header-cell *matHeaderCellDef>
+                            <div class="header-with-filter">
+                                <span mat-sort-header>Customer Name</span>
+                                <button mat-icon-button [matMenuTriggerFor]="nameMenu" class="header-filter-btn" [class.active-filter]="filters.customerName" (click)="$event.stopPropagation()">
+                                    <mat-icon>filter_list</mat-icon>
+                                </button>
+                                <mat-menu #nameMenu="matMenu" class="column-filter-menu">
+                                    <div class="filter-menu-content" (click)="$event.stopPropagation()">
+                                        <mat-form-field appearance="outline" (click)="$event.stopPropagation()">
+                                            <mat-label>Filter Name</mat-label>
+                                            <input matInput [(ngModel)]="filters.customerName" (keyup.enter)="updateReport(); nameMenu.close.emit()" placeholder="Search Name...">
+                                        </mat-form-field>
+                                        <div class="filter-actions">
+                                            <button mat-button (click)="clearFilter('customerName'); nameMenu.close.emit()">Reset</button>
+                                            <button mat-flat-button color="primary" (click)="updateReport(); nameMenu.close.emit()">Apply</button>
+                                        </div>
+                                    </div>
+                                </mat-menu>
+                            </div>
+                        </th>
                         <td mat-cell *matCellDef="let row" class="fw-500"> {{row.customerName}} </td>
                     </ng-container>
 
@@ -65,7 +95,26 @@
 
                     <!-- Status Column -->
                     <ng-container matColumnDef="status">
-                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+                        <th mat-header-cell *matHeaderCellDef>
+                            <div class="header-with-filter">
+                                <span mat-sort-header>Status</span>
+                                <button mat-icon-button [matMenuTriggerFor]="statusMenu" class="header-filter-btn" [class.active-filter]="filters.status" (click)="$event.stopPropagation()">
+                                    <mat-icon>filter_list</mat-icon>
+                                </button>
+                                <mat-menu #statusMenu="matMenu" class="column-filter-menu">
+                                    <div class="filter-menu-content" (click)="$event.stopPropagation()">
+                                        <mat-form-field appearance="outline" (click)="$event.stopPropagation()">
+                                            <mat-label>Filter Status</mat-label>
+                                            <input matInput [(ngModel)]="filters.status" (keyup.enter)="updateReport(); statusMenu.close.emit()" placeholder="e.g. Overdue">
+                                        </mat-form-field>
+                                        <div class="filter-actions">
+                                            <button mat-button (click)="clearFilter('status'); statusMenu.close.emit()">Reset</button>
+                                            <button mat-flat-button color="primary" (click)="updateReport(); statusMenu.close.emit()">Apply</button>
+                                        </div>
+                                    </div>
+                                </mat-menu>
+                            </div>
+                        </th>
                         <td mat-cell *matCellDef="let row">
                             <span class="status-badge" [class.overdue]="row.status === 'Overdue'" [class.pending]="row.status === 'Pending'">
                                 {{row.status}}
@@ -100,13 +149,18 @@
                         <td class="mat-cell empty-cell" colspan="7">
                             <div class="no-data">
                                 <mat-icon>person_search</mat-icon>
-                                <p>No outstanding records found for "{{searchDisplayText}}"</p>
+                                <p>No outstanding records found {{searchDisplayText ? 'for "' + searchDisplayText + '"' : ''}}</p>
                             </div>
                         </td>
                     </tr>
                 </table>
             </div>
-            <mat-paginator [pageSizeOptions]="[5, 10, 25, 100]" aria-label="Select page of users"></mat-paginator>
+            <mat-paginator [length]="totalCount" 
+                           [pageSize]="pageSize" 
+                           [pageSizeOptions]="[5, 10, 25, 50, 100]" 
+                           (page)="onPageChange($event)"
+                           showFirstLastButtons>
+            </mat-paginator>
         </mat-card-content>
     </mat-card>
 </div>

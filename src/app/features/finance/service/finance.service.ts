@@ -50,8 +50,8 @@ export class FinanceService {
         return this.http.post(`${this.customerApi}/receipt`, receipt);
     }
 
-    getOutstandingTracker(): Observable<any> {
-        return this.http.get(`${this.customerApi}/outstanding`);
+    getOutstandingTracker(request: any): Observable<any> {
+        return this.http.post(`${this.customerApi}/outstanding`, request);
     }
 
     getTotalReceivables(): Observable<any> {

@@ -33,12 +33,44 @@
 }
 
 .table-card {
+    position: relative; // For loader positioning
     padding: 16px;
     border-radius: 8px;
     overflow: hidden;
+    transition: all 0.3s ease;
+
+    .top-loader {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 15;
+    }
+
+    .loading-shade {
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 56px;
+        right: 0;
+        background: rgba(255, 255, 255, 0.4);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(2px);
+    }
+
+    &.is-loading {
+        .table-container, mat-paginator {
+            opacity: 0.5;
+            filter: blur(1px);
+            pointer-events: none;
+        }
+    }
 
     mat-card-header {
-        margin-bottom: 16px;
+        margin-bottom: 24px;
         mat-card-title {
             width: 100%;
             .header-content {
@@ -46,13 +78,35 @@
                 justify-content: space-between;
                 align-items: center;
                 flex-wrap: wrap;
-                gap: 16px;
+                gap: 20px;
                 
-                span { font-size: 1.25rem; font-weight: 500; }
+                .title-group {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 8px;
+                    
+                    span { font-size: 1.4rem; font-weight: 500; color: #333; }
+                    
+                    .grand-total {
+                        font-size: 0.95rem;
+                        font-weight: 400;
+                        color: #666;
+                        background: #fdf2f2;
+                        padding: 6px 12px;
+                        border-radius: 6px;
+                        border-left: 4px solid #d32f2f;
+
+                        .total-amount {
+                            font-weight: 600;
+                            color: #d32f2f;
+                            margin-left: 4px;
+                        }
+                    }
+                }
                 
                 .search-field {
                     font-size: 14px;
-                    width: 300px;
+                    width: 320px;
                 }
             }
         }
@@ -128,4 +182,91 @@
 
 .empty-cell {
     text-align: center;
+}
+
+// Header Filter Styles
+.header-with-filter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 32px;
+    
+    ::ng-deep .mat-sort-header-container {
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .header-filter-btn {
+        width: 32px !important;
+        height: 32px !important;
+        line-height: 32px !important;
+        margin-left: 8px;
+        margin-top: 2px;
+        margin-bottom: 2px;
+        border-radius: 50% !important;
+        background: #f0f2f5;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        
+        mat-icon {
+            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            color: #757575;
+            transition: all 0.2s ease;
+            margin: 0 !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        &:hover {
+            background: #ffebee !important; // Red tint
+            mat-icon {
+                color: #d32f2f;
+            }
+        }
+
+        &.active-filter {
+            background: #d32f2f !important;
+            mat-icon {
+                color: #ffffff;
+            }
+        }
+    }
+}
+
+// Global Menu Overrides for Filter
+::ng-deep .column-filter-menu {
+    min-width: 240px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12) !important;
+    overflow: hidden !important;
+}
+
+.filter-menu-content {
+    padding: 16px;
+    
+    mat-form-field {
+        width: 100%;
+        margin-bottom: 8px;
+        
+        ::ng-deep .mat-mdc-text-field-wrapper {
+            background-color: #f8f9fa;
+        }
+    }
+
+    .filter-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        
+        button {
+            height: 36px;
+            font-size: 13px;
+        }
+    }
 }
