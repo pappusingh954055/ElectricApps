@@ -129,9 +129,22 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
         if (params['supplierId']) {
           this.handleQueryParams(params['supplierId'], params['amount'], params['grnNumber']);
         }
+
+        // Stop initial loader here as data is ready
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+        }
         this.cdr.detectChanges();
       },
-      error: (err) => console.error('Error loading suppliers', err)
+      error: (err) => {
+        console.error('Error loading suppliers', err);
+        // Stop loader even on error so page is usable
+        this.isFirstLoad = false;
+        this.isDashboardLoading = false;
+        this.loadingService.setLoading(false);
+      }
     });
   }
 

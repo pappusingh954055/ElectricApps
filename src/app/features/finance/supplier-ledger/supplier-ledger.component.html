@@ -65,9 +65,12 @@
                     </div>
                     <div class="balance-info">
                         <span class="label">Current Balance</span>
-                        <h2 class="amount">₹{{currentBalance | number:'1.2-2'}}</h2>
-                        <span class="status-chip" [class.paid]="currentBalance <= 0" [class.due]="currentBalance > 0">
-                            {{currentBalance > 0 ? 'Payable' : 'Settled'}}
+                        <h2 class="amount">
+                            <span *ngIf="currentBalance >= 0">₹{{currentBalance | number:'1.2-2'}}</span>
+                            <span *ngIf="currentBalance < 0">₹{{-currentBalance | number:'1.2-2'}} (Adv)</span>
+                        </h2>
+                        <span class="status-chip" [class.paid]="currentBalance <= 0" [class.due]="currentBalance > 0" [class.advance]="currentBalance < 0">
+                            {{currentBalance > 0 ? 'Payable' : (currentBalance < 0 ? 'Advance' : 'Settled')}}
                         </span>
                     </div>
                 </div>
@@ -89,7 +92,7 @@
                         <!-- Date Column -->
                         <ng-container matColumnDef="transactionDate">
                             <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
-                            <td mat-cell *matCellDef="let row"> {{row.transactionDate | date:'MMM d, y, h:mm a'}} </td>
+                            <td mat-cell *matCellDef="let row"> {{row.transactionDate | date:'dd-MMM-yy hh:mm a':'+0530'}} </td>
                         </ng-container>
 
                         <!-- Type Column -->
@@ -152,7 +155,10 @@
                         <!-- Description Column -->
                         <ng-container matColumnDef="description">
                             <th mat-header-cell *matHeaderCellDef> Description </th>
-                            <td mat-cell *matCellDef="let row" class="desc-text"> {{row.description}} </td>
+                            <td mat-cell *matCellDef="let row" class="desc-text"> 
+                                {{row.description}}
+                                <span *ngIf="row.transactionType === 'Payment' && row.balance < 0" class="adv-tag">(Advance)</span>
+                            </td>
                         </ng-container>
 
                         <!-- Debit Column -->
@@ -176,7 +182,10 @@
                         <!-- Balance Column -->
                         <ng-container matColumnDef="balance">
                             <th mat-header-cell *matHeaderCellDef mat-sort-header> Balance </th>
-                            <td mat-cell *matCellDef="let row" class="amount-cell fw-bold"> ₹{{row.balance | number:'1.2-2'}} </td>
+                            <td mat-cell *matCellDef="let row" class="amount-cell fw-bold" [class.text-advance]="row.balance < 0"> 
+                                <span *ngIf="row.balance >= 0">₹{{row.balance | number:'1.2-2'}}</span>
+                                <span *ngIf="row.balance < 0">₹{{-row.balance | number:'1.2-2'}} (Adv)</span>
+                            </td>
                         </ng-container>
 
                         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>

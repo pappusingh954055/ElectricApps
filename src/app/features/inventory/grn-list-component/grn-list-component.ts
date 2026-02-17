@@ -8,7 +8,8 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { Router, RouterLink } from '@angular/router';
 import { InventoryService } from '../service/inventory.service';
-import { merge, of } from 'rxjs';
+import { merge, of, forkJoin } from 'rxjs';
+import { FinanceService } from '../../finance/service/finance.service';
 import { startWith, switchMap, map, catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { PoSelectionDialog } from '../po-selection-dialog/po-selection-dialog';
 import { MatDialog } from '@angular/material/dialog';
@@ -34,6 +35,7 @@ export interface GRNListRow {
   status: string;
   paymentStatus: string;  // Paid, Partial, Unpaid
   totalAmount: number;    // GRN Total Amount
+  adjustedDue?: number;   // Calculated net due after ledger adjustments
   totalRejected: number;
   items: GRNItem[];
 }
@@ -81,6 +83,7 @@ export class GrnListComponent implements OnInit, AfterViewInit {
     private router: Router,
     private cdr: ChangeDetectorRef,
     private inventoryService: InventoryService,
+    private financeService: FinanceService,
     private dialog: MatDialog
   ) { }
 
@@ -134,19 +137,19 @@ export class GrnListComponent implements OnInit, AfterViewInit {
           this.isLoadingResults = true;
           this.searchControl.disable({ emitEvent: false });
           this.cdr.detectChanges();
-          return this.inventoryService.getGRNPagedList(
-            this.sort.active,
-            this.sort.direction,
-            this.paginator.pageIndex,
-            this.paginator.pageSize,
-            this.searchControl.value || ''
-          ).pipe(
+          return forkJoin({
+            grnData: this.inventoryService.getGRNPagedList(
+              this.sort.active,
+              this.sort.direction,
+              this.paginator.pageIndex,
+              this.paginator.pageSize,
+              this.searchControl.value || ''
+            ),
+            pendingDues: this.financeService.getPendingDues().pipe(catchError(() => of([])))
+          }).pipe(
             catchError(() => {
-              // Loader OFF: Agar API fail ho jaye
               this.isLoadingResults = false;
               this.searchControl.enable({ emitEvent: false });
-
-              // Pehli baar error pe bhi global loader OFF
               if (this.isFirstLoad) {
                 this.isFirstLoad = false;
                 this.isDashboardLoading = false;
@@ -156,24 +159,56 @@ export class GrnListComponent implements OnInit, AfterViewInit {
             })
           );
         }),
-        map(data => {
-          // Loader OFF: Success response aane par
+        map(result => {
           this.isLoadingResults = false;
           this.searchControl.enable({ emitEvent: false });
 
-          // Pehli baar load hone ke baad global loader OFF
           if (this.isFirstLoad) {
             this.isFirstLoad = false;
             this.isDashboardLoading = false;
             this.loadingService.setLoading(false);
           }
           this.cdr.detectChanges();
-          if (data === null) return [];
+
+          if (!result || !result.grnData) return [];
+
+          const data = result.grnData;
+          const pendingDues = result.pendingDues;
 
           this.resultsLength = data.totalCount;
 
-          // Har row ke liye totalRejected calculate kar rahe hain taaki status badge sahi dikhe
-          return data.items.map((item: any): GRNListRow => ({
+          // 🧠 SMART FIFO LOGIC for Payment Status:
+          // We apply the supplier's total debt to bills starting from the NEWEST towards the OLDEST.
+          // Any bill not covered by the current "Total Due" is considered PAID.
+
+          const items = data.items;
+          const supplierIds = [...new Set(items.map((i: any) => i.supplierId))];
+
+          supplierIds.forEach(sid => {
+            const supplierDue = pendingDues.find((d: any) => d.supplierId === sid);
+            let runningDue = supplierDue ? supplierDue.pendingAmount : 0;
+
+            // Sort supplier's items in THIS page by date DESC (Newest first)
+            const supItemsInPage = items.filter((i: any) => i.supplierId === sid)
+              .sort((a: any, b: any) => new Date(b.receivedDate).getTime() - new Date(a.receivedDate).getTime());
+
+            supItemsInPage.forEach((item: any) => {
+              if (runningDue <= 0.01) {
+                item.paymentStatus = 'Paid';
+                item.adjustedDue = 0;
+              } else if (runningDue >= item.totalAmount - 0.01) {
+                item.paymentStatus = item.paymentStatus === 'Paid' ? 'Paid' : 'Unpaid';
+                item.adjustedDue = item.totalAmount;
+                runningDue -= item.totalAmount;
+              } else {
+                item.paymentStatus = 'Partial';
+                item.adjustedDue = runningDue;
+                runningDue = 0;
+              }
+            });
+          });
+
+          return items.map((item: any): GRNListRow => ({
             ...item,
             items: item.items || [],
             totalRejected: item.items?.reduce((acc: number, curr: any) => acc + (curr.rejectedQty || 0), 0) || 0
@@ -245,12 +280,14 @@ export class GrnListComponent implements OnInit, AfterViewInit {
     if (grn.supplierId) {
       console.log('Navigating to payment with supplierId:', grn.supplierId);
 
-      const balanceAmount = (grn.totalAmount || 0) - (grn.paidAmount || 0);
+      // Use the smart 'adjustedDue' we calculated in FIFO
+      const suggestAmount = grn.adjustedDue !== undefined ? grn.adjustedDue : grn.totalAmount;
 
       this.router.navigate(['/app/finance/suppliers/payment'], {
         queryParams: {
           supplierId: grn.supplierId,
-          amount: balanceAmount > 0 ? balanceAmount : grn.totalAmount, // Use balance if exists, else total
+          amount: suggestAmount,
+          currentDue: suggestAmount, // Pass the same as current due to avoid UI mismatch
           grnNumber: grn.grnNo,
           poNumber: grn.refPO
         }
