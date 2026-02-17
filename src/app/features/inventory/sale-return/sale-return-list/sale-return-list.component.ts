@@ -10,6 +10,7 @@ import { SaleReturnService } from '../services/sale-return.service';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { SaleReturnDetailsModal } from '../sale-return-details-modal/sale-return-details-modal';
+import { LoadingService } from '../../../../core/services/loading.service';
 
 @Component({
     selector: 'app-sale-return-list',
@@ -28,6 +29,9 @@ export class SaleReturnListComponent implements OnInit {
     displayedColumns: string[] = ['returnNumber', 'returnDate', 'customerName', 'soRef', 'totalAmount', 'status', 'actions'];
 
     isTableLoading = true;
+    isDashboardLoading: boolean = true;
+    private isFirstLoad: boolean = true;
+    private loadingService = inject(LoadingService);
     isExportLoading = false;
 
     searchKey: string = "";
@@ -67,8 +71,25 @@ export class SaleReturnListComponent implements OnInit {
     @ViewChild(MatSort) sort!: MatSort;
 
     ngOnInit(): void {
+        // Global loader ON
+        this.isDashboardLoading = true;
+        this.isFirstLoad = true;
+        this.loadingService.setLoading(true);
+        this.cdr.detectChanges();
+
         this.loadDashboardSummary();
         this.loadReturns();
+
+        // Safety timeout - force stop loader after 10 seconds
+        setTimeout(() => {
+            if (this.isDashboardLoading) {
+                console.warn('[SaleReturnList] Force stopping loader after 10s timeout');
+                this.isDashboardLoading = false;
+                this.isFirstLoad = false;
+                this.loadingService.setLoading(false);
+                this.cdr.detectChanges();
+            }
+        }, 10000);
     }
 
     loadDashboardSummary() {
@@ -146,11 +167,25 @@ export class SaleReturnListComponent implements OnInit {
                     this.totalRecords = res.totalCount;
                     this.calculateStats(res.items);
                     this.isTableLoading = false;
+
+                    // Turn off global loader on first load
+                    if (this.isFirstLoad) {
+                        this.isFirstLoad = false;
+                        this.isDashboardLoading = false;
+                        this.loadingService.setLoading(false);
+                    }
                     this.cdr.detectChanges();
                 },
                 error: (err) => {
                     console.error("Error loading returns", err);
                     this.isTableLoading = false;
+
+                    // Turn off global loader on first load
+                    if (this.isFirstLoad) {
+                        this.isFirstLoad = false;
+                        this.isDashboardLoading = false;
+                        this.loadingService.setLoading(false);
+                    }
                     this.cdr.detectChanges();
                 }
             });

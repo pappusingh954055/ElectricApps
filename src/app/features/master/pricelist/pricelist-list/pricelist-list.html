@@ -1,4 +1,4 @@
-<div class="list-container">
+<div class="list-container" [class.disabled-content]="isDashboardLoading">
   <div class="header-actions">
     <h1>All Price Lists</h1>
     <div class="d-flex gap-3">
@@ -20,7 +20,7 @@
       [childColumns]="childColumns" 
       [data]="data" 
       [totalCount]="totalCount" 
-      [loading]="loading"
+      [loading]="loading && !isDashboardLoading"
       (loadData)="loadPriceLists($event)" 
       (selectionChange)="onSelectionChange($event)"
       (delete)="deletePriceList($event)"

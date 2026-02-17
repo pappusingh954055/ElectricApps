@@ -1,4 +1,4 @@
-<div class="list-container">
+<div class="list-container" [class.disabled-content]="isDashboardLoading">
     <div class="header-actions">
         <h1>Sale Returns (Credit Notes)</h1>
         <button mat-raised-button class="main-add-btn" (click)="navigateToCreate()" [disabled]="isTableLoading">
@@ -83,7 +83,7 @@
     </div>
 
     <div class="table-container mat-elevation-z8">
-        <div class="loading-shade" *ngIf="isTableLoading">
+        <div class="loading-shade" *ngIf="isTableLoading && !isDashboardLoading">
             <mat-spinner diameter="50"></mat-spinner>
         </div>
 

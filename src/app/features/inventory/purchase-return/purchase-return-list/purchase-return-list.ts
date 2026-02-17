@@ -12,6 +12,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { CompanyService } from '../../../company/services/company.service';
 import { CompanyProfileDto } from '../../../company/model/company.model';
 import { environment } from '../../../../enviornments/environment';
+import { LoadingService } from '../../../../core/services/loading.service';
 
 @Component({
   selector: 'app-purchase-return-list',
@@ -22,6 +23,7 @@ import { environment } from '../../../../enviornments/environment';
   styleUrl: './purchase-return-list.scss',
 })
 export class PurchaseReturnList implements OnInit {
+  private loadingService = inject(LoadingService);
   private prService = inject(PurchaseReturnService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
@@ -36,6 +38,8 @@ export class PurchaseReturnList implements OnInit {
 
   // Separate Loading States [cite: 2026-02-04]
   isTableLoading = true;
+  isDashboardLoading: boolean = true;
+  private isFirstLoad: boolean = true;
   isExportLoading = false;
 
   selectedReturn: any;
@@ -52,8 +56,25 @@ export class PurchaseReturnList implements OnInit {
   private dialog = inject(MatDialog);
 
   ngOnInit(): void {
+    // Global loader ON - same as dashboard pattern
+    this.isDashboardLoading = true;
+    this.isFirstLoad = true;
+    this.loadingService.setLoading(true);
+    this.cdr.detectChanges();
+
     this.loadReturns();
     this.loadCompanyProfile();
+
+    // Safety timeout - force stop loader after 10 seconds
+    setTimeout(() => {
+      if (this.isDashboardLoading) {
+        console.warn('[PurchaseReturnList] Force stopping loader after 10s timeout');
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      }
+    }, 10000);
   }
 
   loadCompanyProfile(): void {
@@ -101,11 +122,25 @@ export class PurchaseReturnList implements OnInit {
 
         console.log('Purchase Return List Data:', this.dataSource.data);
         this.isTableLoading = false;
+
+        // Pehli baar load hone ke baad global loader OFF
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+        }
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error("Load Error:", err);
         this.isTableLoading = false;
+
+        // Pehli baar error pe bhi global loader OFF
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+        }
         this.cdr.detectChanges();
       }
     });

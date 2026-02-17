@@ -1,7 +1,4 @@
-
-
-
-  <div class="list-container">
+<div class="list-container" [class.disabled-content]="isDashboardLoading">
   <div class="header-actions">
     <h1>All Categories</h1>
     <div class="d-flex gap-3">
@@ -11,19 +8,19 @@
       </button>
       <button *ngIf="selectedRows.length === 0" mat-raised-button class="main-add-btn" routerLink="/app/master/categories/add">
         <mat-icon>add</mat-icon>
-        Category
+        New Category
       </button>
     </div>
   </div>
 
   <div class="grid-wrapper">
-    <app-server-datagrid 
+    <app-server-datagrid
       gridKey="category-grid"
-      [columns]="columns" 
-      [data]="data" 
-      [totalCount]="totalCount" 
-      [loading]="loading"
-      (loadData)="loadCategories($event)" 
+      [columns]="columns"
+      [data]="data"
+      [totalCount]="totalCount"
+      [loading]="loading && !isDashboardLoading"
+      (loadData)="loadCategories($event)"
       (selectionChange)="onSelectionChange($event)"
       (editAction)="onEdit($event)"
       (delete)="deleteCategory($event[0])">

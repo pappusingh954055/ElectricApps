@@ -1,4 +1,4 @@
-<div class="list-container">
+<div class="list-container" [class.disabled-content]="isDashboardLoading">
   <div class="header-actions">
     <h2 class="page-title">All Customers</h2>
     <button mat-raised-button class="main-add-btn" (click)="addCustomer()">
@@ -11,7 +11,7 @@
       [columns]="columns"
       [data]="data"
       [totalCount]="totalCount"
-      [loading]="loading"
+      [loading]="loading && !isDashboardLoading"
       [gridKey]="'customer-grid'"
       (loadData)="loadCustomers($event)"
       (editAction)="onEdit($event)">

@@ -1,4 +1,4 @@
-<div class="container-fluid">
+<div class="container-fluid" [class.disabled-content]="isDashboardLoading">
   <div class="header-actions">
     <h1 class="page-title m-0">Purchase Return (Debit Note)</h1>
     <div class="d-flex gap-2">
@@ -18,7 +18,7 @@
 
   <mat-card class="content-card mat-elevation-z0" style="position: relative; min-height: 400px;">
     
-    <div *ngIf="isTableLoading" class="loader-overlay">
+    <div *ngIf="isTableLoading && !isDashboardLoading" class="loader-overlay">
       <mat-spinner diameter="50"></mat-spinner>
       <p class="mt-2">Processing...</p>
     </div>

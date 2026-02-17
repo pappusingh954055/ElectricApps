@@ -1,4 +1,4 @@
-<div class="list-container">
+<div class="list-container" [class.disabled-content]="isDashboardLoading">
   <div *ngIf="isLowStockFilterActive" class="filter-alert-banner">
     <div class="alert-content">
       <mat-icon>report_problem</mat-icon>
@@ -29,7 +29,7 @@
   </div>
 
   <div class="grid-wrapper">
-    <app-server-datagrid [columns]="columns" [data]="data" [totalCount]="totalCount" [loading]="loading" gridKey="product-grid"
+    <app-server-datagrid [columns]="columns" [data]="data" [totalCount]="totalCount" [loading]="loading && !isDashboardLoading" gridKey="product-grid"
       (loadData)="loadPriceLists($event)" (editAction)="onEdit($event)" (selectionChange)="onSelectionChange($event)" (edit)="onEdit($event)"
       (delete)="deleteProduct($event[0])">
     </app-server-datagrid>

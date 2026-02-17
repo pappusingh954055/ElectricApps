@@ -12,6 +12,7 @@ import { SupplierModalComponent } from '../../../../features/inventory/supplier-
 import { GridColumn } from '../../../../shared/models/grid-column.model';
 import { GridRequest } from '../../../../shared/models/grid-request.model';
 import { SupplierService } from '../../../../features/inventory/service/supplier.service';
+import { LoadingService } from '../../../../core/services/loading.service';
 
 @Component({
   selector: 'app-supplier-list',
@@ -27,6 +28,9 @@ export class SupplierList implements OnInit {
   private dialog = inject(MatDialog);
 
   loading = false;
+  isDashboardLoading = true;
+  private isFirstLoad = true;
+  private loadingService = inject(LoadingService);
   data: any[] = [];
   totalCount = 0;
   lastRequest!: GridRequest;
@@ -45,11 +49,28 @@ export class SupplierList implements OnInit {
   ];
 
   ngOnInit(): void {
+    // Global loader ON
+    this.isDashboardLoading = true;
+    this.isFirstLoad = true;
+    this.loadingService.setLoading(true);
+    this.cdr.detectChanges();
+
     this.loadSuppliers({
       pageNumber: 1,
       pageSize: 10,
       sortDirection: 'desc'
     });
+
+    // Safety timeout - force stop loader after 10 seconds
+    setTimeout(() => {
+      if (this.isDashboardLoading) {
+        console.warn('[SupplierList] Force stopping loader after 10s timeout');
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      }
+    }, 10000);
   }
 
   loadSuppliers(request: GridRequest): void {
@@ -60,11 +81,25 @@ export class SupplierList implements OnInit {
         this.data = res.items;
         this.totalCount = res.totalCount;
         this.loading = false;
+
+        // Turn off global loader on first load
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+        }
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);
         this.loading = false;
+
+        // Turn off global loader on first load
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+        }
         this.cdr.detectChanges();
       }
     });

@@ -1,27 +1,25 @@
-
-
-  <div class="list-container">
+<div class="list-container" [class.disabled-content]="isDashboardLoading">
   <div class="header-actions">
-    <h1>All Subcategories</h1>
+    <h1>All Sub Categories</h1>
     <div class="d-flex gap-3">
-      <button *ngIf="selectedRows.length > 0" mat-raised-button color="warn" (click)="confirmBulkDelete()" [disabled]="loading">
+      <button *ngIf="selectedRows.length > 0" mat-raised-button color="warn" (click)="confirmBulkDelete()"
+        [disabled]="loading">
         <mat-icon>delete_sweep</mat-icon>
         Delete Selected ({{selectedRows.length}})
       </button>
-      <button *ngIf="selectedRows.length === 0" mat-raised-button class="main-add-btn" routerLink="/app/master/subcategories/add">
+      <button *ngIf="selectedRows.length === 0" mat-raised-button class="main-add-btn"
+        routerLink="/app/master/subcategories/add" [disabled]="loading">
         <mat-icon>add</mat-icon>
-        Subcategory
+        New Sub Category
       </button>
     </div>
   </div>
 
   <div class="grid-wrapper">
-    <app-server-datagrid [columns]="columns" [data]="data" 
-      gridKey="subcategory-grid"
-      [totalCount]="totalCount" [loading]="loading"
-      (loadData)="loadSubCategories($event)" 
-      (selectionChange)="onSelectionChange($event)" 
-      (editAction)="onEdit($event)"
+
+    <app-server-datagrid gridKey="subcategory-grid" [columns]="columns" [data]="data" [totalCount]="totalCount"
+      [loading]="loading && !isDashboardLoading" (loadData)="loadSubCategories($event)"
+      (selectionChange)="onSelectionChange($event)" (editAction)="onEdit($event)"
       (delete)="deleteCategory($event[0])">
     </app-server-datagrid>
   </div>

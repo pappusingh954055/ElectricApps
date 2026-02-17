@@ -2,6 +2,13 @@
   padding: 32px 24px 24px 24px;
 }
 
+.disabled-content {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.5;
+  filter: blur(2px);
+}
+
 .header-actions {
   display: flex;
   justify-content: space-between;
