@@ -216,6 +216,41 @@ td.mat-cell, td.mat-mdc-cell {
   }
 }
 
+/* Payment Status Badges */
+.payment-badge {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  display: inline-block;
+  line-height: 1.4;
+  min-width: 80px;
+  text-align: center;
+}
+
+.payment-paid {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border: 1px solid #b1dfbb;
+  box-shadow: 0 1px 3px rgba(21, 87, 36, 0.1);
+}
+
+.payment-partial {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  color: #856404;
+  border: 1px solid #fdd177;
+  box-shadow: 0 1px 3px rgba(133, 100, 4, 0.1);
+}
+
+.payment-unpaid {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  border: 1px solid #f1b0b7;
+  box-shadow: 0 1px 3px rgba(114, 28, 36, 0.1);
+}
+
 /* --- Action Buttons --- */
 button[mat-icon-button] {
   color: #9ca3af;
@@ -240,6 +275,17 @@ button[mat-icon-button] {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* Custom Icon Colors */
+button[color="success"] {
+  color: #2e7d32 !important;
+  &:hover { background-color: #e8f5e9 !important; }
+}
+
+button[color="warning"] {
+  color: #f57f17 !important;
+  &:hover { background-color: #fffde7 !important; }
 }
 
 /* --- Mobile Adjustments --- */
@@ -269,6 +315,12 @@ button[mat-icon-button] {
 .filter-container {
   padding: 12px;
   background-color: white;
+
+  .active-filter {
+    background-color: #eff6ff !important;
+    font-weight: 600 !important;
+    color: #3b82f6 !important;
+  }
 }
 
 .compact-filter-input {
@@ -389,10 +441,11 @@ button[mat-icon-button] {
   .mat-column-soNumber { width: var(--col-soNumber-width, 140px); min-width: var(--col-soNumber-width, 140px); max-width: var(--col-soNumber-width, 140px); }
   .mat-column-soDate { width: var(--col-soDate-width, 140px); min-width: var(--col-soDate-width, 140px); max-width: var(--col-soDate-width, 140px); }
   .mat-column-customerName { width: var(--col-customerName-width, 200px); min-width: var(--col-customerName-width, 200px); max-width: var(--col-customerName-width, 200px); }
-  .mat-column-grandTotal { width: var(--col-grandTotal-width, 150px); min-width: var(--col-grandTotal-width, 150px); max-width: var(--col-grandTotal-width, 150px); }
-  .mat-column-status { width: var(--col-status-width, 120px); min-width: var(--col-status-width, 120px); max-width: var(--col-status-width, 120px); }
+  .mat-column-grandTotal { width: var(--col-grandTotal-width, 140px); min-width: var(--col-grandTotal-width, 140px); max-width: var(--col-grandTotal-width, 140px); }
+  .mat-column-status { width: var(--col-status-width, 130px); min-width: var(--col-status-width, 130px); max-width: var(--col-status-width, 130px); }
+  .mat-column-paymentStatus { width: var(--col-paymentStatus-width, 130px); min-width: var(--col-paymentStatus-width, 130px); max-width: var(--col-paymentStatus-width, 130px); }
   
-  .mat-column-actions { width: 120px; min-width: 120px; }
+  .mat-column-actions { width: 100px; min-width: 100px; }
 }
 /* --- Empty State Styling --- */
 .empty-state-container {

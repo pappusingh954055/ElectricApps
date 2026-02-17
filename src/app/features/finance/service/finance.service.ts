@@ -62,6 +62,21 @@ export class FinanceService {
         return this.http.get(`${this.supplierApi}/pending-total`);
     }
 
+    getPendingCustomerDues(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.customerApi}/pending-dues`).pipe(
+            map(dues => {
+                if (!Array.isArray(dues)) return [];
+                return dues.map(d => ({
+                    customerId: d.customerId || d.CustomerId,
+                    customerName: d.customerName || d.CustomerName,
+                    pendingAmount: d.pendingAmount || d.PendingAmount,
+                    status: d.status || d.Status,
+                    dueDate: d.dueDate || d.DueDate
+                }));
+            })
+        );
+    }
+
     // P&L Methods
     getProfitAndLossReport(filters: any): Observable<any> {
         // We aggregate data from Suppliers (Expenses/Payments) and Customers (Income/Receipts)

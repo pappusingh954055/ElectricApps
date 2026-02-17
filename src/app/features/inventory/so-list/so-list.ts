@@ -15,6 +15,9 @@ import { StatusDialogComponent } from '../../../shared/components/status-dialog-
 import { SaleOrderService } from '../service/saleorder.service';
 import { SelectionModel } from '@angular/cdk/collections';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { FinanceService } from '../../finance/service/finance.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-so-list',
@@ -26,7 +29,7 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 export class SoList implements OnInit {
   private loadingService = inject(LoadingService);
 
-  displayedColumns: string[] = ['select', 'soNumber', 'soDate', 'customerName', 'grandTotal', 'status', 'actions'];
+  displayedColumns: string[] = ['select', 'soNumber', 'soDate', 'customerName', 'grandTotal', 'status', 'paymentStatus', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   isAdmin: boolean = false;
   isLoading: boolean = true;
@@ -41,9 +44,11 @@ export class SoList implements OnInit {
   selection = new SelectionModel<any>(true, []);
   totalRecords: number = 0;
   searchKey: string = "";
+  paymentFilter: string = "";
   constructor(
     private inventoryService: InventoryService,
     private saleOrderService: SaleOrderService,
+    private financeService: FinanceService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
   ) { }
@@ -102,15 +107,58 @@ export class SoList implements OnInit {
     const sortField = this.sort ? this.sort.active : 'soDate';
     const sortDir = this.sort ? this.sort.direction : 'desc';
 
-    this.saleOrderService.getSaleOrders(pageIndex, pageSize, sortField, sortDir, this.searchKey).subscribe({
-      next: (res) => {
-        // FIX: Backend se aane wala 'totalCount' yahan update karein
-        this.dataSource.data = res.data;
-        this.totalRecords = res.totalCount;
+    forkJoin({
+      orders: this.saleOrderService.getSaleOrders(pageIndex, pageSize, sortField, sortDir, this.searchKey),
+      pendingDues: this.financeService.getPendingCustomerDues().pipe(catchError(() => of([])))
+    }).subscribe({
+      next: (res: any) => {
+        const orderData = res.orders;
+        const pendingDues = res.pendingDues;
+
+        this.totalRecords = orderData.totalCount;
+        const items = orderData.data || [];
+
+        // 🧠 FIFO LOGIC for Customer Payment Status (Mirroring GRN logic)
+        const customerIds = [...new Set(items.map((i: any) => i.customerId))];
+
+        customerIds.forEach(cid => {
+          if (!cid) return;
+          const customerDue = pendingDues.find((d: any) => d.customerId === cid);
+          let runningDue = customerDue ? customerDue.pendingAmount : 0;
+
+          // Newest orders first for FIFO tracking
+          const custItems = items.filter((i: any) => i.customerId === cid)
+            .sort((a: any, b: any) => new Date(b.soDate).getTime() - new Date(a.soDate).getTime());
+
+          custItems.forEach((item: any) => {
+            if (runningDue <= 0.01) {
+              item.paymentStatus = 'Paid';
+            } else if (runningDue >= item.grandTotal - 0.01) {
+              item.paymentStatus = 'Unpaid';
+              runningDue -= item.grandTotal;
+            } else {
+              item.paymentStatus = 'Partial';
+              runningDue = 0;
+            }
+          });
+        });
+
+        // Date Normalization & Mapping
+        let processedItems = items.map((item: any) => {
+          if (item.soDate && typeof item.soDate === 'string' && !item.soDate.includes('Z')) {
+            item.soDate += 'Z';
+          }
+          return item;
+        });
+
+        // 🎯 Apply UI Filter if set
+        if (this.paymentFilter) {
+          processedItems = processedItems.filter((i: any) => i.paymentStatus === this.paymentFilter);
+        }
+
+        this.dataSource.data = processedItems;
 
         this.isLoading = false;
-
-        // Pehli baar load hone ke baad global loader OFF
         if (this.isFirstLoad) {
           this.isFirstLoad = false;
           this.isDashboardLoading = false;
@@ -120,8 +168,6 @@ export class SoList implements OnInit {
       },
       error: (err) => {
         this.isLoading = false;
-
-        // Pehli baar error pe bhi global loader OFF
         if (this.isFirstLoad) {
           this.isFirstLoad = false;
           this.isDashboardLoading = false;
@@ -137,6 +183,14 @@ export class SoList implements OnInit {
     const filterValue = (event.target as HTMLInputElement).value;
     this.searchKey = filterValue.trim().toLowerCase();
     this.paginator.pageIndex = 0; // Search par hamesha page 1 par jayein
+    this.loadOrders();
+  }
+
+  setPaymentFilter(status: string) {
+    this.paymentFilter = status;
+    if (this.paginator) {
+      this.paginator.pageIndex = 0;
+    }
     this.loadOrders();
   }
 
@@ -223,6 +277,206 @@ export class SoList implements OnInit {
 
   createNewOrder() {
     this.router.navigate(['/app/inventory/solist/add']);
+  }
+
+  collectPayment(row: any) {
+    if (!row.customerId) return;
+    this.router.navigate(['/app/finance/customers/receipt'], {
+      queryParams: {
+        customerId: row.customerId,
+        amount: row.grandTotal, // We suggest the full order amount, Receipt Entry will fetch current balance
+        invoiceNo: row.soNumber
+      }
+    });
+  }
+
+  downloadReceipt(row: any) {
+    this.isLoading = true;
+    this.cdr.detectChanges();
+
+    // Strategy 1: Search specifically for this SO number
+    const searchRequest = {
+      customerId: row.customerId,
+      searchTerm: row.soNumber,
+      sortBy: 'TransactionDate',
+      sortOrder: 'desc',
+      pageNumber: 1,
+      pageSize: 50
+    };
+
+    this.financeService.getCustomerLedger(searchRequest).subscribe({
+      next: (res: any) => {
+        const items = res.ledger?.items || [];
+        const receipts = items.filter((l: any) => l.transactionType === 'Receipt');
+
+        if (receipts.length > 0) {
+          // Found by SO number reference
+          this.printLatestReceipt(receipts[0], row);
+        } else {
+          // Strategy 2: Look for a receipt with the EXACT same amount as the order
+          this.fetchReceiptByAmount(row);
+        }
+      },
+      error: () => this.handleFetchError()
+    });
+  }
+
+  private fetchReceiptByAmount(row: any) {
+    const generalRequest = {
+      customerId: row.customerId,
+      searchTerm: '',
+      sortBy: 'TransactionDate',
+      sortOrder: 'desc',
+      pageNumber: 1,
+      pageSize: 50 // Fetch more to find the correct one
+    };
+
+    this.financeService.getCustomerLedger(generalRequest).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+        const items = res.ledger?.items || [];
+        const receipts = items.filter((l: any) => l.transactionType === 'Receipt');
+
+        // Try to find a receipt that matches the grand total exactly (within 0.01 margin)
+        const exactMatch = receipts.find((r: any) => Math.abs(r.credit - row.grandTotal) <= 0.01);
+
+        if (exactMatch) {
+          this.printLatestReceipt(exactMatch, row);
+        } else if (receipts.length > 0) {
+          // If no exact amount match, fallback to the very latest one
+          this.printLatestReceipt(receipts[0], row);
+        } else {
+          this.showNoReceiptDialog(row.soNumber);
+        }
+        this.cdr.detectChanges();
+      },
+      error: () => this.handleFetchError()
+    });
+  }
+
+  private printLatestReceipt(receipt: any, row: any) {
+    this.isLoading = false;
+    this.generateVoucherPrint({
+      id: receipt.id,
+      paymentDate: receipt.transactionDate,
+      paymentMode: receipt.description?.includes('Cash') ? 'Cash' : 'Bank/Online',
+      referenceNumber: receipt.referenceId,
+      remarks: receipt.description,
+      amount: receipt.credit,
+      customerName: row.customerName,
+      customerId: row.customerId
+    });
+    this.cdr.detectChanges();
+  }
+
+  private showNoReceiptDialog(soNumber: string) {
+    this.dialog.open(StatusDialogComponent, {
+      width: '400px',
+      data: {
+        type: 'info',
+        title: 'No Receipt History',
+        message: `Order #${soNumber} ya is customer ke liye koi bhi payment receipt nahi mili. Kripya ensure karein ki payment record ho chuki hai.`
+      }
+    });
+  }
+
+  private handleFetchError() {
+    this.isLoading = false;
+    this.dialog.open(StatusDialogComponent, {
+      width: '400px',
+      data: {
+        type: 'error',
+        title: 'System Error',
+        message: 'Receipt details fetch karne mein taklif ho rahi hai. Kripya network connection check karein.'
+      }
+    });
+    this.cdr.detectChanges();
+  }
+
+  private generateVoucherPrint(receipt: any) {
+    const printContent = `
+      <div style="font-family: sans-serif; padding: 40px; border: 2px solid #333; max-width: 800px; margin: auto;">
+        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
+          <h1 style="margin: 0; color: #1e293b;">PAYMENT RECEIPT</h1>
+          <p style="margin: 5px 0;">Official Acknowledgement of Payment</p>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+          <div>
+            <strong>Receipt No:</strong> CR-${receipt.id}<br>
+            <strong>Date:</strong> ${new Date(receipt.paymentDate).toLocaleDateString()}
+          </div>
+          <div style="text-align: right;">
+            <strong>Reference:</strong> ${receipt.referenceNumber || 'N/A'}<br>
+            <strong>Mode:</strong> ${receipt.paymentMode}
+          </div>
+        </div>
+
+        <div style="margin-bottom: 40px; padding: 20px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+          <p style="font-size: 1.1rem; margin-bottom: 10px;">Received From:</p>
+          <h2 style="margin: 0; color: #3b82f6;">${receipt.customerName}</h2>
+          <p style="color: #64748b; margin-top: 5px;">Customer ID: #${receipt.customerId}</p>
+        </div>
+
+        <div style="border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; margin-bottom: 40px;">
+          <table style="width: 100%; border-collapse: collapse;">
+            <tr style="background: #f1f5f9;">
+              <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0;">Description</th>
+              <th style="padding: 12px; text-align: right; border-bottom: 1px solid #e2e8f0;">Amount</th>
+            </tr>
+            <tr>
+              <td style="padding: 20px; border-bottom: 1px solid #f1f5f9; color: #475569;">
+                ${receipt.remarks || 'Payment received towards outstanding balance.'}
+              </td>
+              <td style="padding: 20px; text-align: right; font-weight: bold; border-bottom: 1px solid #f1f5f9; font-size: 1.2rem;">
+                ₹${receipt.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </td>
+            </tr>
+            <tr style="background: #f8fafc;">
+              <td style="padding: 20px; text-align: right; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; color: #64748b;"><strong>Total Received</strong></td>
+              <td style="padding: 20px; text-align: right; font-size: 1.5rem; font-weight: 800; color: #0891b2;">
+                ₹${receipt.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <div style="margin-top: 80px; display: flex; justify-content: space-between;">
+          <div style="border-top: 2px solid #cbd5e1; width: 220px; text-align: center; padding-top: 10px; color: #64748b;">
+            Customer Signature
+          </div>
+          <div style="border-top: 2px solid #cbd5e1; width: 220px; text-align: center; padding-top: 10px; color: #64748b;">
+            Authorized Receiver
+          </div>
+        </div>
+        
+        <div style="margin-top: 40px; text-align: center; color: #94a3b8; font-size: 0.75rem;">
+          This is a computer generated document. No signature required.
+        </div>
+      </div>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Receipt - ${receipt.referenceNumber}</title>
+            <style>
+              @media print { 
+                body { margin: 0; padding: 20px; }
+                .no-print { display: none; } 
+              }
+              body { background: #f1f5f9; padding: 50px; }
+            </style>
+          </head>
+          <body onload="window.print();window.close()">
+            ${printContent}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
   }
 
   DownloadMultipleOrders(productIds: string[]) {
