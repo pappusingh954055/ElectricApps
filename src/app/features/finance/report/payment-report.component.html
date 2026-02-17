@@ -1,4 +1,4 @@
-<div class="page-container">
+<div class="page-container" [class.disabled-content]="isDashboardLoading">
     <div class="page-header">
         <h1 class="mat-headline-4">Payment History Report</h1>
         <p class="subtitle">Log of all payments made to suppliers.</p>
@@ -32,8 +32,20 @@
 
                 <mat-form-field appearance="outline" class="search-field">
                     <mat-label>Search Supplier or Reference</mat-label>
-                    <input matInput (keyup)="applyFilter($event)" placeholder="Ex. Mahaveer">
-                    <mat-icon matSuffix>search</mat-icon>
+                    <input type="text"
+                           placeholder="Ex. Supplies or Ref#"
+                           matInput
+                           [formControl]="searchControl"
+                           [matAutocomplete]="auto">
+                    <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onSupplierSelected($event)">
+                        <mat-option *ngFor="let supplier of filteredSuppliers | async" [value]="supplier">
+                            {{supplier.name}} (#{{supplier.id}})
+                        </mat-option>
+                    </mat-autocomplete>
+                    <mat-icon matSuffix *ngIf="!searchControl.value">search</mat-icon>
+                    <button mat-icon-button matSuffix *ngIf="searchControl.value" (click)="clearSearch()">
+                        <mat-icon>close</mat-icon>
+                    </button>
                 </mat-form-field>
             </div>
         </mat-card-content>
@@ -102,8 +114,11 @@
 
                 <!-- Row shown when there is no matching data. -->
                 <tr class="mat-row" *matNoDataRow>
-                    <td class="mat-cell" colspan="6" style="padding: 24px; text-align: center;">
-                        No payments found for the selected period
+                    <td class="mat-cell empty-cell" colspan="6">
+                        <div class="no-data">
+                            <mat-icon>{{searchControl.value ? 'search_off' : 'history'}}</mat-icon>
+                            <p>{{searchDisplayText ? 'No payments found for "' + searchDisplayText + '"' : 'No payments found for the selected period'}}</p>
+                        </div>
                     </td>
                 </tr>
             </table>

@@ -144,11 +144,11 @@ export class PoList implements OnInit {
       },
       {
         field: 'discountPercent', header: 'Dis(%)', width: 100, align: 'left',
-        cell: (row: any) => this.currencyPipe.transform(row.discount, 'INR', 'symbol', '1.2-2')
+        cell: (row: any) => `${(row.discountPercent || 0).toFixed(2)}%`
       },
       {
         field: 'gstPercent', header: 'GST(%)', width: 100, align: 'left',
-        cell: (row: any) => this.currencyPipe.transform(row.gstPercent, 'INR', 'symbol', '1.2-2')
+        cell: (row: any) => `${(row.gstPercent || 0).toFixed(2)}%`
       },
       {
         field: 'taxAmount', header: 'Tax Amount', width: 120, align: 'left',

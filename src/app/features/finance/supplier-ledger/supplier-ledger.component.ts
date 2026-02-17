@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, OnInit, OnDestroy } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit, OnDestroy, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
@@ -31,6 +31,8 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
     displayedColumns: string[] = ['transactionDate', 'transactionType', 'referenceId', 'description', 'debit', 'credit', 'balance'];
     dataSource = new MatTableDataSource<any>([]);
     currentBalance: number = 0;
+    isDashboardLoading: boolean = true;
+    private isFirstLoad: boolean = true;
     private routeSub!: Subscription;
 
 
@@ -41,12 +43,18 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
         private financeService: FinanceService,
         private loadingService: LoadingService,
         private supplierService: SupplierService,
-        private route: ActivatedRoute
+        private route: ActivatedRoute,
+        private cdr: ChangeDetectorRef
     ) {
-        this.loadSuppliers();
     }
 
     ngOnInit() {
+        this.isDashboardLoading = true;
+        this.isFirstLoad = true;
+        this.loadingService.setLoading(true);
+
+        this.loadSuppliers();
+
         this.filteredSuppliers = this.supplierControl.valueChanges.pipe(
             startWith(''),
             map(value => {
@@ -56,17 +64,15 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
             map(name => name ? this._filter(name) : this.suppliers.slice())
         );
 
-        this.routeSub = this.route.queryParams.subscribe(params => {
-            const sid = params['supplierId'];
-            if (sid) {
-                this.supplierId = Number(sid);
-                // Pre-select supplier in autocomplete if list is loaded
-                if (this.suppliers && this.suppliers.length > 0) {
-                    this.preselectSupplier(this.supplierId);
-                }
-                this.loadLedger();
+        // Safety timeout
+        setTimeout(() => {
+            if (this.isDashboardLoading) {
+                this.isDashboardLoading = false;
+                this.isFirstLoad = false;
+                this.loadingService.setLoading(false);
+                this.cdr.detectChanges();
             }
-        });
+        }, 10000);
     }
 
     private _filter(name: string): Supplier[] {
@@ -84,10 +90,27 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
     loadSuppliers() {
         this.supplierService.getSuppliers().subscribe(data => {
             this.suppliers = data;
-            // If we have a supplierID from route, preselect it now
-            if (this.supplierId) {
-                this.preselectSupplier(this.supplierId);
-            }
+
+            // Check query params after lookups are loaded
+            this.routeSub = this.route.queryParams.subscribe(params => {
+                const sid = params['supplierId'];
+                if (sid) {
+                    this.supplierId = Number(sid);
+                    this.preselectSupplier(this.supplierId);
+                    this.loadLedger();
+                    return; // loadLedger handles loader
+                }
+
+                // If no supplier in route, stop loader
+                if (this.isFirstLoad) {
+                    this.isFirstLoad = false;
+                    this.isDashboardLoading = false;
+                    this.loadingService.setLoading(false);
+                    this.cdr.detectChanges();
+                }
+            });
+
+            this.cdr.detectChanges();
         });
     }
 
@@ -120,10 +143,8 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
 
     loadLedger() {
         if (this.supplierId && this.supplierId > 0) {
-            this.updateLoading(1);
             this.financeService.getSupplierLedger(this.supplierId).subscribe({
                 next: (result: any) => {
-                    this.updateLoading(-1);
                     // The API returns SupplierLedgerResultDto { supplierName: string, ledger: SupplierLedger[] }
                     if (result && result.ledger && Array.isArray(result.ledger)) {
                         this.ledgerData = result;
@@ -145,9 +166,15 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
                         this.dataSource.data = dataArray;
                         this.currentBalance = dataArray.length > 0 ? dataArray[0].balance : 0;
                     }
+
+                    if (this.isFirstLoad) {
+                        this.isFirstLoad = false;
+                        this.isDashboardLoading = false;
+                        this.loadingService.setLoading(false);
+                    }
+                    this.cdr.detectChanges();
                 },
                 error: (err) => {
-                    this.updateLoading(-1);
                     console.error('Error fetching ledger:', err);
 
                     if (err.status === 404) {
@@ -159,6 +186,13 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
                         this.dataSource.data = [];
                         alert('Failed to fetch ledger. Please check Supplier ID.');
                     }
+
+                    if (this.isFirstLoad) {
+                        this.isFirstLoad = false;
+                        this.isDashboardLoading = false;
+                        this.loadingService.setLoading(false);
+                    }
+                    this.cdr.detectChanges();
                 }
             });
         }

@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
@@ -7,63 +7,174 @@ import { MatTableDataSource } from '@angular/material/table';
 import { FinanceService } from '../service/finance.service';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { finalize } from 'rxjs/operators';
+import { ActivatedRoute } from '@angular/router';
+import { LoadingService } from '../../../core/services/loading.service';
+import { SupplierService, Supplier } from '../../inventory/service/supplier.service';
+import { Observable, map, startWith } from 'rxjs';
 
 @Component({
-    selector: 'app-payment-report',
-    standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule],
-    templateUrl: './payment-report.component.html',
-    styleUrl: './payment-report.component.scss'
+  selector: 'app-payment-report',
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule],
+  templateUrl: './payment-report.component.html',
+  styleUrl: './payment-report.component.scss'
 })
 export class PaymentReportComponent implements OnInit, AfterViewInit {
-    displayedColumns: string[] = ['paymentDate', 'supplierName', 'paymentMode', 'referenceNumber', 'amount', 'actions'];
-    dataSource = new MatTableDataSource<any>([]);
-    isLoading = false;
+  displayedColumns: string[] = ['paymentDate', 'supplierName', 'paymentMode', 'referenceNumber', 'amount', 'actions'];
+  dataSource = new MatTableDataSource<any>([]);
+  isLoading = false;
+  isDashboardLoading: boolean = true;
+  private isFirstLoad: boolean = true;
 
-    filters = {
-        startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-        endDate: new Date()
+  // Search & Autocomplete
+  searchControl = new FormControl<string | any>('');
+  suppliers: Supplier[] = [];
+  filteredSuppliers!: Observable<Supplier[]>;
+
+  private loadingService = inject(LoadingService);
+  private supplierService = inject(SupplierService);
+  private cdr = inject(ChangeDetectorRef);
+
+  filters = {
+    startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
+    endDate: new Date()
+  };
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatSort) sort!: MatSort;
+
+  constructor(
+    private financeService: FinanceService,
+    private route: ActivatedRoute
+  ) { }
+
+  ngOnInit() {
+    this.isDashboardLoading = true;
+    this.isFirstLoad = true;
+    this.loadingService.setLoading(true);
+
+    this.loadSuppliers();
+    this.loadReport();
+
+    // Autocomplete filtering
+    this.filteredSuppliers = this.searchControl.valueChanges.pipe(
+      startWith(''),
+      map(value => {
+        const name = typeof value === 'string' ? value : value?.name;
+        return name ? this._filter(name) : this.suppliers.slice();
+      })
+    );
+
+    // Custom filter predicate for the grid
+    this.dataSource.filterPredicate = (data, filter) => {
+      const searchStr = filter.toLowerCase();
+      return (data.supplierName || '').toLowerCase().includes(searchStr) ||
+        (data.referenceNumber || '').toLowerCase().includes(searchStr);
     };
 
-    @ViewChild(MatPaginator) paginator!: MatPaginator;
-    @ViewChild(MatSort) sort!: MatSort;
+    // Safety timeout
+    setTimeout(() => {
+      if (this.isDashboardLoading) {
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      }
+    }, 10000);
+  }
 
-    constructor(private financeService: FinanceService) { }
+  private _filter(value: string): Supplier[] {
+    const filterValue = value.toLowerCase();
+    return this.suppliers.filter(s =>
+      (s.name || '').toLowerCase().includes(filterValue) ||
+      s.id?.toString().includes(filterValue)
+    );
+  }
 
-    ngOnInit() {
-        this.loadReport();
+  loadSuppliers() {
+    this.supplierService.getSuppliers().subscribe(data => {
+      this.suppliers = data || [];
+
+      // Check for query parameters after suppliers are loaded
+      const supplierId = this.route.snapshot.queryParams['supplierId'];
+      if (supplierId) {
+        const supplier = this.suppliers.find(s => s.id === Number(supplierId));
+        if (supplier) {
+          this.searchControl.setValue(supplier);
+          this.applyFilterValue(supplier.name || '');
+        }
+      }
+    });
+  }
+
+  onSupplierSelected(event: any) {
+    const supplier = event.option.value;
+    const searchName = supplier.name || '';
+    this.applyFilterValue(searchName);
+  }
+
+  applyFilterValue(value: string) {
+    this.dataSource.filter = value.trim().toLowerCase();
+    if (this.dataSource.paginator) {
+      this.dataSource.paginator.firstPage();
     }
+  }
 
-    ngAfterViewInit() {
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
-    }
+  clearSearch() {
+    this.searchControl.setValue('');
+    this.applyFilterValue('');
+  }
 
-    loadReport() {
-        this.isLoading = true;
-        const payload = {
-            startDate: this.filters.startDate.toISOString(),
-            endDate: this.filters.endDate.toISOString()
-        };
+  displayFn(supplier: any): string {
+    return supplier && supplier.name ? supplier.name : '';
+  }
 
-        this.financeService.getPaymentsReport(payload).pipe(
-            finalize(() => this.isLoading = false)
-        ).subscribe({
-            next: (data) => {
-                this.dataSource.data = data || [];
-            },
-            error: (err) => console.error('Error loading payments report', err)
-        });
-    }
+  get searchDisplayText(): string {
+    const value = this.searchControl.value as any;
+    if (!value) return '';
+    return typeof value === 'string' ? value : (value?.name || '');
+  }
 
-    applyFilter(event: Event) {
-        const filterValue = (event.target as HTMLInputElement).value;
-        this.dataSource.filter = filterValue.trim().toLowerCase();
-    }
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
+    this.dataSource.sort = this.sort;
+  }
 
-    printVoucher(payment: any) {
-        // We'll implement a simple print window for now
-        const printContent = `
+  loadReport() {
+    this.isLoading = true;
+    const payload = {
+      startDate: this.filters.startDate.toISOString(),
+      endDate: this.filters.endDate.toISOString()
+    };
+
+    this.financeService.getPaymentsReport(payload).pipe(
+      finalize(() => {
+        this.isLoading = false;
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+        }
+        this.cdr.detectChanges();
+      })
+    ).subscribe({
+      next: (data) => {
+        this.dataSource.data = data || [];
+      },
+      error: (err) => {
+        console.error('Error loading payments report', err);
+      }
+    });
+  }
+
+  applyFilter(event: Event) {
+    const filterValue = (event.target as HTMLInputElement).value;
+    this.applyFilterValue(filterValue);
+  }
+
+  printVoucher(payment: any) {
+    // We'll implement a simple print window for now
+    const printContent = `
       <div style="font-family: sans-serif; padding: 40px; border: 2px solid #333; max-width: 800px; margin: auto;">
         <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
           <h1 style="margin: 0; color: #2e7d32;">PAYMENT VOUCHER</h1>
@@ -121,9 +232,9 @@ export class PaymentReportComponent implements OnInit, AfterViewInit {
       </div>
     `;
 
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-            printWindow.document.write(`
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
         <html>
           <head>
             <title>Payment Voucher - PV-${payment.id}</title>
@@ -134,7 +245,7 @@ export class PaymentReportComponent implements OnInit, AfterViewInit {
           </body>
         </html>
       `);
-            printWindow.document.close();
-        }
+      printWindow.document.close();
     }
+  }
 }

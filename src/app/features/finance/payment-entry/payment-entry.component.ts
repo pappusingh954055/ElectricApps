@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -38,6 +38,8 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
   balanceType: string = '';
   recentTransactions: any[] = [];
   loadingCount: number = 0;
+  isDashboardLoading: boolean = true;
+  private isFirstLoad: boolean = true;
   private routeSub!: Subscription;
 
   constructor(
@@ -47,7 +49,8 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private route: ActivatedRoute,
     private router: Router,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   private updateLoading(delta: number) {
@@ -56,6 +59,10 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this.isDashboardLoading = true;
+    this.isFirstLoad = true;
+    this.loadingService.setLoading(true);
+
     this.loadSuppliers();
 
     // Store subscription to clean up
@@ -70,13 +77,31 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
         if (this.suppliers && this.suppliers.length > 0) {
           this.handleQueryParams(supplierId, amount, grnNumber);
         }
+      } else {
+        // If no supplier in route, stop loader early
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+          this.cdr.detectChanges();
+        }
       }
     });
+
+    // Safety timeout
+    setTimeout(() => {
+      if (this.isDashboardLoading) {
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      }
+    }, 10000);
 
     this.filteredSuppliers = this.supplierControl.valueChanges.pipe(
       startWith(''),
       map(value => {
-        const name = typeof value === 'string' ? value : value?.name;
+        const name = typeof value === 'string' ? value : (value as any)?.name;
         if (typeof value === 'string') {
           // User is typing, reset selection
           this.payment.supplierId = null;
@@ -104,6 +129,7 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
         if (params['supplierId']) {
           this.handleQueryParams(params['supplierId'], params['amount'], params['grnNumber']);
         }
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Error loading suppliers', err)
     });
@@ -155,7 +181,15 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
   fetchBalance(supplierId: number) {
     this.updateLoading(1);
     this.financeService.getSupplierLedger(supplierId).pipe(
-      finalize(() => this.updateLoading(-1))
+      finalize(() => {
+        this.updateLoading(-1);
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+        }
+        this.cdr.detectChanges();
+      })
     ).subscribe({
       next: (result: any) => {
         // The API returns SupplierLedgerResultDto { ledger: SupplierLedger[] }

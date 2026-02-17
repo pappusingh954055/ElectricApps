@@ -1,4 +1,4 @@
-<div class="page-container">
+<div class="page-container" [class.disabled-content]="isDashboardLoading">
     <div class="page-header">
         <h1 class="mat-headline-4">Supplier Ledger</h1>
         <p class="subtitle">View detailed transaction history for suppliers.</p>
@@ -25,10 +25,7 @@
                     </mat-autocomplete>
                     <mat-icon matSuffix>search</mat-icon>
                 </mat-form-field>
-
-                <button mat-flat-button color="primary" (click)="loadLedger()" [disabled]="!supplierId">
-                    <mat-icon>download</mat-icon> Fetch Ledger
-                </button>
+                <!-- Button removed as per user request -->
             </div>
         </mat-card-content>
     </mat-card>

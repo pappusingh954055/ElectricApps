@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
@@ -9,6 +9,7 @@ import { map, startWith } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
   selector: 'app-receipt-entry',
@@ -22,7 +23,11 @@ export class ReceiptEntryComponent implements OnInit {
   filteredCustomers!: Observable<any[]>;
   customers: any[] = [];
   isLoading: boolean = false;
+  isDashboardLoading: boolean = true;
+  private isFirstLoad: boolean = true;
   currentBalance: number | null = null;
+  private loadingService = inject(LoadingService);
+  private cdr = inject(ChangeDetectorRef);
 
   receipt: any = {
     customerId: null,
@@ -42,7 +47,12 @@ export class ReceiptEntryComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.isDashboardLoading = true;
+    this.isFirstLoad = true;
+    this.loadingService.setLoading(true);
+
     this.loadCustomers();
+
     this.filteredCustomers = this.customerControl.valueChanges.pipe(
       startWith(''),
       map(value => {
@@ -64,8 +74,26 @@ export class ReceiptEntryComponent implements OnInit {
         if (this.customers.length > 0) {
           this.preselectCustomer(this.receipt.customerId);
         }
+      } else {
+        // If no customer in route, stop loader early
+        if (this.isFirstLoad) {
+          this.isFirstLoad = false;
+          this.isDashboardLoading = false;
+          this.loadingService.setLoading(false);
+          this.cdr.detectChanges();
+        }
       }
     });
+
+    // Safety timeout
+    setTimeout(() => {
+      if (this.isDashboardLoading) {
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      }
+    }, 10000);
   }
 
   private _filter(name: string): any[] {
@@ -86,6 +114,7 @@ export class ReceiptEntryComponent implements OnInit {
       if (this.receipt.customerId) {
         this.preselectCustomer(this.receipt.customerId);
       }
+      this.cdr.detectChanges();
     });
   }
 
@@ -102,6 +131,13 @@ export class ReceiptEntryComponent implements OnInit {
       } else {
         this.currentBalance = 0;
       }
+
+      if (this.isFirstLoad) {
+        this.isFirstLoad = false;
+        this.isDashboardLoading = false;
+        this.loadingService.setLoading(false);
+      }
+      this.cdr.detectChanges();
     });
   }
 

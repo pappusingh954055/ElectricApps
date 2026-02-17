@@ -1,4 +1,4 @@
-<div class="page-container">
+<div class="page-container" [class.disabled-content]="isDashboardLoading">
     <div class="page-header">
         <h1 class="mat-headline-4">Customer Ledger</h1>
         <p class="subtitle">View detailed transaction history for customers.</p>
@@ -24,11 +24,7 @@
                     </mat-autocomplete>
                     <mat-icon matSuffix>person_search</mat-icon>
                 </mat-form-field>
-                <button mat-flat-button color="primary" (click)="loadLedger()" [disabled]="!customerId || isLoading">
-                    <mat-icon *ngIf="!isLoading">download</mat-icon>
-                    <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-                    Fetch Ledger
-                </button>
+                <!-- Button removed as per user request -->
             </div>
         </mat-card-content>
     </mat-card>

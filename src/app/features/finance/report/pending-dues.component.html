@@ -1,4 +1,4 @@
-<div class="page-container">
+<div class="page-container" [class.disabled-content]="isDashboardLoading">
     <div class="page-header">
         <h1 class="mat-headline-4">Pending Dues</h1>
         <p class="subtitle">Track pending payments to suppliers.</p>
@@ -49,7 +49,7 @@
                 </mat-card>
             </div>
 
-            <div class="table-container" [class.hidden]="isLoading">
+            <div class="table-container" [class.hidden]="isLoading && !isDashboardLoading">
                 <table mat-table [dataSource]="dataSource" matSort>
 
                     <!-- ID Column -->
@@ -96,6 +96,9 @@
                                 <button mat-stroked-button color="primary" matTooltip="Pay Now" (click)="makePayment(row.supplierId)">
                                     <mat-icon>payment</mat-icon> Pay
                                 </button>
+                                <button mat-icon-button color="primary" matTooltip="View History" (click)="viewPaymentHistory(row.supplierId)">
+                                    <mat-icon>history</mat-icon>
+                                </button>
                                 <button mat-icon-button color="accent" matTooltip="View Ledger" (click)="viewLedger(row.supplierId)">
                                     <mat-icon>menu_book</mat-icon>
                                 </button>
@@ -111,7 +114,7 @@
                         <td class="mat-cell empty-cell" colspan="6">
                             <div class="no-data">
                                 <mat-icon>{{searchControl.value ? 'search_off' : 'payments'}}</mat-icon>
-                                <p>{{searchControl.value ? 'No matches found for "' + searchControl.value + '"' : 'No pending dues found for suppliers.'}}</p>
+                                <p>{{searchDisplayText ? 'No matches found for "' + searchDisplayText + '"' : 'No pending dues found for suppliers.'}}</p>
                             </div>
                         </td>
                     </tr>

@@ -12,6 +12,8 @@ import { map, startWith } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { LoadingService } from '../../../core/services/loading.service';
+import { ChangeDetectorRef } from '@angular/core';
 
 @Component({
     selector: 'app-customer-ledger',
@@ -31,6 +33,8 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
     dataSource = new MatTableDataSource<any>([]);
     currentBalance: number = 0;
     isLoading: boolean = false;
+    isDashboardLoading: boolean = true;
+    private isFirstLoad: boolean = true;
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
@@ -40,10 +44,16 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
         private customerService: customerService,
         private dialog: MatDialog,
         private route: ActivatedRoute,
-        private router: Router
+        private router: Router,
+        private loadingService: LoadingService,
+        private cdr: ChangeDetectorRef
     ) { }
 
     ngOnInit() {
+        this.isDashboardLoading = true;
+        this.isFirstLoad = true;
+        this.loadingService.setLoading(true);
+
         this.loadCustomers();
         this.filteredCustomers = this.customerControl.valueChanges.pipe(
             startWith(''),
@@ -52,6 +62,16 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
                 return name ? this._filter(name as string) : this.customers.slice();
             }),
         );
+
+        // Safety timeout
+        setTimeout(() => {
+            if (this.isDashboardLoading) {
+                this.isDashboardLoading = false;
+                this.isFirstLoad = false;
+                this.loadingService.setLoading(false);
+                this.cdr.detectChanges();
+            }
+        }, 10000);
     }
 
     ngAfterViewInit() {
@@ -84,7 +104,16 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
                         this.customerControl.setValue(customer);
                         this.customerId = id;
                         this.loadLedger();
+                        return; // loadLedger will handle stopping the loader
                     }
+                }
+
+                // If no customer to load, stop the loader here
+                if (this.isFirstLoad) {
+                    this.isFirstLoad = false;
+                    this.isDashboardLoading = false;
+                    this.loadingService.setLoading(false);
+                    this.cdr.detectChanges();
                 }
             });
         });
@@ -120,6 +149,13 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
                         this.dataSource.data = [];
                         this.currentBalance = 0;
                     }
+
+                    if (this.isFirstLoad) {
+                        this.isFirstLoad = false;
+                        this.isDashboardLoading = false;
+                        this.loadingService.setLoading(false);
+                    }
+                    this.cdr.detectChanges();
                 },
                 error: (err) => {
                     this.isLoading = false;
@@ -133,6 +169,13 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
                     });
                     this.ledgerData = null;
                     this.dataSource.data = [];
+
+                    if (this.isFirstLoad) {
+                        this.isFirstLoad = false;
+                        this.isDashboardLoading = false;
+                        this.loadingService.setLoading(false);
+                    }
+                    this.cdr.detectChanges();
                 }
             });
         }

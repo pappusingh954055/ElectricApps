@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -41,6 +41,8 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
     displayedColumns: string[] = ['supplierId', 'supplierName', 'pendingAmount', 'dueDate', 'status', 'actions'];
     dataSource = new MatTableDataSource<any>([]);
     isLoading = false;
+    isDashboardLoading = true;
+    private isFirstLoad = true;
     errorMessage = '';
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -50,7 +52,8 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
         private financeService: FinanceService,
         private loadingService: LoadingService,
         private supplierService: SupplierService,
-        private router: Router
+        private router: Router,
+        private cdr: ChangeDetectorRef
     ) {
         this.loadSuppliers();
     }
@@ -62,6 +65,10 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
     }
 
     ngOnInit() {
+        this.isDashboardLoading = true;
+        this.isFirstLoad = true;
+        this.loadingService.setLoading(true);
+
         this.loadPendingDues();
 
         // Custom filter predicate for table
@@ -90,6 +97,16 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
                 });
             })
         );
+
+        // Safety timeout
+        setTimeout(() => {
+            if (this.isDashboardLoading) {
+                this.isDashboardLoading = false;
+                this.isFirstLoad = false;
+                this.loadingService.setLoading(false);
+                this.cdr.detectChanges();
+            }
+        }, 10000);
     }
 
     displayFn(supplier: any): string {
@@ -97,6 +114,12 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
         const name = supplier.name || supplier.supplierName || '';
         const id = supplier.id || supplier.supplierId || '';
         return name ? `${name} (#${id})` : '';
+    }
+
+    get searchDisplayText(): string {
+        const value = this.searchControl.value as any;
+        if (!value) return '';
+        return typeof value === 'string' ? value : (value?.name || value?.supplierName || '');
     }
 
     ngAfterViewInit() {
@@ -114,7 +137,15 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
         this.errorMessage = '';
 
         this.financeService.getPendingDues().pipe(
-            finalize(() => this.updateLoading(false))
+            finalize(() => {
+                this.updateLoading(false);
+                if (this.isFirstLoad) {
+                    this.isFirstLoad = false;
+                    this.isDashboardLoading = false;
+                    this.loadingService.setLoading(false);
+                    this.cdr.detectChanges();
+                }
+            })
         ).subscribe({
             next: (data: any[]) => {
                 this.allDues = data || [];
@@ -153,6 +184,12 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
 
     viewLedger(supplierId: number) {
         this.router.navigate(['/app/finance/suppliers/ledger'], {
+            queryParams: { supplierId }
+        });
+    }
+
+    viewPaymentHistory(supplierId: number) {
+        this.router.navigate(['/app/finance/suppliers/payments-report'], {
             queryParams: { supplierId }
         });
     }

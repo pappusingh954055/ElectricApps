@@ -1,4 +1,4 @@
-<div class="page-container">
+<div class="page-container" [class.disabled-content]="isDashboardLoading">
     <div class="page-header">
         <h1 class="mat-headline-4">Outstanding Tracker</h1>
         <p class="subtitle">Monitor customer outstanding balances and payment statuses.</p>
@@ -11,8 +11,21 @@
                     <span>Customer Balances</span>
                     <mat-form-field appearance="outline" class="search-field">
                         <mat-label>Search Customer</mat-label>
-                        <input matInput (keyup)="applyFilter($event)" placeholder="Ex. John Doe" #input>
-                        <mat-icon matSuffix>search</mat-icon>
+                        <input type="text" 
+                               placeholder="Ex. John Doe" 
+                               matInput 
+                               [formControl]="searchControl"
+                               [matAutocomplete]="auto"
+                               (keyup)="handleKeyUp($event)">
+                        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onCustomerSelected($event)">
+                            <mat-option *ngFor="let customer of filteredCustomers | async" [value]="customer">
+                                {{customer.name}} (#{{customer.id}})
+                            </mat-option>
+                        </mat-autocomplete>
+                        <mat-icon matSuffix *ngIf="!searchControl.value">search</mat-icon>
+                        <button mat-icon-button matSuffix *ngIf="searchControl.value" (click)="clearSearch()" aria-label="Clear">
+                            <mat-icon>close</mat-icon>
+                        </button>
                     </mat-form-field>
                 </div>
             </mat-card-title>
@@ -84,7 +97,12 @@
 
                     <!-- Row shown when there is no matching data. -->
                     <tr class="mat-row" *matNoDataRow>
-                        <td class="mat-cell" colspan="4">No data matching the filter "{{input.value}}"</td>
+                        <td class="mat-cell empty-cell" colspan="7">
+                            <div class="no-data">
+                                <mat-icon>person_search</mat-icon>
+                                <p>No outstanding records found for "{{searchDisplayText}}"</p>
+                            </div>
+                        </td>
                     </tr>
                 </table>
             </div>
