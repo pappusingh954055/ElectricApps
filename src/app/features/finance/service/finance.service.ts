@@ -10,6 +10,7 @@ import { environment } from '../../../enviornments/environment';
 export class FinanceService {
     private supplierApi = `${environment.api.supplier}/finance`;
     private customerApi = `${environment.api.customer}/finance`;
+    private inventoryApi = `${environment.api.inventory}`;
 
     constructor(private http: HttpClient) { }
 
@@ -88,6 +89,61 @@ export class FinanceService {
                 return {
                     totalIncome: receiptRes.totalReceipts,
                     totalExpenses: paymentRes.totalPayments
+                };
+            })
+        );
+    }
+
+    // Expense Category Methods
+    getExpenseCategories(): Observable<any[]> {
+        return this.http.get<any[]>(`${this.inventoryApi}/expense-categories`);
+    }
+
+    createExpenseCategory(category: any): Observable<any> {
+        return this.http.post(`${this.inventoryApi}/expense-categories`, category);
+    }
+
+    updateExpenseCategory(id: number, category: any): Observable<any> {
+        return this.http.put(`${this.inventoryApi}/expense-categories/${id}`, category);
+    }
+
+    deleteExpenseCategory(id: number): Observable<any> {
+        return this.http.delete(`${this.inventoryApi}/expense-categories/${id}`);
+    }
+
+    // Expense Entry Methods
+    getExpenseEntries(pageNumber: number = 1, pageSize: number = 50, search: string = ''): Observable<any> {
+        return this.http.get<any>(`${this.inventoryApi}/expense-entries?pageNumber=${pageNumber}&pageSize=${pageSize}&search=${search}`);
+    }
+
+    createExpenseEntry(entry: any): Observable<any> {
+        return this.http.post(`${this.inventoryApi}/expense-entries`, entry);
+    }
+
+    updateExpenseEntry(id: number, entry: any): Observable<any> {
+        return this.http.put(`${this.inventoryApi}/expense-entries/${id}`, entry);
+    }
+
+    deleteExpenseEntry(id: number): Observable<any> {
+        return this.http.delete(`${this.inventoryApi}/expense-entries/${id}`);
+    }
+
+    getExpenseChartData(filters: any = {}): Observable<any[]> {
+        return this.http.post<any[]>(`${this.inventoryApi}/expense-entries/chart-data`, filters);
+    }
+
+    getMonthlyTrends(months: number = 6): Observable<any> {
+        const receiptsReq = this.http.get<any[]>(`${this.customerApi}/monthly-receipts?months=${months}`);
+        const paymentsReq = this.http.get<any[]>(`${this.supplierApi}/monthly-payments?months=${months}`);
+        const expensesReq = this.http.get<any[]>(`${this.inventoryApi}/expense-entries/monthly-totals?months=${months}`);
+
+        return forkJoin([receiptsReq, paymentsReq, expensesReq]).pipe(
+            map(([receipts, payments, expenses]) => {
+                // Return unified data
+                return {
+                    receipts,
+                    payments,
+                    expenses
                 };
             })
         );

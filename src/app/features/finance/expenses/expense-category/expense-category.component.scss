@@ -1,0 +1,84 @@
+.expense-container {
+  padding: 24px;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 64px);
+
+  .header-section {
+    margin-bottom: 24px;
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+  }
+
+  .main-content {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 24px;
+
+    @media (max-width: 960px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .form-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+    mat-card-header {
+      margin-bottom: 16px;
+    }
+
+    .category-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      mat-form-field {
+        width: 100%;
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+        
+        button {
+          padding: 0 24px;
+        }
+      }
+    }
+  }
+
+  .list-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+    table {
+      width: 100%;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+      background-color: #eee;
+      color: #666;
+
+      &.active {
+        background-color: #e3f2fd;
+        color: #1976d2;
+      }
+    }
+
+    .no-data {
+      padding: 48px;
+      text-align: center;
+      color: #999;
+      font-style: italic;
+    }
+  }
+}

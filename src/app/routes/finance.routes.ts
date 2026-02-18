@@ -53,5 +53,18 @@ export const FINANCE_ROUTES: Routes = [
         path: 'p-and-l',
         canActivate: [PermissionGuard],
         loadComponent: () => import('../features/finance/pl-dashboard/pl-dashboard.component').then(m => m.PLDashboardComponent)
+    },
+    {
+        path: 'expenses',
+        children: [
+            {
+                path: 'categories',
+                loadComponent: () => import('../features/finance/expenses/expense-category/expense-category.component').then(m => m.ExpenseCategoryComponent)
+            },
+            {
+                path: 'entry',
+                loadComponent: () => import('../features/finance/expenses/expense-entry/expense-entry.component').then(m => m.ExpenseEntryComponent)
+            }
+        ]
     }
 ];

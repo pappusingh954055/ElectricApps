@@ -1,0 +1,129 @@
+<div class="expense-container">
+  <div class="header-section">
+    <h1>Expense Entry (Transaction)</h1>
+  </div>
+
+  <div class="main-content">
+    <!-- Form Section -->
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>{{ isEditing ? 'Edit Expense' : 'Record New Expense' }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup] = "expenseForm" (ngSubmit) = "onSubmit()" class="expense-form">
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Category</mat-label>
+              <mat-select formControlName="categoryId">
+                <mat-option *ngFor="let cat of categories" [value]="cat.id">
+                  {{cat.name}}
+                </mat-option>
+              </mat-select>
+              <mat-error *ngIf="expenseForm.get('categoryId')?.hasError('required')">Category is required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Amount</mat-label>
+              <input matInput type="number" formControlName="amount">
+              <span matPrefix>₹&nbsp;</span>
+              <mat-error *ngIf="expenseForm.get('amount')?.hasError('required')">Amount is required</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row">
+            <mat-form-field appearance="outline">
+              <mat-label>Expense Date</mat-label>
+              <input matInput [matDatepicker]="picker" formControlName="expenseDate">
+              <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+              <mat-error *ngIf="expenseForm.get('expenseDate')?.hasError('required')">Date is required</mat-error>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Payment Mode</mat-label>
+              <mat-select formControlName="paymentMode">
+                <mat-option *ngFor="let mode of paymentModes" [value]="mode">
+                  {{mode}}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Reference No / Bill No</mat-label>
+            <input matInput formControlName="referenceNo">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Remarks</mat-label>
+            <textarea matInput formControlName="remarks"></textarea>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="expenseForm.invalid">
+              <mat-icon>{{ isEditing ? 'save' : 'add' }}</mat-icon>
+              {{ isEditing ? 'Update Entry' : 'Save Entry' }}
+            </button>
+            <button mat-button type="button" (click)="resetForm()" *ngIf="isEditing">Cancel</button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Table Section -->
+    <mat-card class="list-card">
+      <mat-card-header>
+        <mat-card-title>Recent Expenses</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="table-container">
+          <table mat-table [dataSource] = "expenses">
+            <ng-container matColumnDef="date">
+              <th mat-header-cell *matHeaderCellDef>Date</th>
+              <td mat-cell *matCellDef="let element">{{element.expenseDate | date:'dd-MMM-yyyy'}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="category">
+              <th mat-header-cell *matHeaderCellDef>Category</th>
+              <td mat-cell *matCellDef="let element">{{element.category?.name}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="amount">
+              <th mat-header-cell *matHeaderCellDef>Amount</th>
+              <td mat-cell *matCellDef="let element" class="amount-cell">₹{{element.amount | number:'1.2-2'}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="mode">
+              <th mat-header-cell *matHeaderCellDef>Mode</th>
+              <td mat-cell *matCellDef="let element">{{element.paymentMode}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="refNo">
+              <th mat-header-cell *matHeaderCellDef>Ref No</th>
+              <td mat-cell *matCellDef="let element">{{element.referenceNo || '-'}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let element">
+                <button mat-icon-button (click)="editExpense(element)">
+                  <mat-icon color="accent">edit</mat-icon>
+                </button>
+                <button mat-icon-button (click)="deleteExpense(element.id)">
+                  <mat-icon color="warn">delete</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+          </table>
+        </div>
+
+        <div *ngIf="expenses.length === 0" class="no-data">
+          No expenses recorded yet.
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

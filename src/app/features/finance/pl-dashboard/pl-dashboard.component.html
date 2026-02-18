@@ -85,9 +85,13 @@
                 <mat-card-title>Monthly Trends</mat-card-title>
             </mat-card-header>
             <mat-card-content class="chart-content">
-                <div class="placeholder-chart">
+                <div class="chart-wrapper" *ngIf="barChartData.labels && barChartData.labels.length > 0">
+                    <canvas baseChart [data]="barChartData" [options]="barChartOptions" [type]="'bar'">
+                    </canvas>
+                </div>
+                <div class="placeholder-chart" *ngIf="!barChartData.labels || barChartData.labels.length === 0">
                     <mat-icon>bar_chart</mat-icon>
-                    <p>Chart functionality coming soon...</p>
+                    <p>No trend data available for this period.</p>
                 </div>
             </mat-card-content>
         </mat-card>
@@ -97,9 +101,13 @@
                 <mat-card-title>Expense Breakdown</mat-card-title>
             </mat-card-header>
             <mat-card-content class="chart-content">
-                <div class="placeholder-chart">
+                <div class="chart-wrapper" *ngIf="pieChartData.datasets[0].data.length > 0">
+                    <canvas baseChart [data]="pieChartData" [options]="chartOptions" [type]="'pie'">
+                    </canvas>
+                </div>
+                <div class="placeholder-chart" *ngIf="pieChartData.datasets[0].data.length === 0">
                     <mat-icon>pie_chart</mat-icon>
-                    <p>Expense categories chart...</p>
+                    <p>No expense data available for this period.</p>
                 </div>
             </mat-card-content>
         </mat-card>

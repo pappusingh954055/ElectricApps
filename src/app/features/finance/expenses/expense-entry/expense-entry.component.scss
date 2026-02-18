@@ -1,0 +1,82 @@
+.expense-container {
+  padding: 24px;
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 64px);
+
+  .header-section {
+    margin-bottom: 24px;
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+  }
+
+  .main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .form-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+    .expense-form {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+
+        @media (max-width: 600px) {
+          grid-template-columns: 1fr;
+          gap: 0;
+        }
+      }
+
+      mat-form-field {
+        width: 100%;
+      }
+
+      .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 16px;
+        
+        button {
+          padding: 0 32px;
+        }
+      }
+    }
+  }
+
+  .list-card {
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+    }
+
+    .amount-cell {
+      font-weight: 600;
+      color: #d32f2f;
+    }
+
+    .no-data {
+      padding: 48px;
+      text-align: center;
+      color: #999;
+      font-style: italic;
+    }
+  }
+}

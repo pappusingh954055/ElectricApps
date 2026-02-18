@@ -1,0 +1,84 @@
+<div class="expense-container">
+  <div class="header-section">
+    <h1>Expense Categories (Master)</h1>
+  </div>
+
+  <div class="main-content">
+    <!-- Form Section -->
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>{{ isEditing ? 'Edit Category' : 'Add New Category' }}</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup] = "categoryForm" (ngSubmit) = "onSubmit()" class="category-form">
+          <mat-form-field appearance="outline">
+            <mat-label>Category Name</mat-label>
+            <input matInput formControlName="name" placeholder="e.g. Shop Rent">
+            <mat-error *ngIf="categoryForm.get('name')?.hasError('required')">Name is required</mat-error>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Description</mat-label>
+            <textarea matInput formControlName="description" placeholder="Optional details"></textarea>
+          </mat-form-field>
+
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="categoryForm.invalid">
+              <mat-icon>{{ isEditing ? 'save' : 'add' }}</mat-icon>
+              {{ isEditing ? 'Update' : 'Save' }}
+            </button>
+            <button mat-button type="button" (click)="resetForm()" *ngIf="isEditing">Cancel</button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Table Section -->
+    <mat-card class="list-card">
+      <mat-card-header>
+        <mat-card-title>Category List</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <table mat-table [dataSource] = "categories" class="mat-elevation-z0">
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let element">{{element.name}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <td mat-cell *matCellDef="let element">{{element.description}}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="isActive">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let element">
+              <span class="status-badge" [class.active]="element.isActive">
+                {{element.isActive ? 'Active' : 'Inactive'}}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let element">
+              <button mat-icon-button color="accent" (click)="editCategory(element)">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteCategory(element.id)">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <div *ngIf="categories.length === 0" class="no-data">
+          No categories found.
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

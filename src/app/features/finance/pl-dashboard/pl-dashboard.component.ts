@@ -5,11 +5,13 @@ import { MaterialModule } from '../../../shared/material/material/material-modul
 import { FinanceService } from '../service/finance.service';
 import { forkJoin, finalize } from 'rxjs';
 import { LoadingService } from '../../../core/services/loading.service';
+import { BaseChartDirective } from 'ng2-charts';
+import { ChartConfiguration } from 'chart.js';
 
 @Component({
     selector: 'app-pl-dashboard',
     standalone: true,
-    imports: [CommonModule, RouterModule, MaterialModule],
+    imports: [CommonModule, RouterModule, MaterialModule, BaseChartDirective],
     templateUrl: './pl-dashboard.component.html',
     styleUrl: './pl-dashboard.component.scss'
 })
@@ -22,6 +24,54 @@ export class PLDashboardComponent implements OnInit {
     totalReceivables: number = 0;
     totalPayables: number = 0;
     isDashboardLoading: boolean = true;
+
+    // Chart Data
+    public pieChartData: ChartConfiguration['data'] = {
+        datasets: [{
+            data: [],
+            backgroundColor: ['#f44336', '#e91e63', '#9c27b0', '#673ab7', '#3f51b5', '#2196f3'],
+            hoverOffset: 15,
+            borderWidth: 0
+        }],
+        labels: []
+    };
+
+    public barChartData: ChartConfiguration['data'] = {
+        datasets: [
+            { data: [], label: 'Income', backgroundColor: 'rgba(75, 192, 192, 0.7)', order: 2 },
+            { data: [], label: 'Expenses', backgroundColor: 'rgba(255, 99, 132, 0.7)', order: 2 },
+            {
+                data: [],
+                label: 'Net Profit',
+                type: 'line',
+                borderColor: '#3f51b5',
+                backgroundColor: 'rgba(63, 81, 181, 0.2)',
+                fill: false,
+                tension: 0.4,
+                order: 1
+            }
+        ],
+        labels: []
+    };
+
+    public chartOptions: ChartConfiguration['options'] = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'right', labels: { padding: 20, usePointStyle: true } }
+        }
+    };
+
+    public barChartOptions: ChartConfiguration['options'] = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { position: 'top' }
+        },
+        scales: {
+            y: { beginAtZero: true }
+        }
+    };
 
     // Add date filter later
     filters = {
@@ -53,7 +103,9 @@ export class PLDashboardComponent implements OnInit {
         forkJoin({
             pl: this.financeService.getProfitAndLossReport(this.filters),
             receivables: this.financeService.getTotalReceivables(),
-            payables: this.financeService.getTotalPayables()
+            payables: this.financeService.getTotalPayables(),
+            expenseChart: this.financeService.getExpenseChartData(this.filters),
+            trends: this.financeService.getMonthlyTrends(6)
         }).subscribe({
             next: (results) => {
                 console.log('All Dashboard Data:', results);
@@ -72,6 +124,44 @@ export class PLDashboardComponent implements OnInit {
                 // Map Payables
                 if (results.payables) {
                     this.totalPayables = results.payables.totalPending || results.payables.TotalPending || 0;
+                }
+
+                // Map Chart Data
+                if (results.expenseChart && Array.isArray(results.expenseChart)) {
+                    this.pieChartData.labels = results.expenseChart.map(x => x.category);
+                    this.pieChartData.datasets[0].data = results.expenseChart.map(x => x.amount);
+                    this.pieChartData = { ...this.pieChartData };
+                }
+
+                // Map Trend Data
+                if (results.trends) {
+                    const { receipts, payments, expenses } = results.trends;
+
+                    // Create a master list of months
+                    const months = Array.from(new Set([
+                        ...receipts.map((r: any) => r.month),
+                        ...payments.map((p: any) => p.month),
+                        ...expenses.map((e: any) => e.month)
+                    ])).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+
+                    this.barChartData.labels = months;
+                    this.barChartData.datasets[0].data = months.map(m =>
+                        (receipts.find((r: any) => r.month === m)?.amount || 0)
+                    );
+                    this.barChartData.datasets[1].data = months.map(m => {
+                        const pAmt = payments.find((p: any) => p.month === m)?.amount || 0;
+                        const eAmt = expenses.find((e: any) => e.month === m)?.amount || 0;
+                        return pAmt + eAmt;
+                    });
+
+                    // Calculate Net Profit for the line chart
+                    this.barChartData.datasets[2].data = months.map((m, index) => {
+                        const inc = this.barChartData.datasets[0].data[index] as number;
+                        const exp = this.barChartData.datasets[1].data[index] as number;
+                        return inc - exp;
+                    });
+
+                    this.barChartData = { ...this.barChartData };
                 }
 
                 // Sab kuch load hone ke baad Loader OFF
