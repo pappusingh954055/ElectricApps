@@ -52,6 +52,10 @@ export class FinanceService {
         return this.http.post(`${this.customerApi}/receipt`, receipt);
     }
 
+    recordBulkCustomerReceipts(receipts: any[]): Observable<any> {
+        return this.http.post(`${this.customerApi}/bulk-receipts`, { receipts: receipts });
+    }
+
     getOutstandingTracker(request: any): Observable<any> {
         return this.http.post(`${this.customerApi}/outstanding`, request);
     }

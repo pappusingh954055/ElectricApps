@@ -12,6 +12,7 @@ import { Router } from '@angular/router';
 import { LoadingService } from '../../../core/services/loading.service';
 import { customerService } from '../../master/customer-component/customer.service';
 import { Observable, map, startWith } from 'rxjs';
+import { BulkReceiptEntryComponent } from '../bulk-receipt-entry/bulk-receipt-entry.component';
 
 export interface OutstandingData {
     customerId: number;
@@ -254,5 +255,19 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
     clearSearch() {
         this.searchControl.setValue('');
         this.applyFilterValue('');
+    }
+
+    goToBulkEntry() {
+        this.dialog.open(BulkReceiptEntryComponent, {
+            width: '95vw',
+            maxWidth: '1200px',
+            height: '90vh',
+            disableClose: true,
+            panelClass: 'full-screen-modal'
+        }).afterClosed().subscribe(result => {
+            if (result) {
+                this.updateReport();
+            }
+        });
     }
 }

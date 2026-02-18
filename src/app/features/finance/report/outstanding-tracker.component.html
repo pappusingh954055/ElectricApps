@@ -53,24 +53,29 @@
                             Total Outstanding: <span class="total-amount">₹{{totalOutstandingAmount | number:'1.2-2'}}</span>
                         </div>
                     </div>
-                    <mat-form-field appearance="outline" class="search-field">
-                        <mat-label>Search Customer</mat-label>
-                        <input type="text" 
-                               placeholder="Ex. John Doe" 
-                               matInput 
-                               [formControl]="searchControl"
-                               [matAutocomplete]="auto"
-                               (keyup)="handleKeyUp($event)">
-                        <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onCustomerSelected($event)">
-                            <mat-option *ngFor="let customer of filteredCustomers | async" [value]="customer">
-                                {{customer.name}} (#{{customer.id}})
-                            </mat-option>
-                        </mat-autocomplete>
-                        <mat-icon matSuffix *ngIf="!searchControl.value">search</mat-icon>
-                        <button mat-icon-button matSuffix *ngIf="searchControl.value" (click)="clearSearch()" aria-label="Clear">
-                            <mat-icon>close</mat-icon>
+                    <div class="actions-group">
+                        <button mat-stroked-button color="primary" class="bulk-btn" (click)="goToBulkEntry()">
+                            <mat-icon>playlist_add</mat-icon> Bulk Entry
                         </button>
-                    </mat-form-field>
+                        <mat-form-field appearance="outline" class="search-field">
+                            <mat-label>Search Customer</mat-label>
+                            <input type="text" 
+                                   placeholder="Ex. John Doe" 
+                                   matInput 
+                                   [formControl]="searchControl"
+                                   [matAutocomplete]="auto"
+                                   (keyup)="handleKeyUp($event)">
+                            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onCustomerSelected($event)">
+                                <mat-option *ngFor="let customer of filteredCustomers | async" [value]="customer">
+                                    {{customer.name}} (#{{customer.id}})
+                                </mat-option>
+                            </mat-autocomplete>
+                            <mat-icon matSuffix *ngIf="!searchControl.value">search</mat-icon>
+                            <button mat-icon-button matSuffix *ngIf="searchControl.value" (click)="clearSearch()" aria-label="Clear">
+                                <mat-icon>close</mat-icon>
+                            </button>
+                        </mat-form-field>
+                    </div>
                 </div>
             </mat-card-title>
         </mat-card-header>

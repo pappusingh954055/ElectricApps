@@ -197,9 +197,33 @@
                     }
                 }
                 
-                .search-field {
-                    font-size: 14px;
-                    width: 320px;
+                .actions-group {
+                    display: flex;
+                    align-items: center;
+                    gap: 16px;
+                    flex-wrap: wrap;
+
+                    .bulk-btn {
+                        height: 52px; // Match form field height roughly
+                        border-radius: 4px; // Match standard material
+                        color: #1976d2;
+                        border-color: #bbdefb;
+                        background: #f5fafd;
+                        
+                        mat-icon {
+                            margin-right: 6px;
+                        }
+
+                        &:hover {
+                            background-color: #e3f2fd;
+                        }
+                    }
+
+                    .search-field {
+                        font-size: 14px;
+                        width: 320px;
+                        margin-bottom: -1.25em; // Offset typical material padding
+                    }
                 }
             }
         }

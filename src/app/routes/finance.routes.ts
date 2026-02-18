@@ -47,6 +47,10 @@ export const FINANCE_ROUTES: Routes = [
                 canActivate: [PermissionGuard],
                 loadComponent: () => import('../features/finance/report/outstanding-tracker.component').then(m => m.OutstandingTrackerComponent)
             },
+            {
+                path: 'bulk-receipt',
+                loadComponent: () => import('../features/finance/bulk-receipt-entry/bulk-receipt-entry.component').then(m => m.BulkReceiptEntryComponent)
+            },
         ]
     },
     {
