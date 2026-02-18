@@ -43,6 +43,8 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
     sortBy = 'CustomerName';
     sortOrder = 'asc';
     totalOutstandingAmount = 0;
+    overdueAmount = 0;
+    overdueCount = 0;
 
     filters = {
         status: '',
@@ -191,6 +193,16 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
                     this.dataSource.data = res.items.items || [];
                     this.totalCount = res.items.totalCount || 0;
                     this.totalOutstandingAmount = res.totalOutstandingAmount || 0;
+
+                    // Simple heuristic for summary: count items in current page that are overdue
+                    const today = new Date();
+                    this.overdueAmount = (res.items.items || [])
+                        .filter((item: any) => new Date(item.dueDate) < today && item.pendingAmount > 0)
+                        .reduce((sum: number, item: any) => sum + item.pendingAmount, 0);
+
+                    this.overdueCount = (res.items.items || [])
+                        .filter((item: any) => new Date(item.dueDate) < today && item.pendingAmount > 0)
+                        .length;
                 } else {
                     this.dataSource.data = [];
                     this.totalCount = 0;

@@ -47,6 +47,9 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
     private isFirstLoad = true;
 
     errorMessage = '';
+    totalPendingAmount = 0;
+    overdueAmount = 0;
+    overdueCount = 0;
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
@@ -154,6 +157,17 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
             next: (data: any[]) => {
                 this.allDues = data || [];
                 this.dataSource.data = [...this.allDues];
+
+                // Calculate summaries
+                const today = new Date();
+                this.totalPendingAmount = this.allDues.reduce((sum, item) => sum + (item.pendingAmount || 0), 0);
+                this.overdueAmount = this.allDues
+                    .filter(item => new Date(item.dueDate) < today && (item.pendingAmount || 0) > 0)
+                    .reduce((sum, item) => sum + (item.pendingAmount || 0), 0);
+                this.overdueCount = this.allDues
+                    .filter(item => new Date(item.dueDate) < today && (item.pendingAmount || 0) > 0)
+                    .length;
+
                 if (this.dataSource.data.length === 0) {
                     console.log('No pending dues found');
                 }

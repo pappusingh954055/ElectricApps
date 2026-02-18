@@ -4,6 +4,39 @@
         <p class="subtitle">Track pending payments to suppliers.</p>
     </div>
 
+    <div class="stats-grid">
+        <mat-card class="stat-card total">
+            <mat-card-content>
+                <div class="stat-icon"><mat-icon>payments</mat-icon></div>
+                <div class="stat-info">
+                    <span class="label">Total Payables</span>
+                    <span class="value">₹{{totalPendingAmount | number:'1.2-2'}}</span>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card overdue">
+            <mat-card-content>
+                <div class="stat-icon"><mat-icon>warning</mat-icon></div>
+                <div class="stat-info">
+                    <span class="label">Overdue Payables</span>
+                    <span class="value">₹{{overdueAmount | number:'1.2-2'}}</span>
+                </div>
+                <div class="stat-badge">{{overdueCount}} Suppliers</div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card active">
+            <mat-card-content>
+                <div class="stat-icon"><mat-icon>store</mat-icon></div>
+                <div class="stat-info">
+                    <span class="label">Pending Suppliers</span>
+                    <span class="value">{{allDues.length}}</span>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
     <mat-card class="table-card elevation-z2">
         <mat-card-header>
             <mat-card-title>

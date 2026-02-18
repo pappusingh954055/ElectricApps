@@ -80,15 +80,19 @@ export class FinanceService {
 
     // P&L Methods
     getProfitAndLossReport(filters: any): Observable<any> {
-        // We aggregate data from Suppliers (Expenses/Payments) and Customers (Income/Receipts)
+        // We aggregate data from Suppliers (Payments), Customers (Income/Receipts), and Inventory (General Expenses)
         const paymentReq = this.http.post<any>(`${this.supplierApi}/total-payments`, filters);
         const receiptReq = this.http.post<any>(`${this.customerApi}/total-receipts`, filters);
+        const expensesReq = this.http.post<any[]>(`${this.inventoryApi}/expense-entries/chart-data`, filters);
 
-        return forkJoin([paymentReq, receiptReq]).pipe(
-            map(([paymentRes, receiptRes]) => {
+        return forkJoin([paymentReq, receiptReq, expensesReq]).pipe(
+            map(([paymentRes, receiptRes, expensesRes]) => {
+                const supplierPayments = paymentRes.totalPayments || 0;
+                const generalExpenses = Array.isArray(expensesRes) ? expensesRes.reduce((sum, e) => sum + (e.amount || 0), 0) : 0;
+
                 return {
-                    totalIncome: receiptRes.totalReceipts,
-                    totalExpenses: paymentRes.totalPayments
+                    totalIncome: receiptRes.totalReceipts || 0,
+                    totalExpenses: supplierPayments + generalExpenses
                 };
             })
         );

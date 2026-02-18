@@ -69,7 +69,18 @@ export class PLDashboardComponent implements OnInit {
             legend: { position: 'top' }
         },
         scales: {
-            y: { beginAtZero: true }
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.1)',
+                    display: true,
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
         }
     };
 
@@ -137,25 +148,30 @@ export class PLDashboardComponent implements OnInit {
                 if (results.trends) {
                     const { receipts, payments, expenses } = results.trends;
 
-                    // Create a master list of months
-                    const months = Array.from(new Set([
-                        ...receipts.map((r: any) => r.month),
-                        ...payments.map((p: any) => p.month),
-                        ...expenses.map((e: any) => e.month)
-                    ])).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+                    // Always show the last 6 months (even if 0 data)
+                    const monthsLabels: string[] = [];
+                    for (let i = 5; i >= 0; i--) {
+                        const d = new Date();
+                        d.setMonth(d.getMonth() - i);
+                        monthsLabels.push(d.toLocaleString('default', { month: 'short', year: 'numeric' }));
+                    }
 
-                    this.barChartData.labels = months;
-                    this.barChartData.datasets[0].data = months.map(m =>
+                    this.barChartData.labels = monthsLabels;
+
+                    // Map Receipts (Income)
+                    this.barChartData.datasets[0].data = monthsLabels.map(m =>
                         (receipts.find((r: any) => r.month === m)?.amount || 0)
                     );
-                    this.barChartData.datasets[1].data = months.map(m => {
+
+                    // Map Payments + Expenses (Expenses)
+                    this.barChartData.datasets[1].data = monthsLabels.map(m => {
                         const pAmt = payments.find((p: any) => p.month === m)?.amount || 0;
                         const eAmt = expenses.find((e: any) => e.month === m)?.amount || 0;
                         return pAmt + eAmt;
                     });
 
                     // Calculate Net Profit for the line chart
-                    this.barChartData.datasets[2].data = months.map((m, index) => {
+                    this.barChartData.datasets[2].data = monthsLabels.map((m, index) => {
                         const inc = this.barChartData.datasets[0].data[index] as number;
                         const exp = this.barChartData.datasets[1].data[index] as number;
                         return inc - exp;

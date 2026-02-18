@@ -4,6 +4,39 @@
         <p class="subtitle">Monitor customer outstanding balances and payment statuses.</p>
     </div>
 
+    <div class="stats-grid">
+        <mat-card class="stat-card total">
+            <mat-card-content>
+                <div class="stat-icon"><mat-icon>account_balance_wallet</mat-icon></div>
+                <div class="stat-info">
+                    <span class="label">Total Outstanding</span>
+                    <span class="value">₹{{totalOutstandingAmount | number:'1.2-2'}}</span>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card overdue">
+            <mat-card-content>
+                <div class="stat-icon"><mat-icon>priority_high</mat-icon></div>
+                <div class="stat-info">
+                    <span class="label">Overdue Amount</span>
+                    <span class="value">₹{{overdueAmount | number:'1.2-2'}}</span>
+                </div>
+                <div class="stat-badge">{{overdueCount}} Customers</div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card active">
+            <mat-card-content>
+                <div class="stat-icon"><mat-icon>people</mat-icon></div>
+                <div class="stat-info">
+                    <span class="label">Total Customers</span>
+                    <span class="value">{{totalCount}}</span>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
     <mat-card class="table-card elevation-z2" [class.is-loading]="isLoading">
         <mat-progress-bar mode="indeterminate" color="primary" *ngIf="isLoading" class="top-loader"></mat-progress-bar>
             
