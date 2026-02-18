@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
@@ -43,6 +44,7 @@ export class ReceiptEntryComponent implements OnInit {
     private financeService: FinanceService,
     private customerService: customerService,
     private route: ActivatedRoute,
+    private router: Router,
     private dialog: MatDialog
   ) { }
 
@@ -186,10 +188,18 @@ export class ReceiptEntryComponent implements OnInit {
         };
 
         successDialog.afterClosed().subscribe(result => {
+          const customerId = this.receipt.customerId;
           if (result === 'print') {
             this.printVoucher(receiptData);
           }
           this.resetForm();
+          if (customerId) {
+            this.router.navigate(['/app/finance/customers/ledger'], {
+              queryParams: { customerId: customerId }
+            });
+          } else {
+            this.router.navigate(['/app/finance/customers/tracker']);
+          }
         });
       },
       error: (err) => {

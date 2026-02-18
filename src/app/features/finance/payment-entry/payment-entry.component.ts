@@ -396,14 +396,14 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
   }
 
   postPaymentActions() {
+    const supplierId = this.payment.supplierId;
     this.resetForm();
-    // After payment, always a good idea to show the ledger
-    if (this.payment.supplierId) {
+    if (supplierId) {
       this.router.navigate(['/app/finance/suppliers/ledger'], {
-        queryParams: { supplierId: this.payment.supplierId }
+        queryParams: { supplierId: supplierId }
       });
     } else {
-      this.router.navigate(['/app/finance/suppliers/payment']);
+      this.router.navigate(['/app/finance/suppliers/dues']);
     }
   }
 
