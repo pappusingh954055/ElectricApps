@@ -11,6 +11,8 @@ import { CreateSaleReturnDto, SaleReturnItem } from '../models/create-sale-retur
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { NotificationService } from '../../../shared/notification.service';
+import { FinanceService } from '../../../finance/service/finance.service';
+import { LoadingService } from '../../../../core/services/loading.service';
 
 @Component({
     selector: 'app-sale-return-form',
@@ -29,6 +31,8 @@ export class SaleReturnFormComponent implements OnInit {
     private saleOrderService = inject(SaleOrderService);
     private dialog = inject(MatDialog);
     private notification = inject(NotificationService);
+    private loadingService = inject(LoadingService);
+    private financeService = inject(FinanceService);
 
     customers: any[] = [];
     saleOrders: any[] = [];
@@ -211,6 +215,11 @@ export class SaleReturnFormComponent implements OnInit {
             .reduce((sum, control) => sum + (control.get('amount')?.value || 0), 0);
     }
 
+    get totalReturnQty(): number {
+        return this.itemsFormArray.controls
+            .reduce((sum, control) => sum + (Number(control.get('returnQty')?.value) || 0), 0);
+    }
+
     loadReturnDetails(id: number) {
         this.isLoading = true;
         this.srService.getSaleReturnById(id).subscribe(res => {
@@ -284,45 +293,51 @@ export class SaleReturnFormComponent implements OnInit {
 
         this.srService.saveSaleReturn(payload).subscribe({
             next: (res: any) => {
-                this.isLoading = false;
-                this.cdr.detectChanges();
+                const returnNo = res?.returnNumber || res?.returnNo || `SR-${Date.now()}`;
+                const returnId = res?.saleReturnHeaderId || res?.id || 0;
 
-                const dialogRef = this.dialog.open(StatusDialogComponent, {
-                    width: '400px',
-                    data: {
-                        isSuccess: true,
-                        message: res?.message || 'Sale Return saved successfully!'
-                    }
-                });
-
-                dialogRef.afterClosed().subscribe(() => {
-                    // Stay on page or navigate? Usually stay to allow print/export
-                    // But existing code navigates away. 
-                    // To enable export button, we need to set returnId.
-                    // If backend returns the new ID, key 'id' or 'returnId'
-                    if (res && res.returnId) {
-                        this.returnId = res.returnId;
-                        this.isEditMode = true;
-                        // this.router.navigate(['/app/inventory/sale-return']); // Don't navigate if we want to export
-                    } else {
-                        this.router.navigate(['/app/inventory/sale-return']);
-                    }
+                this.financeService.recordCustomerReceipt({
+                    customerId: Number(rawValue.customerId),
+                    amount: this.totalReturnAmount,
+                    paymentMode: 'Sales Return',
+                    referenceNumber: returnNo,
+                    paymentDate: new Date().toISOString(),
+                    remarks: `Sales Return Adjustment: ${returnNo}`,
+                    createdBy: userId
+                }).subscribe({
+                    next: () => this.handleSuccess(res, returnNo, returnId),
+                    error: () => this.handleSuccess(res, returnNo, returnId, true)
                 });
             },
             error: (err) => {
                 this.isLoading = false;
                 this.cdr.detectChanges();
-
-                const errorMessage = err.error?.message || err.error || "Something went wrong while saving the return.";
-
                 this.dialog.open(StatusDialogComponent, {
                     width: '400px',
-                    data: {
-                        isSuccess: false,
-                        message: errorMessage
-                    }
+                    data: { isSuccess: false, message: err.error?.message || "Save failed." }
                 });
             }
+        });
+    }
+
+    private handleSuccess(res: any, returnNo: string, returnId: number, isFail: boolean = false) {
+        this.isLoading = false;
+        this.cdr.detectChanges();
+        const dialogRef = this.dialog.open(StatusDialogComponent, {
+            width: '400px',
+            data: {
+                isSuccess: !isFail,
+                message: isFail ? 'Return Saved, but Ledger failed. Redirecting...' : 'Sale Return saved and Ledger updated!'
+            }
+        });
+        dialogRef.afterClosed().subscribe(() => {
+            this.loadingService.setLoading(true);
+            const customerName = this.customers.find(c => c.id === Number(this.returnForm.get('customerId')?.value))?.name || '';
+            setTimeout(() => {
+                this.router.navigate(['/app/inventory/gate-pass/inward'], {
+                    queryParams: { refNo: returnNo, refId: returnId, type: 'sale-return', partyName: customerName, qty: this.totalReturnQty }
+                });
+            }, 500);
         });
     }
 

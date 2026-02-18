@@ -73,10 +73,9 @@ export const INVENTORY_ROUTES: Routes = [
     canActivate: [PermissionGuard],
     data: { breadcrumb: 'Gate Pass' },
     children: [
+      { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('../features/inventory/gate-pass/gate-pass-list/gate-pass-list.component').then(m => m.GatePassListComponent) },
       { path: 'outward', data: { breadcrumb: 'Outward' }, loadComponent: () => import('../features/inventory/gate-pass/outward-gate-pass/outward-gate-pass.component').then(m => m.OutwardGatePassComponent) },
       { path: 'inward', data: { breadcrumb: 'Inward' }, loadComponent: () => import('../features/inventory/gate-pass/inward-gate-pass/inward-gate-pass.component').then(m => m.InwardGatePassComponent) },
-      // Index redirect
-      { path: '', redirectTo: 'outward', pathMatch: 'full' }
     ]
   }
 ];

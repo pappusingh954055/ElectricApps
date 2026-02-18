@@ -1,0 +1,148 @@
+<div class="page-container">
+    <!-- Header Section -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">Gate Pass Management</h1>
+            <p class="subtitle">Review and manage all inward & outward goods transit</p>
+        </div>
+        <div class="header-actions">
+            <button mat-flat-button color="primary" class="add-btn" (click)="navigateToAdd()">
+                <mat-icon>add</mat-icon>
+                Generate Inward Pass
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats/Filters Section -->
+    <div class="filter-toolbar card box-shadow">
+        <div class="search-box">
+            <mat-icon class="search-icon">search</mat-icon>
+            <input type="text" placeholder="Search by Pass No, Party or Ref No..." (keyup)="applySearch($event)" [(ngModel)]="searchKey">
+        </div>
+        
+        <div class="date-filters">
+            <mat-form-field appearance="outline" class="compact-date">
+                <mat-label>From Date</mat-label>
+                <input matInput [matDatepicker]="fromPicker" [(ngModel)]="fromDate" (dateChange)="loadData()">
+                <mat-datepicker-toggle matIconSuffix [for]="fromPicker"></mat-datepicker-toggle>
+                <mat-datepicker #fromPicker></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="compact-date">
+                <mat-label>To Date</mat-label>
+                <input matInput [matDatepicker]="toPicker" [(ngModel)]="toDate" (dateChange)="loadData()">
+                <mat-datepicker-toggle matIconSuffix [for]="toPicker"></mat-datepicker-toggle>
+                <mat-datepicker #toPicker></mat-datepicker>
+            </mat-form-field>
+
+            <button mat-stroked-button color="warn" class="reset-btn" (click)="resetFilters()" *ngIf="searchKey || fromDate || toDate">
+                <mat-icon>filter_alt_off</mat-icon>
+                Reset
+            </button>
+        </div>
+
+        <div class="toolbar-actions">
+            <button mat-icon-button (click)="loadData()" matTooltip="Refresh Data">
+                <mat-icon>refresh</mat-icon>
+            </button>
+        </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-container card box-shadow">
+        <div class="loading-overlay" *ngIf="isLoading">
+            <mat-spinner diameter="40"></mat-spinner>
+        </div>
+
+        <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)">
+            
+            <!-- Pass No Column -->
+            <ng-container matColumnDef="passNo">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Pass No </th>
+                <td mat-cell *matCellDef="let row"> 
+                    <span class="pass-number">{{row.passNo}}</span>
+                </td>
+            </ng-container>
+
+            <!-- Pass Type Column -->
+            <ng-container matColumnDef="passType">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Type </th>
+                <td mat-cell *matCellDef="let row"> 
+                    <span class="type-badge" [ngClass]="row.passType.toLowerCase()">
+                        {{row.passType}}
+                    </span>
+                </td>
+            </ng-container>
+
+            <!-- Date Column -->
+            <ng-container matColumnDef="gateEntryTime">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Entry Time </th>
+                <td mat-cell *matCellDef="let row"> {{row.gateEntryTime | date:'dd-MMM-yy hh:mm a'}} </td>
+            </ng-container>
+
+            <!-- Party Column -->
+            <ng-container matColumnDef="partyName">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Party Name </th>
+                <td mat-cell *matCellDef="let row"> {{row.partyName}} </td>
+            </ng-container>
+
+            <!-- Reference No Column -->
+            <ng-container matColumnDef="referenceNo">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Ref No </th>
+                <td mat-cell *matCellDef="let row"> {{row.referenceNo}} </td>
+            </ng-container>
+
+            <!-- Vehicle Column -->
+            <ng-container matColumnDef="vehicleNo">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Vehicle </th>
+                <td mat-cell *matCellDef="let row"> {{row.vehicleNo}} </td>
+            </ng-container>
+
+            <!-- Qty Column -->
+            <ng-container matColumnDef="totalQty">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Qty </th>
+                <td mat-cell *matCellDef="let row"> {{row.totalQty}} </td>
+            </ng-container>
+
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Status </th>
+                <td mat-cell *matCellDef="let row"> 
+                    <span class="status-chip" [ngClass]="getStatusClass(row.status)">
+                        {{getStatusLabel(row.status)}}
+                    </span>
+                </td>
+            </ng-container>
+
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef> Actions </th>
+                <td mat-cell *matCellDef="let row">
+                    <button mat-icon-button color="primary" (click)="onEdit(row)" matTooltip="Edit Pass">
+                        <mat-icon>edit</mat-icon>
+                    </button>
+                    <button mat-icon-button color="warn" (click)="onDelete(row)" matTooltip="Delete Pass">
+                        <mat-icon>delete</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+            <!-- No Data Row -->
+            <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell no-data-cell" [attr.colspan]="displayedColumns.length">
+                    No gate passes found for "{{searchKey}}"
+                </td>
+            </tr>
+        </table>
+
+        <mat-paginator [length]="totalRecords"
+                       [pageSize]="pageSize"
+                       [pageSizeOptions]="[5, 10, 25, 50]"
+                       (page)="onPageChange($event)"
+                       showFirstLastButtons>
+        </mat-paginator>
+    </div>
+</div>

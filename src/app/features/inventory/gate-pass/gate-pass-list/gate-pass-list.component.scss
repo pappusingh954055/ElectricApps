@@ -1,0 +1,210 @@
+.page-container {
+    padding: 10px;
+    background-color: var(--bg-body);
+    min-height: calc(100vh - 70px);
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    .page-title {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 700;
+        letter-spacing: -0.5px;
+        color: var(--text-primary);
+    }
+
+    .subtitle {
+        margin: 5px 0 0;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
+}
+
+.add-btn {
+    border-radius: 10px;
+    padding: 6px 20px;
+    font-weight: 600;
+    
+    mat-icon {
+        margin-right: 6px;
+    }
+}
+
+.card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.box-shadow {
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+}
+
+.filter-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+
+    .search-box {
+        display: flex;
+        align-items: center;
+        background: var(--bg-body);
+        border-radius: 8px;
+        padding: 5px 15px;
+        width: 100%;
+        max-width: 400px;
+        border: 1px solid var(--border-color);
+
+        .search-icon {
+            color: var(--text-secondary);
+            margin-right: 10px;
+            font-size: 20px;
+        }
+
+        input {
+            border: none;
+            background: transparent;
+            width: 100%;
+            height: 32px;
+            font-size: 14px;
+            outline: none;
+            color: var(--text-primary);
+
+            &::placeholder {
+                color: var(--text-muted);
+            }
+        }
+    }
+
+    .date-filters {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+
+        .compact-date {
+            width: 160px;
+            ::ng-deep {
+                .mat-mdc-form-field-subscript-wrapper { display: none; }
+                .mat-mdc-text-field-wrapper { height: 44px !important; }
+                .mat-mdc-form-field-infix { padding-top: 8px !important; padding-bottom: 8px !important; min-height: unset !important; }
+            }
+        }
+
+        .reset-btn {
+            height: 44px;
+            border-radius: 8px;
+            font-weight: 500;
+            
+            mat-icon {
+                margin-right: 4px;
+            }
+        }
+    }
+}
+
+.table-container {
+    position: relative;
+    overflow: hidden;
+
+    .loading-overlay {
+        position: absolute;
+        top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(255, 255, 255, 0.7);
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    table {
+        width: 100%;
+    }
+
+    th {
+        font-weight: 600;
+        color: var(--text-secondary);
+        background: var(--bg-body);
+        padding: 16px;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    td {
+        padding: 16px;
+        font-size: 14px;
+        color: var(--text-primary);
+        border-bottom: 1px solid var(--border-color);
+    }
+}
+
+.pass-number {
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.type-badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    &.inward {
+        background: #e3f2fd;
+        color: #1976d2;
+    }
+
+    &.outward {
+        background: #f3e5f5;
+        color: #7b1fa2;
+    }
+}
+
+.status-chip {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+
+    &.status-entered {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    &.status-dispatched {
+        background: #fff3e0;
+        color: #f57c00;
+    }
+
+    &.status-cancelled {
+        background: #ffebee;
+        color: #c62828;
+    }
+}
+
+.no-data-cell {
+    padding: 60px !important;
+    text-align: center;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 16px;
+}
+
+:host-context(.dark-mode) {
+    .loading-overlay {
+        background: rgba(30, 30, 30, 0.7);
+    }
+
+    .type-badge.inward { background: #1e3a5f; color: #64b5f6; }
+    .type-badge.outward { background: #4a148c33; color: #ba68c8; }
+    
+    .status-chip.status-entered { background: #1b5e2033; color: #81c784; }
+}

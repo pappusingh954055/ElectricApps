@@ -1,11 +1,14 @@
 <div class="container">
     <mat-card class="wrapper">
         <mat-card-header>
+            <button mat-icon-button (click)="goBack()" class="back-button" matTooltip="Back to List">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
             <div mat-card-avatar class="header-image-in">
-                <mat-icon>meeting_room</mat-icon>
+                <mat-icon>{{isEditMode ? 'edit_note' : 'meeting_room'}}</mat-icon>
             </div>
-            <mat-card-title>INWARD GATE PASS ENTRY</mat-card-title>
-            <mat-card-subtitle>Auto-Generated Pass No: GP-IN-2026-XXXX</mat-card-subtitle>
+            <mat-card-title>{{isEditMode ? 'EDIT INWARD GATE PASS' : 'INWARD GATE PASS ENTRY'}}</mat-card-title>
+            <mat-card-subtitle>{{currentPassNo}}</mat-card-subtitle>
         </mat-card-header>
         
         <mat-card-content>
@@ -14,12 +17,19 @@
                 <!-- Section 1: Reference Selection -->
                 <div class="section-title">1. Reference Selection</div>
                 <div class="row">
-                    <mat-form-field appearance="outline">
-                        <mat-label>Link With PO No</mat-label>
+                    <!-- Dropdown for manual selection (Normal Flow) -->
+                    <mat-form-field appearance="outline" *ngIf="!isExternalRef">
+                        <mat-label>{{referenceLabel}}</mat-label>
                         <mat-select formControlName="referenceId" (selectionChange)="onPOSelected($event.value)" required>
                             <mat-option *ngFor="let po of availablePOs" [value]="po.id">{{po.poNo}} ({{po.supplier}})</mat-option>
                         </mat-select>
-                        <mat-error *ngIf="gatePassForm.get('referenceId')?.hasError('required')">Select PO</mat-error>
+                        <mat-error *ngIf="gatePassForm.get('referenceId')?.hasError('required')">Select Reference</mat-error>
+                    </mat-form-field>
+
+                    <!-- Readonly Input for pre-filled reference (Redirection Flow) -->
+                    <mat-form-field appearance="outline" *ngIf="isExternalRef">
+                        <mat-label>{{referenceLabel}}</mat-label>
+                        <input matInput formControlName="referenceNo" readonly>
                     </mat-form-field>
                     
                     <mat-form-field appearance="outline">
@@ -59,7 +69,7 @@
                 <div class="section-title">3. Material Summary (Gate Level)</div>
                 <div class="row">
                     <mat-form-field appearance="outline">
-                        <mat-label>Expected Qty (As per PO)</mat-label>
+                        <mat-label>{{isExternalRef ? 'Return Qty' : 'Expected Qty (As per PO)'}}</mat-label>
                         <input matInput formControlName="expectedQty" readonly>
                     </mat-form-field>
                     
@@ -98,10 +108,11 @@
         </mat-card-content>
         
         <mat-card-actions align="end">
-            <button mat-button (click)="resetForm()">RESET</button>
+            <button mat-button (click)="goBack()">BACK TO LIST</button>
+            <button mat-button (click)="resetForm()" *ngIf="!isEditMode">RESET</button>
             <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="gatePassForm.invalid || isSaving">
-                <mat-icon>login</mat-icon>
-                GENERATE INWARD PASS
+                <mat-icon>{{isEditMode ? 'save' : 'login'}}</mat-icon>
+                {{isEditMode ? 'UPDATE GATE PASS' : 'GENERATE INWARD PASS'}}
             </button>
         </mat-card-actions>
     </mat-card>

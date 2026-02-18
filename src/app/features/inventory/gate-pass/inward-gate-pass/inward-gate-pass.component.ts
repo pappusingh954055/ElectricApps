@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -9,6 +9,7 @@ import { StatusDialogComponent } from '../../../../shared/components/status-dial
 import { MatDialog } from '@angular/material/dialog';
 import { GatePass, GatePassReferenceType, GatePassStatus } from '../models/gate-pass.model';
 import { AuthService } from '../../../../core/services/auth.service';
+import { POService } from '../../service/po.service';
 
 @Component({
     selector: 'app-inward-gate-pass',
@@ -24,28 +25,121 @@ export class InwardGatePassComponent implements OnInit {
     router = inject(Router);
     route = inject(ActivatedRoute);
     authService = inject(AuthService);
+    poService = inject(POService);
     loadingService = inject(LoadingService);
+    cdr = inject(ChangeDetectorRef);
 
     gatePassForm!: FormGroup;
     isSaving = false;
     currentDate = new Date();
+    referenceLabel = 'Link With PO No';
+    isExternalRef = false;
+    isEditMode = false;
+    gatePassId: number | null = null;
+    currentPassNo = 'Auto-Generated Pass No: GP-IN-2026-XXXX';
 
-    // Reference for PO Selection
+    // Reference Selection
     referenceTypes = [
         { id: GatePassReferenceType.PurchaseOrder, name: 'Purchase Order' },
+        { id: GatePassReferenceType.SaleReturn, name: 'Sale Return' }
     ];
 
-    // Mock POs for autocomplete/select
-    availablePOs = [
-        { id: 101, poNo: 'PO/26-27/0004', supplier: 'ABC Enterprises', expectedQty: 20 },
-        { id: 102, poNo: 'PO/26-27/0008', supplier: 'XYZ Logisitics', expectedQty: 50 },
-        { id: 103, poNo: 'PO/26-27/0012', supplier: 'Global Trade Co.', expectedQty: 100 }
-    ];
+    // Dynamic POs from API
+    availablePOs: any[] = [];
 
     vehicleTypes = ['Truck', 'Tempo', 'LCV', 'Other'];
 
     ngOnInit() {
+        this.loadingService.setLoading(false);
         this.initForm();
+        this.loadPendingPOs();
+
+        this.route.queryParams.subscribe(params => {
+            // Mode & ID handling
+            if (params['id'] && params['mode'] === 'edit') {
+                this.isEditMode = true;
+                this.gatePassId = Number(params['id']);
+                this.loadGatePassData(this.gatePassId);
+            }
+            // Sale Return Redirection Flow
+            else if (params['refNo'] && params['type'] === 'sale-return') {
+                this.handleSaleReturnRedirection(params);
+            }
+        });
+    }
+
+    private loadGatePassData(id: number) {
+        this.loadingService.setLoading(true);
+        this.gatePassService.getGatePass(id).subscribe({
+            next: (data) => {
+                this.loadingService.setLoading(false);
+                if (data) {
+                    this.isExternalRef = true; // Use readonly input for edit mode
+                    this.currentPassNo = `Pass No: ${data.passNo}`;
+
+                    // Logic to show correct label
+                    this.referenceLabel = data.referenceType === 1 ? 'Link With PO No' : 'Sale Return No';
+
+                    this.gatePassForm.patchValue({
+                        referenceId: data.referenceId,
+                        referenceNo: data.referenceNo,
+                        partyName: data.partyName,
+                        vehicleNo: data.vehicleNo,
+                        driverName: data.driverName,
+                        driverPhone: data.driverPhone,
+                        vehicleType: data.vehicleType,
+                        expectedQty: data.totalQty,
+                        invoiceNo: data.invoiceNo,
+                        totalWeight: data.totalWeight,
+                        securityGuard: data.securityGuard,
+                        remarks: data.remarks
+                    });
+
+                    this.cdr.detectChanges();
+                }
+            },
+            error: (err) => {
+                this.loadingService.setLoading(false);
+                console.error('Error loading gate pass:', err);
+                this.notificationShow(false, 'Failed to load Gate Pass data');
+            }
+        });
+    }
+
+    private handleSaleReturnRedirection(params: any) {
+        setTimeout(() => {
+            this.isExternalRef = true;
+            this.referenceLabel = 'Sale Return No';
+            const refNo = params['refNo'];
+
+            const refIdControl = this.gatePassForm.get('referenceId');
+            if (refIdControl) {
+                refIdControl.clearValidators();
+                refIdControl.setErrors(null);
+            }
+
+            this.gatePassForm.patchValue({
+                referenceId: params['refId'] ? Number(params['refId']) : 0,
+                referenceNo: refNo,
+                partyName: params['partyName'] || '',
+                expectedQty: params['qty'] || 0,
+                invoiceNo: `CH-${refNo}`
+            });
+
+            this.gatePassForm.updateValueAndValidity();
+            this.cdr.detectChanges();
+        });
+    }
+
+    private notificationShow(success: boolean, message: string) {
+        this.dialog.open(StatusDialogComponent, {
+            data: {
+                title: success ? 'Success' : 'Error',
+                message: message,
+                status: success ? 'success' : 'error',
+                isSuccess: success
+            }
+        });
     }
 
     initForm() {
@@ -59,7 +153,7 @@ export class InwardGatePassComponent implements OnInit {
             partyName: [{ value: '', disabled: true }], // Supplier Name
 
             // 2. Physical Vehicle Details
-            vehicleNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{2}[ -][0-9]{1,2}(?: [A-Z])?(?: [A-Z]*)? [0-9]{4}$/)]],
+            vehicleNo: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{2}[0-9]{1,2}[A-Za-z]{0,3}[0-9]{4}$/)]],
             driverName: [''],
             driverPhone: ['', [Validators.pattern(/^[0-9]{10}$/)]],
             vehicleType: ['Tempo', Validators.required], // Default to Tempo
@@ -76,13 +170,24 @@ export class InwardGatePassComponent implements OnInit {
         });
     }
 
+    private loadPendingPOs() {
+        this.poService.getPendingPOs().subscribe({
+            next: (data) => {
+                this.availablePOs = data;
+                this.cdr.detectChanges();
+            },
+            error: (err) => console.error('Error fetching pending POs', err)
+        });
+    }
+
     onPOSelected(poId: number) {
         const selectedPO = this.availablePOs.find(p => p.id === poId);
         if (selectedPO) {
             this.gatePassForm.patchValue({
                 referenceNo: selectedPO.poNo,
                 partyName: selectedPO.supplier,
-                expectedQty: selectedPO.expectedQty
+                expectedQty: selectedPO.expectedQty,
+                invoiceNo: `CH-${selectedPO.poNo.replace(/\//g, '-')}` // Auto-filling Challan No for PO
             });
         }
     }
@@ -100,10 +205,11 @@ export class InwardGatePassComponent implements OnInit {
         const formValue = this.gatePassForm.getRawValue();
 
         // Create Inward Gate Pass Payload
-        const gatePassData: GatePass = {
+        const gatePassData: any = {
+            id: this.gatePassId || 0,
             passType: 'Inward',
-            referenceType: GatePassReferenceType.PurchaseOrder,
-            referenceId: formValue.referenceId,
+            referenceType: this.referenceLabel === 'Sale Return No' ? GatePassReferenceType.SaleReturn : GatePassReferenceType.PurchaseOrder,
+            referenceId: formValue.referenceId || 0,
             referenceNo: formValue.referenceNo,
             invoiceNo: formValue.invoiceNo,
             partyName: formValue.partyName,
@@ -111,10 +217,10 @@ export class InwardGatePassComponent implements OnInit {
             vehicleType: formValue.vehicleType,
             driverName: formValue.driverName,
             driverPhone: formValue.driverPhone,
-            transporterName: '', // Optional/Not in new mockup
-            totalQty: formValue.expectedQty || 0,
-            totalWeight: formValue.totalWeight || 0,
-            gateEntryTime: new Date(), // Capture submission time as entry time
+            transporterName: '',
+            totalQty: Number(formValue.expectedQty) || 0,
+            totalWeight: Number(formValue.totalWeight) || 0,
+            gateEntryTime: this.isEditMode ? undefined : new Date(), // Don't overwrite entry time on edit
             securityGuard: formValue.securityGuard,
             status: GatePassStatus.Entered,
             remarks: formValue.remarks,
@@ -122,23 +228,24 @@ export class InwardGatePassComponent implements OnInit {
         };
 
         this.isSaving = true;
-        this.gatePassService.createGatePass(gatePassData).subscribe({
-            next: (res) => {
+        const request = this.isEditMode
+            ? this.gatePassService.createGatePass(gatePassData) // Assuming Save endpoint handles both or there's an update endpoint
+            : this.gatePassService.createGatePass(gatePassData);
+
+        request.subscribe({
+            next: (res: any) => {
                 this.isSaving = false;
+                const message = this.isEditMode ? 'Gate Pass updated successfully!' : `Inward Gate Pass Generated! Pass No: ${res.passNo || 'GP-IN-2026-XXXX'}`;
+
                 this.dialog.open(StatusDialogComponent, {
                     data: {
                         title: 'Success',
-                        message: `Inward Gate Pass Generated! Pass No: ${res.passNo || 'GP-IN-2026-XXXX'}`,
+                        message: message,
                         status: 'success',
                         isSuccess: true
                     }
                 }).afterClosed().subscribe(() => {
-                    this.resetForm();
-                    // Show loader and navigate to Outward Gate Pass
-                    this.loadingService.setLoading(true);
-                    setTimeout(() => {
-                        this.router.navigate(['../outward'], { relativeTo: this.route });
-                    }, 500);
+                    this.router.navigate(['/app/inventory/gate-pass']); // Go to list after editing
                 });
             },
             error: (err) => {
@@ -147,12 +254,16 @@ export class InwardGatePassComponent implements OnInit {
                 this.dialog.open(StatusDialogComponent, {
                     data: {
                         title: 'Error',
-                        message: 'Failed to generate Inward Pass.',
+                        message: `Failed to ${this.isEditMode ? 'update' : 'generate'} Inward Pass.`,
                         status: 'error',
                         isSuccess: false
                     }
                 });
             }
         });
+    }
+
+    goBack() {
+        this.router.navigate(['/app/inventory/gate-pass']);
     }
 }

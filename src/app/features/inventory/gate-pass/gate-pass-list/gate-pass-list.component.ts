@@ -1,0 +1,173 @@
+import { ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { MaterialModule } from '../../../../shared/material/material/material-module';
+import { Router } from '@angular/router';
+import { GatePassService } from '../services/gate-pass.service';
+import { MatTableDataSource } from '@angular/material/table';
+import { LoadingService } from '../../../../core/services/loading.service';
+import { MatDialog } from '@angular/material/dialog';
+import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
+import { NotificationService } from '../../../../features/shared/notification.service';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatSort, Sort } from '@angular/material/sort';
+import { FormsModule } from '@angular/forms';
+
+@Component({
+    selector: 'app-gate-pass-list',
+    standalone: true,
+    imports: [
+        CommonModule,
+        MaterialModule,
+        FormsModule
+    ],
+    providers: [DatePipe],
+    templateUrl: './gate-pass-list.component.html',
+    styleUrl: './gate-pass-list.component.scss'
+})
+export class GatePassListComponent implements OnInit {
+    private gatePassService = inject(GatePassService);
+    private router = inject(Router);
+    private cdr = inject(ChangeDetectorRef);
+    private datePipe = inject(DatePipe);
+    private loadingService = inject(LoadingService);
+    private dialog = inject(MatDialog);
+    private notification = inject(NotificationService);
+
+    dataSource = new MatTableDataSource<any>([]);
+    displayedColumns: string[] = ['passNo', 'passType', 'gateEntryTime', 'partyName', 'referenceNo', 'vehicleNo', 'totalQty', 'status', 'actions'];
+
+    totalRecords = 0;
+    pageSize = 10;
+    pageIndex = 0;
+    isLoading = false;
+    searchKey: string = "";
+
+    sortField = 'CreatedAt';
+    sortOrder = 'desc';
+
+    fromDate: Date | null = null;
+    toDate: Date | null = null;
+
+    @ViewChild(MatPaginator) paginator!: MatPaginator;
+    @ViewChild(MatSort) sort!: MatSort;
+
+    ngOnInit() {
+        this.loadData();
+    }
+
+    loadData() {
+        this.isLoading = true;
+        this.cdr.detectChanges();
+
+        const request = {
+            pageIndex: this.pageIndex,
+            pageSize: this.pageSize,
+            sortField: this.sortField,
+            sortOrder: this.sortOrder,
+            filter: this.searchKey,
+            fromDate: this.fromDate ? this.datePipe.transform(this.fromDate, 'yyyy-MM-dd') : null,
+            toDate: this.toDate ? this.datePipe.transform(this.toDate, 'yyyy-MM-dd') : null
+        };
+
+        this.gatePassService.getGatePassesPaged(request).subscribe({
+            next: (res) => {
+                this.dataSource.data = res.data || [];
+                this.totalRecords = res.totalRecords || 0;
+                this.isLoading = false;
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                this.isLoading = false;
+                this.cdr.detectChanges();
+                console.error('Error loading gate passes:', err);
+                this.notification.showStatus(false, 'Failed to load Gate Passes');
+            }
+        });
+    }
+
+    onPageChange(event: PageEvent) {
+        this.pageIndex = event.pageIndex;
+        this.pageSize = event.pageSize;
+        this.loadData();
+    }
+
+    onSortChange(sort: Sort) {
+        this.sortField = sort.active;
+        this.sortOrder = sort.direction || 'desc';
+        this.loadData();
+    }
+
+    applySearch(event: Event) {
+        const filterValue = (event.target as HTMLInputElement).value;
+        this.searchKey = filterValue.trim().toLowerCase();
+        this.pageIndex = 0;
+        this.loadData();
+    }
+
+    onEdit(row: any) {
+        const route = row.passType === 'Inward' ? 'inward' : 'outward';
+        this.router.navigate([`/app/inventory/gate-pass/${route}`], {
+            queryParams: { id: row.id, mode: 'edit' }
+        });
+    }
+
+    onDelete(row: any) {
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '400px',
+            data: {
+                title: 'Delete Gate Pass',
+                message: `Are you sure you want to delete Gate Pass ${row.passNo}?`,
+                confirmText: 'Delete',
+                confirmColor: 'warn'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.isLoading = true;
+                this.gatePassService.deleteGatePass(row.id).subscribe({
+                    next: () => {
+                        this.isLoading = false;
+                        this.notification.showStatus(true, 'Gate Pass deleted successfully');
+                        this.loadData();
+                    },
+                    error: (err) => {
+                        this.isLoading = false;
+                        this.notification.showStatus(false, 'Failed to delete Gate Pass');
+                    }
+                });
+            }
+        });
+    }
+
+    navigateToAdd() {
+        this.router.navigate(['/app/inventory/gate-pass/inward']);
+    }
+
+    resetFilters() {
+        this.searchKey = "";
+        this.fromDate = null;
+        this.toDate = null;
+        this.pageIndex = 0;
+        this.loadData();
+    }
+
+    getStatusClass(status: number): string {
+        switch (status) {
+            case 1: return 'status-entered';
+            case 2: return 'status-dispatched';
+            case 3: return 'status-cancelled';
+            default: return '';
+        }
+    }
+
+    getStatusLabel(status: number): string {
+        switch (status) {
+            case 1: return 'Entered';
+            case 2: return 'Dispatched';
+            case 3: return 'Cancelled';
+            default: return 'Unknown';
+        }
+    }
+}

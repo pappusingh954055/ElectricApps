@@ -1,25 +1,28 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { environment } from '../../../../enviornments/environment';
+import { ApiService } from '../../../../shared/api.service';
 import { GatePass } from '../models/gate-pass.model';
 
 @Injectable({
     providedIn: 'root'
 })
 export class GatePassService {
-    private apiUrl = `${environment.ApiBaseUrl}/gate-passes`;
+    private api = inject(ApiService);
 
-    constructor(private http: HttpClient) { }
+    createGatePass(gatePass: GatePass): Observable<any> {
+        return this.api.post('GatePass/Save', gatePass);
+    }
 
-    createGatePass(gatePass: GatePass): Observable<GatePass> {
-        return this.http.post<GatePass>(this.apiUrl, gatePass);
+    getGatePassesPaged(request: any): Observable<any> {
+        return this.api.post('GatePass/GetPaged', request);
     }
 
     getGatePass(id: number): Observable<GatePass> {
-        return this.http.get<GatePass>(`${this.apiUrl}/${id}`);
+        return this.api.get<GatePass>(`GatePass/${id}`);
     }
 
-    // Helper to fetch source document details if needed
-    // getSourceDocument(type: string, id: number) { ... }
+    deleteGatePass(id: number): Observable<any> {
+        return this.api.delete(`GatePass/${id}`);
+    }
+
 }

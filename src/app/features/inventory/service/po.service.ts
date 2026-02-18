@@ -46,4 +46,8 @@ export class POService {
       responseType: 'blob'
     });
   }
+
+  getPendingPOs(): Observable<any[]> {
+    return this.api.get<any[]>('PurchaseOrders/pending-pos');
+  }
 }

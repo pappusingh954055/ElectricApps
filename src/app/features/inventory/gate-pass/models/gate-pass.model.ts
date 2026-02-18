@@ -26,7 +26,8 @@ export enum GatePassReferenceType {
     PurchaseOrder = 1,
     GRN = 2,
     SaleOrder = 3,
-    PurchaseReturn = 4
+    PurchaseReturn = 4,
+    SaleReturn = 5
 }
 
 export enum GatePassStatus {
