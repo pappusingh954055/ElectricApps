@@ -32,7 +32,8 @@ export class FinanceService {
                     supplierName: d.supplierName || d.SupplierName,
                     pendingAmount: d.pendingAmount || d.PendingAmount,
                     status: d.status || d.Status,
-                    dueDate: d.dueDate || d.DueDate
+                    dueDate: d.dueDate || d.DueDate,
+                    lastReferenceId: d.lastReferenceId || d.LastReferenceId
                 }));
             })
         );
@@ -72,7 +73,8 @@ export class FinanceService {
                     customerName: d.customerName || d.CustomerName,
                     pendingAmount: d.pendingAmount || d.PendingAmount,
                     status: d.status || d.Status,
-                    dueDate: d.dueDate || d.DueDate
+                    dueDate: d.dueDate || d.DueDate,
+                    lastReferenceId: d.lastReferenceId || d.LastReferenceId
                 }));
             })
         );
