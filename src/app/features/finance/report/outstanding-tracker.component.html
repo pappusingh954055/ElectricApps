@@ -54,7 +54,7 @@
                         </div>
                     </div>
                     <div class="actions-group">
-                        <button mat-stroked-button color="primary" class="bulk-btn" (click)="goToBulkEntry()">
+                        <button mat-stroked-button color="primary" class="bulk-btn" (click)="goToBulkEntry()" [disabled]="totalCount <= 1">
                             <mat-icon>playlist_add</mat-icon> Bulk Entry
                         </button>
                         <mat-form-field appearance="outline" class="search-field">

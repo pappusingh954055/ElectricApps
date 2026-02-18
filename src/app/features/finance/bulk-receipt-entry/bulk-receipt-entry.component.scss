@@ -1,165 +1,198 @@
-.page-container {
-    padding: 20px;
-    height: 100%;
-    box-sizing: border-box;
+// Popup Container
+.popup-container {
     display: flex;
     flex-direction: column;
+    height: 100vh;
+    max-height: 90vh;
+    background: #fff;
+    overflow: hidden;
+    font-family: 'Roboto', sans-serif;
 }
 
+// Header
 .header {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
-    
-    .title {
-        font-size: 24px;
+    padding: 12px 20px;
+    background: #fff;
+    border-bottom: 1px solid #e0e0e0;
+    justify-content: space-between;
+    flex-shrink: 0;
+
+    .title-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        
+        h2 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 500;
+            color: #202124;
+        }
+    }
+
+    button.save-btn {
+        min-width: 100px;
         font-weight: 500;
-        margin-left: 15px;
-        color: #333;
-    }
-    
-    .spacer {
-        flex: 1;
+        letter-spacing: 0.5px;
     }
 }
 
-.form-content {
+// Table Container
+.content-area {
     flex: 1;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-
-.table-container {
-    background: white;
-    border-radius: 8px;
     overflow: auto;
+    background: white;
+    padding: 0; // Remove padding, let table touch edges
     display: flex;
     flex-direction: column;
-    flex: 1;
-    border: 1px solid #e0e0e0;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
-.bulk-table {
+// Data Table Style
+.data-table {
     width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    min-width: 1200px;
+    border-collapse: collapse;
+    min-width: 1000px; // Reduced min-width to fit better
     
     thead {
-        background: #f8f9fa;
         position: sticky;
         top: 0;
         z-index: 10;
+        background: #f1f3f4;
         
-        tr th {
-            padding: 14px 12px;
+        th {
             text-align: left;
+            padding: 0 8px; // Reduced padding
+            height: 40px; // Reduced height
             font-weight: 600;
             color: #5f6368;
-            font-size: 0.85rem;
-            border-bottom: 2px solid #e0e0e0;
-            background: #f8f9fa; 
+            font-size: 0.8rem; // Smaller font
+            border-bottom: 1px solid #e0e0e0;
+            border-right: 1px solid #e0e0e0;
             white-space: nowrap;
+            
+            &:last-child {
+                border-right: none;
+            }
+
+            // Specific Header alignment
+            &.right { text-align: right; }
+            &.center { text-align: center; }
         }
     }
-    
+
     tbody {
-        background: white;
-        tr td {
-            padding: 8px 8px 4px 8px;
-            vertical-align: top;
-            border-bottom: 1px solid #f1f3f4;
-            
-            &.row-num {
-                padding-top: 18px;
-                color: #757575;
-                font-weight: 500;
-                text-align: center;
+        tr {
+            &:hover {
+                background-color: #f8f9fa;
             }
-            
-            &.action-cell {
-                 padding-top: 10px;
-                 text-align: center;
+
+            td {
+                padding: 2px 4px; // Very compact padding
+                border-bottom: 1px solid #e0e0e0;
+                border-right: 1px solid #f0f0f0;
+                vertical-align: middle; // Center align vertically
+                height: 40px;
+                
+                &:last-child {
+                    border-right: none;
+                }
+
+                &.center { 
+                    text-align: center; 
+                }
+                
+                &.bg-readonly { 
+                    background-color: #fafafa; 
+                    font-size: 0.85rem;
+                }
+
+                &.cell-input {
+                    padding: 0 4px;
+                }
             }
         }
     }
 }
 
-.dense-field {
+// Ultra Compact Mat Form Field for Table Cells
+::ng-deep .table-input-field {
     width: 100%;
-    font-size: 13px;
+    font-size: 12.5px; // Smaller font
     
-    ::ng-deep .mat-mdc-text-field-wrapper {
-        padding: 0 10px;
-        background-color: white;
+    .mat-mdc-text-field-wrapper {
+        padding: 0 6px !important;
+        background-color: transparent !important;
+        height: 32px !important; // Ultra compact height
     }
     
-    ::ng-deep .mat-mdc-form-field-infix {
-        padding-top: 8px;
-        padding-bottom: 8px;
-        min-height: 40px;
+    .mat-mdc-form-field-infix {
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
+        min-height: 32px !important;
+        border-top: none;
+        width: auto !important;
+    }
+    
+    .mat-mdc-form-field-subscript-wrapper {
+        display: none;
+    }
+    
+    &.mat-form-field-invalid {
+        .mat-mdc-text-field-wrapper {
+            background-color: #ffebee !important;
+        }
+    }
+    
+    input {
+        height: 100%; 
+        padding: 0;
+    }
+    
+    // Datepicker alignment fix
+    .mat-datepicker-toggle {
+        button {
+            height: 32px !important;
+            width: 32px !important;
+            line-height: 32px !important;
+            margin-bottom: 12px; // Adjusted to move icon up further
+        }
     }
 
-    ::ng-deep .mat-mdc-form-field-subscript-wrapper {
-        font-size: 10px; // smaller error text
-    }
-    
-    &.readonly-field {
-        ::ng-deep .mat-mdc-text-field-wrapper {
-            background-color: #f8f9fa;
-        }
-        input {
-            color: #616161;
-        }
+    textarea {
+        resize: none;
+        height: 100%;
+        padding: 6px 0 0 0; // Adjust padding for textarea text alignment
+        line-height: normal;
     }
 }
 
-.currency-symbol {
-    color: #757575;
-    font-size: 14px;
-    top: 0px;
-    position: relative;
-    margin-right: 4px;
-}
-
-.add-row-container {
-    padding: 16px;
-    background: #f8f9fa;
+// Footer
+.footer-actions {
+    padding: 12px 20px;
     border-top: 1px solid #e0e0e0;
+    background: #fff;
     display: flex;
     justify-content: flex-start;
-    padding-left: 20px;
-    position: sticky;
-    bottom: 0;
-    z-index: 10;
-}
+    flex-shrink: 0;
+    z-index: 20;
 
-.required {
-    color: #d32f2f;
-}
-
-.option-row {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-    align-items: center;
-    
-    span {
-        font-weight: 500;
-    }
-
-    .id-text {
-        color: #9e9e9e;
-        margin-left: 10px;
-        font-size: 0.8em;
+    button {
+        border-style: dashed;
+        border-width: 1.5px;
+        &:hover { border-style: solid; background: #e3f2fd; }
     }
 }
 
-.spinner-white {
-    ::ng-deep circle {
-        stroke: white !important;
-    }
-    margin-right: 8px;
-}
+// Column Widths (Adjusted for better fit)
+.col-check { width: 36px; min-width: 36px; }
+.col-idx { width: 40px; min-width: 40px; }
+.col-cust { width: 220px; min-width: 200px; } 
+.col-bal { width: 100px; min-width: 90px; }
+.col-amt { width: 110px; min-width: 100px; }
+.col-mode { width: 110px; min-width: 100px; }
+.col-ref { width: 140px; min-width: 130px; } 
+.col-date { width: 130px; min-width: 120px; }
+.col-rem { width: auto; } // Flexible remainder
+.col-act { width: 50px; min-width: 50px; }

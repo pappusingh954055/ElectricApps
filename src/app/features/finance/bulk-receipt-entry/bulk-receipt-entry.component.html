@@ -1,102 +1,125 @@
-<div class="page-container">
+<div class="popup-container">
     <div class="header">
-        <button mat-icon-button (click)="goBack()">
-            <mat-icon>arrow_back</mat-icon>
-        </button>
-        <span class="title">Bulk Receipt Entry</span>
-        <span class="spacer"></span>
-        <button mat-flat-button color="primary" (click)="saveAll()" [disabled]="isLoading || bulkForm.invalid">
+        <div class="title-group">
+            <button mat-icon-button (click)="goBack()">
+                <mat-icon>close</mat-icon>
+            </button>
+            <h2>Bulk Receipt Entry</h2>
+        </div>
+        
+        <button mat-flat-button color="primary" class="save-btn" (click)="saveAll()" [disabled]="isLoading || bulkForm.invalid">
             <mat-icon *ngIf="!isLoading">save</mat-icon>
-            <mat-spinner diameter="20" *ngIf="isLoading" class="spinner-white"></mat-spinner>
+            <mat-spinner diameter="18" *ngIf="isLoading" class="spinner-white"></mat-spinner>
             <span *ngIf="!isLoading">Save All</span>
-            <span *ngIf="isLoading" style="margin-left: 8px;">Saving...</span>
+            <span *ngIf="isLoading">Saving...</span>
         </button>
     </div>
 
-    <form [formGroup]="bulkForm" class="form-content">
-        <div class="table-container mat-elevation-z2">
-            <table class="bulk-table">
-                <thead>
-                    <tr>
-                        <th style="width: 40px;">#</th>
-                        <th style="width: 220px;">Customer <span class="required">*</span></th>
-                        <th style="width: 120px;">Balance</th>
-                        <th style="width: 140px;">Amount <span class="required">*</span></th>
-                        <th style="width: 130px;">Mode <span class="required">*</span></th>
-                        <th style="width: 140px;">Date <span class="required">*</span></th>
-                        <th style="width: 140px;">Reference</th>
-                        <th style="width: 180px;">Remarks</th>
-                        <th style="width: 50px;"></th>
-                    </tr>
-                </thead>
-                <tbody formArrayName="rows">
-                    <tr *ngFor="let row of rows.controls; let i = index" [formGroupName]="i">
-                        <td class="row-num">{{i + 1}}</td>
-                        <td>
-                            <mat-form-field appearance="outline" class="dense-field">
-                                <input type="text" placeholder="Select Customer" matInput formControlName="customer" [matAutocomplete]="auto">
-                                <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onCustomerSelected($event, i)">
-                                    <mat-option *ngFor="let option of filteredCustomers[i] | async" [value]="option">
-                                        <div class="option-row">
-                                            <span>{{option.name}}</span>
-                                            <small class="id-text">#{{option.id}}</small>
-                                        </div>
-                                    </mat-option>
-                                </mat-autocomplete>
-                                <mat-error *ngIf="row.get('customer')?.hasError('required')">Required</mat-error>
-                            </mat-form-field>
-                        </td>
-                        <td>
-                            <mat-form-field appearance="outline" class="dense-field readonly-field">
-                                <input matInput formControlName="currentBalance" readonly tabindex="-1">
-                                <span matPrefix class="currency-symbol">₹&nbsp;</span>
-                            </mat-form-field>
-                        </td>
-                        <td>
-                            <mat-form-field appearance="outline" class="dense-field">
-                                <input matInput type="number" formControlName="amount" placeholder="0.00">
-                                <span matPrefix class="currency-symbol">₹&nbsp;</span>
-                                <mat-error *ngIf="row.get('amount')?.hasError('required')">Required</mat-error>
-                            </mat-form-field>
-                        </td>
-                        <td>
-                            <mat-form-field appearance="outline" class="dense-field">
-                                <mat-select formControlName="paymentMode">
-                                    <mat-option *ngFor="let m of modes" [value]="m">{{m}}</mat-option>
-                                </mat-select>
-                            </mat-form-field>
-                        </td>
-                        <td>
-                            <mat-form-field appearance="outline" class="dense-field date-field">
-                                <input matInput [matDatepicker]="picker" formControlName="date">
-                                <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-                                <mat-datepicker #picker></mat-datepicker>
-                            </mat-form-field>
-                        </td>
-                        <td>
-                            <mat-form-field appearance="outline" class="dense-field">
-                                <input matInput formControlName="referenceBy" placeholder="Ref/Chq No">
-                            </mat-form-field>
-                        </td>
-                        <td>
-                             <mat-form-field appearance="outline" class="dense-field">
-                                <input matInput formControlName="remarks" placeholder="Optional">
-                            </mat-form-field>
-                        </td>
-                        <td class="action-cell">
-                            <button mat-icon-button color="warn" (click)="removeRow(i)" *ngIf="rows.length > 1" tabindex="-1">
-                                <mat-icon>delete_outline</mat-icon>
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div class="add-row-container">
-                <button mat-stroked-button color="primary" (click)="addRow()">
-                    <mat-icon>add</mat-icon> Add Another Entry
-                </button>
-            </div>
-        </div>
+    <form [formGroup]="bulkForm" class="content-area">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th class="col-check center">
+                        <mat-checkbox (change)="toggleSelectAll()" [checked]="allSelected" [indeterminate]="isIndeterminate"></mat-checkbox>
+                    </th>
+                    <th class="col-idx center">#</th>
+                    <th class="col-cust">Customer <span class="required">*</span></th>
+                    <th class="col-bal">Balance</th>
+                    <th class="col-amt">Amount <span class="required">*</span></th>
+                    <th class="col-mode">Mode</th>
+                    <th class="col-ref">Reference</th>
+                    <th class="col-date">Date</th>
+                    <th class="col-rem">Remarks</th>
+                    <th class="col-act center">Action</th>
+                </tr>
+            </thead>
+            <tbody formArrayName="rows">
+                <tr *ngFor="let row of rows.controls; let i = index" [formGroupName]="i">
+                    <!-- Checkbox -->
+                    <td class="center bg-readonly">
+                        <mat-checkbox formControlName="selected" (change)="updateSelectAllState()"></mat-checkbox>
+                    </td>
+
+                    <!-- Seq No -->
+                    <td class="center bg-readonly">{{i + 1}}</td>
+
+                    <!-- Customer -->
+                    <td class="cell-input">
+                        <mat-form-field appearance="outline" class="table-input-field">
+                            <input type="text" placeholder="Search..." matInput formControlName="customer" [matAutocomplete]="auto">
+                            <mat-autocomplete #auto="matAutocomplete" [displayWith]="displayFn" (optionSelected)="onCustomerSelected($event, i)">
+                                <mat-option *ngFor="let option of filteredCustomers[i] | async" [value]="option">
+                                    <div class="option-row">
+                                        <span>{{option.name}}</span>
+                                        <small class="id-text">#{{option.id}}</small>
+                                    </div>
+                                </mat-option>
+                            </mat-autocomplete>
+                        </mat-form-field>
+                    </td>
+
+                    <!-- Balance (Readonly) -->
+                    <td class="bg-readonly">
+                       <mat-form-field appearance="outline" class="table-input-field">
+                            <input matInput formControlName="currentBalance" readonly tabindex="-1">
+                            <span matPrefix>₹&nbsp;</span>
+                        </mat-form-field>
+                    </td>
+
+                    <!-- Amount -->
+                    <td class="cell-input">
+                        <mat-form-field appearance="outline" class="table-input-field">
+                            <input matInput type="number" formControlName="amount" placeholder="0.00">
+                             <span matPrefix>₹&nbsp;</span>
+                        </mat-form-field>
+                    </td>
+
+                    <!-- Mode -->
+                    <td class="cell-input">
+                         <mat-form-field appearance="outline" class="table-input-field">
+                            <mat-select formControlName="paymentMode">
+                                <mat-option *ngFor="let m of modes" [value]="m">{{m}}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                    </td>
+
+                    <!-- Reference -->
+                    <td class="cell-input">
+                        <mat-form-field appearance="outline" class="table-input-field">
+                            <input matInput formControlName="referenceBy" placeholder="Ref No">
+                        </mat-form-field>
+                    </td>
+
+                    <!-- Date -->
+                    <td class="cell-input">
+                        <mat-form-field appearance="outline" class="table-input-field">
+                            <input matInput [matDatepicker]="picker" formControlName="date">
+                            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+                            <mat-datepicker #picker></mat-datepicker>
+                        </mat-form-field>
+                    </td>
+
+                    <!-- Remarks -->
+                    <td class="cell-input">
+                        <mat-form-field appearance="outline" class="table-input-field">
+                            <textarea matInput formControlName="remarks" placeholder="Optional" rows="1"></textarea>
+                        </mat-form-field>
+                    </td>
+
+                    <!-- Delete -->
+                    <td class="center">
+                        <button mat-icon-button color="warn" (click)="removeRow(i)" *ngIf="rows.length > 1" tabindex="-1">
+                            <mat-icon style="font-size: 18px;">delete</mat-icon>
+                        </button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </form>
+
+    <div class="footer-actions">
+        <button mat-stroked-button color="primary" (click)="addRow()">
+            <mat-icon>add</mat-icon> Add New Row
+        </button>
+    </div>
 </div>
