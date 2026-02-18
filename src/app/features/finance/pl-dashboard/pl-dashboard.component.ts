@@ -54,6 +54,18 @@ export class PLDashboardComponent implements OnInit {
         labels: []
     };
 
+    public topCustomersData: ChartConfiguration['data'] = {
+        datasets: [{
+            data: [],
+            backgroundColor: 'rgba(63, 81, 181, 0.7)',
+            borderColor: '#3f51b5',
+            borderWidth: 1,
+            label: 'Outstanding Amount',
+            barThickness: 20
+        }],
+        labels: []
+    };
+
     public chartOptions: ChartConfiguration['options'] = {
         responsive: true,
         maintainAspectRatio: false,
@@ -80,6 +92,29 @@ export class PLDashboardComponent implements OnInit {
                 grid: {
                     display: false
                 }
+            }
+        }
+    };
+
+    public horizontalBarOptions: ChartConfiguration['options'] = {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            tooltip: {
+                callbacks: {
+                    label: (context) => `₹${(context.parsed.x || 0).toLocaleString()}`
+                }
+            }
+        },
+        scales: {
+            x: {
+                beginAtZero: true,
+                grid: { display: false }
+            },
+            y: {
+                grid: { display: false }
             }
         }
     };
@@ -116,7 +151,8 @@ export class PLDashboardComponent implements OnInit {
             receivables: this.financeService.getTotalReceivables(),
             payables: this.financeService.getTotalPayables(),
             expenseChart: this.financeService.getExpenseChartData(this.filters),
-            trends: this.financeService.getMonthlyTrends(6)
+            trends: this.financeService.getMonthlyTrends(6),
+            topCustomers: this.financeService.getOutstandingTracker({ pageNumber: 1, pageSize: 5, sortBy: 'PendingAmount', sortOrder: 'desc' })
         }).subscribe({
             next: (results) => {
                 console.log('All Dashboard Data:', results);
@@ -129,24 +165,26 @@ export class PLDashboardComponent implements OnInit {
 
                 // Map Receivables
                 if (results.receivables) {
-                    this.totalReceivables = results.receivables.totalOutstanding || results.receivables.TotalOutstanding || 0;
+                    this.totalReceivables = results.receivables.totalOutstanding ?? results.receivables.TotalOutstanding ?? 0;
                 }
 
                 // Map Payables
                 if (results.payables) {
-                    this.totalPayables = results.payables.totalPending || results.payables.TotalPending || 0;
+                    this.totalPayables = results.payables.totalPending ?? results.payables.TotalPending ?? 0;
                 }
 
                 // Map Chart Data
                 if (results.expenseChart && Array.isArray(results.expenseChart)) {
-                    this.pieChartData.labels = results.expenseChart.map(x => x.category);
-                    this.pieChartData.datasets[0].data = results.expenseChart.map(x => x.amount);
+                    this.pieChartData.labels = results.expenseChart.map(x => x.category || x.Category);
+                    this.pieChartData.datasets[0].data = results.expenseChart.map(x => x.amount || x.Amount);
                     this.pieChartData = { ...this.pieChartData };
                 }
 
                 // Map Trend Data
                 if (results.trends) {
-                    const { receipts, payments, expenses } = results.trends;
+                    const receipts = results.trends.receipts || results.trends.Receipts || [];
+                    const payments = results.trends.payments || results.trends.Payments || [];
+                    const expenses = results.trends.expenses || results.trends.Expenses || [];
 
                     // Always show the last 6 months (even if 0 data)
                     const monthsLabels: string[] = [];
@@ -159,25 +197,45 @@ export class PLDashboardComponent implements OnInit {
                     this.barChartData.labels = monthsLabels;
 
                     // Map Receipts (Income)
-                    this.barChartData.datasets[0].data = monthsLabels.map(m =>
-                        (receipts.find((r: any) => r.month === m)?.amount || 0)
-                    );
+                    this.barChartData.datasets[0].data = monthsLabels.map(m => {
+                        const row = receipts.find((r: any) => (r.month || r.Month) === m);
+                        return row ? (row.amount || row.Amount || 0) : 0;
+                    });
 
                     // Map Payments + Expenses (Expenses)
                     this.barChartData.datasets[1].data = monthsLabels.map(m => {
-                        const pAmt = payments.find((p: any) => p.month === m)?.amount || 0;
-                        const eAmt = expenses.find((e: any) => e.month === m)?.amount || 0;
+                        const pRow = payments.find((p: any) => (p.month || p.Month) === m);
+                        const eRow = expenses.find((e: any) => (e.month || e.Month) === m);
+                        const pAmt = pRow ? (pRow.amount || pRow.Amount || 0) : 0;
+                        const eAmt = eRow ? (eRow.amount || eRow.Amount || 0) : 0;
                         return pAmt + eAmt;
                     });
 
                     // Calculate Net Profit for the line chart
                     this.barChartData.datasets[2].data = monthsLabels.map((m, index) => {
-                        const inc = this.barChartData.datasets[0].data[index] as number;
-                        const exp = this.barChartData.datasets[1].data[index] as number;
+                        const inc = (this.barChartData.datasets[0].data[index] as number) || 0;
+                        const exp = (this.barChartData.datasets[1].data[index] as number) || 0;
                         return inc - exp;
                     });
 
                     this.barChartData = { ...this.barChartData };
+                }
+
+                // Map Top Customers
+                if (results.topCustomers) {
+                    const wrapper = results.topCustomers.items || results.topCustomers.Items;
+                    const items = wrapper?.items || wrapper?.Items || [];
+
+                    if (Array.isArray(items) && items.length > 0) {
+                        this.topCustomersData.labels = items.map((c: any) => c.customerName || c.CustomerName);
+                        this.topCustomersData.datasets[0].data = items.map((c: any) => c.pendingAmount || c.PendingAmount);
+                        this.topCustomersData = { ...this.topCustomersData };
+
+                        // Fallback for Total Receivables if card call yielded 0
+                        if (this.totalReceivables === 0) {
+                            this.totalReceivables = results.topCustomers.totalOutstandingAmount || results.topCustomers.TotalOutstandingAmount || 0;
+                        }
+                    }
                 }
 
                 // Sab kuch load hone ke baad Loader OFF

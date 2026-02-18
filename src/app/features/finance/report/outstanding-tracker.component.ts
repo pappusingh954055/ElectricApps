@@ -30,7 +30,7 @@ export interface OutstandingData {
     styleUrl: './outstanding-tracker.component.scss'
 })
 export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
-    displayedColumns: string[] = ['customerId', 'customerName', 'totalAmount', 'pendingAmount', 'status', 'dueDate', 'actions'];
+    displayedColumns: string[] = ['customerId', 'customerName', 'lastReferenceId', 'totalAmount', 'pendingAmount', 'status', 'dueDate', 'actions'];
     dataSource = new MatTableDataSource<OutstandingData>([]);
     isDashboardLoading: boolean = true;
     private isFirstLoad: boolean = true;

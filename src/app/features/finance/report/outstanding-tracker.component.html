@@ -109,6 +109,15 @@
                         </th>
                         <td mat-cell *matCellDef="let row" class="fw-500"> {{row.customerName}} </td>
                     </ng-container>
+ 
+                    <!-- Reference/SO Column -->
+                    <ng-container matColumnDef="lastReferenceId">
+                        <th mat-header-cell *matHeaderCellDef mat-sort-header> Last SO# </th>
+                        <td mat-cell *matCellDef="let row"> 
+                            <span class="so-badge" *ngIf="row.lastReferenceId">{{row.lastReferenceId}}</span>
+                            <span class="text-muted" *ngIf="!row.lastReferenceId">-</span>
+                        </td>
+                    </ng-container>
 
                     <!-- Total Due Column -->
                     <ng-container matColumnDef="totalAmount">

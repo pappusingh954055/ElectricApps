@@ -112,4 +112,26 @@
             </mat-card-content>
         </mat-card>
     </div>
+
+    <!-- Top Customers Section -->
+    <div class="charts-grid secondary" style="margin-top: 24px; grid-template-columns: 1fr;">
+        <mat-card class="chart-card">
+            <mat-card-header>
+                <mat-card-title>Top 5 Customers by Outstanding Balance</mat-card-title>
+            </mat-card-header>
+            <mat-card-content class="chart-content">
+                <div class="chart-wrapper" *ngIf="topCustomersData.labels && topCustomersData.labels.length > 0">
+                    <canvas baseChart 
+                            [data]="topCustomersData" 
+                            [options]="horizontalBarOptions" 
+                            [type]="'bar'">
+                    </canvas>
+                </div>
+                <div class="placeholder-chart" *ngIf="!topCustomersData.labels || topCustomersData.labels.length === 0">
+                    <mat-icon>people</mat-icon>
+                    <p>No outstanding customer data available.</p>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
 </div>
