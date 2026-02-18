@@ -278,10 +278,19 @@
 .grn-badge {
     background: #fff8e1;
     color: #f57c00;
-    padding: 2px 8px;
+    padding: 4px 10px;
     border-radius: 4px;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 500;
     border: 1px solid #ffe082;
     display: inline-block;
+    white-space: nowrap;
+}
+
+.mat-column-lastReferenceId {
+    min-width: 140px !important;
+}
+
+.mat-column-supplierName {
+    min-width: 180px !important;
 }

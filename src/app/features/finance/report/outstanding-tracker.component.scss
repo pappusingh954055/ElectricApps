@@ -367,10 +367,19 @@
 .so-badge {
     background: #e3f2fd;
     color: #1976d2;
-    padding: 2px 8px;
+    padding: 4px 10px;
     border-radius: 4px;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     font-weight: 500;
     border: 1px solid #bbdefb;
     display: inline-block;
+    white-space: nowrap;
+}
+
+.mat-column-lastReferenceId {
+    min-width: 140px !important;
+}
+
+.mat-column-customerName {
+    min-width: 180px !important;
 }
