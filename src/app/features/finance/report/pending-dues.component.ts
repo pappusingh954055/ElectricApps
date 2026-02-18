@@ -40,7 +40,7 @@ export class PendingDuesComponent implements AfterViewInit, OnInit {
     allDues: any[] = [];
     suppliers: Supplier[] = [];
 
-    displayedColumns: string[] = ['supplierId', 'supplierName', 'pendingAmount', 'dueDate', 'status', 'actions'];
+    displayedColumns: string[] = ['supplierId', 'supplierName', 'lastReferenceId', 'pendingAmount', 'dueDate', 'status', 'actions'];
     dataSource = new MatTableDataSource<any>([]);
     isLoading = false;
     isDashboardLoading = true;
