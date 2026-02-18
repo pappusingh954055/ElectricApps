@@ -76,52 +76,41 @@ export class OutwardGatePassComponent implements OnInit {
     }
 
     private handleSORedirection(params: any) {
-        setTimeout(() => {
-            this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.SaleOrder, { emitEvent: false });
+        this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.SaleOrder, { emitEvent: false });
 
-            const refNo = params['refNo'] || '';
-            const partyName = params['partyName'] || '';
-            const qty = params['qty'] || 0;
-            const refId = params['refId'] || '';
+        const refNo = params['refNo'] || '';
+        const partyName = params['partyName'] || '';
+        const qty = params['qty'] || 0;
+        const refId = params['refId'] || '';
 
-            this.gatePassForm.patchValue({
-                referenceId: refId || '',
-                referenceNo: refNo,
-                partyName: partyName,
-                totalQty: qty
-            });
-            this.cdr.detectChanges();
-        }, 100);
+        this.gatePassForm.patchValue({
+            referenceId: refId || '',
+            referenceNo: refNo,
+            partyName: partyName,
+            totalQty: qty
+        });
+        this.cdr.detectChanges();
     }
 
     private handlePurchaseReturnRedirection(params: any) {
-        console.log('[OutwardGatePass] Handling Redirection - Raw Params:', params);
+        // 1. Set Type explicitly
+        this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.PurchaseReturn, { emitEvent: false });
 
-        setTimeout(() => {
-            // 1. Set Type explicitly
-            this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.PurchaseReturn, { emitEvent: false });
+        // 2. Extract Values safely
+        const refNo = params['refNo'] || '';
+        const partyName = params['partyName'] || '';
+        const qty = params['qty'] || 0;
+        const refId = params['refId'] || '';
 
-            // 2. Extract Values safely
-            const refNo = params['refNo'] || '';
-            const partyName = params['partyName'] || '';
-            const qty = params['qty'] || 0;
-            const refId = params['refId'] || '';
+        // 3. Patch Values
+        this.gatePassForm.patchValue({
+            referenceId: refId || '',
+            referenceNo: refNo,
+            partyName: partyName,
+            totalQty: qty
+        });
 
-            console.log(`[OutwardGatePass] Patching Form: RefNo=${refNo}, Party=${partyName}, Qty=${qty}`);
-
-            // 3. Patch Values
-            this.gatePassForm.patchValue({
-                referenceId: refId || '',
-                referenceNo: refNo,
-                partyName: partyName,
-                totalQty: qty
-            });
-
-            // 4. Update UI - We use HTML [readonly] or [disabled] binding now
-            this.cdr.detectChanges();
-
-            this.cdr.detectChanges();
-        }, 100); // Slight delay to ensure controls are ready
+        this.cdr.detectChanges();
     }
 
     initForm() {
@@ -230,6 +219,7 @@ export class OutwardGatePassComponent implements OnInit {
                 this.dialog.open(StatusDialogComponent, {
                     data: { title: 'Success', message: msg, status: 'success', isSuccess: true }
                 }).afterClosed().subscribe(() => {
+                    // Always redirect to Gate Pass List after Outward submission for printing
                     this.router.navigate(['/app/inventory/gate-pass']);
                 });
             },

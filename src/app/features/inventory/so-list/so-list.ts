@@ -109,14 +109,22 @@ export class SoList implements OnInit {
 
     forkJoin({
       orders: this.saleOrderService.getSaleOrders(pageIndex, pageSize, sortField, sortDir, this.searchKey),
-      pendingDues: this.financeService.getPendingCustomerDues().pipe(catchError(() => of([])))
+      pendingDues: this.financeService.getPendingCustomerDues().pipe(catchError(() => of([]))),
+      pendingSOs: this.saleOrderService.getPendingSOs().pipe(catchError(() => of([])))
     }).subscribe({
       next: (res: any) => {
         const orderData = res.orders;
         const pendingDues = res.pendingDues;
+        const pendingSOs = res.pendingSOs || [];
 
         this.totalRecords = orderData.totalCount;
         const items = orderData.data || [];
+
+        // 🚛 Dispatch Check: Mark orders that are still pending for gate pass
+        items.forEach((item: any) => {
+          // If it's in the pending list, it means gate pass is NOT yet created
+          item.isDispatchPending = pendingSOs.some((p: any) => p.id === item.id);
+        });
 
         // 🧠 FIFO LOGIC for Customer Payment Status (Mirroring GRN logic)
         const customerIds = [...new Set(items.map((i: any) => i.customerId))];

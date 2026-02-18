@@ -167,10 +167,10 @@
               </button>
 
               <button mat-icon-button color="warn" 
-                      *ngIf="row.status?.toLowerCase() === 'confirmed'" 
+                      *ngIf="row.status?.toLowerCase() === 'confirmed' && row.isDispatchPending" 
                       (click)="createGatePass(row)" 
-                      matTooltip="Generate Outward Gate Pass">
-                <mat-icon>exit_to_app</mat-icon>
+                      matTooltip="Generate Outward Gate Pass (Dispatch)">
+                <mat-icon style="color: #e91e63;">local_shipping</mat-icon>
               </button>
 
               <button mat-icon-button color="accent" 
