@@ -45,4 +45,8 @@ export class SaleOrderService {
     getSaleOrderItems(saleOrderId: number): Observable<any[]> {
         return this.api.get<any[]>(`SaleOrder/grid-items/${saleOrderId}`);
     }
+
+    getPendingSOs(): Observable<any[]> {
+        return this.api.get<any[]>('SaleOrder/pending-sos');
+    }
 }

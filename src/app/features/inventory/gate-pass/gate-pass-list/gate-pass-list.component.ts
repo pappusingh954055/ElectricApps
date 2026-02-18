@@ -141,8 +141,16 @@ export class GatePassListComponent implements OnInit {
         });
     }
 
-    navigateToAdd() {
+    navigateToAddInward() {
         this.router.navigate(['/app/inventory/gate-pass/inward']);
+    }
+
+    navigateToAddOutward() {
+        this.router.navigate(['/app/inventory/gate-pass/outward']);
+    }
+
+    navigateToAdd() {
+        this.navigateToAddInward();
     }
 
     resetFilters() {

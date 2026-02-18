@@ -1,11 +1,14 @@
 <div class="container">
     <mat-card class="wrapper">
         <mat-card-header>
-            <div mat-card-avatar class="header-image">
-                <mat-icon>local_shipping</mat-icon>
+            <button mat-icon-button (click)="goBack()" class="back-button" matTooltip="Back to List">
+                <mat-icon>arrow_back</mat-icon>
+            </button>
+            <div mat-card-avatar class="header-image-out">
+                <mat-icon>{{isEditMode ? 'edit_note' : 'local_shipping'}}</mat-icon>
             </div>
-            <mat-card-title>OUTWARD GATE PASS</mat-card-title>
-            <mat-card-subtitle>Auto-Generated</mat-card-subtitle>
+            <mat-card-title>{{isEditMode ? 'EDIT OUTWARD GATE PASS' : 'OUTWARD GATE PASS ENTRY'}}</mat-card-title>
+            <mat-card-subtitle>{{currentPassNo}}</mat-card-subtitle>
         </mat-card-header>
         
         <mat-card-content>
@@ -21,17 +24,32 @@
                         </mat-select>
                     </mat-form-field>
                     
-                    <mat-form-field appearance="outline">
+                    <mat-form-field appearance="outline" *ngIf="gatePassForm.get('referenceType')?.value === 3">
+                        <mat-label>Select Sale Order</mat-label>
+                        <mat-select (selectionChange)="onSOSelected($event.value)">
+                            <mat-option *ngFor="let so of availableSOs" [value]="so.id">
+                                {{so.soNumber}} - {{so.customerName}}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" *ngIf="gatePassForm.get('referenceType')?.value === 2">
+                        <mat-label>Select Purchase Return</mat-label>
+                        <mat-select (selectionChange)="onPRSelected($event.value)">
+                            <mat-option *ngFor="let pr of availablePRs" [value]="pr.id">
+                                {{pr.returnNumber}} - {{pr.supplierName}}
+                            </mat-option>
+                        </mat-select>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" *ngIf="gatePassForm.get('referenceType')?.value !== 3 && gatePassForm.get('referenceType')?.value !== 2">
                         <mat-label>Reference No</mat-label>
-                        <input matInput formControlName="referenceNo" placeholder="Enter Ref No" (blur)="fetchReferenceDetails()">
-                        <button mat-icon-button matSuffix (click)="fetchReferenceDetails()" [attr.aria-label]="'Fetch Details'">
-                            <mat-icon>search</mat-icon>
-                        </button>
+                        <input matInput formControlName="referenceNo" placeholder="Enter Ref No">
                     </mat-form-field>
                     
                     <mat-form-field appearance="outline">
-                        <mat-label>Party Name</mat-label>
-                        <input matInput formControlName="partyName" readonly>
+                        <mat-label>Party / Customer Name</mat-label>
+                        <input matInput formControlName="partyName" placeholder="Auto-filled from Reference">
                     </mat-form-field>
                 </div>
                 
@@ -40,8 +58,9 @@
                 <div class="row">
                     <mat-form-field appearance="outline">
                         <mat-label>Vehicle No</mat-label>
-                        <input matInput formControlName="vehicleNo" placeholder="BR-01-GA-1234" required>
-                        <mat-error *ngIf="gatePassForm.get('vehicleNo')?.hasError('pattern')">Invalid Format</mat-error>
+                        <input matInput formControlName="vehicleNo" placeholder="DL-01-AB-1234" required>
+                        <mat-hint>Format: AA-00-AA-0000</mat-hint>
+                        <mat-error *ngIf="gatePassForm.get('vehicleNo')?.hasError('pattern')">Invalid Format (Ex: MH-12-AB-1234)</mat-error>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline">
@@ -58,13 +77,12 @@
                     
                     <mat-form-field appearance="outline">
                         <mat-label>Driver Phone</mat-label>
-                        <input matInput formControlName="driverPhone" placeholder="Mobile No" required>
-                        <mat-error *ngIf="gatePassForm.get('driverPhone')?.hasError('pattern')">10 digit number required</mat-error>
+                        <input matInput formControlName="driverPhone" placeholder="10 Digit Mobile" required>
                     </mat-form-field>
                     
                     <mat-form-field appearance="outline">
                         <mat-label>Transporter Name</mat-label>
-                        <input matInput formControlName="transporterName" placeholder="e.g. BlueDart / V-Trans">
+                        <input matInput formControlName="transporterName" placeholder="e.g. V-Trans, SafeExpress">
                     </mat-form-field>
                 </div>
                 
@@ -73,12 +91,12 @@
                 <div class="row">
                     <mat-form-field appearance="outline">
                         <mat-label>Total Qty</mat-label>
-                        <input matInput formControlName="totalQty" readonly>
+                        <input matInput type="number" formControlName="totalQty" required>
                     </mat-form-field>
                     
                     <mat-form-field appearance="outline">
                         <mat-label>Total Weight (KG)</mat-label>
-                        <input matInput type="number" formControlName="totalWeight" placeholder="e.g. 50">
+                        <input matInput type="number" formControlName="totalWeight" placeholder="Optional">
                     </mat-form-field>
 
                     <mat-form-field appearance="outline" class="w-100">
@@ -92,18 +110,18 @@
                 <div class="row">
                     <mat-form-field appearance="outline">
                         <mat-label>Security Guard Name</mat-label>
-                        <input matInput formControlName="securityGuard" placeholder="Guard Name" required>
+                        <input matInput formControlName="securityGuard" required>
                     </mat-form-field>
                     
                     <mat-form-field appearance="outline">
                         <mat-label>Gate Exit Time</mat-label>
-                        <input matInput [value]="currentDate | date:'medium'" readonly disabled>
+                        <input matInput [value]="gatePassForm.get('gateEntryTime')?.value | date:'medium'" readonly disabled>
                     </mat-form-field>
                 </div>
                 
                 <div class="row checkbox-row">
                     <mat-checkbox formControlName="securitySign" color="primary">
-                        CONFIRM: Items match document & allowed to exit.
+                        CONFIRM: Consignment verified & allowed to exit.
                     </mat-checkbox>
                 </div>
 
@@ -111,10 +129,11 @@
         </mat-card-content>
         
         <mat-card-actions align="end">
-            <button mat-button (click)="cancel()">CANCEL</button>
-            <button mat-raised-button color="warn" (click)="onSubmit()" [disabled]="gatePassForm.invalid || isSaving">
-                <mat-icon>exit_to_app</mat-icon>
-                GENERATE & DISPATCH
+            <button mat-button (click)="goBack()">BACK TO LIST</button>
+            <button mat-button (click)="resetForm()" *ngIf="!isEditMode">RESET</button>
+            <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="gatePassForm.invalid || isSaving">
+                <mat-icon>{{isEditMode ? 'save' : 'logout'}}</mat-icon>
+                {{isEditMode ? 'UPDATE GATE PASS' : 'GENERATE OUTWARD PASS'}}
             </button>
         </mat-card-actions>
     </mat-card>

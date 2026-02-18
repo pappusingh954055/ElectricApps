@@ -62,4 +62,8 @@ export class PurchaseReturnService {
 
         return this.api.getBlob(`PurchaseReturn/export-excel?${this.api.toQueryString(request)}`);
     }
+
+    getPendingPRs(): Observable<any[]> {
+        return this.api.get<any[]>('PurchaseReturn/pending-prs');
+    }
 }

@@ -1,14 +1,16 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { GatePassService } from '../services/gate-pass.service';
 import { LoadingService } from '../../../../core/services/loading.service';
-import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component'; // Adjusted import
+import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
 import { Router, ActivatedRoute } from '@angular/router';
 import { GatePass, GatePassReferenceType, GatePassStatus } from '../models/gate-pass.model';
 import { AuthService } from '../../../../core/services/auth.service';
+import { SaleOrderService } from '../../service/saleorder.service';
+import { PurchaseReturnService } from '../../purchase-return/services/purchase-return.service';
 
 @Component({
     selector: 'app-outward-gate-pass',
@@ -18,102 +20,128 @@ import { AuthService } from '../../../../core/services/auth.service';
     styleUrls: ['./outward-gate-pass.component.scss']
 })
 export class OutwardGatePassComponent implements OnInit {
-    fb = inject(FormBuilder);
-    gatePassService = inject(GatePassService);
-    dialog = inject(MatDialog);
-    router = inject(Router);
-    route = inject(ActivatedRoute);
-    authService = inject(AuthService);
-    loadingService = inject(LoadingService);
+    private fb = inject(FormBuilder);
+    private gatePassService = inject(GatePassService);
+    private soService = inject(SaleOrderService);
+    private prService = inject(PurchaseReturnService);
+    private dialog = inject(MatDialog);
+    private router = inject(Router);
+    private route = inject(ActivatedRoute);
+    private authService = inject(AuthService);
+    private loadingService = inject(LoadingService);
+    private cdr = inject(ChangeDetectorRef);
 
     gatePassForm!: FormGroup;
     isSaving = false;
-    currentDate = new Date();
+    isEditMode = false;
+    gatePassId: number | null = null;
+    currentPassNo = 'Auto-Generated Pass No: GP-OUT-2026-XXXX';
 
-    // Outward references
     referenceTypes = [
-        { id: GatePassReferenceType.PurchaseReturn, name: 'Purchase Return' },
-        { id: GatePassReferenceType.SaleOrder, name: 'Sale Order' }
+        { id: GatePassReferenceType.SaleOrder, name: 'Sale Order' },
+        { id: GatePassReferenceType.PurchaseReturn, name: 'Purchase Return' }
     ];
 
-    vehicleTypes = ['Tempo', 'Truck', 'Bike', 'LCV', 'Other'];
-
-    isReferenceLoaded = false;
+    availableSOs: any[] = [];
+    availablePRs: any[] = [];
+    vehicleTypes = ['Truck', 'Tempo', 'LCV', 'Bike', 'Other'];
 
     ngOnInit() {
         this.loadingService.setLoading(false);
         this.initForm();
+        this.loadPendingSOs();
+        this.loadPendingPRs();
 
-        // Check if we passed a reference ID via query params
+        this.gatePassForm.get('referenceType')?.valueChanges.subscribe(val => {
+            this.gatePassForm.patchValue({ referenceId: null, referenceNo: '', partyName: '', totalQty: 0 });
+        });
+
         this.route.queryParams.subscribe(params => {
-            if (params['refId'] && params['type']) {
-                // Map string type to enum if possible
-                const refType = this.mapReferenceType(params['type']);
-                if (refType) {
-                    this.gatePassForm.patchValue({
-                        referenceType: refType,
-                        referenceNo: params['refId']
-                    });
-                    this.fetchReferenceDetails();
-                }
+            if (params['id'] && params['mode'] === 'edit') {
+                this.isEditMode = true;
+                this.gatePassId = +params['id'];
+                this.loadGatePassData(this.gatePassId);
             }
         });
     }
 
-    private mapReferenceType(typeStr: string): number | null {
-        // Simple mapping logic based on expected params
-        if (typeStr.toLowerCase() === 'purchase-return') return GatePassReferenceType.PurchaseReturn;
-        if (typeStr.toLowerCase() === 'sale-order') return GatePassReferenceType.SaleOrder;
-        return null;
-    }
-
     initForm() {
         this.gatePassForm = this.fb.group({
-            // Reference Details
-            referenceType: [GatePassReferenceType.PurchaseReturn, Validators.required],
+            referenceType: [GatePassReferenceType.SaleOrder, Validators.required],
             referenceNo: ['', Validators.required],
-            referenceId: [null], // Internal ID
-            partyName: [{ value: '', disabled: true }], // Auto-filled
-
-            // Transport Info
-            vehicleNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{2}[ -][0-9]{1,2}(?: [A-Z])?(?: [A-Z]*)? [0-9]{4}$/)]],
-            vehicleType: [''],
+            referenceId: [null],
+            partyName: ['', Validators.required],
+            vehicleNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{2}[-][0-9]{2}[-][A-Z]{1,2}[-][0-9]{4}$/i)]],
+            vehicleType: ['Truck', Validators.required],
             driverName: ['', Validators.required],
             driverPhone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],
             transporterName: [''],
-
-            // Item Summary
-            totalQty: [{ value: 0, disabled: true }],
-            totalWeight: [''], // Optional
+            totalQty: [0, [Validators.required, Validators.min(0.01)]],
+            totalWeight: [0],
+            securityGuard: [this.authService.getUserName() || '', Validators.required],
+            gateEntryTime: [{ value: new Date(), disabled: true }],
             remarks: [''],
-
-            // Check & Sign
-            securityGuard: ['', Validators.required],
-            gateEntryTime: [{ value: this.currentDate, disabled: true }],
-            securitySign: [false, Validators.requiredTrue] // Must be checked
+            securitySign: [false, Validators.requiredTrue]
         });
     }
 
-    // Simulation of fetching reference details
-    fetchReferenceDetails() {
-        const refNo = this.gatePassForm.get('referenceNo')?.value;
-        const type = this.gatePassForm.get('referenceType')?.value;
+    private loadPendingSOs() {
+        this.soService.getPendingSOs().subscribe({
+            next: (data) => {
+                this.availableSOs = data;
+                this.cdr.detectChanges();
+            },
+            error: (err) => console.error('Error fetching pending SOs', err)
+        });
+    }
 
-        if (!refNo || !type) return;
+    private loadPendingPRs() {
+        this.prService.getPendingPRs().subscribe({
+            next: (data) => {
+                this.availablePRs = data;
+                this.cdr.detectChanges();
+            },
+            error: (err) => console.error('Error fetching pending PRs', err)
+        });
+    }
 
-        // Simulate API call
-        // In real app: this.gatePassService.getReferenceDetails(type, refNo).subscribe(...)
+    private loadGatePassData(id: number) {
+        this.gatePassService.getGatePass(id).subscribe({
+            next: (data: any) => {
+                this.currentPassNo = `Pass No: ${data.passNo}`;
+                this.gatePassForm.patchValue({
+                    ...data,
+                    gateEntryTime: new Date(data.gateEntryTime),
+                    securitySign: true // Assume signed if editing
+                });
+                this.cdr.detectChanges();
+            },
+            error: (err) => console.error('Error loading gate pass', err)
+        });
+    }
 
-        // Mock Response
-        setTimeout(() => {
+    onSOSelected(soId: number) {
+        const selectedSO = this.availableSOs.find(s => s.id === soId);
+        if (selectedSO) {
             this.gatePassForm.patchValue({
-                referenceId: 101, // Mock internal ID
-                partyName: 'ABC Enterprises', // from mockup
-                totalQty: 20,
-                // totalWeight: 5 // Optional
+                referenceNo: selectedSO.soNumber,
+                referenceId: selectedSO.id,
+                partyName: selectedSO.customerName,
+                totalQty: selectedSO.totalQty
             });
-            this.isReferenceLoaded = true;
-        }, 500);
+        }
+    }
+
+    onPRSelected(prId: string) {
+        const selectedPR = this.availablePRs.find(p => p.id === prId);
+        if (selectedPR) {
+            this.gatePassForm.patchValue({
+                referenceNo: selectedPR.returnNumber,
+                referenceId: selectedPR.id, // ID is likely GUID
+                partyName: selectedPR.supplierName,
+                totalQty: selectedPR.totalQty
+            });
+        }
     }
 
     onSubmit() {
@@ -123,63 +151,45 @@ export class OutwardGatePassComponent implements OnInit {
         }
 
         const formValue = this.gatePassForm.getRawValue();
-
-        // Create payload matching updated Table Model
         const gatePassData: GatePass = {
-            // passNo is generated by backend or trigger
+            ...formValue,
+            id: this.gatePassId || 0,
             passType: 'Outward',
-            referenceType: formValue.referenceType,
-            referenceId: formValue.referenceId || 0,
-            referenceNo: formValue.referenceNo,
-            partyName: formValue.partyName,
-            vehicleNo: formValue.vehicleNo,
-            vehicleType: formValue.vehicleType,
-            driverName: formValue.driverName,
-            driverPhone: formValue.driverPhone,
-            transporterName: formValue.transporterName,
-            totalQty: formValue.totalQty,
-            totalWeight: formValue.totalWeight || 0,
-            gateEntryTime: new Date(), // Capture exact time
-            securityGuard: formValue.securityGuard,
-            status: GatePassStatus.Dispatched, // Outward = Dispatched? Or Entered then Dispatched? Usually Outward -> Dispatched immediately upon leaving
-            remarks: formValue.remarks,
+            status: GatePassStatus.Entered,
             createdBy: this.authService.getUserName()
         };
 
         this.isSaving = true;
-        this.gatePassService.createGatePass(gatePassData).subscribe({
-            next: (res) => {
+        const request = this.gatePassService.createGatePass(gatePassData);
+
+        request.subscribe({
+            next: (res: any) => {
                 this.isSaving = false;
+                const msg = this.isEditMode ? 'Gate Pass updated!' : `Outward Pass Generated! No: ${res.passNo || 'GP-OUT-XXXX'}`;
+
                 this.dialog.open(StatusDialogComponent, {
-                    data: {
-                        title: 'Success',
-                        message: `Outward Gate Pass Generated! Pass No: ${res.passNo || 'GP-PENDING'}`,
-                        status: 'success',
-                        isSuccess: true
-                    }
+                    data: { title: 'Success', message: msg, status: 'success', isSuccess: true }
                 }).afterClosed().subscribe(() => {
-                    // Navigate back or reset
-                    // this.router.navigate(['/app/inventory/gate-pass/list']);
-                    this.initForm();
-                    this.isReferenceLoaded = false;
+                    this.router.navigate(['/app/inventory/gate-pass']);
                 });
             },
-            error: (err) => {
+            error: (err: any) => {
                 this.isSaving = false;
-                console.error(err);
                 this.dialog.open(StatusDialogComponent, {
-                    data: {
-                        title: 'Error',
-                        message: 'Failed to generate Gate Pass.',
-                        status: 'error',
-                        isSuccess: false
-                    }
+                    data: { title: 'Error', message: 'Failed to save Gate Pass', status: 'error', isSuccess: false }
                 });
             }
         });
     }
 
-    cancel() {
-        this.router.navigate(['/app/inventory']);
+    goBack() {
+        this.router.navigate(['/app/inventory/gate-pass']);
+    }
+
+    resetForm() {
+        this.initForm();
+        this.isEditMode = false;
+        this.gatePassId = null;
+        this.currentPassNo = 'Auto-Generated Pass No: GP-OUT-2026-XXXX';
     }
 }
