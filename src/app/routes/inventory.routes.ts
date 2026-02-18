@@ -67,5 +67,16 @@ export const INVENTORY_ROUTES: Routes = [
       { path: 'edit/:id', data: { breadcrumb: 'Edit Return' }, loadComponent: () => import('../features/inventory/sale-return/sale-return-form/sale-return-form.component').then(m => m.SaleReturnFormComponent) },
       { path: 'credit-note/:id', data: { breadcrumb: 'Credit Note' }, loadComponent: () => import('../features/inventory/sale-return/credit-note-view/credit-note-view.component').then(m => m.CreditNoteViewComponent) }
     ]
+  },
+  {
+    path: 'gate-pass',
+    canActivate: [PermissionGuard],
+    data: { breadcrumb: 'Gate Pass' },
+    children: [
+      { path: 'outward', data: { breadcrumb: 'Outward' }, loadComponent: () => import('../features/inventory/gate-pass/outward-gate-pass/outward-gate-pass.component').then(m => m.OutwardGatePassComponent) },
+      { path: 'inward', data: { breadcrumb: 'Inward' }, loadComponent: () => import('../features/inventory/gate-pass/inward-gate-pass/inward-gate-pass.component').then(m => m.InwardGatePassComponent) },
+      // Index redirect
+      { path: '', redirectTo: 'outward', pathMatch: 'full' }
+    ]
   }
 ];

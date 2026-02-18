@@ -1,0 +1,121 @@
+<div class="container">
+    <mat-card class="wrapper">
+        <mat-card-header>
+            <div mat-card-avatar class="header-image">
+                <mat-icon>local_shipping</mat-icon>
+            </div>
+            <mat-card-title>OUTWARD GATE PASS</mat-card-title>
+            <mat-card-subtitle>Auto-Generated</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+            <form [formGroup]="gatePassForm" class="form-grid">
+                
+                <!-- Section 1: Reference Details -->
+                <div class="section-title">1. Reference Details</div>
+                <div class="row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Reference Type</mat-label>
+                        <mat-select formControlName="referenceType">
+                            <mat-option *ngFor="let ref of referenceTypes" [value]="ref.id">{{ref.name}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline">
+                        <mat-label>Reference No</mat-label>
+                        <input matInput formControlName="referenceNo" placeholder="Enter Ref No" (blur)="fetchReferenceDetails()">
+                        <button mat-icon-button matSuffix (click)="fetchReferenceDetails()" [attr.aria-label]="'Fetch Details'">
+                            <mat-icon>search</mat-icon>
+                        </button>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline">
+                        <mat-label>Party Name</mat-label>
+                        <input matInput formControlName="partyName" readonly>
+                    </mat-form-field>
+                </div>
+                
+                <!-- Section 2: Transport & Driver Info -->
+                <div class="section-title">2. Transport & Driver Info</div>
+                <div class="row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Vehicle No</mat-label>
+                        <input matInput formControlName="vehicleNo" placeholder="BR-01-GA-1234" required>
+                        <mat-error *ngIf="gatePassForm.get('vehicleNo')?.hasError('pattern')">Invalid Format</mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Vehicle Type</mat-label>
+                        <mat-select formControlName="vehicleType">
+                            <mat-option *ngFor="let v of vehicleTypes" [value]="v">{{v}}</mat-option>
+                        </mat-select>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline">
+                        <mat-label>Driver Name</mat-label>
+                        <input matInput formControlName="driverName" placeholder="Driver Name" required>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline">
+                        <mat-label>Driver Phone</mat-label>
+                        <input matInput formControlName="driverPhone" placeholder="Mobile No" required>
+                        <mat-error *ngIf="gatePassForm.get('driverPhone')?.hasError('pattern')">10 digit number required</mat-error>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline">
+                        <mat-label>Transporter Name</mat-label>
+                        <input matInput formControlName="transporterName" placeholder="e.g. BlueDart / V-Trans">
+                    </mat-form-field>
+                </div>
+                
+                <!-- Section 3: Details & Confirmation -->
+                <div class="section-title">3. Consignment Details</div>
+                <div class="row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Total Qty</mat-label>
+                        <input matInput formControlName="totalQty" readonly>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline">
+                        <mat-label>Total Weight (KG)</mat-label>
+                        <input matInput type="number" formControlName="totalWeight" placeholder="e.g. 50">
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Remarks / Observations</mat-label>
+                        <textarea matInput formControlName="remarks" rows="1"></textarea>
+                    </mat-form-field>
+                </div>
+                
+                <!-- Section 4: Security Check -->
+                <div class="section-title">4. Security Validation</div>
+                <div class="row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Security Guard Name</mat-label>
+                        <input matInput formControlName="securityGuard" placeholder="Guard Name" required>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline">
+                        <mat-label>Gate Exit Time</mat-label>
+                        <input matInput [value]="currentDate | date:'medium'" readonly disabled>
+                    </mat-form-field>
+                </div>
+                
+                <div class="row checkbox-row">
+                    <mat-checkbox formControlName="securitySign" color="primary">
+                        CONFIRM: Items match document & allowed to exit.
+                    </mat-checkbox>
+                </div>
+
+            </form>
+        </mat-card-content>
+        
+        <mat-card-actions align="end">
+            <button mat-button (click)="cancel()">CANCEL</button>
+            <button mat-raised-button color="warn" (click)="onSubmit()" [disabled]="gatePassForm.invalid || isSaving">
+                <mat-icon>exit_to_app</mat-icon>
+                GENERATE & DISPATCH
+            </button>
+        </mat-card-actions>
+    </mat-card>
+</div>

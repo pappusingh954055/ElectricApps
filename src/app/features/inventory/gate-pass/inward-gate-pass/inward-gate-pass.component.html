@@ -1,0 +1,108 @@
+<div class="container">
+    <mat-card class="wrapper">
+        <mat-card-header>
+            <div mat-card-avatar class="header-image-in">
+                <mat-icon>meeting_room</mat-icon>
+            </div>
+            <mat-card-title>INWARD GATE PASS ENTRY</mat-card-title>
+            <mat-card-subtitle>Auto-Generated Pass No: GP-IN-2026-XXXX</mat-card-subtitle>
+        </mat-card-header>
+        
+        <mat-card-content>
+            <form [formGroup]="gatePassForm" class="form-grid">
+                
+                <!-- Section 1: Reference Selection -->
+                <div class="section-title">1. Reference Selection</div>
+                <div class="row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Link With PO No</mat-label>
+                        <mat-select formControlName="referenceId" (selectionChange)="onPOSelected($event.value)" required>
+                            <mat-option *ngFor="let po of availablePOs" [value]="po.id">{{po.poNo}} ({{po.supplier}})</mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="gatePassForm.get('referenceId')?.hasError('required')">Select PO</mat-error>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline">
+                        <mat-label>Supplier Name</mat-label>
+                        <input matInput formControlName="partyName" readonly placeholder="Auto-Filled">
+                    </mat-form-field>
+                </div>
+                
+                <!-- Section 2: Physical Vehicle Details -->
+                <div class="section-title">2. Physical Vehicle Details (Mandatory at Gate)</div>
+                <div class="row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Vehicle No</mat-label>
+                        <input matInput formControlName="vehicleNo" placeholder="BR-05-JK-9988" required>
+                        <mat-error *ngIf="gatePassForm.get('vehicleNo')?.hasError('pattern')">Invalid Format</mat-error>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline">
+                        <mat-label>Driver Name</mat-label>
+                        <input matInput formControlName="driverName" placeholder="Driver Name">
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline">
+                        <mat-label>Driver Phone</mat-label>
+                        <input matInput formControlName="driverPhone" placeholder="887766XXXX">
+                    </mat-form-field>
+                </div>
+
+                <div class="row">
+                    <div class="radio-label">Vehicle Type:</div>
+                    <mat-radio-group formControlName="vehicleType" aria-label="Select Vehicle Type" class="radio-group">
+                        <mat-radio-button *ngFor="let type of vehicleTypes" [value]="type">{{type}}</mat-radio-button>
+                    </mat-radio-group>
+                </div>
+
+                <!-- Section 3: Material Summary -->
+                <div class="section-title">3. Material Summary (Gate Level)</div>
+                <div class="row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Expected Qty (As per PO)</mat-label>
+                        <input matInput formControlName="expectedQty" readonly>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline">
+                        <mat-label>Invoice/Challan No</mat-label>
+                        <input matInput formControlName="invoiceNo" placeholder="Supplier Bill No" required>
+                        <mat-error *ngIf="gatePassForm.get('invoiceNo')?.hasError('required')">Mandatory</mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline">
+                        <mat-label>Approx Weight</mat-label>
+                        <input matInput formControlName="totalWeight" placeholder="e.g. 45.5 kg">
+                    </mat-form-field>
+                </div>
+                
+                <!-- Section 4: Security Controls -->
+                <div class="section-title">4. Security Controls</div>
+                <div class="row">
+                    <mat-form-field appearance="outline">
+                        <mat-label>Security Guard</mat-label>
+                        <input matInput formControlName="securityGuard" readonly>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline">
+                        <mat-label>In-Time (Auto-Capture)</mat-label>
+                        <input matInput [value]="currentDate | date:'medium'" readonly disabled>
+                    </mat-form-field>
+                    
+                    <mat-form-field appearance="outline" class="w-100">
+                        <mat-label>Remarks / Notes</mat-label>
+                        <textarea matInput formControlName="remarks" placeholder="e.g., Packing damaged from corner / OK" rows="1"></textarea>
+                    </mat-form-field>
+                </div>
+
+            </form>
+        </mat-card-content>
+        
+        <mat-card-actions align="end">
+            <button mat-button (click)="resetForm()">RESET</button>
+            <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="gatePassForm.invalid || isSaving">
+                <mat-icon>login</mat-icon>
+                GENERATE INWARD PASS
+            </button>
+        </mat-card-actions>
+    </mat-card>
+</div>
