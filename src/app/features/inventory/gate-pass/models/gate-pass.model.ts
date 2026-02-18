@@ -3,7 +3,7 @@ export interface GatePass {
     passNo?: string; // e.g., GP-2026-001
     passType: 'Inward' | 'Outward';
     referenceType: GatePassReferenceType; // 1=PO, 2=GRN, 3=Sale, 4=PurchaseReturn
-    referenceId: number;
+    referenceId: string | number;
     referenceNo: string;
     invoiceNo?: string; // Challan/Bill No
     partyName: string;

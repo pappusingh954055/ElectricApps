@@ -53,6 +53,7 @@ export class OutwardGatePassComponent implements OnInit {
         this.loadPendingPRs();
 
         this.gatePassForm.get('referenceType')?.valueChanges.subscribe(val => {
+            // Only clear if user manually changes type, not when we patch it programmatically with emitEvent: false
             this.gatePassForm.patchValue({ referenceId: null, referenceNo: '', partyName: '', totalQty: 0 });
         });
 
@@ -61,7 +62,24 @@ export class OutwardGatePassComponent implements OnInit {
                 this.isEditMode = true;
                 this.gatePassId = +params['id'];
                 this.loadGatePassData(this.gatePassId);
+            } else if (params['type'] === 'purchase-return') {
+                this.handlePurchaseReturnRedirection(params);
             }
+        });
+    }
+
+    private handlePurchaseReturnRedirection(params: any) {
+        setTimeout(() => {
+            // Set type without triggering reset
+            this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.PurchaseReturn, { emitEvent: false });
+
+            this.gatePassForm.patchValue({
+                referenceId: params['refId'] || '',
+                referenceNo: params['refNo'],
+                partyName: params['partyName'],
+                totalQty: params['qty']
+            });
+            this.cdr.detectChanges();
         });
     }
 
@@ -125,7 +143,7 @@ export class OutwardGatePassComponent implements OnInit {
         if (selectedSO) {
             this.gatePassForm.patchValue({
                 referenceNo: selectedSO.soNumber,
-                referenceId: selectedSO.id,
+                referenceId: selectedSO.id.toString(),
                 partyName: selectedSO.customerName,
                 totalQty: selectedSO.totalQty
             });
@@ -153,6 +171,7 @@ export class OutwardGatePassComponent implements OnInit {
         const formValue = this.gatePassForm.getRawValue();
         const gatePassData: GatePass = {
             ...formValue,
+            referenceId: String(formValue.referenceId || ''), // Ensure String for GUID support
             id: this.gatePassId || 0,
             passType: 'Outward',
             status: GatePassStatus.Entered,

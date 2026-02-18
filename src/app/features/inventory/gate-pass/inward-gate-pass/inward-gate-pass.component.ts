@@ -119,7 +119,7 @@ export class InwardGatePassComponent implements OnInit {
             }
 
             this.gatePassForm.patchValue({
-                referenceId: params['refId'] ? Number(params['refId']) : 0,
+                referenceId: params['refId'] ? String(params['refId']) : '', // Ensure empty string if missing
                 referenceNo: refNo,
                 partyName: params['partyName'] || '',
                 expectedQty: params['qty'] || 0,
@@ -148,7 +148,7 @@ export class InwardGatePassComponent implements OnInit {
 
         this.gatePassForm = this.fb.group({
             // 1. Reference Selection
-            referenceId: [null, Validators.required], // Holds internal ID of PO
+            referenceId: ['', Validators.required], // Holds internal ID of PO (String/GUID)
             referenceNo: ['', Validators.required], // Display No
             partyName: [{ value: '', disabled: true }], // Supplier Name
 
@@ -180,8 +180,8 @@ export class InwardGatePassComponent implements OnInit {
         });
     }
 
-    onPOSelected(poId: number) {
-        const selectedPO = this.availablePOs.find(p => p.id === poId);
+    onPOSelected(poId: any) {
+        const selectedPO = this.availablePOs.find(p => String(p.id) === String(poId));
         if (selectedPO) {
             this.gatePassForm.patchValue({
                 referenceNo: selectedPO.poNo,
@@ -209,7 +209,7 @@ export class InwardGatePassComponent implements OnInit {
             id: this.gatePassId || 0,
             passType: 'Inward',
             referenceType: this.referenceLabel === 'Sale Return No' ? GatePassReferenceType.SaleReturn : GatePassReferenceType.PurchaseOrder,
-            referenceId: formValue.referenceId || 0,
+            referenceId: formValue.referenceId && formValue.referenceId !== '0' ? String(formValue.referenceId) : '', // Ensure valid string or empty
             referenceNo: formValue.referenceNo,
             invoiceNo: formValue.invoiceNo,
             partyName: formValue.partyName,

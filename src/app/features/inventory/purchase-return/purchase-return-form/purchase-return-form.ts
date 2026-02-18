@@ -293,6 +293,9 @@ export class PurchaseReturnForm implements OnInit {
       }))
     };
 
+    const supplierName = this.suppliers.find(s => s.id === rawData.supplierId)?.supplierName || '';
+    const totalQty = itemsToReturn.reduce((sum: number, item: any) => sum + Number(item.returnQty), 0);
+
     this.prService.savePurchaseReturn(payload).subscribe({
       next: (res) => {
         this.cdr.detectChanges();
@@ -305,7 +308,16 @@ export class PurchaseReturnForm implements OnInit {
         });
 
         dialogRef.afterClosed().subscribe(() => {
-          this.router.navigate(['/app/inventory/purchase-return']);
+          // Redirect to Outward Gate Pass
+          this.router.navigate(['/app/inventory/gate-pass/outward'], {
+            queryParams: {
+              refNo: res.returnNumber,
+              refId: res.id,
+              type: 'purchase-return',
+              partyName: supplierName,
+              qty: totalQty
+            }
+          });
         });
       },
       error: (err) => {
