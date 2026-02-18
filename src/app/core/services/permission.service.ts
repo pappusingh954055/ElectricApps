@@ -48,15 +48,39 @@ export class PermissionService {
         return this._searchBestMatch(items, cleanUrl);
     }
 
+    private _normalize(url: string | null | undefined): string {
+        if (!url) return '';
+        let clean = url.split('?')[0].toLowerCase().trim();
+
+        // Remove leading slash
+        if (clean.startsWith('/')) {
+            clean = clean.substring(1);
+        }
+
+        // Remove 'app/' prefix if present
+        if (clean.startsWith('app/')) {
+            clean = clean.substring(4);
+        }
+
+        // Remove trailing slash
+        if (clean.endsWith('/')) {
+            clean = clean.substring(0, clean.length - 1);
+        }
+
+        return clean;
+    }
+
     private _searchBestMatch(items: MenuItem[], targetUrl: string): MenuItem | null {
         let bestMatch: MenuItem | null = null;
         let longestUrlMatchLen = -1;
 
-        const search = (menuItems: MenuItem[]) => {
-            for (const item of menuItems) {
+        const search = (list: MenuItem[]) => {
+            for (const item of list) {
                 if (item.url) {
                     const itemUrl = this._normalize(item.url);
-                    // Check if current target URL starts with the menu item's URL
+
+                    // Logic: Match Exact OR Parent-Child relationship
+                    // Example: Menu='inventory/gate-pass', Target='inventory/gate-pass/outward' -> Match!
                     if (itemUrl !== '' && (targetUrl === itemUrl || targetUrl.startsWith(itemUrl + '/'))) {
                         if (itemUrl.length > longestUrlMatchLen) {
                             longestUrlMatchLen = itemUrl.length;
@@ -64,7 +88,6 @@ export class PermissionService {
                         }
                     }
                 }
-
                 if (item.children && item.children.length > 0) {
                     search(item.children);
                 }
@@ -75,30 +98,26 @@ export class PermissionService {
         return bestMatch;
     }
 
-    private _normalize(url: string | null | undefined): string {
-        if (!url) return '';
-        return url.split('?')[0]
-            .toLowerCase()
-            .replace(/\/$/, '')
-            .replace(/^\//, '')
-            .replace(/^app\//, '') // Standarize: internal routes often exclude 'app/' in DB but have it in browser
-            .trim();
-    }
-
-
     checkPermissionWithData(menus: MenuItem[], url: string, action: 'CanView' | 'CanAdd' | 'CanEdit' | 'CanDelete'): boolean {
-        const menuItem = this.findMenuItemRecursive(menus, url);
-        if (!menuItem || !menuItem.permissions) {
+        const normalizedUrl = this._normalize(url);
+        console.log(`[PermissionService] Checking ${action} for URL: '${url}' (Normalized: '${normalizedUrl}')`);
+
+        const menuItem = this._searchBestMatch(menus, normalizedUrl); // Use internal match logic directly
+
+        if (!menuItem) {
+            console.warn(`[PermissionService] No matching menu item found for: ${normalizedUrl}`);
             return false;
         }
 
-        switch (action) {
-            case 'CanView': return menuItem.permissions.canView;
-            case 'CanAdd': return menuItem.permissions.canAdd;
-            case 'CanEdit': return menuItem.permissions.canEdit;
-            case 'CanDelete': return menuItem.permissions.canDelete;
-            default: return false;
+        if (!menuItem.permissions) {
+            console.warn(`[PermissionService] Menu item found (${menuItem.title}) but has no permissions object.`);
+            return false;
         }
+
+        const hasPerm = menuItem.permissions[action === 'CanView' ? 'canView' : action === 'CanAdd' ? 'canAdd' : action === 'CanEdit' ? 'canEdit' : 'canDelete'];
+        console.log(`[PermissionService] Found Menu: ${menuItem.title} (${menuItem.url}) -> ${action}: ${hasPerm}`);
+
+        return hasPerm;
     }
 
     checkPermission(url: string, action: 'CanView' | 'CanAdd' | 'CanEdit' | 'CanDelete'): boolean {

@@ -34,6 +34,7 @@ export class OutwardGatePassComponent implements OnInit {
     gatePassForm!: FormGroup;
     isSaving = false;
     isEditMode = false;
+    isRedirected = false; // Flag to prevent auto-reset
     gatePassId: number | null = null;
     currentPassNo = 'Auto-Generated Pass No: GP-OUT-2026-XXXX';
 
@@ -53,8 +54,10 @@ export class OutwardGatePassComponent implements OnInit {
         this.loadPendingPRs();
 
         this.gatePassForm.get('referenceType')?.valueChanges.subscribe(val => {
-            // Only clear if user manually changes type, not when we patch it programmatically with emitEvent: false
-            this.gatePassForm.patchValue({ referenceId: null, referenceNo: '', partyName: '', totalQty: 0 });
+            // Prevent reset if we are in the middle of a redirection setup
+            if (val && !this.isRedirected) {
+                this.gatePassForm.patchValue({ referenceId: null, referenceNo: '', partyName: '', totalQty: 0 });
+            }
         });
 
         this.route.queryParams.subscribe(params => {
@@ -63,24 +66,40 @@ export class OutwardGatePassComponent implements OnInit {
                 this.gatePassId = +params['id'];
                 this.loadGatePassData(this.gatePassId);
             } else if (params['type'] === 'purchase-return') {
+                this.isRedirected = true; // Set Flag
                 this.handlePurchaseReturnRedirection(params);
             }
         });
     }
 
     private handlePurchaseReturnRedirection(params: any) {
+        console.log('[OutwardGatePass] Handling Redirection - Raw Params:', params);
+
         setTimeout(() => {
-            // Set type without triggering reset
+            // 1. Set Type explicitly
             this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.PurchaseReturn, { emitEvent: false });
 
+            // 2. Extract Values safely
+            const refNo = params['refNo'] || '';
+            const partyName = params['partyName'] || '';
+            const qty = params['qty'] || 0;
+            const refId = params['refId'] || '';
+
+            console.log(`[OutwardGatePass] Patching Form: RefNo=${refNo}, Party=${partyName}, Qty=${qty}`);
+
+            // 3. Patch Values
             this.gatePassForm.patchValue({
-                referenceId: params['refId'] || '',
-                referenceNo: params['refNo'],
-                partyName: params['partyName'],
-                totalQty: params['qty']
+                referenceId: refId || '',
+                referenceNo: refNo,
+                partyName: partyName,
+                totalQty: qty
             });
+
+            // 4. Update UI - We use HTML [readonly] or [disabled] binding now
             this.cdr.detectChanges();
-        });
+
+            this.cdr.detectChanges();
+        }, 100); // Slight delay to ensure controls are ready
     }
 
     initForm() {
@@ -89,7 +108,7 @@ export class OutwardGatePassComponent implements OnInit {
             referenceNo: ['', Validators.required],
             referenceId: [null],
             partyName: ['', Validators.required],
-            vehicleNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{2}[-][0-9]{2}[-][A-Z]{1,2}[-][0-9]{4}$/i)]],
+            vehicleNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$/i)]],
             vehicleType: ['Truck', Validators.required],
             driverName: ['', Validators.required],
             driverPhone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],

@@ -66,9 +66,16 @@ export class PurchaseReturnForm implements OnInit {
   stockSearchText: string = '';
   expandedGrn: string | null = null; // Single expand behavior
   isLoadingStock: boolean = false;
+  selectedSupplierName: string = ''; // Store selected name directly
 
   onSupplierChange(supplierId: number) {
     if (!supplierId) return;
+
+    // Capture Name Immediately on Selection
+    const selected = this.suppliers.find(s => s.id == supplierId);
+    // FIX: HTML uses 'name', not 'supplierName'
+    this.selectedSupplierName = selected ? (selected.name || selected.supplierName) : '';
+    console.log('[PurchaseReturn] Selected Supplier:', this.selectedSupplierName);
 
     this.items.clear();
     this.tableDataSource = [];
@@ -293,8 +300,14 @@ export class PurchaseReturnForm implements OnInit {
       }))
     };
 
-    const supplierName = this.suppliers.find(s => s.id === rawData.supplierId)?.supplierName || '';
+    // Use the correctly stored name or fallback
+    const supplierName = this.selectedSupplierName && this.selectedSupplierName.trim() !== ''
+      ? this.selectedSupplierName
+      : (this.suppliers.find(s => s.id == rawData.supplierId)?.name || 'Unknown Supplier');
+
     const totalQty = itemsToReturn.reduce((sum: number, item: any) => sum + Number(item.returnQty), 0);
+
+    console.log(`[PurchaseReturn] Submitting: Supplier=${supplierName}, Qty=${totalQty}, ID=${rawData.supplierId}`);
 
     this.prService.savePurchaseReturn(payload).subscribe({
       next: (res) => {
