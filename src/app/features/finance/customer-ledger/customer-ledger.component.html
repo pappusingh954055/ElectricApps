@@ -40,9 +40,9 @@
                 </mat-form-field>
 
                 <button mat-flat-button color="primary" class="refresh-btn" (click)="updateReport()" [disabled]="isLoading || !customerId">
-                    <mat-icon *ngIf="!isLoading">refresh</mat-icon>
+                    <mat-icon *ngIf="!isLoading">search</mat-icon>
                     <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-                    Update
+                    Show Ledger
                 </button>
                 <!-- Button removed as per user request -->
             </div>
