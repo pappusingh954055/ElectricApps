@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 import { SaleOrderDetailDialog } from '../sale-order-detail-dialog/sale-order-detail-dialog';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 import { SaleOrderService } from '../service/saleorder.service';
+import { GatePassService } from '../gate-pass/services/gate-pass.service';
 import { SelectionModel } from '@angular/cdk/collections';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { FinanceService } from '../../finance/service/finance.service';
@@ -48,6 +49,7 @@ export class SoList implements OnInit {
   constructor(
     private inventoryService: InventoryService,
     private saleOrderService: SaleOrderService,
+    private gatePassService: GatePassService,
     private financeService: FinanceService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar
@@ -110,20 +112,24 @@ export class SoList implements OnInit {
     forkJoin({
       orders: this.saleOrderService.getSaleOrders(pageIndex, pageSize, sortField, sortDir, this.searchKey),
       pendingDues: this.financeService.getPendingCustomerDues().pipe(catchError(() => of([]))),
-      pendingSOs: this.saleOrderService.getPendingSOs().pipe(catchError(() => of([])))
+      gatePasses: this.gatePassService.getGatePassesPaged({ pageSize: 100, sortField: 'CreatedAt', sortOrder: 'desc' }).pipe(catchError(() => of({ data: [] })))
     }).subscribe({
       next: (res: any) => {
         const orderData = res.orders;
         const pendingDues = res.pendingDues;
-        const pendingSOs = res.pendingSOs || [];
+        const recentGatePasses = res.gatePasses?.data || [];
 
         this.totalRecords = orderData.totalCount;
         const items = orderData.data || [];
 
-        // 🚛 Dispatch Check: Mark orders that are still pending for gate pass
+        // 🚛 Dispatch Check: Mark orders that have an Outward Gate Pass already
         items.forEach((item: any) => {
-          // If it's in the pending list, it means gate pass is NOT yet created
-          item.isDispatchPending = pendingSOs.some((p: any) => p.id === item.id);
+          // If we find an Outward Gate Pass with matching ReferenceNo, then it's NOT pending anymore
+          const hasGatePass = recentGatePasses.some((gp: any) =>
+            gp.passType === 'Outward' &&
+            String(gp.referenceNo).trim() === String(item.soNumber).trim()
+          );
+          item.isDispatchPending = !hasGatePass;
         });
 
         // 🧠 FIFO LOGIC for Customer Payment Status (Mirroring GRN logic)

@@ -166,11 +166,20 @@
                 <mat-icon>receipt_long</mat-icon>
               </button>
 
+              <!-- 🚛 Truck Icon: Only when Confirmed AND Dispatch is Pending -->
               <button mat-icon-button color="warn" 
                       *ngIf="row.status?.toLowerCase() === 'confirmed' && row.isDispatchPending" 
                       (click)="createGatePass(row)" 
                       matTooltip="Generate Outward Gate Pass (Dispatch)">
                 <mat-icon style="color: #e91e63;">local_shipping</mat-icon>
+              </button>
+
+              <!-- ✅ Success Icon: When Confirmed AND Dispatch is DONE -->
+              <button mat-icon-button 
+                      *ngIf="row.status?.toLowerCase() === 'confirmed' && !row.isDispatchPending" 
+                      matTooltip="Dispatch Completed (Gate Pass Generated)"
+                      style="cursor: default;">
+                <mat-icon style="color: #4caf50;">check_circle</mat-icon>
               </button>
 
               <button mat-icon-button color="accent" 
