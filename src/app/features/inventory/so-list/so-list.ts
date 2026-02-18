@@ -275,6 +275,18 @@ export class SoList implements OnInit {
     });
   }
 
+  createGatePass(row: any) {
+    this.router.navigate(['/app/inventory/gate-pass/outward'], {
+      queryParams: {
+        type: 'sale-order',
+        refNo: row.soNumber,
+        refId: row.id,
+        partyName: row.customerName,
+        qty: row.totalQty || 0
+      }
+    });
+  }
+
   createNewOrder() {
     this.router.navigate(['/app/inventory/solist/add']);
   }

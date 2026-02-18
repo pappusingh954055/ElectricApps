@@ -10,6 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { GatePass, GatePassReferenceType, GatePassStatus } from '../models/gate-pass.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { POService } from '../../service/po.service';
+import { SaleReturnService } from '../../sale-return/services/sale-return.service';
 
 @Component({
     selector: 'app-inward-gate-pass',
@@ -26,6 +27,7 @@ export class InwardGatePassComponent implements OnInit {
     route = inject(ActivatedRoute);
     authService = inject(AuthService);
     poService = inject(POService);
+    srService = inject(SaleReturnService);
     loadingService = inject(LoadingService);
     cdr = inject(ChangeDetectorRef);
 
@@ -46,13 +48,21 @@ export class InwardGatePassComponent implements OnInit {
 
     // Dynamic POs from API
     availablePOs: any[] = [];
+    availableSaleReturns: any[] = [];
 
     vehicleTypes = ['Truck', 'Tempo', 'LCV', 'Other'];
 
     ngOnInit() {
         this.loadingService.setLoading(false);
         this.initForm();
-        this.loadPendingPOs();
+        this.loadPendingData();
+
+        this.gatePassForm.get('referenceType')?.valueChanges.subscribe(val => {
+            if (!this.isExternalRef) {
+                this.gatePassForm.patchValue({ referenceId: '', referenceNo: '', partyName: '', expectedQty: 0 });
+                this.referenceLabel = val === GatePassReferenceType.PurchaseOrder ? 'Link With PO No' : 'Sale Return No';
+            }
+        });
 
         this.route.queryParams.subscribe(params => {
             // Mode & ID handling
@@ -64,6 +74,10 @@ export class InwardGatePassComponent implements OnInit {
             // Sale Return Redirection Flow
             else if (params['refNo'] && params['type'] === 'sale-return') {
                 this.handleSaleReturnRedirection(params);
+            }
+            // Purchase Order Redirection Flow
+            else if (params['refNo'] && params['type'] === 'po') {
+                this.handlePORedirection(params);
             }
         });
     }
@@ -104,6 +118,31 @@ export class InwardGatePassComponent implements OnInit {
                 this.notificationShow(false, 'Failed to load Gate Pass data');
             }
         });
+    }
+
+    private handlePORedirection(params: any) {
+        this.isExternalRef = true;
+        this.referenceLabel = 'Link With PO No';
+        const refNo = params['refNo'];
+
+        const refIdControl = this.gatePassForm.get('referenceId');
+        if (refIdControl) {
+            refIdControl.clearValidators();
+            refIdControl.setErrors(null);
+        }
+
+        this.gatePassForm.patchValue({
+            referenceType: GatePassReferenceType.PurchaseOrder,
+            referenceId: params['refId'] ? String(params['refId']) : '',
+            referenceNo: refNo,
+            partyName: params['partyName'] || '',
+            expectedQty: params['qty'] || 0,
+            invoiceNo: `CH-${refNo.replace(/\//g, '-')}`
+        });
+
+        this.gatePassForm.get('invoiceNo')?.disable(); // Extra safety to make it readonly
+        this.gatePassForm.updateValueAndValidity();
+        this.cdr.detectChanges();
     }
 
     private handleSaleReturnRedirection(params: any) {
@@ -148,6 +187,7 @@ export class InwardGatePassComponent implements OnInit {
 
         this.gatePassForm = this.fb.group({
             // 1. Reference Selection
+            referenceType: [GatePassReferenceType.PurchaseOrder, Validators.required],
             referenceId: ['', Validators.required], // Holds internal ID of PO (String/GUID)
             referenceNo: ['', Validators.required], // Display No
             partyName: [{ value: '', disabled: true }], // Supplier Name
@@ -170,7 +210,7 @@ export class InwardGatePassComponent implements OnInit {
         });
     }
 
-    private loadPendingPOs() {
+    private loadPendingData() {
         this.poService.getPendingPOs().subscribe({
             next: (data) => {
                 this.availablePOs = data;
@@ -178,16 +218,36 @@ export class InwardGatePassComponent implements OnInit {
             },
             error: (err) => console.error('Error fetching pending POs', err)
         });
+
+        this.srService.getPendingSaleReturns().subscribe({
+            next: (data) => {
+                this.availableSaleReturns = data;
+                this.cdr.detectChanges();
+            },
+            error: (err) => console.error('Error fetching pending Sale Returns', err)
+        });
+    }
+
+    onSRSelected(srId: any) {
+        const selectedSR = this.availableSaleReturns.find(s => String(s.id) === String(srId));
+        if (selectedSR) {
+            this.gatePassForm.patchValue({
+                referenceNo: selectedSR.returnNumber,
+                partyName: selectedSR.customerName,
+                expectedQty: selectedSR.totalQty,
+                invoiceNo: selectedSR.returnNumber // For Sale Return, Return No is often the reference
+            });
+        }
     }
 
     onPOSelected(poId: any) {
         const selectedPO = this.availablePOs.find(p => String(p.id) === String(poId));
         if (selectedPO) {
             this.gatePassForm.patchValue({
-                referenceNo: selectedPO.poNo,
-                partyName: selectedPO.supplier,
+                referenceNo: selectedPO.poNumber,
+                partyName: selectedPO.supplierName,
                 expectedQty: selectedPO.expectedQty,
-                invoiceNo: `CH-${selectedPO.poNo.replace(/\//g, '-')}` // Auto-filling Challan No for PO
+                invoiceNo: `CH-${selectedPO.poNumber.replace(/\//g, '-')}` // Auto-filling Challan No for PO
             });
         }
     }
@@ -208,7 +268,7 @@ export class InwardGatePassComponent implements OnInit {
         const gatePassData: any = {
             id: this.gatePassId || 0,
             passType: 'Inward',
-            referenceType: this.referenceLabel === 'Sale Return No' ? GatePassReferenceType.SaleReturn : GatePassReferenceType.PurchaseOrder,
+            referenceType: formValue.referenceType,
             referenceId: formValue.referenceId && formValue.referenceId !== '0' ? String(formValue.referenceId) : '', // Ensure valid string or empty
             referenceNo: formValue.referenceNo,
             invoiceNo: formValue.invoiceNo,
@@ -245,7 +305,14 @@ export class InwardGatePassComponent implements OnInit {
                         isSuccess: true
                     }
                 }).afterClosed().subscribe(() => {
-                    this.router.navigate(['/app/inventory/gate-pass']); // Go to list after editing
+                    // Purchase Order flow: After Gate Pass, go to GRN
+                    if (!this.isEditMode && formValue.referenceType === GatePassReferenceType.PurchaseOrder) {
+                        this.router.navigate(['/app/inventory/grn-list/add'], {
+                            queryParams: { poId: formValue.referenceId }
+                        });
+                    } else {
+                        this.router.navigate(['/app/inventory/gate-pass']);
+                    }
                 });
             },
             error: (err) => {

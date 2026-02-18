@@ -33,7 +33,7 @@
                         </mat-select>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline" *ngIf="gatePassForm.get('referenceType')?.value === 2 && !isRedirected">
+                    <mat-form-field appearance="outline" *ngIf="gatePassForm.get('referenceType')?.value === 4 && !isRedirected">
                         <mat-label>Select Purchase Return</mat-label>
                         <mat-select (selectionChange)="onPRSelected($event.value)">
                             <mat-option *ngFor="let pr of availablePRs" [value]="pr.id">
@@ -42,7 +42,7 @@
                         </mat-select>
                     </mat-form-field>
 
-                    <mat-form-field appearance="outline" *ngIf="(gatePassForm.get('referenceType')?.value !== 3 && gatePassForm.get('referenceType')?.value !== 2) || isRedirected">
+                    <mat-form-field appearance="outline" *ngIf="(gatePassForm.get('referenceType')?.value !== 3 && gatePassForm.get('referenceType')?.value !== 4) || isRedirected">
                         <mat-label>Reference No</mat-label>
                         <input matInput formControlName="referenceNo" placeholder="Enter Ref No" [readonly]="isRedirected">
                     </mat-form-field>

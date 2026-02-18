@@ -80,5 +80,9 @@ export class SaleReturnService {
     getDashboardSummary(): Observable<any> {
         return this.api.get('SaleReturn/summary');
     }
+
+    getPendingSaleReturns(): Observable<any[]> {
+        return this.api.get<any[]>('SaleReturn/pending-returns');
+    }
 }
 

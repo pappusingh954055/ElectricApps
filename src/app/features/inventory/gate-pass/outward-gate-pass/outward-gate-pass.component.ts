@@ -66,10 +66,32 @@ export class OutwardGatePassComponent implements OnInit {
                 this.gatePassId = +params['id'];
                 this.loadGatePassData(this.gatePassId);
             } else if (params['type'] === 'purchase-return') {
-                this.isRedirected = true; // Set Flag
+                this.isRedirected = true;
                 this.handlePurchaseReturnRedirection(params);
+            } else if (params['type'] === 'sale-order') {
+                this.isRedirected = true;
+                this.handleSORedirection(params);
             }
         });
+    }
+
+    private handleSORedirection(params: any) {
+        setTimeout(() => {
+            this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.SaleOrder, { emitEvent: false });
+
+            const refNo = params['refNo'] || '';
+            const partyName = params['partyName'] || '';
+            const qty = params['qty'] || 0;
+            const refId = params['refId'] || '';
+
+            this.gatePassForm.patchValue({
+                referenceId: refId || '',
+                referenceNo: refNo,
+                partyName: partyName,
+                totalQty: qty
+            });
+            this.cdr.detectChanges();
+        }, 100);
     }
 
     private handlePurchaseReturnRedirection(params: any) {

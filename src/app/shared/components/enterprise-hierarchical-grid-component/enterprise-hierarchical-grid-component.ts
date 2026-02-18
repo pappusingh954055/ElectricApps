@@ -489,13 +489,7 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   }
 
   // Child Grid TS [cite: 2026-01-22]
-  onCreateGRN(row: any) {
-    // Hum child grid se event emit bhi kar sakte hain ya seedha navigate
-    // Sabse asan hai ki hum yahan se navigate kar jayein
-    this.router.navigate(['/app/inventory/grn-list/add'], {
-      queryParams: { poId: row.id }
-    });
-  }
+
 
   onPrintPO(row: any) {
     // Print ke liye hum aksar parent ko batate hain ya alag window open karte hain

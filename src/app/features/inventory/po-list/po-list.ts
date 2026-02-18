@@ -105,8 +105,19 @@ export class PoList implements OnInit {
         header: 'Date',
         sortable: true,
         isResizable: true,
-        width: 120,
-        cell: (row: any) => this.datePipe.transform(row.poDate, 'dd-MMM-yy hh:mm a', '+0530')
+        width: 140,
+        cell: (row: any) => {
+          try {
+            // Priority: Audit fields with time
+            const rawDate = row.CreatedAt || row.createdAt || row.CreatedDate || row.createdDate || row.poDate;
+            if (!rawDate) return '';
+
+            // Clear AM/PM format to avoid 24-hour confusion
+            return this.datePipe.transform(rawDate, 'dd-MMM-yy hh:mm a');
+          } catch {
+            return row.poDate || '';
+          }
+        }
       },
       {
         field: 'expectedDeliveryDate',
@@ -114,7 +125,11 @@ export class PoList implements OnInit {
         sortable: true,
         isResizable: true,
         width: 120,
-        cell: (row: any) => this.datePipe.transform(row.expectedDeliveryDate, 'MM/dd/yyyy')
+        cell: (row: any) => {
+          try {
+            return row.expectedDeliveryDate ? this.datePipe.transform(row.expectedDeliveryDate, 'MM/dd/yyyy') : '';
+          } catch { return row.expectedDeliveryDate || ''; }
+        }
       },
       { field: 'createdBy', header: 'Created By', sortable: true, isFilterable: true, isResizable: true, width: 150 },
       { field: 'supplierName', header: 'Supplier Name', sortable: true, isResizable: true, width: 150, isFilterable: true },
@@ -190,12 +205,13 @@ export class PoList implements OnInit {
       next: (res) => {
         console.log('API PO List Response:', res);
         const items = (res.data || []).map((item: any) => {
-          if (item.poDate && typeof item.poDate === 'string' && !item.poDate.includes('Z')) {
-            item.poDate += 'Z';
-          }
-          if (item.expectedDeliveryDate && typeof item.expectedDeliveryDate === 'string' && !item.expectedDeliveryDate.includes('Z')) {
-            item.expectedDeliveryDate += 'Z';
-          }
+          // Force UTC-to-Local conversion by ensuring 'Z' is present
+          // This fixes the 5.5 hour lag you are seeing (18:04 vs 23:34)
+          ['poDate', 'expectedDeliveryDate', 'CreatedAt', 'createdAt', 'CreatedDate', 'createdDate'].forEach(key => {
+            if (item[key] && typeof item[key] === 'string' && !item[key].includes('Z') && !item[key].includes('+')) {
+              item[key] = item[key] + 'Z';
+            }
+          });
           return item;
         });
         this.dataSource.data = items;
@@ -385,7 +401,7 @@ export class PoList implements OnInit {
         this.onPrintPO(row, 'PRINT');
         break;
       case 'CREATE_GRN':
-        this.onCreateGRN(row); // Approved PO ke liye truck icon logic
+        this.redirectToInwardGatePass(row);
         break;
       case 'DELETE':
         this.onDeleteSingleParentRecord(row);
@@ -396,11 +412,19 @@ export class PoList implements OnInit {
         break;
     }
   }
-  // 1. GRN Page par bhejta hai
-  onCreateGRN(row: any) {
-    console.log('Redirecting to GRN for PO:', row.poNumber);
-    this.router.navigate(['/app/inventory/grn-list/edit', row.id], {
-      state: { poData: row, mode: 'save' }
+  // 1. Inward Gate Pass Page par bhejta hai (User: PO se pehle Gate Pass banna chahiye)
+  redirectToInwardGatePass(row: any) {
+    console.log('--- REDIRECTING TO INWARD GATE PASS ---', row.poNumber);
+    const totalQty = row.items ? row.items.reduce((sum: number, item: any) => sum + (item.qty || 0), 0) : 0;
+
+    this.router.navigate(['/app/inventory/gate-pass/inward'], {
+      queryParams: {
+        type: 'po',
+        refNo: row.poNumber,
+        refId: row.id,
+        partyName: row.supplierName,
+        qty: totalQty
+      }
     });
   }
 

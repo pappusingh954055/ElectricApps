@@ -19,11 +19,26 @@
                 <div class="row">
                     <!-- Dropdown for manual selection (Normal Flow) -->
                     <mat-form-field appearance="outline" *ngIf="!isExternalRef">
-                        <mat-label>{{referenceLabel}}</mat-label>
-                        <mat-select formControlName="referenceId" (selectionChange)="onPOSelected($event.value)" required>
-                            <mat-option *ngFor="let po of availablePOs" [value]="po.id">{{po.poNo}} ({{po.supplier}})</mat-option>
+                        <mat-label>Reference Type</mat-label>
+                        <mat-select formControlName="referenceType">
+                            <mat-option *ngFor="let ref of referenceTypes" [value]="ref.id">{{ref.name}}</mat-option>
                         </mat-select>
-                        <mat-error *ngIf="gatePassForm.get('referenceId')?.hasError('required')">Select Reference</mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" *ngIf="!isExternalRef && gatePassForm.get('referenceType')?.value === 1">
+                        <mat-label>Select Purchase Order</mat-label>
+                        <mat-select formControlName="referenceId" (selectionChange)="onPOSelected($event.value)" required>
+                            <mat-option *ngFor="let po of availablePOs" [value]="po.id">{{po.poNumber}} ({{po.supplierName}})</mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="gatePassForm.get('referenceId')?.hasError('required')">Select PO</mat-error>
+                    </mat-form-field>
+
+                    <mat-form-field appearance="outline" *ngIf="!isExternalRef && gatePassForm.get('referenceType')?.value === 5">
+                        <mat-label>Select Sale Return</mat-label>
+                        <mat-select formControlName="referenceId" (selectionChange)="onSRSelected($event.value)" required>
+                            <mat-option *ngFor="let sr of availableSaleReturns" [value]="sr.id">{{sr.returnNumber}} ({{sr.customerName}})</mat-option>
+                        </mat-select>
+                        <mat-error *ngIf="gatePassForm.get('referenceId')?.hasError('required')">Select Sale Return</mat-error>
                     </mat-form-field>
 
                     <!-- Readonly Input for pre-filled reference (Redirection Flow) -->
@@ -33,7 +48,7 @@
                     </mat-form-field>
                     
                     <mat-form-field appearance="outline">
-                        <mat-label>Supplier Name</mat-label>
+                        <mat-label>Party Name</mat-label>
                         <input matInput formControlName="partyName" readonly placeholder="Auto-Filled">
                     </mat-form-field>
                 </div>
@@ -75,7 +90,7 @@
                     
                     <mat-form-field appearance="outline">
                         <mat-label>Invoice/Challan No</mat-label>
-                        <input matInput formControlName="invoiceNo" placeholder="Supplier Bill No" required>
+                        <input matInput formControlName="invoiceNo" placeholder="Supplier Bill No" required [readonly]="isExternalRef">
                         <mat-error *ngIf="gatePassForm.get('invoiceNo')?.hasError('required')">Mandatory</mat-error>
                     </mat-form-field>
 

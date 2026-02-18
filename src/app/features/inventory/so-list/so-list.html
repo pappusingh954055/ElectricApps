@@ -166,6 +166,13 @@
                 <mat-icon>receipt_long</mat-icon>
               </button>
 
+              <button mat-icon-button color="warn" 
+                      *ngIf="row.status?.toLowerCase() === 'confirmed'" 
+                      (click)="createGatePass(row)" 
+                      matTooltip="Generate Outward Gate Pass">
+                <mat-icon>exit_to_app</mat-icon>
+              </button>
+
               <button mat-icon-button color="accent" 
                       (click)="viewOrder(row)" 
                       matTooltip="View Order Details">
