@@ -176,9 +176,11 @@ export class SoList implements OnInit {
           });
         });
 
-        // Date Normalization & Mapping
-        this.totalSalesAmount = 0;
-        this.pendingDispatchCount = 0;
+        // 🎯 Global Stats from Backend (Ensures consistency across pages)
+        this.totalSalesAmount = orderData.totalSalesAmount || 0;
+        this.pendingDispatchCount = orderData.pendingDispatchCount || 0;
+
+        // We still calculate Unpaid locally for now because it depends on FIFO + Ledger
         this.unpaidOrdersCount = 0;
 
         let processedItems = items.map((item: any) => {
@@ -186,13 +188,7 @@ export class SoList implements OnInit {
             item.soDate += 'Z';
           }
 
-          // Aggregating Stats (from current page/view)
-          if (item.status?.toLowerCase() === 'confirmed') {
-            this.totalSalesAmount += item.grandTotal;
-          }
-          if (item.isDispatchPending && item.status?.toLowerCase() === 'confirmed') {
-            this.pendingDispatchCount++;
-          }
+          // Local aggregation for Unpaid (Note: this is still page-based but unavoidable without backend FIFO)
           if (item.paymentStatus === 'Unpaid' || item.paymentStatus === 'Partial') {
             this.unpaidOrdersCount++;
           }
