@@ -103,14 +103,14 @@ export class PoList implements OnInit {
 
   private initColumns() {
     this.poColumns = [
-      { field: 'poNumber', header: 'PO No.', sortable: true, isFilterable: true, isResizable: true, width: 150 },
-      { field: 'id', header: 'ID', sortable: true, isFilterable: true, visible: false, isResizable: true, width: 150 },
+      { field: 'poNumber', header: 'PO No.', sortable: true, isFilterable: true, isResizable: true, width: 135 },
+      { field: 'id', header: 'ID', sortable: true, isFilterable: true, visible: false, isResizable: true, width: 80 },
       {
         field: 'poDate',
         header: 'Date',
         sortable: true,
         isResizable: true,
-        width: 140,
+        width: 145,
         cell: (row: any) => {
           try {
             // Priority: Audit fields with time

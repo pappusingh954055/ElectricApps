@@ -1,24 +1,28 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { MatDialog } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
+import { FlatTreeControl } from '@angular/cdk/tree';
+import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
+import { ScrollingModule } from '@angular/cdk/scrolling';
+import { forkJoin } from 'rxjs';
+
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { RoleService } from '../../../core/services/role.service';
 import { MenuService } from '../../../core/services/menu.service';
 import { Role, RolePermission } from '../../../core/models/role.model';
 import { MenuItem } from '../../../core/models/menu-item.model';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
-import { FlatTreeControl } from '@angular/cdk/tree';
-import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
-import { ScrollingModule } from '@angular/cdk/scrolling';
+import { SummaryStat, SummaryStatsComponent } from '../../../shared/components/summary-stats-component/summary-stats-component';
+import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
   selector: 'app-role-permissions',
   standalone: true,
-  imports: [CommonModule, MaterialModule, FormsModule, ScrollingModule],
+  imports: [CommonModule, MaterialModule, FormsModule, ScrollingModule, SummaryStatsComponent],
   templateUrl: './role-permissions.component.html',
   styleUrls: ['./role-permissions.component.scss']
 })
@@ -27,6 +31,7 @@ export class RolePermissionsComponent implements OnInit {
   selectedRoleId: number | null = null;
   permissions: RolePermission[] = [];
   loading = false;
+  summaryStats: SummaryStat[] = [];
 
   displayedColumns = ['menu', 'canView', 'canAdd', 'canEdit', 'canDelete'];
 
@@ -63,35 +68,71 @@ export class RolePermissionsComponent implements OnInit {
   private menuService = inject(MenuService);
   private cdr = inject(ChangeDetectorRef);
   private dialog = inject(MatDialog);
+  private loadingService = inject(LoadingService);
 
   constructor() { }
 
   ngOnInit() {
-    this.loadRoles();
-    this.loadMenus();
+    this.initialLoad();
   }
 
-  loadRoles() {
-    this.roleService.getAllRoles().subscribe(roles => {
-      this.roles = roles;
-      this.cdr.detectChanges();
-    });
-  }
+  initialLoad() {
+    this.loading = true;
+    this.loadingService.setLoading(true);
 
-  loadMenus() {
-    this.menuService.getAllMenus().subscribe(menus => {
-      const menuTree = this.menuService.buildMenuTree(menus);
-      this.dataSource.data = this.menuService.sortMenus(menuTree);
-      this.cdr.detectChanges();
+    forkJoin({
+      roles: this.roleService.getAllRoles(),
+      menus: this.menuService.getAllMenus()
+    }).subscribe({
+      next: (data) => {
+        this.roles = data.roles;
+
+        const menuTree = this.menuService.buildMenuTree(data.menus);
+        this.dataSource.data = this.menuService.sortMenus(menuTree);
+
+        this.loading = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading initial data', err);
+        this.loading = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      }
     });
   }
 
   onRoleChange() {
     if (this.selectedRoleId) {
-      this.roleService.getRolePermissions(this.selectedRoleId).subscribe(perms => {
-        this.permissions = perms;
+      this.loading = true;
+      this.loadingService.setLoading(true);
 
+      this.roleService.getRolePermissions(this.selectedRoleId).subscribe({
+        next: (perms) => {
+          this.permissions = perms;
 
+          // Calculate Stats
+          const totalPermissions = perms.length;
+          const viewableMenus = perms.filter(p => p.canView).length;
+          const highPrivilege = perms.filter(p => p.canAdd || p.canDelete).length;
+
+          this.summaryStats = [
+            { label: 'Total Modules', value: totalPermissions, icon: 'apps', type: 'total' },
+            { label: 'View Access', value: viewableMenus, icon: 'visibility', type: 'active' },
+            { label: 'High Privileges', value: highPrivilege, icon: 'security', type: highPrivilege > 0 ? 'warning' : 'info' }
+          ];
+
+          this.loading = false;
+          this.loadingService.setLoading(false);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error(err);
+          this.loading = false;
+          this.loadingService.setLoading(false);
+          this.cdr.detectChanges();
+        }
       });
     }
   }
@@ -110,9 +151,11 @@ export class RolePermissionsComponent implements OnInit {
   savePermissions() {
     if (this.selectedRoleId) {
       this.loading = true;
+      this.loadingService.setLoading(true);
       this.roleService.updateRolePermissions(this.selectedRoleId, this.permissions).subscribe({
         next: () => {
           this.loading = false;
+          this.loadingService.setLoading(false);
           this.cdr.detectChanges();
           this.dialog.open(StatusDialogComponent, {
             width: '400px',
@@ -125,6 +168,7 @@ export class RolePermissionsComponent implements OnInit {
         },
         error: (err) => {
           this.loading = false;
+          this.loadingService.setLoading(false);
           this.cdr.detectChanges();
           let errorMessage = 'Something went wrong while saving permissions.';
           if (err.error && typeof err.error === 'string') {

@@ -1,0 +1,104 @@
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+
+  .stat-card {
+    border-radius: 12px;
+    border: none;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    mat-card-content {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px !important;
+      gap: 16px;
+      position: relative;
+    }
+
+    .stat-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      mat-icon {
+        font-size: 32px;
+        width: 32px;
+        height: 32px;
+      }
+    }
+
+    .stat-info {
+      display: flex;
+      flex-direction: column;
+
+      .label {
+        font-size: 0.8rem;
+        color: #64748b;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .value {
+        font-size: 1.75rem;
+        font-weight: 800;
+        color: #1e293b;
+        margin-top: 4px;
+      }
+    }
+
+    .stat-badge {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    /* Type Variants */
+    &.total {
+      background: linear-gradient(135deg, #ffffff 0%, #fffbf0 100%);
+      border-left: 6px solid #fbbf24;
+      .stat-icon { background: #fef3c7; color: #d97706; }
+    }
+
+    &.active, &.success {
+      background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+      border-left: 6px solid #22c55e;
+      .stat-icon { background: #dcfce7; color: #16a34a; }
+      .value { color: #15803d; }
+      .stat-badge { background: #dcfce7; color: #16a34a; }
+    }
+
+    &.info {
+      background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+      border-left: 6px solid #3b82f6;
+      .stat-icon { background: #dbeafe; color: #2563eb; }
+    }
+
+    &.overdue, &.warning {
+      background: linear-gradient(135deg, #fff5f5 0%, #fff0f0 100%);
+      border-left: 6px solid #ef4444;
+      .stat-icon { background: #fee2e2; color: #dc2626; }
+      .stat-badge { background: #fee2e2; color: #dc2626; }
+      .value { color: #dc2626; }
+    }
+  }
+}

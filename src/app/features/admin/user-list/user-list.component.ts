@@ -10,80 +10,96 @@ import { RoleService } from '../../../core/services/role.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 
+import { SummaryStat, SummaryStatsComponent } from '../../../shared/components/summary-stats-component/summary-stats-component';
+import { LoadingService } from '../../../core/services/loading.service';
+
 @Component({
   selector: 'app-user-list',
   standalone: true,
-  imports: [CommonModule, MaterialModule, FormsModule, ReactiveFormsModule],
+  imports: [CommonModule, MaterialModule, FormsModule, ReactiveFormsModule, SummaryStatsComponent],
   template: `
-    <div class="list-container">
+    <div class="list-container" [class.disabled-content]="loading">
       <div class="header-actions">
         <h1>User Management</h1>
         <button mat-raised-button class="main-add-btn" (click)="createUser()">
            <mat-icon>add</mat-icon> Create User
         </button>
       </div>
+
+      <app-summary-stats [stats]="summaryStats" [isLoading]="loading"></app-summary-stats>
       
-      <div class="grid-wrapper">
-        <table mat-table [dataSource]="dataSource">
-          <!-- Username Column -->
-          <ng-container matColumnDef="userName">
-            <th mat-header-cell *matHeaderCellDef> Username </th>
-            <td mat-cell *matCellDef="let element" class="username-cell"> {{element.userName}} </td>
-          </ng-container>
+      <div class="table-container-wrapper">
+        <div class="grid-wrapper">
+          <table mat-table [dataSource]="dataSource">
+            <!-- Username Column -->
+            <ng-container matColumnDef="userName">
+              <th mat-header-cell *matHeaderCellDef> Username </th>
+              <td mat-cell *matCellDef="let element" class="username-cell"> {{element.userName}} </td>
+            </ng-container>
 
-          <!-- Email Column -->
-          <ng-container matColumnDef="email">
-            <th mat-header-cell *matHeaderCellDef> Email </th>
-            <td mat-cell *matCellDef="let element"> {{element.email}} </td>
-          </ng-container>
+            <!-- Email Column -->
+            <ng-container matColumnDef="email">
+              <th mat-header-cell *matHeaderCellDef> Email </th>
+              <td mat-cell *matCellDef="let element"> {{element.email}} </td>
+            </ng-container>
 
-          <!-- Roles Column -->
-          <ng-container matColumnDef="roles">
-            <th mat-header-cell *matHeaderCellDef> Roles </th>
-            <td mat-cell *matCellDef="let element"> 
-              <div class="role-chips">
-                 <span *ngFor="let role of element.roles" class="role-badge">{{role}}</span>
-              </div>
-            </td>
-          </ng-container>
+            <!-- Roles Column -->
+            <ng-container matColumnDef="roles">
+              <th mat-header-cell *matHeaderCellDef> Roles </th>
+              <td mat-cell *matCellDef="let element"> 
+                <div class="role-chips">
+                   <span *ngFor="let role of element.roles" class="role-badge">{{role}}</span>
+                </div>
+              </td>
+            </ng-container>
 
-          <!-- Status Column -->
-          <ng-container matColumnDef="status">
-            <th mat-header-cell *matHeaderCellDef> Status </th>
-            <td mat-cell *matCellDef="let element">
-              <div class="status-wrapper">
-                <mat-slide-toggle [checked]="element.isActive" (change)="toggleStatus(element, $event.checked)" color="primary">
-                  <span class="status-text" [class.active]="element.isActive">{{element.isActive ? 'Active' : 'Inactive'}}</span>
-                </mat-slide-toggle>
-              </div>
-            </td>
-          </ng-container>
+            <!-- Status Column -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef> Status </th>
+              <td mat-cell *matCellDef="let element">
+                <div class="status-wrapper">
+                  <mat-slide-toggle [checked]="element.isActive" (change)="toggleStatus(element, $event.checked)" color="primary">
+                    <span class="status-text" [class.active]="element.isActive">{{element.isActive ? 'Active' : 'Inactive'}}</span>
+                  </mat-slide-toggle>
+                </div>
+              </td>
+            </ng-container>
 
-          <tr mat-header-row *matHeaderRowDef="displayedColumns" sticky></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="user-row"></tr>
-        </table>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns" sticky></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="user-row"></tr>
+          </table>
+        </div>
+        <mat-paginator [pageSizeOptions]="[10, 20, 50]" 
+                       showFirstLastButtons 
+                       class="user-paginator">
+        </mat-paginator>
       </div>
-      <mat-paginator [pageSizeOptions]="[10, 20, 50]" 
-                     showFirstLastButtons 
-                     class="user-paginator">
-      </mat-paginator>
     </div>
   `,
   styles: [`
+    .disabled-content {
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.5;
+      filter: blur(2px);
+    }
+
     :host {
       display: flex;
       flex-direction: column;
-      height: 100%;
+      height: calc(100vh - 64px); 
       overflow: hidden;
+      padding: 4px 20px 20px 20px;
+      box-sizing: border-box;
+      background-color: #f8fafc;
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
     .list-container {
-      padding: 24px;
-      background-color: #f8fafc;
-      height: 100%;
       display: flex;
       flex-direction: column;
+      height: 100%;
+      min-height: 0;
       overflow: hidden;
     }
 
@@ -91,56 +107,54 @@ import { MatPaginator } from '@angular/material/paginator';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
+      margin-bottom: 12px;
       flex-shrink: 0;
 
       h1 {
-        margin: 0;
-        font-size: 24px;
+        font-size: 1.5rem;
         font-weight: 700;
         color: #1e293b;
-        letter-spacing: -0.02em;
+        letter-spacing: -0.5px;
+        margin: 0;
       }
     }
 
     .main-add-btn {
       background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
       color: white !important;
-      box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39) !important;
-      border-radius: 12px !important;
+      box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.3) !important;
+      border-radius: 10px !important;
       font-weight: 600 !important;
-      letter-spacing: 0.5px !important;
-      height: 42px !important;
-      padding: 0 20px !important;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      white-space: nowrap !important;
-      border: none;
+      height: 40px !important;
+      padding: 0 16px !important;
+      transition: all 0.3s ease !important;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4) !important;
+      }
       
       mat-icon {
         margin-right: 8px;
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
       }
+    }
 
-      &:hover {
-        transform: translateY(-2px) scale(1.02);
-        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
-      }
+    .table-container-wrapper {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 
     .grid-wrapper {
       flex: 1;
       overflow: auto;
-      background: white;
-      border-radius: 16px 16px 0 0;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-      border: 1px solid #e2e8f0;
-      border-bottom: none;
-
+      
       table {
         width: 100%;
         border-collapse: separate;
@@ -210,10 +224,7 @@ import { MatPaginator } from '@angular/material/paginator';
     }
 
     .user-paginator {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 0 0 16px 16px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      border-top: 1px solid #e2e8f0;
     }
   `]
 })
@@ -226,19 +237,45 @@ export class UserListComponent implements OnInit {
   constructor(
     private userService: UserService,
     private dialog: MatDialog,
-    private roleService: RoleService
+    private roleService: RoleService,
+    private loadingService: LoadingService
   ) { }
+
+  summaryStats: SummaryStat[] = [];
+  loading = true;
 
   ngOnInit() {
     this.loadUsers();
   }
 
   loadUsers() {
-    this.userService.getAllUsers().subscribe(users => {
-      this.dataSource.data = users;
-      setTimeout(() => {
-        this.dataSource.paginator = this.paginator;
-      });
+    this.loading = true;
+    this.loadingService.setLoading(true);
+    this.userService.getAllUsers().subscribe({
+      next: (users) => {
+        this.dataSource.data = users;
+
+        // Calculate Stats
+        const totalUsers = users.length;
+        const activeUsers = users.filter(u => u.isActive).length;
+        const adminUsers = users.filter(u => u.roles.includes('Admin')).length;
+
+        this.summaryStats = [
+          { label: 'Total Users', value: totalUsers, icon: 'group', type: 'total' },
+          { label: 'Active Users', value: activeUsers, icon: 'how_to_reg', type: 'active' },
+          { label: 'Admins', value: adminUsers, icon: 'admin_panel_settings', type: 'info' }
+        ];
+
+        this.loading = false;
+        this.loadingService.setLoading(false);
+        setTimeout(() => {
+          this.dataSource.paginator = this.paginator;
+        });
+      },
+      error: () => {
+        this.loading = false;
+        this.loadingService.setLoading(false);
+      }
     });
   }
 

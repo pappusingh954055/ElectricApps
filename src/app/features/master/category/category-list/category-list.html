@@ -1,29 +1,34 @@
-<div class="list-container" [class.disabled-content]="isDashboardLoading">
+<div class="container-fluid" [class.disabled-content]="isDashboardLoading">
+  
   <div class="header-actions">
-    <h1>All Categories</h1>
-    <div class="d-flex gap-3">
-      <button *ngIf="selectedRows.length > 0" mat-raised-button color="warn" (click)="confirmBulkDelete()" [disabled]="loading">
+    <h1 class="page-title m-0">All Categories</h1>
+    <div class="d-flex gap-2">
+      <button *ngIf="selectedRows.length > 0" mat-raised-button color="warn" class="delete-action-btn" (click)="confirmBulkDelete()" [disabled]="loading">
         <mat-icon>delete_sweep</mat-icon>
         Delete Selected ({{selectedRows.length}})
       </button>
-      <button *ngIf="selectedRows.length === 0" mat-raised-button class="main-add-btn" routerLink="/app/master/categories/add">
+      <button mat-raised-button class="main-add-btn" routerLink="/app/master/categories/add" [disabled]="loading">
         <mat-icon>add</mat-icon>
         New Category
       </button>
     </div>
   </div>
 
-  <div class="grid-wrapper">
-    <app-server-datagrid
-      gridKey="category-grid"
-      [columns]="columns"
-      [data]="data"
-      [totalCount]="totalCount"
-      [loading]="loading && !isDashboardLoading"
-      (loadData)="loadCategories($event)"
-      (selectionChange)="onSelectionChange($event)"
-      (editAction)="onEdit($event)"
-      (delete)="deleteCategory($event[0])">
-    </app-server-datagrid>
+  <app-summary-stats [stats]="summaryStats" [isLoading]="isDashboardLoading"></app-summary-stats>
+
+  <div class="list-container">
+    <div class="grid-wrapper">
+      <app-server-datagrid
+        gridKey="category-grid"
+        [columns]="columns"
+        [data]="data"
+        [totalCount]="totalCount"
+        [loading]="loading && !isDashboardLoading"
+        (loadData)="loadCategories($event)"
+        (selectionChange)="onSelectionChange($event)"
+        (editAction)="onEdit($event)"
+        (delete)="deleteCategory($event[0])">
+      </app-server-datagrid>
+    </div>
   </div>
 </div>

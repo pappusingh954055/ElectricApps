@@ -1,111 +1,122 @@
-<div class="menu-management-container">
-  <div class="header-section">
-    <div class="title-group">
-      <h1>Menu Management</h1>
-      <p>Configure navigation menus and hierarchy</p>
+<div class="container-fluid" [class.disabled-content]="loading">
+  <div class="header-actions">
+    <div>
+      <h1 class="page-title m-0">Menu Management</h1>
+      <p class="subtitle m-0">Configure navigation menus and hierarchy.</p>
     </div>
-    <button mat-raised-button color="primary" class="add-btn" (click)="openMenuDialog()">
+    <button mat-raised-button class="main-add-btn" (click)="openMenuDialog()">
       <mat-icon>add</mat-icon>
       Create Menu
     </button>
   </div>
 
-  <div class="filter-card">
-    <div class="search-box">
-      <mat-icon>search</mat-icon>
-      <input type="text" placeholder="Search menus..." (keyup)="applyFilter($event)" #input>
-    </div>
-  </div>
+  <app-summary-stats [stats]="summaryStats" [isLoading]="loading"></app-summary-stats>
 
-  <div class="table-container virtual-scroll-grid mat-elevation-z0">
-    <div class="grid-header sticky-header" 
-         [style.grid-template-columns]="getGridTemplate()"
-         matSort 
-         cdkDropList 
-         cdkDropListOrientation="horizontal" 
-         (cdkDropListDropped)="dropColumn($event)">
-      
-      <div *ngFor="let col of displayedColumns" 
-           class="grid-cell drag-header" 
-           [ngClass]="getColumnClass(col) + ' ' + col"
-           cdkDrag
-           [mat-sort-header]="col"
-           [disabled]="col === 'actions'">
-        <div class="header-content">
-          <mat-icon *ngIf="col !== 'actions'" class="drag-handle" cdkDragHandle>drag_indicator</mat-icon>
-          <span>{{getColumnLabel(col)}}</span>
-        </div>
-        
-        <!-- Resize Handle -->
-        <div class="resize-handle" 
-             *ngIf="col !== 'actions'"
-             (mousedown)="onResizeColumn($event, col)">
-        </div>
-      </div>
+  <div class="list-container">
+    <div class="table-toolbar">
+      <mat-form-field appearance="outline" class="search-field compact-input">
+        <mat-label>Search Menu</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput (keyup)="applyFilter($event)" placeholder="Search menus..." #input>
+      </mat-form-field>
     </div>
 
-    <!-- Virtual Viewport -->
-    <cdk-virtual-scroll-viewport itemSize="72" class="viewport">
-      <div *cdkVirtualFor="let row of visibleData$ | async" 
-           class="grid-row menu-row"
-           [style.grid-template-columns]="getGridTemplate()">
-        
-        <ng-container *ngFor="let col of displayedColumns">
+    <div class="grid-wrapper">
+       <div class="table-container virtual-scroll-grid mat-elevation-z0">
+        <!-- Sticky Header with Grid Layout -->
+        <div class="grid-header sticky-header" 
+             [style.grid-template-columns]="getGridTemplate()"
+             cdkDropList 
+             cdkDropListOrientation="horizontal" 
+             (cdkDropListDropped)="dropColumn($event)">
           
-          <!-- ID Column -->
-          <div class="grid-cell col-id" *ngIf="col === 'id'">
-            <span class="id-badge">#{{row.id}}</span>
+          <div *ngFor="let col of displayedColumns" 
+               class="grid-cell drag-header" 
+               [class]="getColumnClass(col)"
+               cdkDrag
+               matSort
+               [mat-sort-header]="col"
+               [cdkDragDisabled]="col === 'actions'"> <!-- Prevent dragging actions column -->
+            
+            <div class="header-content">
+              <!-- Drag Handle Icon -->
+              <mat-icon *ngIf="col !== 'actions'" class="drag-handle" cdkDragHandle>drag_indicator</mat-icon>
+              <span>{{getColumnLabel(col)}}</span>
+            </div>
+            
+            <!-- Resize Handle -->
+            <div class="resize-handle" 
+                 *ngIf="col !== 'actions'"
+                 (mousedown)="onResizeColumn($event, col)">
+            </div>
           </div>
+        </div>
 
-          <!-- Title Column -->
-          <div class="grid-cell col-title" *ngIf="col === 'title'">
-            <div class="menu-info">
-              <div class="icon-box">
-                <mat-icon>{{row.icon || 'folder'}}</mat-icon>
+        <!-- Virtual Viewport -->
+        <cdk-virtual-scroll-viewport itemSize="48" class="viewport"> <!-- Reduced itemSize for compactness -->
+          <div *cdkVirtualFor="let row of dataSource.connect() | async" 
+               class="grid-row menu-row"
+               [style.grid-template-columns]="getGridTemplate()">
+             
+            <!-- Loop through columns just like header -->
+            <ng-container *ngFor="let col of displayedColumns">
+              
+              <!-- ID Column -->
+              <div class="grid-cell col-id" *ngIf="col === 'id'">
+                <span class="id-badge">#{{row.id}}</span>
               </div>
-              <span class="menu-title">{{row.title}}</span>
-            </div>
+
+              <!-- Title Column -->
+              <div class="grid-cell col-title" *ngIf="col === 'title'">
+                <div class="menu-info">
+                  <div class="icon-box">
+                    <mat-icon>{{row.icon || 'folder'}}</mat-icon>
+                  </div>
+                  <span class="menu-title">{{row.title}}</span>
+                </div>
+              </div>
+
+              <!-- URL Column -->
+              <div class="grid-cell col-url" *ngIf="col === 'url'">
+                <code class="url-code" *ngIf="row.url">{{row.url}}</code>
+                <span class="no-url" *ngIf="!row.url">--</span>
+              </div>
+
+              <!-- Parent Column -->
+              <div class="grid-cell col-parent" *ngIf="col === 'parentId'">
+                <span class="parent-chip" *ngIf="row.parentId">
+                  {{ getParentTitle(row.parentId) }}
+                </span>
+                <span class="root-chip" *ngIf="!row.parentId">Root</span>
+              </div>
+
+              <!-- Order Column -->
+              <div class="grid-cell col-order" *ngIf="col === 'order'">
+                <span class="order-badge">{{row.order}}</span>
+              </div>
+
+              <!-- Actions Column -->
+              <div class="grid-cell col-actions" *ngIf="col === 'actions'">
+                <div class="action-buttons">
+                  <button mat-icon-button (click)="openMenuDialog(row)" matTooltip="Edit" class="edit-btn">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="deleteMenu(row)" matTooltip="Delete" class="delete-btn">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                </div>
+              </div>
+
+            </ng-container>
           </div>
 
-          <!-- URL Column -->
-          <div class="grid-cell col-url" *ngIf="col === 'url'">
-            <code class="url-code" *ngIf="row.url">{{row.url}}</code>
-            <span class="no-url" *ngIf="!row.url">--</span>
+          <!-- No Data State -->
+          <div *ngIf="dataSource.data.length === 0" class="no-data-card">
+            <mat-icon>search_off</mat-icon>
+            <p>No menu items found.</p>
           </div>
-
-          <!-- Parent Column -->
-          <div class="grid-cell col-parent" *ngIf="col === 'parentId'">
-            <span class="parent-chip" *ngIf="row.parentId">
-              {{ getParentTitle(row.parentId) }}
-            </span>
-            <span class="root-chip" *ngIf="!row.parentId">Root</span>
-          </div>
-
-          <!-- Order Column -->
-          <div class="grid-cell col-order" *ngIf="col === 'order'">
-            <span class="order-badge">{{row.order}}</span>
-          </div>
-
-          <!-- Actions Column -->
-          <div class="grid-cell col-actions" *ngIf="col === 'actions'">
-            <div class="action-buttons">
-              <button mat-icon-button (click)="openMenuDialog(row)" matTooltip="Edit" class="edit-btn">
-                <mat-icon>edit</mat-icon>
-              </button>
-              <button mat-icon-button (click)="deleteMenu(row)" matTooltip="Delete" class="delete-btn">
-                <mat-icon>delete</mat-icon>
-              </button>
-            </div>
-          </div>
-
-        </ng-container>
+        </cdk-virtual-scroll-viewport>
       </div>
-
-      <!-- No Data State -->
-      <div *ngIf="(visibleData$ | async)?.length === 0" class="no-data-card">
-        <mat-icon>search_off</mat-icon>
-        <p>No menu items found matching your search "{{input.value}}"</p>
-      </div>
-    </cdk-virtual-scroll-viewport>
+    </div>
   </div>
 </div>

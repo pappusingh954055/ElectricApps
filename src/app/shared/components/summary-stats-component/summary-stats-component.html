@@ -1,0 +1,14 @@
+<div class="stats-grid" *ngIf="!isLoading">
+  <mat-card *ngFor="let stat of stats" class="stat-card" [ngClass]="stat.type">
+    <mat-card-content>
+      <div class="stat-icon">
+        <mat-icon>{{ stat.icon }}</mat-icon>
+      </div>
+      <div class="stat-info">
+        <span class="label">{{ stat.label }}</span>
+        <span class="value">{{ stat.value }}</span>
+      </div>
+      <div class="stat-badge" *ngIf="stat.badge">{{ stat.badge }}</div>
+    </mat-card-content>
+  </mat-card>
+</div>

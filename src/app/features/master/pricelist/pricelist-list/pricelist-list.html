@@ -1,32 +1,36 @@
-<div class="list-container" [class.disabled-content]="isDashboardLoading">
+<div class="container-fluid" [class.disabled-content]="isDashboardLoading">
   <div class="header-actions">
-    <h1>All Price Lists</h1>
-    <div class="d-flex gap-3">
-      <button *ngIf="selectedRows.length > 0" mat-raised-button color="warn" (click)="confirmBulkDelete()" [disabled]="loading">
+    <h1 class="page-title m-0">All Price Lists</h1>
+    <div class="d-flex gap-2">
+      <button *ngIf="selectedRows.length > 0" mat-raised-button color="warn" class="delete-action-btn" (click)="confirmBulkDelete()" [disabled]="loading">
         <mat-icon>delete_sweep</mat-icon>
         Delete Selected ({{selectedRows.length}})
       </button>
-      <button *ngIf="selectedRows.length === 0"mat-raised-button class="main-add-btn" (click)="openCreatePage()" [disabled]="loading">
+      <button mat-raised-button class="main-add-btn" (click)="openCreatePage()" [disabled]="loading">
         <mat-icon>add</mat-icon>
-        New List
+        New Price List
       </button>
     </div>
   </div>
+
+  <app-summary-stats [stats]="summaryStats" [isLoading]="isDashboardLoading"></app-summary-stats>
    
-  <div class="grid-wrapper">
-    <app-pricelist-hierarchical-grid 
-      gridKey="pricelist-grid"
-      [columns]="columns"
-      [childColumns]="childColumns" 
-      [data]="data" 
-      [totalCount]="totalCount" 
-      [loading]="loading && !isDashboardLoading"
-      (loadData)="loadPriceLists($event)" 
-      (selectionChange)="onSelectionChange($event)"
-      (delete)="deletePriceList($event)"
-      (editAction)="onEditClicked($event)"
-      (rowExpand)="onRowExpand($event)"
-      (deleteChildRow)="onDeletePriceListItem($event)">
-    </app-pricelist-hierarchical-grid>
+  <div class="list-container">
+    <div class="grid-wrapper">
+      <app-pricelist-hierarchical-grid 
+        gridKey="pricelist-grid"
+        [columns]="columns"
+        [childColumns]="childColumns" 
+        [data]="data" 
+        [totalCount]="totalCount" 
+        [loading]="loading && !isDashboardLoading"
+        (loadData)="loadPriceLists($event)" 
+        (selectionChange)="onSelectionChange($event)"
+        (delete)="deletePriceList($event)"
+        (editAction)="onEditClicked($event)"
+        (rowExpand)="onRowExpand($event)"
+        (deleteChildRow)="onDeletePriceListItem($event)">
+      </app-pricelist-hierarchical-grid>
+    </div>
   </div>
 </div>

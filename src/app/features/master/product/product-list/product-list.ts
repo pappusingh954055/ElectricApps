@@ -12,16 +12,18 @@ import { GridRequest } from '../../../../shared/models/grid-request.model';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { LoadingService } from '../../../../core/services/loading.service';
+import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, MaterialModule, ServerDatagridComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, MaterialModule, ServerDatagridComponent, SummaryStatsComponent],
   providers: [DatePipe],
   templateUrl: './product-list.html',
   styleUrl: './product-list.scss',
 })
 export class ProductList implements OnInit {
+  summaryStats: SummaryStat[] = [];
   private route = inject(ActivatedRoute);
 
   loading = false;
@@ -118,6 +120,22 @@ export class ProductList implements OnInit {
       next: (res: any) => {
         this.data = this.isLowStockFilterActive ? (res as any) : res.items;
         this.totalCount = this.isLowStockFilterActive ? this.data.length : res.totalCount;
+
+        // Calculate Low Stock Count
+        const lowStockCount = this.data.filter(p => p.currentStock <= p.minStock).length;
+
+        // Update Summary Stats
+        this.summaryStats = [
+          { label: 'Total Products', value: this.totalCount, icon: 'inventory_2', type: 'total' },
+          {
+            label: 'Low Stock',
+            value: lowStockCount,
+            icon: 'warning',
+            type: lowStockCount > 0 ? 'overdue' : 'active',
+            badge: lowStockCount > 0 ? 'Action Required' : 'Healthy'
+          },
+          { label: 'Organization', value: 'Master Data', icon: 'account_tree', type: 'info' }
+        ];
 
         this.loading = false;
 

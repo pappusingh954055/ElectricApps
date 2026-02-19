@@ -12,17 +12,20 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { LoadingService } from '../../../../core/services/loading.service';
+import { ActionConfirmDialog } from '../../../../shared/components/action-confirm-dialog/action-confirm-dialog';
+import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
 import { inject } from '@angular/core';
 
 @Component({
   selector: 'app-pricelist-list',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, MaterialModule, PricelistHierarchicalGridComponent],
+  imports: [CommonModule, ReactiveFormsModule, MaterialModule, PricelistHierarchicalGridComponent, SummaryStatsComponent],
   providers: [DatePipe],
   templateUrl: './pricelist-list.html',
   styleUrl: './pricelist-list.scss',
 })
 export class PricelistList implements OnInit {
+  summaryStats: SummaryStat[] = [];
 
   columns = [
     { field: 'name', header: 'Price List Name', sortable: true, width: 300, visible: true },
@@ -123,6 +126,17 @@ export class PricelistList implements OnInit {
         }));
 
         this.totalCount = res.totalCount || this.data.length;
+
+        // Calculate Active Count
+        const activeCount = this.data.filter(p => p.isactive).length;
+
+        // Update Summary Stats
+        this.summaryStats = [
+          { label: 'Total Price Lists', value: this.totalCount, icon: 'list_alt', type: 'total' },
+          { label: 'Active', value: activeCount, icon: 'check_circle', type: 'active' },
+          { label: 'Organization', value: 'Master Data', icon: 'folder_open', type: 'info' }
+        ];
+
         this.loading = false;
 
         // Turn off global loader on first load

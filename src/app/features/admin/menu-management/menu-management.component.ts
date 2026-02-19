@@ -14,15 +14,21 @@ import { StatusDialogComponent } from '../../../shared/components/status-dialog-
 import { MenuFormDialogComponent } from './menu-form-dialog/menu-form-dialog.component';
 // Trigger re-build
 
+import { SummaryStat, SummaryStatsComponent } from '../../../shared/components/summary-stats-component/summary-stats-component';
+import { LoadingService } from '../../../core/services/loading.service';
+
 @Component({
     selector: 'app-menu-management',
     standalone: true,
-    imports: [CommonModule, MaterialModule, MatTableModule, MatPaginatorModule, MatSortModule, MatDialogModule, ScrollingModule, DragDropModule],
+    imports: [CommonModule, MaterialModule, MatTableModule, MatPaginatorModule, MatSortModule, MatDialogModule, ScrollingModule, DragDropModule, SummaryStatsComponent],
     templateUrl: './menu-management.component.html',
     styleUrl: './menu-management.component.scss'
 })
 export class MenuManagementComponent implements OnInit, AfterViewInit {
     displayedColumns: string[] = ['id', 'title', 'url', 'parentId', 'order', 'actions'];
+    summaryStats: SummaryStat[] = [];
+    loading = false;
+
     columnWidths: { [key: string]: number } = {
         'id': 80,
         'title': 250,
@@ -66,7 +72,8 @@ export class MenuManagementComponent implements OnInit, AfterViewInit {
 
     constructor(
         private menuService: MenuService,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private loadingService: LoadingService
     ) { }
 
     ngOnInit(): void {
@@ -78,9 +85,32 @@ export class MenuManagementComponent implements OnInit, AfterViewInit {
     }
 
     loadMenus(): void {
-        this.menuService.getAllMenus().subscribe(menus => {
-            this.allMenus = menus;
-            this.dataSource.data = menus;
+        this.loading = true;
+        this.loadingService.setLoading(true);
+        this.menuService.getAllMenus().subscribe({
+            next: (menus) => {
+                this.allMenus = menus;
+                this.dataSource.data = menus;
+
+                // Calculate Stats
+                const totalMenus = menus.length;
+                const rootMenus = menus.filter(m => !m.parentId).length;
+                const subMenus = menus.filter(m => m.parentId).length;
+
+                this.summaryStats = [
+                    { label: 'Total Modules', value: totalMenus, icon: 'apps', type: 'total' },
+                    { label: 'Root Headers', value: rootMenus, icon: 'view_list', type: 'active' },
+                    { label: 'Sub Items', value: subMenus, icon: 'subdirectory_arrow_right', type: 'info' }
+                ];
+
+                this.loading = false;
+                this.loadingService.setLoading(false);
+            },
+            error: (err) => {
+                console.error(err);
+                this.loading = false;
+                this.loadingService.setLoading(false);
+            }
         });
     }
 

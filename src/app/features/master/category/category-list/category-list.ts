@@ -17,16 +17,19 @@ import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { LoadingService } from '../../../../core/services/loading.service';
+import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
 
 @Component({
   selector: 'app-category-list',
   imports: [CommonModule,
     ReactiveFormsModule, MaterialModule, ServerDatagridComponent, RouterLink,
+    SummaryStatsComponent
   ],
   templateUrl: './category-list.html',
   styleUrl: './category-list.scss',
 })
 export class CategoryList implements OnInit {
+  summaryStats: SummaryStat[] = [];
 
   constructor(private cdr: ChangeDetectorRef,
     private router: Router, private dialog: MatDialog) { }
@@ -40,6 +43,11 @@ export class CategoryList implements OnInit {
   filteredColumns: GridColumn[] = [];
   data: CategoryGridDto[] = [];
   totalCount = 0;
+
+  // Summary Stats
+  totalCategories = 0;
+  activeCategories = 0;
+  inactiveCategories = 0;
 
   selectedRows: any[] = [];
   lastRequest!: GridRequest;
@@ -98,6 +106,14 @@ export class CategoryList implements OnInit {
       next: res => {
         this.data = res.items;
         this.totalCount = res.totalCount;
+
+        // Update Summary Stats
+        this.summaryStats = [
+          { label: 'Total Categories', value: this.totalCount, icon: 'category', type: 'total' },
+          { label: 'Active Status', value: this.totalCount > 0 ? 'Managed' : 'None', icon: 'verified', type: 'active' },
+          { label: 'Organization', value: 'Master Data', icon: 'inventory_2', type: 'info' }
+        ];
+
         this.loading = false;
 
         // Turn off global loader on first load

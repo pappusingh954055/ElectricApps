@@ -18,17 +18,16 @@ import { GridRequest } from '../../../../shared/models/grid-request.model';
 import { ApiResultDialog } from '../../../shared/api-result-dialog/api-result-dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { LoadingService } from '../../../../core/services/loading.service';
-
-
-
+import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
 
 @Component({
   selector: 'app-subcategory-list',
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink, ServerDatagridComponent],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink, ServerDatagridComponent, SummaryStatsComponent],
   templateUrl: './subcategory-list.html',
   styleUrl: './subcategory-list.scss',
 })
 export class SubcategoryList implements OnInit, OnChanges {
+  summaryStats: SummaryStat[] = [];
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -103,6 +102,14 @@ export class SubcategoryList implements OnInit, OnChanges {
         this.data = res.items;
         console.log(this.data);
         this.totalCount = res.totalCount;
+
+        // Update Summary Stats
+        this.summaryStats = [
+          { label: 'Total Subcategories', value: this.totalCount, icon: 'category', type: 'total' },
+          { label: 'Active Status', value: this.totalCount > 0 ? 'Managed' : 'None', icon: 'verified', type: 'active' },
+          { label: 'Organization', value: 'Master Data', icon: 'inventory_2', type: 'info' }
+        ];
+
         this.loading = false;
 
         // Turn off global loader on first load

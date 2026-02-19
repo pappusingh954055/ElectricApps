@@ -16,15 +16,48 @@
     </div>
   </div>
 
-  <mat-card class="content-card mat-elevation-z0" style="position: relative; min-height: 400px;">
+  <div class="stats-grid" *ngIf="!isDashboardLoading">
+    <mat-card class="stat-card total">
+        <mat-card-content>
+            <div class="stat-icon"><mat-icon>payments</mat-icon></div>
+            <div class="stat-info">
+                <span class="label">Total Confirmed Returns</span>
+                <span class="value">₹{{totalReturnAmount | number:'1.2-2'}}</span>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card overdue">
+        <mat-card-content>
+            <div class="stat-icon"><mat-icon>check_circle</mat-icon></div>
+            <div class="stat-info">
+                <span class="label">Confirmed Returns</span>
+                <span class="value">{{confirmedReturnsCount}}</span>
+            </div>
+            <div class="stat-badge" *ngIf="confirmedReturnsCount > 0">Completed</div>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card active">
+        <mat-card-content>
+            <div class="stat-icon"><mat-icon>assignment_return</mat-icon></div>
+            <div class="stat-info">
+                <span class="label">Total Return Records</span>
+                <span class="value">{{totalReturnsCount}}</span>
+            </div>
+        </mat-card-content>
+    </mat-card>
+  </div>
+
+  <mat-card class="content-card mat-elevation-z0">
     
     <div *ngIf="isTableLoading && !isDashboardLoading" class="loader-overlay">
       <mat-spinner diameter="50"></mat-spinner>
-      <p class="mt-2">Processing...</p>
+      <p class="mt-2 text-primary fw-bold">Processing...</p>
     </div>
 
-    <div class="filter-section p-3 border-bottom d-flex align-items-center bg-white flex-wrap">
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field dense-form-field" style="margin-right: 10px;">
+    <div class="filter-section">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="search-field dense-form-field">
         <mat-label>Search Returns</mat-label>
         <mat-icon matPrefix class="text-secondary ms-2 me-2">search</mat-icon>
         <input matInput (keyup)="applySearch($event)" [(ngModel)]="searchKey" placeholder="Search by # or Supplier">
@@ -33,7 +66,7 @@
         </button>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-form-field" style="margin-right: 10px;">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic" class="dense-form-field">
         <mat-label>Enter a date range</mat-label>
         <mat-date-range-input [rangePicker]="picker">
           <input matStartDate placeholder="Start date" [(ngModel)]="fromDate">
@@ -58,7 +91,7 @@
       </div>
     </div>
 
-    <div [style.display]="(!isTableLoading && dataSource.data.length > 0) ? 'block' : 'none'">
+    <div *ngIf="!isTableLoading && dataSource.data.length > 0" class="table-wrapper">
       <div class="table-responsive">
         <table mat-table [dataSource]="dataSource" matSort (matSortChange)="loadReturns()">
           
@@ -111,7 +144,7 @@
             </td>
           </ng-container>
   
-          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover-row"></tr>
         </table>
       </div>

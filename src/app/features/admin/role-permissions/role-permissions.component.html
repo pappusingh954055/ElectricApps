@@ -1,12 +1,12 @@
-<div class="page-container">
-  <div class="header-section">
-    <div class="title-group">
-      <h1>Role Permissions Management</h1>
-      <p class="subtitle">Search, filter, and manage permissions for each role efficiently.</p>
+<div class="container-fluid" [class.disabled-content]="loading">
+  <div class="header-actions">
+    <div>
+      <h1 class="page-title m-0">Role Permissions</h1>
+      <p class="subtitle m-0">Manage access rights and permissions.</p>
     </div>
     
     <div class="controls-group">
-      <mat-form-field appearance="outline" class="role-select">
+      <mat-form-field appearance="outline" class="role-select compact-select">
         <mat-label>Select Role</mat-label>
         <mat-select [(ngModel)]="selectedRoleId" (selectionChange)="onRoleChange()">
           <mat-option *ngFor="let role of roles" [value]="role.id">{{role.roleName}}</mat-option>
@@ -15,85 +15,86 @@
     </div>
   </div>
 
-  <div class="content-card" *ngIf="selectedRoleId; else noRoleSelected">
-    
+  <app-summary-stats [stats]="summaryStats" [isLoading]="loading" *ngIf="selectedRoleId"></app-summary-stats>
+
+  <div class="list-container" *ngIf="selectedRoleId; else noRoleSelected">
     <div class="table-toolbar">
-      <mat-form-field appearance="outline" class="search-field">
+      <mat-form-field appearance="outline" class="search-field compact-input">
         <mat-label>Search Menu</mat-label>
         <mat-icon matPrefix>search</mat-icon>
         <input matInput (keyup)="applyFilter($event)" placeholder="Type menu name..." #input>
       </mat-form-field>
 
-      <div class="actions-group d-flex gap-3">
+      <div class="actions-group d-flex gap-2">
         <button mat-raised-button class="reset-action-btn" (click)="resetPermissions()" [disabled]="loading">
             <mat-icon>restart_alt</mat-icon> Reset
         </button>
-        <button mat-raised-button class="main-save-btn" (click)="savePermissions()" [disabled]="loading">
+        <button mat-raised-button class="main-add-btn" (click)="savePermissions()" [disabled]="loading">
             <mat-icon>save</mat-icon> Save Changes
         </button>
       </div>
     </div>
+    
+    <div class="grid-wrapper">
+      <div class="custom-tree-table">
+        <div class="tree-header">
+          <div class="cell menu-col">Menu Item</div>
+          <div class="cell checkbox-col">View</div>
+          <div class="cell checkbox-col">Add</div>
+          <div class="cell checkbox-col">Edit</div>
+          <div class="cell checkbox-col">Delete</div>
+        </div>
 
-    <!-- Tree Grid -->
-    <div class="table-container">
-      
-      <!-- Sticky Header -->
-      <div class="header-row grid-row">
-        <div class="cell menu-col">Menu Item</div>
-        <div class="cell checkbox-col">View</div>
-        <div class="cell checkbox-col">Add</div>
-        <div class="cell checkbox-col">Edit</div>
-        <div class="cell checkbox-col">Delete</div>
-      </div>
-
-      <div class="table-body">
-        <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
-          
-          <mat-tree-node *matTreeNodeDef="let node" class="grid-row" [class.parent-node]="node.expandable">
-            
-            <!-- Menu Column -->
-            <div class="cell menu-col" [style.padding-left.px]="16 + (node.level * 32)">
-              <button mat-icon-button *ngIf="node.expandable" matTreeNodeToggle class="toggle-btn">
-                <mat-icon>{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}</mat-icon>
-              </button>
-              <span *ngIf="!node.expandable" class="spacer-btn"></span>
+        <div class="tree-body">
+          <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+            <mat-tree-node *matTreeNodeDef="let node" class="tree-row" [class.parent-node]="node.expandable">
               
-              <mat-icon class="menu-icon">{{node.icon || (node.expandable ? 'folder' : 'description')}}</mat-icon>
-              <span class="node-title">{{node.title}}</span>
-            </div>
-  
-            <!-- Checkbox Columns -->
-            <div class="cell checkbox-col">
-              <mat-checkbox [(ngModel)]="getPermission(node.id).canView" 
-                            (change)="handlePermissionChange(node, 'canView', $event.checked)"
-                            color="primary"></mat-checkbox>
-            </div>
-            <div class="cell checkbox-col">
-              <mat-checkbox [(ngModel)]="getPermission(node.id).canAdd" 
-                            (change)="handlePermissionChange(node, 'canAdd', $event.checked)"
-                            color="primary"></mat-checkbox>
-            </div>
-            <div class="cell checkbox-col">
-              <mat-checkbox [(ngModel)]="getPermission(node.id).canEdit" 
-                            (change)="handlePermissionChange(node, 'canEdit', $event.checked)"
-                            color="primary"></mat-checkbox>
-            </div>
-            <div class="cell checkbox-col">
-              <mat-checkbox [(ngModel)]="getPermission(node.id).canDelete" 
-                            (change)="handlePermissionChange(node, 'canDelete', $event.checked)"
-                            color="primary"></mat-checkbox>
-            </div>
-          </mat-tree-node>
-        </mat-tree>
+              <!-- Menu Column -->
+              <div class="cell menu-col" [style.padding-left.px]="16 + (node.level * 24)">
+                <button mat-icon-button *ngIf="node.expandable" matTreeNodeToggle class="toggle-btn">
+                  <mat-icon>{{treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'}}</mat-icon>
+                </button>
+                <span *ngIf="!node.expandable" class="spacer-btn"></span>
+                
+                <mat-icon class="menu-icon">{{node.icon || (node.expandable ? 'folder' : 'description')}}</mat-icon>
+                <span class="node-title">{{node.title}}</span>
+              </div>
+    
+              <!-- Checkbox Columns -->
+              <div class="cell checkbox-col">
+                <mat-checkbox [(ngModel)]="getPermission(node.id).canView" 
+                              (change)="handlePermissionChange(node, 'canView', $event.checked)"
+                              color="primary"></mat-checkbox>
+              </div>
+              <div class="cell checkbox-col">
+                <mat-checkbox [(ngModel)]="getPermission(node.id).canAdd" 
+                              (change)="handlePermissionChange(node, 'canAdd', $event.checked)"
+                              color="primary"></mat-checkbox>
+              </div>
+              <div class="cell checkbox-col">
+                <mat-checkbox [(ngModel)]="getPermission(node.id).canEdit" 
+                              (change)="handlePermissionChange(node, 'canEdit', $event.checked)"
+                              color="primary"></mat-checkbox>
+              </div>
+              <div class="cell checkbox-col">
+                <mat-checkbox [(ngModel)]="getPermission(node.id).canDelete" 
+                              (change)="handlePermissionChange(node, 'canDelete', $event.checked)"
+                              color="primary"></mat-checkbox>
+              </div>
+            </mat-tree-node>
+          </mat-tree>
+        </div>
       </div>
     </div>
   </div>
 
   <ng-template #noRoleSelected>
     <div class="empty-state">
-      <mat-icon class="empty-icon">admin_panel_settings</mat-icon>
-      <h3>Select a Role to Manage Permissions</h3>
-      <p>Choose a role from the dropdown above to view, filter, and edit access rights efficiently.</p>
+      <div class="empty-content">
+        <mat-icon class="empty-icon">admin_panel_settings</mat-icon>
+        <h3>Select a Role</h3>
+        <p>Choose a role above to manage permissions.</p>
+      </div>
     </div>
   </ng-template>
 </div>

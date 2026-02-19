@@ -51,6 +51,11 @@ export class PurchaseReturnList implements OnInit {
   pageSize = 10;
   pageIndex = 0;
 
+  // Stats
+  totalReturnAmount: number = 0;
+  confirmedReturnsCount: number = 0;
+  totalReturnsCount: number = 0;
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   private dialog = inject(MatDialog);
@@ -119,6 +124,22 @@ export class PurchaseReturnList implements OnInit {
         // Backend mapping match karein: res.items aur res.totalCount [cite: 2026-02-04]
         this.dataSource.data = res.items || [];
         this.totalRecords = res.totalCount || 0;
+
+        // Calculate Stats
+        this.totalReturnAmount = 0;
+        this.confirmedReturnsCount = 0;
+        this.totalReturnsCount = this.totalRecords; // Usually backend sends total records count
+
+        // If items are returned, we calculate from the current list (or if backend provides it)
+        // Note: For accurate 'Total Amount', backend should ideally provide it in the summary.
+        // For now, we aggregate from the items we have, but this might only be for the current page.
+        // However, if the user wants it like SO list, calculating from items list is what's done there.
+        (res.items || []).forEach((item: any) => {
+          if (item.status === 'Completed' || item.status === 'Confirmed') {
+            this.totalReturnAmount += item.totalAmount || 0;
+            this.confirmedReturnsCount++;
+          }
+        });
 
         console.log('Purchase Return List Data:', this.dataSource.data);
         this.isTableLoading = false;
