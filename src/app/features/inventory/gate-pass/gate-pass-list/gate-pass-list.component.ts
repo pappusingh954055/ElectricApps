@@ -124,9 +124,22 @@ export class GatePassListComponent implements OnInit {
     }
 
     onEdit(row: any) {
-        const route = row.passType === 'Inward' ? 'inward' : 'outward';
-        this.router.navigate([`/app/inventory/gate-pass/${route}`], {
-            queryParams: { id: row.id, mode: 'edit' }
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '400px',
+            data: {
+                title: 'Edit Gate Pass',
+                message: `Are you sure you want to edit Gate Pass ${row.passNo}?`,
+                confirmText: 'Yes, Edit'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                const route = row.passType === 'Inward' ? 'inward' : 'outward';
+                this.router.navigate([`/app/inventory/gate-pass/${route}`], {
+                    queryParams: { id: row.id, mode: 'edit' }
+                });
+            }
         });
     }
 

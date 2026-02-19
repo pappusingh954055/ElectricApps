@@ -14,6 +14,7 @@ import { POService } from '../service/po.service';
 import { DateHelper } from '../../../shared/models/date-helper';
 import { NotificationService } from '../../shared/notification.service';
 import { ProductSelectionDialogComponent } from '../../../shared/components/product-selection-dialog/product-selection-dialog';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 
 import { trigger, transition, style, animate } from '@angular/animations';
 
@@ -496,45 +497,59 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    const supplier = this.suppliers.find(s => s.id === Number(formValue.supplierId));
-    const userId = localStorage.getItem('email') || 'System User';
-    this.isLoading = true;
-    const payload: any = {
-      id: this.isEditMode ? Number(this.poId) : 0,
-      supplierId: Number(formValue.supplierId),
-      supplierName: supplier ? supplier.name : 'Unknown',
-      priceListId: formValue.priceListId,
-      poDate: DateHelper.toLocalISOString(formValue.poDate),
-      expectedDeliveryDate: DateHelper.toLocalISOString(formValue.expectedDeliveryDate),
-      poNumber: formValue.PoNumber,
-      remarks: formValue.remarks || '',
-      grandTotal: this.grandTotal,
-      subTotal: this.subTotal,
-      totalTax: this.totalTaxAmount,
-      status: 'Draft',
-      createdBy: userId,
-      items: formValue.items.map((item: any) => ({
-        productId: item.productId,
-        qty: Number(item.qty),
-        unit: item.unit || 'PCS',
-        rate: Number(item.price),
-        gstPercent: Number(item.gstPercent), // Saved from Master
-        discountPercent: Number(item.discountPercent), // Saved from PriceList
-        taxAmount: Number(item.taxAmount),
-        total: Number(item.total)
-      }))
-    };
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: this.isEditMode ? 'Confirm Update' : 'Confirm Save',
+        message: `Are you sure you want to ${this.isEditMode ? 'update' : 'save'} this Purchase Order?`,
+        confirmText: this.isEditMode ? 'Update' : 'Save',
+        confirmColor: 'primary'
+      }
+    });
 
-    const request$ = this.isEditMode ? this.poService.update(this.poId, payload) : this.inventoryService.savePoDraft(payload);
-    request$.subscribe({
-      next: () => {
-        this.isLoading = false;
-        this.notification.showStatus(true, 'PO Saved Successfully');
-        this.router.navigate(['/app/inventory/polist']);
-      },
-      error: (err) => {
-        this.isLoading = false;
-        this.notification.showStatus(false, 'Error saving PO.');
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const supplier = this.suppliers.find(s => s.id === Number(formValue.supplierId));
+        const userId = localStorage.getItem('email') || 'System User';
+        this.isLoading = true;
+        const payload: any = {
+          id: this.isEditMode ? Number(this.poId) : 0,
+          supplierId: Number(formValue.supplierId),
+          supplierName: supplier ? supplier.name : 'Unknown',
+          priceListId: formValue.priceListId,
+          poDate: DateHelper.toLocalISOString(formValue.poDate),
+          expectedDeliveryDate: DateHelper.toLocalISOString(formValue.expectedDeliveryDate),
+          poNumber: formValue.PoNumber,
+          remarks: formValue.remarks || '',
+          grandTotal: this.grandTotal,
+          subTotal: this.subTotal,
+          totalTax: this.totalTaxAmount,
+          status: 'Draft',
+          createdBy: userId,
+          items: formValue.items.map((item: any) => ({
+            productId: item.productId,
+            qty: Number(item.qty),
+            unit: item.unit || 'PCS',
+            rate: Number(item.price),
+            gstPercent: Number(item.gstPercent), // Saved from Master
+            discountPercent: Number(item.discountPercent), // Saved from PriceList
+            taxAmount: Number(item.taxAmount),
+            total: Number(item.total)
+          }))
+        };
+
+        const request$ = this.isEditMode ? this.poService.update(this.poId, payload) : this.inventoryService.savePoDraft(payload);
+        request$.subscribe({
+          next: () => {
+            this.isLoading = false;
+            this.notification.showStatus(true, `PO ${this.isEditMode ? 'Updated' : 'Saved'} Successfully`);
+            this.router.navigate(['/app/inventory/polist']);
+          },
+          error: (err) => {
+            this.isLoading = false;
+            this.notification.showStatus(false, `Error ${this.isEditMode ? 'updating' : 'saving'} PO.`);
+          }
+        });
       }
     });
   }

@@ -10,6 +10,7 @@ import { Router, RouterModule } from '@angular/router';
 import { Observable, startWith, map } from 'rxjs';
 import { MatDialogRef, MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -322,20 +323,17 @@ export class BulkReceiptEntryComponent implements OnInit {
         });
 
         // Show Confirmation Dialog
-        const confirmRef = this.dialog.open(StatusDialogComponent, {
+        const confirmRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '400px',
             data: {
                 title: 'Confirm Save',
                 message: `Are you sure you want to save ${payload.length} receipt(s)?`,
-                status: 'warning', // Use warning style for confirmation prompt
-                isSuccess: false,
-                showCancel: true,
-                confirmText: 'Yes, Save',
-                cancelText: 'Cancel'
+                confirmText: 'Yes, Save'
             }
         });
 
         confirmRef.afterClosed().subscribe(result => {
-            if (result === true) {
+            if (result) {
                 this.performSave(payload);
             }
         });

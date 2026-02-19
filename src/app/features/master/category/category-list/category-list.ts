@@ -141,7 +141,20 @@ export class CategoryList implements OnInit {
 
 
   onEdit(row: any): void {
-    this.router.navigate(['/app/master/categories/edit', row.id]);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Edit Category',
+        message: `Are you sure you want to edit category: ${row.categoryName}?`,
+        confirmText: 'Yes, Edit'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.router.navigate(['/app/master/categories/edit', row.id]);
+      }
+    });
   }
 
   deleteCategory(category: any): void {

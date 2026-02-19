@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -12,7 +12,9 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { FinanceService } from '../../service/finance.service';
+import { LoadingService } from '../../../../core/services/loading.service';
 
 @Component({
     selector: 'app-expense-entry',
@@ -45,7 +47,9 @@ export class ExpenseEntryComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
         private financeService: FinanceService,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private loadingService: LoadingService,
+        private cdr: ChangeDetectorRef
     ) {
         this.expenseForm = this.fb.group({
             categoryId: [null, Validators.required],
@@ -62,14 +66,26 @@ export class ExpenseEntryComponent implements OnInit {
     }
 
     loadInitialData(): void {
-        this.financeService.getExpenseCategories().subscribe(data => this.categories = data);
-        this.loadExpenses();
+        this.loadingService.setLoading(true);
+        this.financeService.getExpenseCategories().subscribe(data => {
+            this.categories = data;
+            this.loadExpenses();
+            this.cdr.detectChanges();
+        });
     }
 
     loadExpenses(): void {
         this.financeService.getExpenseEntries(1, 50).subscribe({
-            next: (res) => this.expenses = res.items || [],
-            error: () => this.showError('Failed to load expenses')
+            next: (res) => {
+                this.expenses = res.items || [];
+                this.loadingService.setLoading(false);
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                this.loadingService.setLoading(false);
+                this.showError('Failed to load expenses');
+                this.cdr.detectChanges();
+            }
         });
     }
 
@@ -77,26 +93,41 @@ export class ExpenseEntryComponent implements OnInit {
         if (this.expenseForm.invalid) return;
 
         const entry = this.expenseForm.value;
+        const actionText = this.isEditing ? 'Update' : 'Record';
 
-        if (this.isEditing && this.editingId) {
-            this.financeService.updateExpenseEntry(this.editingId, { ...entry, id: this.editingId }).subscribe({
-                next: () => {
-                    this.showSuccess('Expense updated successfully');
-                    this.resetForm();
-                    this.loadExpenses();
-                },
-                error: () => this.showError('Failed to update expense')
-            });
-        } else {
-            this.financeService.createExpenseEntry(entry).subscribe({
-                next: () => {
-                    this.showSuccess('Expense recorded successfully');
-                    this.resetForm();
-                    this.loadExpenses();
-                },
-                error: () => this.showError('Failed to record expense')
-            });
-        }
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '400px',
+            data: {
+                title: `Confirm Expense ${actionText}`,
+                message: `Are you sure you want to ${actionText.toLowerCase()} this expense entry?\n\nAmount: ₹${entry.amount}`,
+                confirmText: actionText
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(confirm => {
+            if (confirm) {
+                if (this.isEditing && this.editingId) {
+                    this.financeService.updateExpenseEntry(this.editingId, { ...entry, id: this.editingId }).subscribe({
+                        next: () => {
+                            this.showSuccess('Expense updated successfully');
+                            this.resetForm();
+                            this.loadExpenses();
+                        },
+                        error: () => this.showError('Failed to update expense')
+                    });
+                } else {
+                    this.financeService.createExpenseEntry(entry).subscribe({
+                        next: () => {
+                            this.showSuccess('Expense recorded successfully');
+                            this.resetForm();
+                            this.loadExpenses();
+                        },
+                        error: () => this.showError('Failed to record expense')
+                    });
+                }
+            }
+            this.cdr.detectChanges();
+        });
     }
 
     editExpense(expense: any): void {
@@ -110,17 +141,17 @@ export class ExpenseEntryComponent implements OnInit {
             referenceNo: expense.referenceNo,
             remarks: expense.remarks
         });
+        this.cdr.detectChanges();
     }
 
     deleteExpense(id: number): void {
-        const dialogRef = this.dialog.open(StatusDialogComponent, {
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '400px',
             data: {
-                isSuccess: false,
-                status: 'warning',
                 title: 'Confirm Delete',
-                message: 'Are you sure you want to delete this record?',
-                showCancel: true,
-                confirmText: 'Delete'
+                message: 'Are you sure you want to delete this expense record?',
+                confirmText: 'Delete',
+                confirmColor: 'warn'
             }
         });
 
@@ -134,6 +165,7 @@ export class ExpenseEntryComponent implements OnInit {
                     error: () => this.showError('Failed to delete record')
                 });
             }
+            this.cdr.detectChanges();
         });
     }
 
@@ -141,6 +173,7 @@ export class ExpenseEntryComponent implements OnInit {
         this.expenseForm.reset({ expenseDate: new Date(), paymentMode: 'Cash' });
         this.isEditing = false;
         this.editingId = null;
+        this.cdr.detectChanges();
     }
 
     private showSuccess(message: string): void {

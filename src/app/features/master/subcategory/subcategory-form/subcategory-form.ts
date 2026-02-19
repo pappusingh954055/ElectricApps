@@ -191,7 +191,9 @@ export class SubcategoryForm implements OnInit, OnDestroy {
     const payload: SubCategory = {
       categoryId: formValue.categoryId,
       subcategoryName: formValue.subcategoryName,
+      name: formValue.subcategoryName, // Backend expects 'Name'
       subcategoryCode: formValue.subcategoryCode,
+      code: formValue.subcategoryCode, // Backend might expect 'Code'
       defaultGst: Number(formValue.defaultGst),
       description: formValue.description?.trim(),
       isActive: Boolean(formValue.isActive)
@@ -219,8 +221,17 @@ export class SubcategoryForm implements OnInit, OnDestroy {
       error: (err) => {
         this.loading = false;
         this.cdr.detectChanges();
+
+        let errorMessage = 'Something went wrong';
+        if (err.error?.errors) {
+          // Extract validation errors
+          errorMessage = Object.values(err.error.errors).flat().join('\n');
+        } else if (err.error?.message) {
+          errorMessage = err.error.message;
+        }
+
         this.dialog.open(StatusDialogComponent, {
-          data: { isSuccess: false, message: err.error?.message ?? 'Something went wrong' }
+          data: { isSuccess: false, message: errorMessage }
         });
       }
     });

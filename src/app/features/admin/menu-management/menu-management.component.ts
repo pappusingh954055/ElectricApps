@@ -11,6 +11,7 @@ import { MenuService } from '../../../core/services/menu.service';
 import { MenuItem } from '../../../core/models/menu-item.model';
 
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { MenuFormDialogComponent } from './menu-form-dialog/menu-form-dialog.component';
 // Trigger re-build
 
@@ -171,19 +172,30 @@ export class MenuManagementComponent implements OnInit, AfterViewInit {
     deleteMenu(menu: MenuItem): void {
         if (!menu.id) return;
 
-        // Show confirmation ideally, but for now simple delete
-        if (confirm(`Are you sure you want to delete menu "${menu.title}"?`)) {
-            this.menuService.deleteMenu(menu.id).subscribe({
-                next: () => {
-                    this.loadMenus();
-                    this.showStatus(true, 'Menu deleted successfully');
-                },
-                error: (err) => {
-                    console.error(err);
-                    this.showStatus(false, 'Failed to delete menu');
-                }
-            });
-        }
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '400px',
+            data: {
+                title: 'Confirm Delete',
+                message: `Are you sure you want to delete menu item: ${menu.title}? This may affect sub-menus.`,
+                confirmText: 'Delete',
+                confirmColor: 'warn'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(confirm => {
+            if (confirm) {
+                this.menuService.deleteMenu(menu.id!).subscribe({
+                    next: () => {
+                        this.loadMenus();
+                        this.showStatus(true, 'Menu deleted successfully');
+                    },
+                    error: (err) => {
+                        console.error(err);
+                        this.showStatus(false, 'Failed to delete menu');
+                    }
+                });
+            }
+        });
     }
 
     private showStatus(isSuccess: boolean, message: string): void {

@@ -7,6 +7,7 @@ import { GridColumn } from '../../../shared/models/grid-column.model';
 import { GridRequest } from '../../../shared/models/grid-request.model';
 import { ServerDatagridComponent } from '../../../shared/components/server-datagrid-component/server-datagrid-component';
 import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { CustomerComponent } from '../customer-component/customer-component';
 import { LoadingService } from '../../../core/services/loading.service';
 import { SummaryStat, SummaryStatsComponent } from '../../../shared/components/summary-stats-component/summary-stats-component';
@@ -122,17 +123,28 @@ export class CustomerList implements OnInit {
   }
 
   onEdit(row: any) {
-    // Current CustomerComponent doesn't fully support edit in modal yet based on param handling, 
-    // but the user asked to call the popup.
-    const dialogRef = this.dialog.open(CustomerComponent, {
-      width: '600px',
-      data: { id: row.id },
-      disableClose: true
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Edit Customer',
+        message: `Are you sure you want to edit customer: ${row.customerName}?`,
+        confirmText: 'Yes, Edit'
+      }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.loadCustomers(this.lastRequest);
+        const editDialog = this.dialog.open(CustomerComponent, {
+          width: '600px',
+          data: { id: row.id },
+          disableClose: true
+        });
+
+        editDialog.afterClosed().subscribe(editResult => {
+          if (editResult) {
+            this.loadCustomers(this.lastRequest);
+          }
+        });
       }
     });
   }

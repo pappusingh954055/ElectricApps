@@ -13,6 +13,7 @@ import { SaleOrderService } from '../service/saleorder.service';
 import { Router } from '@angular/router';
 import { customerService } from '../../master/customer-component/customer.service';
 import { ProductSelectionDialogComponent } from '../../../shared/components/product-selection-dialog/product-selection-dialog';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { trigger, transition, style, animate } from '@angular/animations';
 
 @Component({
@@ -349,86 +350,100 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    const formValues = this.soForm.getRawValue();
-
-    // Date Validation: Delivery Date >= SO Date
-    if (formValues.expectedDeliveryDate) {
-      const soDate = new Date(formValues.soDate);
-      const deliveryDate = new Date(formValues.expectedDeliveryDate);
-
-      // Reset time to ensure we only subtract dates
-      soDate.setHours(0, 0, 0, 0);
-      deliveryDate.setHours(0, 0, 0, 0);
-
-      if (deliveryDate < soDate) {
-        this.dialog.open(StatusDialogComponent, {
-          width: '400px',
-          data: {
-            isSuccess: false,
-            title: 'Validation Error',
-            message: 'Expected Delivery Date must be greater than or equal to Sale Order Date.'
-          }
-        });
-        return;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Confirm Save',
+        message: 'Are you sure you want to save this Sale Order?',
+        confirmText: 'Save',
+        confirmColor: 'primary'
       }
-    }
+    });
 
-    const userId = localStorage.getItem('email') || 'admin@admin.com'; // Default user handle
-    const currentStatus = formValues.status;
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const formValues = this.soForm.getRawValue();
 
-    const successMessageText = currentStatus === 'Confirmed'
-      ? 'Sale Order saved and inventory adjusted successfully.'
-      : 'Sale Order saved as Draft. Inventory was not affected.';
+        // Date Validation: Delivery Date >= SO Date
+        if (formValues.expectedDeliveryDate) {
+          const soDate = new Date(formValues.soDate);
+          const deliveryDate = new Date(formValues.expectedDeliveryDate);
 
-    const payload = {
-      customerId: formValues.customerId,
-      status: currentStatus,
-      soDate: formValues.soDate,
-      expectedDeliveryDate: formValues.expectedDeliveryDate,
-      remarks: formValues.remarks || '',
-      subTotal: Number(formValues.subTotal) || 0,
-      totalTax: Number(formValues.totalTax) || 0,
-      grandTotal: Number(formValues.grandTotal) || 0,
-      createdBy: userId,
-      items: this.items.controls.map(item => {
-        const val = (item as FormGroup).getRawValue();
-        return {
-          productId: val.productId,
-          productName: val.productSearch?.productName || val.productSearch?.name || (typeof val.productSearch === 'string' ? val.productSearch : ''),
-          qty: Number(val.qty),
-          unit: val.unit || 'PCS', // Ensure unit is not null
-          rate: Number(val.rate),
-          discountPercent: Number(val.discountPercent) || 0,
-          gstPercent: Number(val.gstPercent) || 0,
-          taxAmount: Number(val.taxAmount) || 0,
-          total: Number(val.total) || 0
-        };
-      })
-    };
+          // Reset time to ensure we only subtract dates
+          soDate.setHours(0, 0, 0, 0);
+          deliveryDate.setHours(0, 0, 0, 0);
 
-    this.soService.saveSaleOrder(payload).subscribe({
-      next: (res: any) => {
-        // ✅ Order Number Display Fix
-        const orderNo = res.soNumber || res.SONumber || 'N/A';
-        this.generatedSoNumber = orderNo;
-
-        this.dialog.open(StatusDialogComponent, {
-          width: '400px',
-          data: {
-            isSuccess: true,
-            title: 'Order Saved!',
-            message: `Order #${orderNo}: ${successMessageText}`
+          if (deliveryDate < soDate) {
+            this.dialog.open(StatusDialogComponent, {
+              width: '400px',
+              data: {
+                isSuccess: false,
+                title: 'Validation Error',
+                message: 'Expected Delivery Date must be greater than or equal to Sale Order Date.'
+              }
+            });
+            return;
           }
-        }).afterClosed().subscribe(() => {
-          this.router.navigate(['/app/inventory/solist']);
-        });
-      },
-      error: (err) => {
-        // Detailed error handling based on Network response
-        console.error("Save Error:", err);
-        this.dialog.open(StatusDialogComponent, {
-          width: '350px',
-          data: { isSuccess: false, title: 'Action Failed', message: 'Check if all fields (Unit/Rate) are valid.' }
+        }
+
+        const userId = localStorage.getItem('email') || 'admin@admin.com'; // Default user handle
+        const currentStatus = formValues.status;
+
+        const successMessageText = currentStatus === 'Confirmed'
+          ? 'Sale Order saved and inventory adjusted successfully.'
+          : 'Sale Order saved as Draft. Inventory was not affected.';
+
+        const payload = {
+          customerId: formValues.customerId,
+          status: currentStatus,
+          soDate: formValues.soDate,
+          expectedDeliveryDate: formValues.expectedDeliveryDate,
+          remarks: formValues.remarks || '',
+          subTotal: Number(formValues.subTotal) || 0,
+          totalTax: Number(formValues.totalTax) || 0,
+          grandTotal: Number(formValues.grandTotal) || 0,
+          createdBy: userId,
+          items: this.items.controls.map(item => {
+            const val = (item as FormGroup).getRawValue();
+            return {
+              productId: val.productId,
+              productName: val.productSearch?.productName || val.productSearch?.name || (typeof val.productSearch === 'string' ? val.productSearch : ''),
+              qty: Number(val.qty),
+              unit: val.unit || 'PCS', // Ensure unit is not null
+              rate: Number(val.rate),
+              discountPercent: Number(val.discountPercent) || 0,
+              gstPercent: Number(val.gstPercent) || 0,
+              taxAmount: Number(val.taxAmount) || 0,
+              total: Number(val.total) || 0
+            };
+          })
+        };
+
+        this.soService.saveSaleOrder(payload).subscribe({
+          next: (res: any) => {
+            // ✅ Order Number Display Fix
+            const orderNo = res.soNumber || res.SONumber || 'N/A';
+            this.generatedSoNumber = orderNo;
+
+            this.dialog.open(StatusDialogComponent, {
+              width: '400px',
+              data: {
+                isSuccess: true,
+                title: 'Order Saved!',
+                message: `Order #${orderNo}: ${successMessageText}`
+              }
+            }).afterClosed().subscribe(() => {
+              this.router.navigate(['/app/inventory/solist']);
+            });
+          },
+          error: (err) => {
+            // Detailed error handling based on Network response
+            console.error("Save Error:", err);
+            this.dialog.open(StatusDialogComponent, {
+              width: '350px',
+              data: { isSuccess: false, title: 'Action Failed', message: 'Check if all fields (Unit/Rate) are valid.' }
+            });
+          }
         });
       }
     });

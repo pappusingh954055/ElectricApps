@@ -8,6 +8,8 @@ import { RoleService } from '../../../core/services/role.service';
 import { UserService } from '../../../core/services/user.service';
 import { Role } from '../../../core/models/role.model';
 import { NotificationService } from '../../shared/notification.service';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-user-form',
@@ -15,7 +17,7 @@ import { NotificationService } from '../../shared/notification.service';
   imports: [CommonModule, MaterialModule, FormsModule, ReactiveFormsModule],
   template: `
     <div class="dialog-header">
-      <h2 mat-dialog-title>Create New User</h2>
+      <h2 mat-dialog-title>{{ isEdit ? 'Edit User' : 'Create New User' }}</h2>
       <button mat-icon-button mat-dialog-close class="close-btn">
         <mat-icon>close</mat-icon>
       </button>
@@ -63,7 +65,7 @@ import { NotificationService } from '../../shared/notification.service';
     
     <mat-dialog-actions align="end">
       <button mat-raised-button mat-dialog-close class="cancel-btn">CANCEL</button>
-      <button mat-raised-button class="main-add-btn" [disabled]="userForm.invalid" (click)="save()">CREATE USER</button>
+      <button mat-raised-button class="main-add-btn" [disabled]="userForm.invalid" (click)="save()">{{ isEdit ? 'UPDATE USER' : 'CREATE USER' }}</button>
     </mat-dialog-actions>
   `,
   styles: [`
@@ -189,52 +191,104 @@ export class UserFormComponent implements OnInit {
   userForm: FormGroup;
   roles: Role[] = [];
   hidePassword = true;
+  isEdit = false;
 
   constructor(
     private fb: FormBuilder,
     private roleService: RoleService,
     private userService: UserService,
+    private dialog: MatDialog,
     public dialogRef: MatDialogRef<UserFormComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: any,
     private notificationService: NotificationService
   ) {
+    this.isEdit = !!data;
     this.userForm = this.fb.group({
-      UserName: ['', Validators.required],
-      Email: ['', [Validators.required, Validators.email]],
-      Password: ['', Validators.required],
+      UserName: [{ value: '', disabled: this.isEdit }, Validators.required],
+      Email: [{ value: '', disabled: this.isEdit }, [Validators.required, Validators.email]],
+      Password: ['', this.isEdit ? [] : [Validators.required]],
       RoleIds: [[], Validators.required]
     });
   }
 
   ngOnInit() {
-    this.roleService.getAllRoles().subscribe(roles => this.roles = roles);
+    this.roleService.getAllRoles().subscribe(roles => {
+      this.roles = roles;
+      if (this.isEdit && this.data) {
+        // Map role names from data.roles to role IDs from this.roles
+        const selectedRoleIds = this.roles
+          .filter(r => this.data.roles.includes(r.roleName))
+          .map(r => r.id);
+
+        this.userForm.patchValue({
+          UserName: this.data.userName,
+          Email: this.data.email,
+          RoleIds: selectedRoleIds
+        });
+      }
+    });
   }
 
   save() {
     if (this.userForm.valid) {
-      const dto: RegisterUserDto = this.userForm.value;
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+        width: '400px',
+        data: {
+          title: this.isEdit ? 'Confirm Update User' : 'Confirm Create User',
+          message: `Are you sure you want to ${this.isEdit ? 'update' : 'create'} user: ${this.isEdit ? this.data.userName : this.userForm.get('UserName')?.value}?`,
+          confirmText: this.isEdit ? 'Yes, Update' : 'Yes, Create'
+        }
+      });
 
-      // Before save, check for duplicates
-      this.userService.checkDuplicate(dto.UserName, dto.Email).subscribe({
-        next: (res) => {
-          if (res.exists) {
-            this.notificationService.showStatus(false, res.message);
-          } else {
-            // Proceed to create
-            this.userService.createUser(dto).subscribe({
+      dialogRef.afterClosed().subscribe(confirm => {
+        if (confirm) {
+          const formValue = this.userForm.getRawValue();
+          const dto: any = {
+            UserName: formValue.UserName,
+            Email: formValue.Email,
+            RoleIds: formValue.RoleIds
+          };
+          if (formValue.Password) {
+            dto.Password = formValue.Password;
+          }
+
+          if (this.isEdit) {
+            this.userService.updateUser(this.data.id, dto).subscribe({
               next: () => {
-                this.notificationService.showStatus(true, 'User Created Successfully');
+                this.notificationService.showStatus(true, 'User Updated Successfully');
                 this.dialogRef.close(true);
               },
               error: (err) => {
                 console.error(err);
-                this.notificationService.showStatus(false, err.error?.message || 'Failed to create user');
+                this.notificationService.showStatus(false, err.error?.message || 'Failed to update user');
+              }
+            });
+          } else {
+            // Before save, check for duplicates
+            this.userService.checkDuplicate(dto.UserName, dto.Email).subscribe({
+              next: (res) => {
+                if (res.exists) {
+                  this.notificationService.showStatus(false, res.message);
+                } else {
+                  // Proceed to create
+                  this.userService.createUser(dto).subscribe({
+                    next: () => {
+                      this.notificationService.showStatus(true, 'User Created Successfully');
+                      this.dialogRef.close(true);
+                    },
+                    error: (err) => {
+                      console.error(err);
+                      this.notificationService.showStatus(false, err.error?.message || 'Failed to create user');
+                    }
+                  });
+                }
+              },
+              error: (err) => {
+                console.error(err);
+                this.notificationService.showStatus(false, 'Error checking duplicate user');
               }
             });
           }
-        },
-        error: (err) => {
-          console.error(err);
-          this.notificationService.showStatus(false, 'Error checking duplicate user');
         }
       });
     }

@@ -4,6 +4,8 @@ export interface SubCategory {
   categoryName?: string;
   subcategoryCode?: string;
   subcategoryName: string;
+  name?: string;
+  code?: string;
   defaultGst: number;
   description?: string;
   isActive: boolean;

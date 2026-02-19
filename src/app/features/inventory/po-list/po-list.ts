@@ -266,10 +266,24 @@ export class PoList implements OnInit {
   }
 
   OnEditPo(row: any): void {
-    this.router.navigate(['/app/inventory/polist/edit', row.id], {
-      state: {
-        data: row,
-        mode: 'edit'
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Edit Purchase Order',
+        message: `Are you sure you want to edit PO No: ${row.poNumber}?`,
+        confirmText: 'Yes, Edit',
+        cancelText: 'Cancel'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.router.navigate(['/app/inventory/polist/edit', row.id], {
+          state: {
+            data: row,
+            mode: 'edit'
+          }
+        });
       }
     });
   }
@@ -326,26 +340,41 @@ export class PoList implements OnInit {
       return;
     }
 
-    this.isLoading = true;
-    const parentIds = selectedRows.map(row => row.id);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Bulk Delete Orders',
+        message: `Are you sure you want to delete ${selectedRows.length} selected orders? This action cannot be undone.`,
+        confirmText: 'Yes, Delete All',
+        cancelText: 'Cancel',
+        confirmColor: 'warn'
+      }
+    });
 
-    this.poService.bulkDeletePurchaseOrders(parentIds).subscribe({
-      next: (res) => {
-        this.isLoading = false;
-        if (res.success) {
-          this.notification.showStatus(true, `${selectedRows.length} Orders deleted.`);
-          if (this.grid) this.grid.selection.clear();
-          this.loadData(this.currentGridState);
-        } else {
-          this.notification.showStatus(false, res.message || 'Error: Bulk delete failed.');
-        }
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        this.isLoading = false;
-        const errorMsg = err.error?.message || err.message || 'Error: Bulk delete failed.';
-        this.notification.showStatus(false, errorMsg);
-        this.cdr.detectChanges();
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        const parentIds = selectedRows.map(row => row.id);
+
+        this.poService.bulkDeletePurchaseOrders(parentIds).subscribe({
+          next: (res) => {
+            this.isLoading = false;
+            if (res.success) {
+              this.notification.showStatus(true, `${selectedRows.length} Orders deleted.`);
+              if (this.grid) this.grid.selection.clear();
+              this.loadData(this.currentGridState);
+            } else {
+              this.notification.showStatus(false, res.message || 'Error: Bulk delete failed.');
+            }
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            this.isLoading = false;
+            const errorMsg = err.error?.message || err.message || 'Error: Bulk delete failed.';
+            this.notification.showStatus(false, errorMsg);
+            this.cdr.detectChanges();
+          }
+        });
       }
     });
   }

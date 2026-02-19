@@ -102,7 +102,20 @@ export class CompanyList implements OnInit {
     }
 
     onEdit(row: any): void {
-        this.router.navigate(['/app/company/edit', row.id]);
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '400px',
+            data: {
+                title: 'Edit Company',
+                message: `Are you sure you want to edit company: ${row.name}?`,
+                confirmText: 'Yes, Edit'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(confirm => {
+            if (confirm) {
+                this.router.navigate(['/app/company/edit', row.id]);
+            }
+        });
     }
 
     deleteCompany(company: any): void {

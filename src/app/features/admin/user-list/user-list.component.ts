@@ -9,6 +9,8 @@ import { UserFormComponent } from './user-form.component';
 import { RoleService } from '../../../core/services/role.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
+import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 
 import { SummaryStat, SummaryStatsComponent } from '../../../shared/components/summary-stats-component/summary-stats-component';
 import { LoadingService } from '../../../core/services/loading.service';
@@ -61,6 +63,21 @@ import { LoadingService } from '../../../core/services/loading.service';
                   <mat-slide-toggle [checked]="element.isActive" (change)="toggleStatus(element, $event.checked)" color="primary">
                     <span class="status-text" [class.active]="element.isActive">{{element.isActive ? 'Active' : 'Inactive'}}</span>
                   </mat-slide-toggle>
+                </div>
+              </td>
+            </ng-container>
+            
+            <!-- Actions Column -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef> Actions </th>
+              <td mat-cell *matCellDef="let element">
+                <div class="action-buttons">
+                  <button mat-icon-button (click)="editUser(element)" matTooltip="Edit User">
+                    <mat-icon color="accent">edit</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="deleteUser(element)" matTooltip="Delete User">
+                    <mat-icon color="warn">delete</mat-icon>
+                  </button>
                 </div>
               </td>
             </ng-container>
@@ -226,10 +243,15 @@ import { LoadingService } from '../../../core/services/loading.service';
     .user-paginator {
       border-top: 1px solid #e2e8f0;
     }
+
+    .action-buttons {
+      display: flex;
+      gap: 4px;
+    }
   `]
 })
 export class UserListComponent implements OnInit {
-  displayedColumns: string[] = ['userName', 'email', 'roles', 'status'];
+  displayedColumns: string[] = ['userName', 'email', 'roles', 'status', 'actions'];
   dataSource = new MatTableDataSource<User>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -292,15 +314,78 @@ export class UserListComponent implements OnInit {
   }
 
   toggleStatus(user: User, isChecked: boolean) {
-    this.userService.updateStatus(user.id, isChecked).subscribe({
-      next: () => {
-        user.isActive = isChecked;
-      },
-      error: () => {
-        // Revert on error
-        // user.isActive = !newStatus; // If not visually toggled immediately
-        // But mat-slide-toggle toggles visually. We should reload or handle error.
-        this.loadUsers(); // Reload to be safe
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: isChecked ? 'Activate User' : 'Deactivate User',
+        message: `Are you sure you want to ${isChecked ? 'activate' : 'deactivate'} user: ${user.userName}?`,
+        confirmText: isChecked ? 'Activate' : 'Deactivate',
+        confirmColor: isChecked ? 'primary' : 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirm => {
+      if (confirm) {
+        this.userService.updateStatus(user.id, isChecked).subscribe({
+          next: () => {
+            user.isActive = isChecked;
+            this.dialog.open(StatusDialogComponent, {
+              data: { isSuccess: true, message: `User ${user.userName} ${isChecked ? 'activated' : 'deactivated'} successfully.` }
+            });
+          },
+          error: () => {
+            this.loadUsers(); // Reload to revert visually
+            this.dialog.open(StatusDialogComponent, {
+              data: { isSuccess: false, message: 'Failed to update user status.' }
+            });
+          }
+        });
+      } else {
+        // Revert the toggle visually if cancelled
+        this.loadUsers();
+      }
+    });
+  }
+
+  editUser(user: User) {
+    const dialogRef = this.dialog.open(UserFormComponent, {
+      width: '500px',
+      data: user
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadUsers();
+      }
+    });
+  }
+
+  deleteUser(user: User) {
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Confirm Delete User',
+        message: `Are you sure you want to delete user: ${user.userName}? This action cannot be undone.`,
+        confirmText: 'Delete',
+        confirmColor: 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(confirm => {
+      if (confirm) {
+        this.userService.deleteUser(user.id).subscribe({
+          next: () => {
+            this.dialog.open(StatusDialogComponent, {
+              data: { isSuccess: true, message: `User ${user.userName} deleted successfully.` }
+            });
+            this.loadUsers();
+          },
+          error: (err) => {
+            this.dialog.open(StatusDialogComponent, {
+              data: { isSuccess: false, message: err.error?.message || 'Failed to delete user.' }
+            });
+          }
+        });
       }
     });
   }

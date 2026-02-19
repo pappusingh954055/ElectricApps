@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatTableModule } from '@angular/material/table';
@@ -9,7 +9,9 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { FinanceService } from '../../service/finance.service';
+import { LoadingService } from '../../../../core/services/loading.service';
 
 @Component({
     selector: 'app-expense-category',
@@ -37,7 +39,9 @@ export class ExpenseCategoryComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
         private financeService: FinanceService,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private loadingService: LoadingService,
+        private cdr: ChangeDetectorRef
     ) {
         this.categoryForm = this.fb.group({
             name: ['', [Validators.required, Validators.maxLength(100)]],
@@ -51,9 +55,18 @@ export class ExpenseCategoryComponent implements OnInit {
     }
 
     loadCategories(): void {
+        this.loadingService.setLoading(true);
         this.financeService.getExpenseCategories().subscribe({
-            next: (data) => this.categories = data,
-            error: (err) => this.showError('Failed to load categories')
+            next: (data) => {
+                this.categories = data;
+                this.loadingService.setLoading(false);
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                this.loadingService.setLoading(false);
+                this.showError('Failed to load categories');
+                this.cdr.detectChanges();
+            }
         });
     }
 
@@ -61,26 +74,41 @@ export class ExpenseCategoryComponent implements OnInit {
         if (this.categoryForm.invalid) return;
 
         const category = this.categoryForm.value;
+        const actionText = this.isEditing ? 'Update' : 'Create';
 
-        if (this.isEditing && this.editingId) {
-            this.financeService.updateExpenseCategory(this.editingId, { ...category, id: this.editingId }).subscribe({
-                next: () => {
-                    this.showSuccess('Category updated successfully');
-                    this.resetForm();
-                    this.loadCategories();
-                },
-                error: () => this.showError('Failed to update category')
-            });
-        } else {
-            this.financeService.createExpenseCategory(category).subscribe({
-                next: () => {
-                    this.showSuccess('Category created successfully');
-                    this.resetForm();
-                    this.loadCategories();
-                },
-                error: () => this.showError('Failed to create category')
-            });
-        }
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '400px',
+            data: {
+                title: `Confirm ${actionText} Category`,
+                message: `Are you sure you want to ${actionText.toLowerCase()} this expense category: ${category.name}?`,
+                confirmText: actionText
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(confirm => {
+            if (confirm) {
+                if (this.isEditing && this.editingId) {
+                    this.financeService.updateExpenseCategory(this.editingId, { ...category, id: this.editingId }).subscribe({
+                        next: () => {
+                            this.showSuccess('Category updated successfully');
+                            this.resetForm();
+                            this.loadCategories();
+                        },
+                        error: () => this.showError('Failed to update category')
+                    });
+                } else {
+                    this.financeService.createExpenseCategory(category).subscribe({
+                        next: () => {
+                            this.showSuccess('Category created successfully');
+                            this.resetForm();
+                            this.loadCategories();
+                        },
+                        error: () => this.showError('Failed to create category')
+                    });
+                }
+            }
+            this.cdr.detectChanges();
+        });
     }
 
     editCategory(category: any): void {
@@ -91,17 +119,17 @@ export class ExpenseCategoryComponent implements OnInit {
             description: category.description,
             isActive: category.isActive
         });
+        this.cdr.detectChanges();
     }
 
     deleteCategory(id: number): void {
-        const dialogRef = this.dialog.open(StatusDialogComponent, {
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '400px',
             data: {
-                isSuccess: false,
-                status: 'warning',
                 title: 'Confirm Delete',
-                message: 'Are you sure you want to delete this category?',
-                showCancel: true,
-                confirmText: 'Delete'
+                message: 'Are you sure you want to delete this expense category?',
+                confirmText: 'Delete',
+                confirmColor: 'warn'
             }
         });
 
@@ -115,6 +143,7 @@ export class ExpenseCategoryComponent implements OnInit {
                     error: () => this.showError('Failed to delete category')
                 });
             }
+            this.cdr.detectChanges();
         });
     }
 
@@ -122,6 +151,7 @@ export class ExpenseCategoryComponent implements OnInit {
         this.categoryForm.reset({ isActive: true });
         this.isEditing = false;
         this.editingId = null;
+        this.cdr.detectChanges();
     }
 
     private showSuccess(message: string): void {

@@ -10,6 +10,7 @@ import { map, startWith } from 'rxjs/operators';
 import { ActivatedRoute } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
@@ -159,54 +160,68 @@ export class ReceiptEntryComponent implements OnInit {
       return;
     }
 
-    this.isLoading = true;
-    const payload = {
-      ...this.receipt,
-      paymentDate: this.receipt.paymentDate instanceof Date ? this.receipt.paymentDate.toISOString() : this.receipt.paymentDate
-    };
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Confirm Receipt',
+        message: `Are you sure you want to record a receipt of ₹${this.receipt.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}?`,
+        confirmText: 'Record Receipt',
+        confirmColor: 'primary'
+      }
+    });
 
-    this.financeService.recordCustomerReceipt(payload).subscribe({
-      next: (res) => {
-        this.isLoading = false;
-        const successDialog = this.dialog.open(StatusDialogComponent, {
-          data: {
-            isSuccess: true,
-            title: 'Success',
-            message: 'Receipt Recorded Successfully!',
-            actions: [
-              { label: 'Print Receipt', role: 'print', color: 'primary' },
-              { label: 'OK', role: 'ok' }
-            ]
-          }
-        });
-
-        const customer = this.customers.find(c => c.id === this.receipt.customerId);
-        const receiptData = {
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.isLoading = true;
+        const payload = {
           ...this.receipt,
-          id: res.id || 'NEW',
-          customerName: customer ? customer.name : 'Customer'
+          paymentDate: this.receipt.paymentDate instanceof Date ? this.receipt.paymentDate.toISOString() : this.receipt.paymentDate
         };
 
-        successDialog.afterClosed().subscribe(result => {
-          const customerId = this.receipt.customerId;
-          if (result === 'print') {
-            this.printVoucher(receiptData);
-          }
-          this.resetForm();
-          if (customerId) {
-            this.router.navigate(['/app/finance/customers/ledger'], {
-              queryParams: { customerId: customerId }
+        this.financeService.recordCustomerReceipt(payload).subscribe({
+          next: (res) => {
+            this.isLoading = false;
+            const successDialog = this.dialog.open(StatusDialogComponent, {
+              data: {
+                isSuccess: true,
+                title: 'Success',
+                message: 'Receipt Recorded Successfully!',
+                actions: [
+                  { label: 'Print Receipt', role: 'print', color: 'primary' },
+                  { label: 'OK', role: 'ok' }
+                ]
+              }
             });
-          } else {
-            this.router.navigate(['/app/finance/customers/tracker']);
+
+            const customer = this.customers.find(c => c.id === this.receipt.customerId);
+            const receiptData = {
+              ...this.receipt,
+              id: res.id || 'NEW',
+              customerName: customer ? customer.name : 'Customer'
+            };
+
+            successDialog.afterClosed().subscribe(result => {
+              const customerId = this.receipt.customerId;
+              if (result === 'print') {
+                this.printVoucher(receiptData);
+              }
+              this.resetForm();
+              if (customerId) {
+                this.router.navigate(['/app/finance/customers/ledger'], {
+                  queryParams: { customerId: customerId }
+                });
+              } else {
+                this.router.navigate(['/app/finance/customers/tracker']);
+              }
+            });
+          },
+          error: (err) => {
+            this.isLoading = false;
+            console.error(err);
+            this.dialog.open(StatusDialogComponent, {
+              data: { isSuccess: false, message: 'Failed to record receipt.' }
+            });
           }
-        });
-      },
-      error: (err) => {
-        this.isLoading = false;
-        console.error(err);
-        this.dialog.open(StatusDialogComponent, {
-          data: { isSuccess: false, message: 'Failed to record receipt.' }
         });
       }
     });

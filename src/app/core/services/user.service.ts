@@ -26,6 +26,14 @@ export class UserService {
         return this.http.patch<void>(`${this.baseUrl}/${id}/status`, isActive);
     }
 
+    updateUser(id: string, dto: any): Observable<void> {
+        return this.http.put<void>(`${this.baseUrl}/${id}`, dto);
+    }
+
+    deleteUser(id: string): Observable<void> {
+        return this.http.delete<void>(`${this.baseUrl}/${id}`);
+    }
+
     checkDuplicate(userName: string, email: string): Observable<{ exists: boolean, message: string }> {
         return this.http.get<{ exists: boolean, message: string }>(`${this.baseUrl}/check-duplicate?userName=${userName}&email=${email}`);
     }

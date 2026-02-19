@@ -74,6 +74,11 @@
       }
     }
 
+    .action-buttons {
+      display: flex;
+      gap: 4px;
+    }
+
     .no-data {
       padding: 48px;
       text-align: center;

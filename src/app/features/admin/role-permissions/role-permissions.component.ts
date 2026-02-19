@@ -16,6 +16,7 @@ import { MenuService } from '../../../core/services/menu.service';
 import { Role, RolePermission } from '../../../core/models/role.model';
 import { MenuItem } from '../../../core/models/menu-item.model';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { SummaryStat, SummaryStatsComponent } from '../../../shared/components/summary-stats-component/summary-stats-component';
 import { LoadingService } from '../../../core/services/loading.service';
 
@@ -155,44 +156,57 @@ export class RolePermissionsComponent implements OnInit {
 
   savePermissions() {
     if (this.selectedRoleId) {
-      this.loading = true;
-      this.loadingService.setLoading(true);
-      this.roleService.updateRolePermissions(this.selectedRoleId, this.permissions).subscribe({
-        next: () => {
-          this.loading = false;
-          this.loadingService.setLoading(false);
-          this.cdr.detectChanges();
-          this.dialog.open(StatusDialogComponent, {
-            width: '400px',
-            data: {
-              isSuccess: true,
-              message: 'Permissions have been updated and saved successfully!'
-            },
-            disableClose: true
-          });
-        },
-        error: (err) => {
-          this.loading = false;
-          this.loadingService.setLoading(false);
-          this.cdr.detectChanges();
-          let errorMessage = 'Something went wrong while saving permissions.';
-          if (err.error && typeof err.error === 'string') {
-            errorMessage = err.error;
-          } else if (err.error && err.error.message) {
-            errorMessage = err.error.message;
-          } else if (err.message) {
-            errorMessage = err.message;
-          }
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+        width: '400px',
+        data: {
+          title: 'Confirm Changes',
+          message: 'Are you sure you want to save the updated permissions for this role?',
+          confirmText: 'Yes, Save'
+        }
+      });
 
-          this.dialog.open(StatusDialogComponent, {
-            width: '400px',
-            data: {
-              isSuccess: false,
-              message: errorMessage
+      dialogRef.afterClosed().subscribe(confirm => {
+        if (confirm) {
+          this.loading = true;
+          this.loadingService.setLoading(true);
+          this.roleService.updateRolePermissions(this.selectedRoleId!, this.permissions).subscribe({
+            next: () => {
+              this.loading = false;
+              this.loadingService.setLoading(false);
+              this.cdr.detectChanges();
+              this.dialog.open(StatusDialogComponent, {
+                width: '400px',
+                data: {
+                  isSuccess: true,
+                  message: 'Permissions have been updated and saved successfully!'
+                },
+                disableClose: true
+              });
+            },
+            error: (err) => {
+              this.loading = false;
+              this.loadingService.setLoading(false);
+              this.cdr.detectChanges();
+              let errorMessage = 'Something went wrong while saving permissions.';
+              if (err.error && typeof err.error === 'string') {
+                errorMessage = err.error;
+              } else if (err.error && err.error.message) {
+                errorMessage = err.error.message;
+              } else if (err.message) {
+                errorMessage = err.message;
+              }
+
+              this.dialog.open(StatusDialogComponent, {
+                width: '400px',
+                data: {
+                  isSuccess: false,
+                  message: errorMessage
+                }
+              });
+
+              console.error('Permission Save Error:', err);
             }
           });
-
-          console.error('Permission Save Error:', err);
         }
       });
     }
@@ -200,14 +214,28 @@ export class RolePermissionsComponent implements OnInit {
 
   resetPermissions() {
     if (this.selectedRoleId) {
-      this.onRoleChange(); // Reload from DB
-      this.cdr.detectChanges();
-
-      this.dialog.open(StatusDialogComponent, {
+      const dialogRef = this.dialog.open(ConfirmDialogComponent, {
         width: '400px',
         data: {
-          isSuccess: true,
-          message: 'Permissions reset to last saved state.'
+          title: 'Reset Permissions',
+          message: 'Are you sure you want to reset all changes? Any unsaved changes will be lost.',
+          confirmText: 'Yes, Reset',
+          confirmColor: 'warn'
+        }
+      });
+
+      dialogRef.afterClosed().subscribe(confirm => {
+        if (confirm) {
+          this.onRoleChange(); // Reload from DB
+          this.cdr.detectChanges();
+
+          this.dialog.open(StatusDialogComponent, {
+            width: '400px',
+            data: {
+              isSuccess: true,
+              message: 'Permissions reset to last saved state.'
+            }
+          });
         }
       });
     }

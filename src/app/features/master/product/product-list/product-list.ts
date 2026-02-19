@@ -203,7 +203,20 @@ export class ProductList implements OnInit {
   }
 
   onEdit(row: any): void {
-    this.router.navigate(['/app/master/products/edit', row.id]);
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Edit Product',
+        message: `Are you sure you want to edit product: ${row.productName}?`,
+        confirmText: 'Yes, Edit'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.router.navigate(['/app/master/products/edit', row.id]);
+      }
+    });
   }
 
   deleteProduct(category: any): void {

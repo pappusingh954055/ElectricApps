@@ -5,6 +5,8 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/materia
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { MenuItem } from '../../../../core/models/menu-item.model';
 import { MenuService } from '../../../../core/services/menu.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 
 @Component({
     selector: 'app-menu-form-dialog',
@@ -20,6 +22,7 @@ export class MenuFormDialogComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
         private menuService: MenuService,
+        private dialog: MatDialog,
         private dialogRef: MatDialogRef<MenuFormDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: { menu: MenuItem | null, allMenus: MenuItem[] }
     ) {
@@ -37,25 +40,39 @@ export class MenuFormDialogComponent implements OnInit {
     save(): void {
         if (this.menuForm.invalid) return;
 
-        this.loading = true;
-        const menuData: MenuItem = {
-            ...this.data.menu,
-            ...this.menuForm.value
-        };
+        const actionText = this.data.menu?.id ? 'Update' : 'Create';
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '400px',
+            data: {
+                title: `Confirm ${actionText}`,
+                message: `Are you sure you want to ${actionText.toLowerCase()} this menu item: ${this.menuForm.value.title}?`,
+                confirmText: `Yes, ${actionText}`
+            }
+        });
 
-        const action = this.data.menu?.id
-            ? this.menuService.updateMenu(this.data.menu.id, menuData)
-            : this.menuService.createMenu(menuData);
+        dialogRef.afterClosed().subscribe(confirm => {
+            if (confirm) {
+                this.loading = true;
+                const menuData: MenuItem = {
+                    ...this.data.menu,
+                    ...this.menuForm.value
+                };
 
-        action.subscribe({
-            next: () => {
-                this.loading = false;
-                this.dialogRef.close(true);
-            },
-            error: (err) => {
-                console.error(err);
-                this.loading = false;
-                // Ideally show error message
+                const action = this.data.menu?.id
+                    ? this.menuService.updateMenu(this.data.menu.id, menuData)
+                    : this.menuService.createMenu(menuData);
+
+                action.subscribe({
+                    next: () => {
+                        this.loading = false;
+                        this.dialogRef.close(true);
+                    },
+                    error: (err) => {
+                        console.error(err);
+                        this.loading = false;
+                        // Ideally show error message
+                    }
+                });
             }
         });
     }

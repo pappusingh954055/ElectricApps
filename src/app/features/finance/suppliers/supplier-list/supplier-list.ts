@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 
 
 import { MatDialog } from '@angular/material/dialog';
-
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { ServerDatagridComponent } from '../../../../shared/components/server-datagrid-component/server-datagrid-component';
 import { SupplierModalComponent } from '../../../../features/inventory/supplier-modal/supplier-modal';
@@ -125,15 +125,28 @@ export class SupplierList implements OnInit {
   }
 
   onEdit(row: any) {
-    const dialogRef = this.dialog.open(SupplierModalComponent, {
-      width: '600px',
-      data: { supplier: row },
-      disableClose: true
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Edit Supplier',
+        message: `Are you sure you want to edit supplier: ${row.name}?`,
+        confirmText: 'Yes, Edit'
+      }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.loadSuppliers(this.lastRequest);
+        const editDialog = this.dialog.open(SupplierModalComponent, {
+          width: '600px',
+          data: { supplier: row },
+          disableClose: true
+        });
+
+        editDialog.afterClosed().subscribe(editResult => {
+          if (editResult) {
+            this.loadSuppliers(this.lastRequest);
+          }
+        });
       }
     });
   }

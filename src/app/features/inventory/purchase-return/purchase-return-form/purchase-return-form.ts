@@ -6,6 +6,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { PurchaseReturnService } from '../services/purchase-return.service';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
@@ -283,59 +284,73 @@ export class PurchaseReturnForm implements OnInit {
       return;
     }
 
-    const payload = {
-      supplierId: rawData.supplierId,
-      returnDate: rawData.returnDate,
-      remarks: rawData.remarks,
-      items: itemsToReturn.map((item: any) => ({
-        productId: item.productId,
-        productName: item.productName,
-        grnRef: item.grnRef,
-        returnQty: item.returnQty,
-        rate: item.rate,
-        discountPercent: item.discountPercent,
-        gstPercent: item.gstPercent,
-        taxAmount: item.taxAmount,
-        totalAmount: item.total
-      }))
-    };
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Confirm Purchase Return',
+        message: 'Are you sure you want to save this Purchase Return? This will generate a Debit Note.',
+        confirmText: 'Yes, Save',
+        confirmColor: 'primary'
+      }
+    });
 
-    // Use the correctly stored name or fallback
-    const supplierName = this.selectedSupplierName && this.selectedSupplierName.trim() !== ''
-      ? this.selectedSupplierName
-      : (this.suppliers.find(s => s.id == rawData.supplierId)?.name || 'Unknown Supplier');
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        const payload = {
+          supplierId: rawData.supplierId,
+          returnDate: rawData.returnDate,
+          remarks: rawData.remarks,
+          items: itemsToReturn.map((item: any) => ({
+            productId: item.productId,
+            productName: item.productName,
+            grnRef: item.grnRef,
+            returnQty: item.returnQty,
+            rate: item.rate,
+            discountPercent: item.discountPercent,
+            gstPercent: item.gstPercent,
+            taxAmount: item.taxAmount,
+            totalAmount: item.total
+          }))
+        };
 
-    const totalQty = itemsToReturn.reduce((sum: number, item: any) => sum + Number(item.returnQty), 0);
+        // Use the correctly stored name or fallback
+        const supplierName = this.selectedSupplierName && this.selectedSupplierName.trim() !== ''
+          ? this.selectedSupplierName
+          : (this.suppliers.find(s => s.id == rawData.supplierId)?.name || 'Unknown Supplier');
 
-    console.log(`[PurchaseReturn] Submitting: Supplier=${supplierName}, Qty=${totalQty}, ID=${rawData.supplierId}`);
+        const totalQty = itemsToReturn.reduce((sum: number, item: any) => sum + Number(item.returnQty), 0);
 
-    this.prService.savePurchaseReturn(payload).subscribe({
-      next: (res) => {
-        this.cdr.detectChanges();
-        const dialogRef = this.dialog.open(StatusDialogComponent, {
-          width: '400px',
-          data: {
-            isSuccess: true,
-            message: `Purchase Return ${res.returnNumber} successfully created.`
+        console.log(`[PurchaseReturn] Submitting: Supplier=${supplierName}, Qty=${totalQty}, ID=${rawData.supplierId}`);
+
+        this.prService.savePurchaseReturn(payload).subscribe({
+          next: (res) => {
+            this.cdr.detectChanges();
+            const dialogRef = this.dialog.open(StatusDialogComponent, {
+              width: '400px',
+              data: {
+                isSuccess: true,
+                message: `Purchase Return ${res.returnNumber} successfully created.`
+              }
+            });
+
+            dialogRef.afterClosed().subscribe(() => {
+              // Redirect to Outward Gate Pass
+              this.router.navigate(['/app/inventory/gate-pass/outward'], {
+                queryParams: {
+                  refNo: res.returnNumber,
+                  refId: res.id,
+                  type: 'purchase-return',
+                  partyName: supplierName,
+                  qty: totalQty
+                }
+              });
+            });
+          },
+          error: (err) => {
+            this.cdr.detectChanges();
+            this.openDialog(false, err.error?.message || 'An error occurred while saving the data.');
           }
         });
-
-        dialogRef.afterClosed().subscribe(() => {
-          // Redirect to Outward Gate Pass
-          this.router.navigate(['/app/inventory/gate-pass/outward'], {
-            queryParams: {
-              refNo: res.returnNumber,
-              refId: res.id,
-              type: 'purchase-return',
-              partyName: supplierName,
-              qty: totalQty
-            }
-          });
-        });
-      },
-      error: (err) => {
-        this.cdr.detectChanges();
-        this.openDialog(false, err.error?.message || 'An error occurred while saving the data.');
       }
     });
   }
