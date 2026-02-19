@@ -35,6 +35,11 @@
           <mat-label>Ref. PO Number</mat-label>
           <input matInput formControlName="poNumber" readonly>
         </mat-form-field>
+
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" *ngIf="isFromPopup">
+          <mat-label>Gate Pass No</mat-label>
+          <input matInput formControlName="gatePassNo" readonly placeholder="N/A">
+        </mat-form-field>
       </form>
 
       <mat-divider class="section-divider"></mat-divider>

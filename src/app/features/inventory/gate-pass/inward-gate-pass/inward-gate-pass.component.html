@@ -90,7 +90,7 @@
                     
                     <mat-form-field appearance="outline">
                         <mat-label>Invoice/Challan No</mat-label>
-                        <input matInput formControlName="invoiceNo" placeholder="Supplier Bill No" required [readonly]="isExternalRef">
+                        <input matInput formControlName="invoiceNo" placeholder="Supplier Bill No" required>
                         <mat-error *ngIf="gatePassForm.get('invoiceNo')?.hasError('required')">Mandatory</mat-error>
                     </mat-form-field>
 

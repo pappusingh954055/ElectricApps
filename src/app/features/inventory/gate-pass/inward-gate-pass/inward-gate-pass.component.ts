@@ -143,7 +143,6 @@ export class InwardGatePassComponent implements OnInit {
         });
 
         this.gatePassForm.get('referenceType')?.disable();
-        this.gatePassForm.get('invoiceNo')?.disable(); // Extra safety to make it readonly
         this.gatePassForm.updateValueAndValidity();
         this.cdr.detectChanges();
     }
@@ -192,7 +191,7 @@ export class InwardGatePassComponent implements OnInit {
 
         this.gatePassForm = this.fb.group({
             // 1. Reference Selection
-            referenceType: [GatePassReferenceType.PurchaseOrder, Validators.required],
+            referenceType: [{ value: GatePassReferenceType.PurchaseOrder, disabled: true }, Validators.required],
             referenceId: ['', Validators.required], // Holds internal ID of PO (String/GUID)
             referenceNo: ['', Validators.required], // Display No
             partyName: [{ value: '', disabled: true }], // Supplier Name
@@ -315,7 +314,10 @@ export class InwardGatePassComponent implements OnInit {
             next: (res: any) => {
                 this.isSaving = false;
                 this.loadingService.setLoading(false);
-                const message = this.isEditMode ? 'Gate Pass updated successfully!' : `Inward Gate Pass Generated! Pass No: ${res.passNo || 'GP-IN-2026-XXXX'}`;
+
+                // Defensive check for Pass No
+                const generatedPassNo = res.passNo || res.PassNo || res.data?.passNo || res.data?.PassNo || '';
+                const message = this.isEditMode ? 'Gate Pass updated successfully!' : `Inward Gate Pass Generated! Pass No: ${generatedPassNo || 'GP-IN-2026-XXXX'}`;
 
                 this.dialog.open(StatusDialogComponent, {
                     data: {
@@ -328,7 +330,10 @@ export class InwardGatePassComponent implements OnInit {
                     // Purchase Order flow: After Gate Pass, go to GRN
                     if (!this.isEditMode && formValue.referenceType === GatePassReferenceType.PurchaseOrder) {
                         this.router.navigate(['/app/inventory/grn-list/add'], {
-                            queryParams: { poId: formValue.referenceId }
+                            queryParams: {
+                                poId: formValue.referenceId,
+                                gatePassNo: generatedPassNo
+                            }
                         });
                     } else {
                         this.router.navigate(['/app/inventory/gate-pass']);

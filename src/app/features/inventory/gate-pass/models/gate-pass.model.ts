@@ -33,5 +33,6 @@ export enum GatePassReferenceType {
 export enum GatePassStatus {
     Entered = 1,
     Dispatched = 2,
-    Cancelled = 3
+    Cancelled = 3,
+    Completed = 4
 }

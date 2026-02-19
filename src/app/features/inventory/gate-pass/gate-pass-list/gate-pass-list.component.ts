@@ -109,6 +109,20 @@ export class GatePassListComponent implements OnInit {
         this.loadData();
     }
 
+    onCreateGrn(row: any) {
+        if (row.passType !== 'Inward' || row.referenceType !== 1) { // 1 = PurchaseOrder
+            this.notification.showStatus(false, 'GRN can only be created for Inward PO Gate Passes');
+            return;
+        }
+
+        this.router.navigate(['/app/inventory/grn-list/add'], {
+            queryParams: {
+                poId: row.referenceId,
+                gatePassNo: row.passNo
+            }
+        });
+    }
+
     onEdit(row: any) {
         const route = row.passType === 'Inward' ? 'inward' : 'outward';
         this.router.navigate([`/app/inventory/gate-pass/${route}`], {
@@ -180,6 +194,7 @@ export class GatePassListComponent implements OnInit {
             case 1: return 'status-entered';
             case 2: return 'status-dispatched';
             case 3: return 'status-cancelled';
+            case 4: return 'status-completed';
             default: return '';
         }
     }
@@ -189,6 +204,7 @@ export class GatePassListComponent implements OnInit {
             case 1: return 'Entered';
             case 2: return 'Dispatched';
             case 3: return 'Cancelled';
+            case 4: return 'Completed';
             default: return 'Unknown';
         }
     }

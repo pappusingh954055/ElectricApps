@@ -30,7 +30,7 @@ import { catchError } from 'rxjs/operators';
 export class SoList implements OnInit {
   private loadingService = inject(LoadingService);
 
-  displayedColumns: string[] = ['select', 'soNumber', 'soDate', 'customerName', 'grandTotal', 'status', 'paymentStatus', 'actions'];
+  displayedColumns: string[] = ['select', 'soNumber', 'gatePassNo', 'soDate', 'customerName', 'grandTotal', 'status', 'paymentStatus', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   isAdmin: boolean = false;
   isLoading: boolean = true;
@@ -130,12 +130,8 @@ export class SoList implements OnInit {
 
         // 🚛 Dispatch Check: Mark orders that have an Outward Gate Pass already
         items.forEach((item: any) => {
-          // If we find an Outward Gate Pass with matching ReferenceNo, then it's NOT pending anymore
-          const hasGatePass = recentGatePasses.some((gp: any) =>
-            gp.passType === 'Outward' &&
-            String(gp.referenceNo).trim() === String(item.soNumber).trim()
-          );
-          item.isDispatchPending = !hasGatePass;
+          // Using the new linked GatePassNo from DB for more reliable tracking
+          item.isDispatchPending = !item.gatePassNo;
         });
 
         // 🧠 FIFO LOGIC for Customer Payment Status (Mirroring GRN logic)

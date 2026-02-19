@@ -224,6 +224,20 @@
         background: #ffebee;
         color: #c62828;
     }
+
+    &.status-completed {
+        background: #e1f5fe;
+        color: #0288d1;
+    }
+}
+
+.grn-action-btn {
+    mat-icon {
+        color: #1a73e8 !important;
+    }
+    &:hover {
+        background-color: #e8f0fe !important;
+    }
 }
 
 .no-data-cell {

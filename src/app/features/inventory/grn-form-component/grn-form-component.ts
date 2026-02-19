@@ -60,6 +60,9 @@ export class GrnFormComponent implements OnInit {
         if (params['poNo']) {
           this.grnForm.patchValue({ poNumber: params['poNo'] });
         }
+        if (params['gatePassNo']) {
+          this.grnForm.patchValue({ gatePassNo: params['gatePassNo'] });
+        }
         this.loadPOData(this.poId);
       }
     });
@@ -76,6 +79,7 @@ export class GrnFormComponent implements OnInit {
       receivedDate: [new Date(), Validators.required],
       supplierName: [{ value: '', disabled: true }],
       poNumber: [{ value: '', disabled: true }],
+      gatePassNo: [{ value: '', disabled: true }],
       remarks: ['']
     });
   }
@@ -242,6 +246,7 @@ export class GrnFormComponent implements OnInit {
     const grnData = {
       poHeaderId: this.poId,
       supplierId: this.supplierId,
+      gatePassNo: this.grnForm.getRawValue().gatePassNo, // Linking the Gate Pass
       receivedDate: this.grnForm.getRawValue().receivedDate,
       remarks: this.grnForm.value.remarks,
       totalAmount: this.calculateGrandTotal(),
