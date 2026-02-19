@@ -147,18 +147,30 @@ export class SoList implements OnInit {
             .sort((a: any, b: any) => new Date(b.soDate).getTime() - new Date(a.soDate).getTime());
 
           custItems.forEach((item: any) => {
-            if (runningDue > 0.01) {
+            if (runningDue < -0.01) {
+              // Case: Customer has ADVANCE (Negative balance)
+              const credit = Math.abs(runningDue);
+              if (credit >= item.grandTotal - 0.01) {
+                item.paymentStatus = 'Paid';
+                runningDue += item.grandTotal;
+              } else {
+                item.paymentStatus = 'Partial';
+                runningDue = 0;
+              }
+            } else if (runningDue > 0.01) {
+              // Case: Customer has DEBT (Positive balance)
               if (runningDue >= item.grandTotal - 0.01) {
-                // Entire order amount is covered by the debt
                 item.paymentStatus = 'Unpaid';
                 runningDue -= item.grandTotal;
               } else {
-                // Debt is smaller than order amount -> Partial
                 item.paymentStatus = 'Partial';
                 runningDue = 0;
               }
             } else {
-              // No debt remaining (or Balance is 0/Negative) -> Paid
+              // Case: Balance is 0
+              // Default to Paid (assuming old invoices were cleared).
+              // For a brand new 'Ghost Order', it will show Paid until ledger updates,
+              // but this is safer than marking all old orders as Unpaid.
               item.paymentStatus = 'Paid';
             }
           });

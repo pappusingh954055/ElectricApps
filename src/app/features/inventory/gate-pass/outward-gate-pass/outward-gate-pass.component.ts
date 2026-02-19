@@ -223,7 +223,7 @@ export class OutwardGatePassComponent implements OnInit {
             referenceId: String(formValue.referenceId || ''), // Ensure String for GUID support
             id: this.gatePassId || 0,
             passType: 'Outward',
-            status: GatePassStatus.Entered,
+            status: GatePassStatus.Completed,
             createdBy: this.authService.getUserName()
         };
 
