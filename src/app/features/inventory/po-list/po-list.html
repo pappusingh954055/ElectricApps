@@ -1,5 +1,38 @@
 <mat-card class="list-card" [class.disabled-content]="isDashboardLoading">
   <div class="page-container">
+    <div class="stats-grid" *ngIf="!isDashboardLoading">
+      <mat-card class="stat-card total">
+          <mat-card-content>
+              <div class="stat-icon"><mat-icon>shopping_cart</mat-icon></div>
+              <div class="stat-info">
+                  <span class="label">Total Purchase (Approved)</span>
+                  <span class="value">₹{{totalPurchaseAmount | number:'1.2-2'}}</span>
+              </div>
+          </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card overdue">
+          <mat-card-content>
+              <div class="stat-icon"><mat-icon>inventory_2</mat-icon></div>
+              <div class="stat-info">
+                  <span class="label">Awaiting Receiving</span>
+                  <span class="value">{{pendingReceiveCount}}</span>
+              </div>
+              <div class="stat-badge" *ngIf="pendingReceiveCount > 0">Pending GRN</div>
+          </mat-card-content>
+      </mat-card>
+
+      <mat-card class="stat-card active">
+          <mat-card-content>
+              <div class="stat-icon"><mat-icon>rate_review</mat-icon></div>
+              <div class="stat-info">
+                  <span class="label">Awaiting Approval</span>
+                  <span class="value">{{pendingApprovalCount}}</span>
+              </div>
+          </mat-card-content>
+      </mat-card>
+    </div>
+
     <div class="loading-shade" *ngIf="isLoading && !isDashboardLoading">
       <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
     </div>

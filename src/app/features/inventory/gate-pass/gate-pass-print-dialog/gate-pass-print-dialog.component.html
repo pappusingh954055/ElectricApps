@@ -1,0 +1,105 @@
+<div class="print-dialog">
+    <div class="dialog-header">
+        <div class="title-row">
+            <mat-icon color="primary">print</mat-icon>
+            <h2>Print Gate Pass</h2>
+        </div>
+        <button mat-icon-button (click)="close()" color="warn">
+            <mat-icon>close</mat-icon>
+        </button>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="dialog-content">
+        <div *ngIf="loading" class="loading-state">
+            <mat-spinner diameter="40"></mat-spinner>
+            <p>Fetching Gate Pass Details...</p>
+        </div>
+
+        <div *ngIf="!loading && gatePass" id="printable-area">
+            <div class="details-grid">
+                <!-- Vehicle/Driver Details -->
+                <div class="detail-section">
+                    <h3>Vehicle & Driver Details</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Vehicle No:</span>
+                        <span>{{gatePass.vehicleNo}}</span>
+                    </div>
+                    <div class="detail-row" *ngIf="gatePass.vehicleType">
+                        <span class="detail-label">Vehicle Type:</span>
+                        <span>{{gatePass.vehicleType}}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Driver Name:</span>
+                        <span>{{gatePass.driverName}}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Driver Phone:</span>
+                        <span>{{gatePass.driverPhone}}</span>
+                    </div>
+                    <div class="detail-row" *ngIf="gatePass.transporterName">
+                        <span class="detail-label">Transporter:</span>
+                        <span>{{gatePass.transporterName}}</span>
+                    </div>
+                </div>
+
+                <!-- Reference Details -->
+                <div class="detail-section">
+                    <h3>Reference & Party</h3>
+                    <div class="detail-row">
+                        <span class="detail-label">Party Name:</span>
+                        <span>{{gatePass.partyName}}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Reference No:</span>
+                        <span>{{gatePass.referenceNo}}</span>
+                    </div>
+                    <div class="detail-row" *ngIf="gatePass.invoiceNo">
+                        <span class="detail-label">Invoice/Bill No:</span>
+                        <span>{{gatePass.invoiceNo}}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Security By:</span>
+                        <span>{{gatePass.securityGuard}}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Goods Summary -->
+            <div class="detail-section">
+                <h3>Goods Summary</h3>
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th>Total Quantity</th>
+                            <th>Total Weight (if applicable)</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{gatePass.totalQty}}</td>
+                            <td>{{gatePass.totalWeight || '-'}}</td>
+                            <td>{{gatePass.remarks || 'N/A'}}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="terms-section">
+                <p><strong>Note:</strong> This is a computer-generated gate pass. Any discrepancies should be reported immediately to the entry gate supervisor.</p>
+            </div>
+        </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    <div class="dialog-actions">
+        <button mat-stroked-button (click)="close()">Cancel</button>
+        <button mat-flat-button color="primary" (click)="print()" [disabled]="loading || !gatePass">
+            <mat-icon>print</mat-icon>
+            Print Pass
+        </button>
+    </div>
+</div>

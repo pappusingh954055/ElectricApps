@@ -1,4 +1,37 @@
 <div class="container-fluid" [class.disabled-content]="isDashboardLoading">
+  <div class="stats-grid" *ngIf="!isDashboardLoading">
+    <mat-card class="stat-card total">
+        <mat-card-content>
+            <div class="stat-icon"><mat-icon>payments</mat-icon></div>
+            <div class="stat-info">
+                <span class="label">Total Confirmed Sales</span>
+                <span class="value">₹{{totalSalesAmount | number:'1.2-2'}}</span>
+            </div>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card overdue">
+        <mat-card-content>
+            <div class="stat-icon"><mat-icon>local_shipping</mat-icon></div>
+            <div class="stat-info">
+                <span class="label">Pending Dispatch</span>
+                <span class="value">{{pendingDispatchCount}}</span>
+            </div>
+            <div class="stat-badge" *ngIf="pendingDispatchCount > 0">Action Required</div>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card active">
+        <mat-card-content>
+            <div class="stat-icon"><mat-icon>pending_actions</mat-icon></div>
+            <div class="stat-info">
+                <span class="label">Unpaid/Partial</span>
+                <span class="value">{{unpaidOrdersCount}}</span>
+            </div>
+        </mat-card-content>
+    </mat-card>
+  </div>
+
   <div class="header-actions">
     <h1 class="page-title">Sale Order Management</h1>
     <div class="d-flex gap-2">
@@ -31,7 +64,7 @@
     </div>
 
     <!-- Table & Paginator -->
-    <div [style.display]="(!isLoading && dataSource.data.length > 0) ? 'block' : 'none'">
+    <div [style.display]="(!isLoading && dataSource.data.length > 0) ? 'block' : 'none'" class="table-scroll-wrapper">
       <table mat-table [dataSource]="dataSource" matSort (matSortChange)="loadOrders()">
         
         <ng-container matColumnDef="select">

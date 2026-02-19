@@ -46,6 +46,12 @@ export class SoList implements OnInit {
   totalRecords: number = 0;
   searchKey: string = "";
   paymentFilter: string = "";
+
+  // Stats
+  totalSalesAmount: number = 0;
+  pendingDispatchCount: number = 0;
+  unpaidOrdersCount: number = 0;
+
   constructor(
     private inventoryService: InventoryService,
     private saleOrderService: SaleOrderService,
@@ -158,10 +164,26 @@ export class SoList implements OnInit {
         });
 
         // Date Normalization & Mapping
+        this.totalSalesAmount = 0;
+        this.pendingDispatchCount = 0;
+        this.unpaidOrdersCount = 0;
+
         let processedItems = items.map((item: any) => {
           if (item.soDate && typeof item.soDate === 'string' && !item.soDate.includes('Z')) {
             item.soDate += 'Z';
           }
+
+          // Aggregating Stats (from current page/view)
+          if (item.status?.toLowerCase() === 'confirmed') {
+            this.totalSalesAmount += item.grandTotal;
+          }
+          if (item.isDispatchPending && item.status?.toLowerCase() === 'confirmed') {
+            this.pendingDispatchCount++;
+          }
+          if (item.paymentStatus === 'Unpaid' || item.paymentStatus === 'Partial') {
+            this.unpaidOrdersCount++;
+          }
+
           return item;
         });
 

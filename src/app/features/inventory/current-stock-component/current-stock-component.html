@@ -1,3 +1,36 @@
+<div class="stats-grid" *ngIf="!isDashboardLoading">
+  <mat-card class="stat-card total">
+      <mat-card-content>
+          <div class="stat-icon"><mat-icon>inventory_2</mat-icon></div>
+          <div class="stat-info">
+              <span class="label">Total Qty in Stock</span>
+              <span class="value">{{totalStockQty | number}} <small style="font-size: 0.6em; color: #666;">Nos</small></span>
+          </div>
+      </mat-card-content>
+  </mat-card>
+
+  <mat-card class="stat-card overdue">
+      <mat-card-content>
+          <div class="stat-icon"><mat-icon>warning_amber</mat-icon></div>
+          <div class="stat-info">
+              <span class="label">Low Stock Alerts</span>
+              <span class="value">{{lowStockCount}}</span>
+          </div>
+          <div class="stat-badge" *ngIf="lowStockCount > 0">Action Required</div>
+      </mat-card-content>
+  </mat-card>
+
+  <mat-card class="stat-card active">
+      <mat-card-content>
+          <div class="stat-icon"><mat-icon>account_balance_wallet</mat-icon></div>
+          <div class="stat-info">
+              <span class="label">Total Stock Value</span>
+              <span class="value">₹{{totalInventoryValue | number:'1.2-2'}}</span>
+          </div>
+      </mat-card-content>
+  </mat-card>
+</div>
+
 <div class="table-container mat-elevation-z8" [class.disabled-content]="isDashboardLoading">
   <div class="loading-shade" *ngIf="isLoadingResults && !isDashboardLoading">
     <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
@@ -55,7 +88,7 @@
     </div>
   </div>
 
-  <div [style.display]="(!isLoadingResults && stockDataSource.data.length > 0) ? 'block' : 'none'">
+  <div [style.display]="(!isLoadingResults && stockDataSource.data.length > 0) ? 'block' : 'none'" class="table-scroll-wrapper">
     <table mat-table [dataSource]="stockDataSource" matSort multiTemplateDataRows aria-label="Current Stock Table">
       
       <ng-container matColumnDef="select">
@@ -148,42 +181,44 @@
                 <span>Audit Trail: Transaction & Rejection History</span>
               </div>
               
-              <table class="child-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>PO Reference</th>
-                    <th>GRNNumber</th>
-                    <th>Product</th> 
-                    <th>Supplier Source</th>
-                    <th>Received</th>
-                    <th>Rejected</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let h of element.history">
-                    <td>{{h.receivedDate | date:'mediumDate'}}</td>
-                    <td><span class="po-link">#{{h.poNumber}}</span></td>
-                    <td>{{h.grnNumber}}</td>
-                    <td>{{h.productName}}</td> 
-                    <td>{{h.supplierName}}</td>
-                    <td class="font-600">{{h.receivedQty}}</td>
-                    <td>
-                      <span [class.text-danger]="h.rejectedQty > 0" [class.text-muted]="h.rejectedQty === 0">
-                        {{h.rejectedQty}}
-                      </span>
-                    </td>
-                  </tr>
-                  <tr *ngIf="!element.history || element.history.length === 0">
-                    <td colspan="6" class="no-data-cell"> 
-                      <div class="empty-history">
-                          <mat-icon>info_outline</mat-icon>
-                          <span>No transaction history found for this item.</span>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+              <div class="history-scroll-container">
+                <table class="child-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>PO Reference</th>
+                      <th>GRNNumber</th>
+                      <th>Product</th> 
+                      <th>Supplier Source</th>
+                      <th>Received</th>
+                      <th>Rejected</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr *ngFor="let h of $any(element).history">
+                      <td>{{$any(h).receivedDate | date:'mediumDate'}}</td>
+                      <td><span class="po-link">#{{$any(h).poNumber}}</span></td>
+                      <td>{{$any(h).grnNumber}}</td>
+                      <td>{{$any(h).productName}}</td> 
+                      <td>{{$any(h).supplierName}}</td>
+                      <td class="font-600">{{$any(h).receivedQty}}</td>
+                      <td>
+                        <span [class.text-danger]="$any(h).rejectedQty > 0" [class.text-muted]="$any(h).rejectedQty === 0">
+                          {{$any(h).rejectedQty}}
+                        </span>
+                      </td>
+                    </tr>
+                    <tr *ngIf="!$any(element).history || $any(element).history.length === 0">
+                      <td colspan="7" class="no-data-cell"> 
+                        <div class="empty-history">
+                            <mat-icon>info_outline</mat-icon>
+                            <span>No transaction history found for this item.</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </td>

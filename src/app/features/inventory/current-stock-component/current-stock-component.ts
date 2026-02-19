@@ -47,8 +47,13 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
   private isFirstLoad: boolean = true;
   lowStockCount: number = 0;
   totalInventoryValue: number = 0;
+  totalStockQty: number = 0;
   searchValue: string = '';
   lastpurchaseOrderId!: number;
+
+  // Inner pagination for expanded history
+  innerPageIndex: number = 0;
+  innerPageSize: number = 5;
 
   searchTerm: string = '';
   startDate: Date | null = null;
@@ -174,13 +179,25 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
   }
 
   toggleRow(element: any) {
-    this.expandedElement = (this.expandedElement === element) ? null : element;
+    if (this.expandedElement === element) {
+      this.expandedElement = null;
+    } else {
+      this.expandedElement = element;
+      this.innerPageIndex = 0; // Reset paging when expanding new row
+    }
+    this.cdr.detectChanges();
+  }
+
+  onInnerPageChange(event: any) {
+    this.innerPageIndex = event.pageIndex;
+    this.innerPageSize = event.pageSize;
     this.cdr.detectChanges();
   }
 
   updateSummary(data: any[]) {
     this.lowStockCount = data.filter(item => item.availableStock <= (item.minStockLevel || 10)).length;
     this.totalInventoryValue = data.reduce((acc, curr) => acc + (curr.availableStock * curr.lastRate), 0);
+    this.totalStockQty = data.reduce((acc, curr) => acc + (curr.availableStock || 0), 0);
     this.cdr.detectChanges();
   }
 

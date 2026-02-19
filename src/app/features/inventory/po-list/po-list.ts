@@ -62,6 +62,11 @@ export class PoList implements OnInit {
 
   @ViewChild(EnterpriseHierarchicalGridComponent) grid!: EnterpriseHierarchicalGridComponent;
 
+  // Stats
+  totalPurchaseAmount: number = 0;
+  pendingReceiveCount: number = 0;
+  pendingApprovalCount: number = 0;
+
   constructor(
     private poService: InventoryService,
     private poActionService: POService,
@@ -214,6 +219,25 @@ export class PoList implements OnInit {
           });
           return item;
         });
+
+        // Aggregating Stats (Reset & Re-calculate)
+        this.totalPurchaseAmount = 0;
+        this.pendingReceiveCount = 0;
+        this.pendingApprovalCount = 0;
+
+        items.forEach((item: any) => {
+          const status = item.status?.toLowerCase();
+          if (status === 'approved' || status === 'received') {
+            this.totalPurchaseAmount += item.grandTotal || 0;
+          }
+          if (status === 'approved') {
+            this.pendingReceiveCount++;
+          }
+          if (status === 'submitted') {
+            this.pendingApprovalCount++;
+          }
+        });
+
         this.dataSource.data = items;
         this.totalRecords = res.totalRecords || 0;
         this.isLoading = false;

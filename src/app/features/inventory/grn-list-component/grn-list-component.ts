@@ -79,6 +79,11 @@ export class GrnListComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
+  // Stats
+  totalStockAmount: number = 0;
+  pendingPaymentCount: number = 0;
+  qualityIssueCount: number = 0;
+
   constructor(
     private router: Router,
     private cdr: ChangeDetectorRef,
@@ -208,6 +213,20 @@ export class GrnListComponent implements OnInit, AfterViewInit {
             });
           });
 
+          // Aggregating Stats
+          this.totalStockAmount = 0;
+          this.pendingPaymentCount = 0;
+          this.qualityIssueCount = 0;
+
+          items.forEach((item: any) => {
+            this.totalStockAmount += item.totalAmount || 0;
+            if (item.paymentStatus === 'Unpaid' || item.paymentStatus === 'Partial') {
+              this.pendingPaymentCount++;
+            }
+            if (item.totalRejected > 0) {
+              this.qualityIssueCount++;
+            }
+          });
 
           return items.map((item: any): GRNListRow => {
             // Normalize Date to UTC if it doesn't have timezone

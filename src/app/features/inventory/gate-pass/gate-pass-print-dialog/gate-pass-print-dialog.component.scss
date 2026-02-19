@@ -1,0 +1,132 @@
+.print-dialog {
+    padding: 0;
+    min-width: 600px;
+    background: white;
+
+    .dialog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 24px;
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            mat-icon {
+                font-size: 24px;
+                height: 24px;
+                width: 24px;
+            }
+
+            h2 {
+                margin: 0;
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: #1a56db;
+            }
+        }
+    }
+
+    .dialog-content {
+        padding: 24px;
+        max-height: 70vh;
+        overflow-y: auto;
+
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            gap: 16px;
+            color: #6b7280;
+        }
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .detail-section {
+        h3 {
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #4b5563;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 0.9rem;
+
+        .detail-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        span:not(.detail-label) {
+            color: #111827;
+            font-weight: 600;
+        }
+    }
+
+    .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+
+        th {
+            background: #f9fafb;
+            text-align: left;
+            padding: 12px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #4b5563;
+            border: 1px solid #e5e7eb;
+        }
+
+        td {
+            padding: 12px;
+            font-size: 0.9rem;
+            color: #111827;
+            border: 1px solid #e5e7eb;
+        }
+    }
+
+    .terms-section {
+        margin-top: 24px;
+        padding: 12px;
+        background: #fefce8;
+        border-radius: 8px;
+        border: 1px solid #fef08a;
+
+        p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: #854d0e;
+        }
+    }
+
+    .dialog-actions {
+        padding: 16px 24px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+    }
+}
+
+// Ensure printable area looks okay in dialog
+#printable-area {
+    background: white;
+}

@@ -1,4 +1,37 @@
 <div class="grn-main-wrapper" [class.disabled-content]="isDashboardLoading">
+    <div class="stats-grid" *ngIf="!isDashboardLoading">
+        <mat-card class="stat-card total">
+            <mat-card-content>
+                <div class="stat-icon"><mat-icon>inventory</mat-icon></div>
+                <div class="stat-info">
+                    <span class="label">Total Stock Received</span>
+                    <span class="value">₹{{totalStockAmount | number:'1.2-2'}}</span>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card overdue">
+            <mat-card-content>
+                <div class="stat-icon"><mat-icon>payments</mat-icon></div>
+                <div class="stat-info">
+                    <span class="label">Pending Payments</span>
+                    <span class="value">{{pendingPaymentCount}}</span>
+                </div>
+                <div class="stat-badge" *ngIf="pendingPaymentCount > 0">Action Required</div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card active">
+            <mat-card-content>
+                <div class="stat-icon"><mat-icon>error_outline</mat-icon></div>
+                <div class="stat-info">
+                    <span class="label">Quality Issues</span>
+                    <span class="value">{{qualityIssueCount}}</span>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
     <div class="header-container">
         <div class="title-section">
             <h1 class="mat-h1">Goods Receipt Notes (GRN)</h1>

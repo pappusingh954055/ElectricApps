@@ -122,12 +122,17 @@
             <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef> Actions </th>
                 <td mat-cell *matCellDef="let row">
-                    <button mat-icon-button color="primary" (click)="onEdit(row)" matTooltip="Edit Pass">
-                        <mat-icon>edit</mat-icon>
-                    </button>
-                    <button mat-icon-button color="warn" (click)="onDelete(row)" matTooltip="Delete Pass">
-                        <mat-icon>delete</mat-icon>
-                    </button>
+                    <div class="action-buttons">
+                        <button mat-icon-button color="primary" (click)="onEdit(row)" matTooltip="Edit Pass">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" (click)="onDelete(row)" matTooltip="Delete Pass">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                        <button mat-icon-button color="accent" (click)="onPrint(row)" matTooltip="Print Pass">
+                            <mat-icon>print</mat-icon>
+                        </button>
+                    </div>
                 </td>
             </ng-container>
 

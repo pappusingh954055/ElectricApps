@@ -12,6 +12,7 @@ import { NotificationService } from '../../../../features/shared/notification.se
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { FormsModule } from '@angular/forms';
+import { GatePassPrintDialogComponent } from '../gate-pass-print-dialog/gate-pass-print-dialog.component';
 
 @Component({
     selector: 'app-gate-pass-list',
@@ -19,7 +20,8 @@ import { FormsModule } from '@angular/forms';
     imports: [
         CommonModule,
         MaterialModule,
-        FormsModule
+        FormsModule,
+        GatePassPrintDialogComponent
     ],
     providers: [DatePipe],
     templateUrl: './gate-pass-list.component.html',
@@ -109,6 +111,13 @@ export class GatePassListComponent implements OnInit {
         const route = row.passType === 'Inward' ? 'inward' : 'outward';
         this.router.navigate([`/app/inventory/gate-pass/${route}`], {
             queryParams: { id: row.id, mode: 'edit' }
+        });
+    }
+
+    onPrint(row: any) {
+        this.dialog.open(GatePassPrintDialogComponent, {
+            width: '800px',
+            data: { id: row.id }
         });
     }
 
