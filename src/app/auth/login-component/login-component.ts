@@ -206,11 +206,22 @@ export class LoginComponent implements OnInit {
       error: err => {
         console.error('Forgot Password Error:', err);
         let msg = 'Failed to request password reset.';
-        if (err.error && typeof err.error === 'string') {
-          msg = err.error;
-        } else if (err.error?.message) {
-          msg = err.error.message;
+
+        if (err.error) {
+          if (typeof err.error === 'string') {
+            msg = err.error;
+          } else if (err.error.errors) {
+            // Validation errors (ProblemDetails)
+            const errors = err.error.errors;
+            const firstError = Object.keys(errors)[0];
+            msg = errors[firstError][0] || 'Validation error';
+          } else if (err.error.title) {
+            msg = err.error.title;
+          } else if (err.error.message) {
+            msg = err.error.message;
+          }
         }
+
         setTimeout(() => { this.showErrorDialog(msg); }, 150);
       }
     });
