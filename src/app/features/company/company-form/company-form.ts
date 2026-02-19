@@ -9,7 +9,9 @@ import { CompanyService } from '../services/company.service';
 import { CompanyProfileDto, UpsertCompanyRequest } from '../model/company.model';
 import { FormFooter } from '../../shared/form-footer/form-footer';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { environment } from '../../../enviornments/environment';
+import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
     selector: 'app-company-form',
@@ -25,6 +27,7 @@ export class CompanyForm implements OnInit {
     private route = inject(ActivatedRoute);
     private router = inject(Router);
     private companyService = inject(CompanyService);
+    private loadingService = inject(LoadingService);
 
     companyForm!: FormGroup;
     loading = false;
@@ -117,6 +120,7 @@ export class CompanyForm implements OnInit {
     loadCompany() {
         if (!this.companyId) return;
         this.loading = true;
+        this.loadingService.setLoading(true);
         this.companyService.getById(+this.companyId).subscribe({
             next: (res) => {
                 // Reset form to base state before patching
@@ -146,11 +150,13 @@ export class CompanyForm implements OnInit {
                 this.logoPreview = null;
 
                 this.loading = false;
+                this.loadingService.setLoading(false);
                 this.cdr.detectChanges();
             },
             error: (err) => {
                 console.error('Error loading company:', err);
                 this.loading = false;
+                this.loadingService.setLoading(false);
                 this.cdr.detectChanges();
             }
         });
@@ -163,41 +169,56 @@ export class CompanyForm implements OnInit {
             return;
         }
 
-        this.loading = true;
-        const payload: UpsertCompanyRequest = this.companyForm.value;
-
-        const request = this.companyId
-            ? this.companyService.updateCompany(+this.companyId, payload)
-            : this.companyService.insertCompany(payload);
-
-        request.subscribe({
-            next: (res: any) => {
-                this.loading = false;
-                // Handle both object {id: 1} and primitive integer responses
-                const newId = (res && typeof res === 'object') ? res.id : res;
-
-                this.dialog.open(StatusDialogComponent, {
-                    data: {
-                        isSuccess: true,
-                        message: (res && res.message) || 'Company saved successfully'
-                    }
-                }).afterClosed().subscribe(() => {
-                    if (this.selectedLogo) {
-                        this.uploadLogo(newId || +this.companyId!);
-                    }
-                    this.router.navigate(['/app/company']);
-                });
-            },
-            error: (err) => {
-                this.loading = false;
-                this.dialog.open(StatusDialogComponent, {
-                    data: {
-                        isSuccess: false,
-                        message: err.error?.message ?? 'Something went wrong'
-                    }
-                });
-                this.cdr.detectChanges();
+        const action = this.companyId ? 'Update' : 'Create';
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            data: {
+                title: `Confirm ${action}`,
+                message: `Are you sure you want to ${action.toLowerCase()} this company?`
             }
+        });
+
+        dialogRef.afterClosed().subscribe(confirm => {
+            if (!confirm) return;
+
+            this.loading = true;
+            this.loadingService.setLoading(true);
+            const payload: UpsertCompanyRequest = this.companyForm.value;
+
+            const request = this.companyId
+                ? this.companyService.updateCompany(+this.companyId, payload)
+                : this.companyService.insertCompany(payload);
+
+            request.subscribe({
+                next: (res: any) => {
+                    this.loading = false;
+                    this.loadingService.setLoading(false);
+                    // Handle both object {id: 1} and primitive integer responses
+                    const newId = (res && typeof res === 'object') ? res.id : res;
+
+                    this.dialog.open(StatusDialogComponent, {
+                        data: {
+                            isSuccess: true,
+                            message: (res && res.message) || 'Company saved successfully'
+                        }
+                    }).afterClosed().subscribe(() => {
+                        if (this.selectedLogo) {
+                            this.uploadLogo(newId || +this.companyId!);
+                        }
+                        this.router.navigate(['/app/company']);
+                    });
+                },
+                error: (err) => {
+                    this.loading = false;
+                    this.loadingService.setLoading(false);
+                    this.dialog.open(StatusDialogComponent, {
+                        data: {
+                            isSuccess: false,
+                            message: err.error?.message ?? 'Something went wrong'
+                        }
+                    });
+                    this.cdr.detectChanges();
+                }
+            });
         });
     }
 

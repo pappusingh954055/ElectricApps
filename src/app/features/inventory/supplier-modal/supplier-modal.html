@@ -1,4 +1,4 @@
-<div class="modal-container">
+<div class="modal-container" [class.disabled-content]="loading">
   <div class="modal-header">
     <h2 class="title-text">{{ isEdit ? 'Edit Supplier' : 'Add New Supplier' }}</h2>
     

@@ -90,9 +90,14 @@ export class RolePermissionsComponent implements OnInit {
         const menuTree = this.menuService.buildMenuTree(data.menus);
         this.dataSource.data = this.menuService.sortMenus(menuTree);
 
-        this.loading = false;
-        this.loadingService.setLoading(false);
-        this.cdr.detectChanges();
+        if (this.roles.length > 0) {
+          this.selectedRoleId = this.roles[0].id;
+          this.onRoleChange();
+        } else {
+          this.loading = false;
+          this.loadingService.setLoading(false);
+          this.cdr.detectChanges();
+        }
       },
       error: (err) => {
         console.error('Error loading initial data', err);

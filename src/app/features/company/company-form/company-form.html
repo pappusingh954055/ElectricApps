@@ -1,4 +1,4 @@
-<div class="page-container p-4 flex-column">
+<div class="page-container p-4 flex-column" [class.disabled-content]="loading">
   <div class="header-row flex-row flex-between flex-center mb-4">
     <div class="title-section flex-row flex-center gap-2">
       <button mat-icon-button (click)="onCancel()" color="primary">

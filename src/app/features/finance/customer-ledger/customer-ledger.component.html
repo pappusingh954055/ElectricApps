@@ -1,4 +1,4 @@
-<div class="page-container" [class.disabled-content]="isDashboardLoading">
+<div class="page-container" [class.disabled-content]="isDashboardLoading || isLoading">
     <div class="page-header">
         <h1 class="mat-headline-4">Customer Ledger</h1>
         <p class="subtitle">View detailed transaction history for customers.</p>
@@ -51,10 +51,12 @@
 
     <!-- Ledger Content -->
     <div *ngIf="ledgerData" class="ledger-content">
-        <!-- Summary Card -->
-        <mat-card class="summary-card elevation-z2" [class.balance-positive]="currentBalance > 0">
+        <app-summary-stats [stats]="summaryStats" [isLoading]="isLoading"></app-summary-stats>
+
+        <!-- Summary Card: Supplier/Customer Details Only -->
+        <mat-card class="summary-card elevation-z2">
             <mat-card-content>
-                <div class="summary-header">
+                <div class="summary-header" style="justify-content: space-between;">
                     <div class="customer-details">
                         <mat-icon class="avatar-icon">person_pin</mat-icon>
                         <div>
@@ -62,17 +64,11 @@
                             <span class="customer-id">ID: #{{customerId}}</span>
                         </div>
                     </div>
-                    <div class="balance-info">
-                        <span class="label">Current Balance</span>
-                        <h2 class="amount">₹{{currentBalance | number:'1.2-2'}}</h2>
-                        <span class="status-chip" [class.paid]="currentBalance <= 0" [class.due]="currentBalance > 0">
-                            {{currentBalance > 0 ? 'Receivable' : 'Settled'}}
-                        </span>
-                        <div class="action-buttons-header" style="margin-top: 15px;">
-                            <button mat-stroked-button color="primary" (click)="goToReceipt()" [disabled]="currentBalance <= 0">
-                                <mat-icon>add_circle_outline</mat-icon> Record Receipt
-                            </button>
-                        </div>
+                    
+                    <div class="action-buttons">
+                        <button mat-flat-button color="primary" (click)="goToReceipt()" [disabled]="currentBalance <= 0">
+                            <mat-icon>add_circle_outline</mat-icon> Record Receipt
+                        </button>
                     </div>
                 </div>
             </mat-card-content>

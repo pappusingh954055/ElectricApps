@@ -12,6 +12,8 @@ import { GridRequest } from '../../../shared/models/grid-request.model';
 import { ServerDatagridComponent } from '../../../shared/components/server-datagrid-component/server-datagrid-component';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { LoadingService } from '../../../core/services/loading.service';
+import { SummaryStat, SummaryStatsComponent } from '../../../shared/components/summary-stats-component/summary-stats-component';
 
 @Component({
     selector: 'app-company-list',
@@ -22,6 +24,7 @@ import { StatusDialogComponent } from '../../../shared/components/status-dialog-
         MaterialModule,
         ServerDatagridComponent,
         RouterLink,
+        SummaryStatsComponent
     ],
     templateUrl: './company-list.html',
     styleUrl: './company-list.scss',
@@ -31,12 +34,14 @@ export class CompanyList implements OnInit {
     private router = inject(Router);
     private dialog = inject(MatDialog);
     private companyService = inject(CompanyService);
+    private loadingService = inject(LoadingService);
 
     loading = false;
     data: CompanyProfileDto[] = [];
     totalCount = 0;
     selectedRows: any[] = [];
     lastRequest!: GridRequest;
+    summaryStats: SummaryStat[] = [];
 
     @ViewChild(ServerDatagridComponent)
     grid!: ServerDatagridComponent<any>;
@@ -67,16 +72,30 @@ export class CompanyList implements OnInit {
     loadCompanies(request: GridRequest): void {
         this.lastRequest = request;
         this.loading = true;
+        this.loadingService.setLoading(true);
         this.companyService.getPaged(request).subscribe({
             next: (res) => {
                 this.data = res.items;
                 this.totalCount = res.totalCount;
+
+                // Calculate Stats (Note: Active/Inactive currently based on page data, ideally should be from backend)
+                const activeCount = this.data.filter(c => c.isActive).length;
+                const inactiveCount = this.data.filter(c => !c.isActive).length;
+
+                this.summaryStats = [
+                    { label: 'Total Companies', value: this.totalCount, icon: 'business', type: 'total' },
+                    { label: 'Active (Page)', value: activeCount, icon: 'check_circle', type: 'active' },
+                    { label: 'Inactive (Page)', value: inactiveCount, icon: 'cancel', type: 'warning' }
+                ];
+
                 this.loading = false;
+                this.loadingService.setLoading(false);
                 this.cdr.detectChanges();
             },
             error: (err) => {
                 console.error(err);
                 this.loading = false;
+                this.loadingService.setLoading(false);
                 this.cdr.detectChanges();
             }
         });
@@ -98,10 +117,12 @@ export class CompanyList implements OnInit {
             if (!confirm) return;
 
             this.loading = true;
+            this.loadingService.setLoading(true);
             this.cdr.detectChanges();
             this.companyService.deleteCompany(company.id).subscribe({
                 next: (res: any) => {
                     this.loading = false;
+                    this.loadingService.setLoading(false);
                     this.cdr.detectChanges();
                     this.dialog.open(StatusDialogComponent, {
                         data: {
@@ -113,6 +134,7 @@ export class CompanyList implements OnInit {
                 },
                 error: (err) => {
                     this.loading = false;
+                    this.loadingService.setLoading(false);
                     const message = err?.error?.message || 'Unable to delete company';
                     this.dialog.open(StatusDialogComponent, {
                         data: {
@@ -142,9 +164,11 @@ export class CompanyList implements OnInit {
 
             const ids = this.selectedRows.map(x => x.id);
             this.loading = true;
+            this.loadingService.setLoading(true);
             this.companyService.deleteMany(ids).subscribe({
                 next: (res: any) => {
                     this.loading = false;
+                    this.loadingService.setLoading(false);
                     this.cdr.detectChanges();
                     this.grid.clearSelection();
                     this.dialog.open(StatusDialogComponent, {
@@ -157,6 +181,7 @@ export class CompanyList implements OnInit {
                 },
                 error: (err) => {
                     this.loading = false;
+                    this.loadingService.setLoading(false);
                     const message = err?.error?.message || 'Unable to delete companies';
                     this.dialog.open(StatusDialogComponent, {
                         data: {

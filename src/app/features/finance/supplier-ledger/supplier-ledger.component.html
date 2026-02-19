@@ -1,4 +1,4 @@
-<div class="page-container" [class.disabled-content]="isDashboardLoading">
+<div class="page-container" [class.disabled-content]="isLoading || isDashboardLoading">
     <div class="page-header">
         <h1 class="mat-headline-4">Supplier Ledger</h1>
         <p class="subtitle">View detailed transaction history for suppliers.</p>
@@ -52,26 +52,18 @@
 
     <!-- Ledger Content -->
     <div *ngIf="ledgerData" class="ledger-content">
-        <!-- Summary Card -->
-        <mat-card class="summary-card elevation-z2" [class.balance-positive]="currentBalance > 0">
+        <app-summary-stats [stats]="summaryStats" [isLoading]="isLoading"></app-summary-stats>
+        
+        <!-- Summary Card: Supplier Details Only -->
+        <mat-card class="summary-card elevation-z2">
             <mat-card-content>
-                <div class="summary-header">
+                <div class="summary-header" style="justify-content: flex-start;">
                     <div class="supplier-details">
                         <mat-icon class="avatar-icon">store</mat-icon>
                         <div>
                             <h2 class="supplier-name">{{ledgerData.supplierName}}</h2>
                             <span class="supplier-id">ID: #{{supplierId}}</span>
                         </div>
-                    </div>
-                    <div class="balance-info">
-                        <span class="label">Current Balance</span>
-                        <h2 class="amount">
-                            <span *ngIf="currentBalance >= 0">₹{{currentBalance | number:'1.2-2'}}</span>
-                            <span *ngIf="currentBalance < 0">₹{{-currentBalance | number:'1.2-2'}} (Adv)</span>
-                        </h2>
-                        <span class="status-chip" [class.paid]="currentBalance <= 0" [class.due]="currentBalance > 0" [class.advance]="currentBalance < 0">
-                            {{currentBalance > 0 ? 'Payable' : (currentBalance < 0 ? 'Advance' : 'Settled')}}
-                        </span>
                     </div>
                 </div>
             </mat-card-content>

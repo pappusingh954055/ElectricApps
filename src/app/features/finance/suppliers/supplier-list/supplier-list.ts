@@ -13,11 +13,12 @@ import { GridColumn } from '../../../../shared/models/grid-column.model';
 import { GridRequest } from '../../../../shared/models/grid-request.model';
 import { SupplierService } from '../../../../features/inventory/service/supplier.service';
 import { LoadingService } from '../../../../core/services/loading.service';
+import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
 
 @Component({
   selector: 'app-supplier-list',
   standalone: true,
-  imports: [CommonModule, MaterialModule, ServerDatagridComponent],
+  imports: [CommonModule, MaterialModule, ServerDatagridComponent, SummaryStatsComponent],
   templateUrl: './supplier-list.html',
   styleUrl: './supplier-list.scss',
 })
@@ -34,6 +35,7 @@ export class SupplierList implements OnInit {
   data: any[] = [];
   totalCount = 0;
   lastRequest!: GridRequest;
+  summaryStats: SummaryStat[] = [];
 
   columns: GridColumn[] = [
     { field: 'name', header: 'Supplier Name', sortable: true, width: 250, visible: true },
@@ -76,30 +78,34 @@ export class SupplierList implements OnInit {
   loadSuppliers(request: GridRequest): void {
     this.lastRequest = request;
     this.loading = true;
+    this.loadingService.setLoading(true); // Ensure global loader is active
     this.supplierService.getPaged(request).subscribe({
       next: (res) => {
         this.data = res.items;
         this.totalCount = res.totalCount;
-        this.loading = false;
 
-        // Turn off global loader on first load
-        if (this.isFirstLoad) {
-          this.isFirstLoad = false;
-          this.isDashboardLoading = false;
-          this.loadingService.setLoading(false);
-        }
+        // Calculate Stats (Page-based assumption for now as per CompanyList pattern)
+        const activeCount = this.data.filter(s => s.isActive).length;
+        const inactiveCount = this.data.filter(s => !s.isActive).length;
+
+        this.summaryStats = [
+          { label: 'Total Suppliers', value: this.totalCount, icon: 'inventory', type: 'total' },
+          { label: 'Active (Page)', value: activeCount, icon: 'check_circle', type: 'active' },
+          { label: 'Inactive (Page)', value: inactiveCount, icon: 'cancel', type: 'warning' }
+        ];
+
+        this.loading = false;
+        this.loadingService.setLoading(false);
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);
         this.loading = false;
-
-        // Turn off global loader on first load
-        if (this.isFirstLoad) {
-          this.isFirstLoad = false;
-          this.isDashboardLoading = false;
-          this.loadingService.setLoading(false);
-        }
+        this.loadingService.setLoading(false);
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
         this.cdr.detectChanges();
       }
     });

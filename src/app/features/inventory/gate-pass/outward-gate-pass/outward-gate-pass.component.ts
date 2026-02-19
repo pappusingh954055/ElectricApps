@@ -11,6 +11,7 @@ import { GatePass, GatePassReferenceType, GatePassStatus } from '../models/gate-
 import { AuthService } from '../../../../core/services/auth.service';
 import { SaleOrderService } from '../../service/saleorder.service';
 import { PurchaseReturnService } from '../../purchase-return/services/purchase-return.service';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 
 @Component({
     selector: 'app-outward-gate-pass',
@@ -77,6 +78,7 @@ export class OutwardGatePassComponent implements OnInit {
 
     private handleSORedirection(params: any) {
         this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.SaleOrder, { emitEvent: false });
+        this.gatePassForm.get('referenceType')?.disable({ emitEvent: false });
 
         const refNo = params['refNo'] || '';
         const partyName = params['partyName'] || '';
@@ -95,6 +97,7 @@ export class OutwardGatePassComponent implements OnInit {
     private handlePurchaseReturnRedirection(params: any) {
         // 1. Set Type explicitly
         this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.PurchaseReturn, { emitEvent: false });
+        this.gatePassForm.get('referenceType')?.disable({ emitEvent: false });
 
         // 2. Extract Values safely
         const refNo = params['refNo'] || '';
@@ -162,6 +165,7 @@ export class OutwardGatePassComponent implements OnInit {
                     gateEntryTime: new Date(data.gateEntryTime),
                     securitySign: true // Assume signed if editing
                 });
+                this.gatePassForm.get('referenceType')?.disable();
                 this.cdr.detectChanges();
             },
             error: (err) => console.error('Error loading gate pass', err)
@@ -198,6 +202,21 @@ export class OutwardGatePassComponent implements OnInit {
             return;
         }
 
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            data: {
+                title: this.isEditMode ? 'Update Gate Pass' : 'Generate Gate Pass',
+                message: `Are you sure you want to ${this.isEditMode ? 'update' : 'generate'} this outward gate pass?`
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.saveGatePass();
+            }
+        });
+    }
+
+    saveGatePass() {
         const formValue = this.gatePassForm.getRawValue();
         const gatePassData: GatePass = {
             ...formValue,
@@ -209,11 +228,13 @@ export class OutwardGatePassComponent implements OnInit {
         };
 
         this.isSaving = true;
+        this.loadingService.setLoading(true);
         const request = this.gatePassService.createGatePass(gatePassData);
 
         request.subscribe({
             next: (res: any) => {
                 this.isSaving = false;
+                this.loadingService.setLoading(false);
                 const msg = this.isEditMode ? 'Gate Pass updated!' : `Outward Pass Generated! No: ${res.passNo || 'GP-OUT-XXXX'}`;
 
                 this.dialog.open(StatusDialogComponent, {
@@ -225,6 +246,7 @@ export class OutwardGatePassComponent implements OnInit {
             },
             error: (err: any) => {
                 this.isSaving = false;
+                this.loadingService.setLoading(false);
                 this.dialog.open(StatusDialogComponent, {
                     data: { title: 'Error', message: 'Failed to save Gate Pass', status: 'error', isSuccess: false }
                 });

@@ -14,11 +14,12 @@ import { StatusDialogComponent } from '../../../shared/components/status-dialog-
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingService } from '../../../core/services/loading.service';
 import { ChangeDetectorRef } from '@angular/core';
+import { SummaryStat, SummaryStatsComponent } from '../../../shared/components/summary-stats-component/summary-stats-component';
 
 @Component({
     selector: 'app-customer-ledger',
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule, SummaryStatsComponent],
     templateUrl: './customer-ledger.component.html',
     styleUrl: './customer-ledger.component.scss'
 })
@@ -35,6 +36,7 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
     isLoading: boolean = false;
     isDashboardLoading: boolean = true;
     private isFirstLoad: boolean = true;
+    summaryStats: SummaryStat[] = [];
 
     // Server-side State
     totalCount = 0;
@@ -73,7 +75,8 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
             startWith(''),
             map(value => {
                 const name = typeof value === 'string' ? value : (value as any)?.name;
-                return name ? this._filter(name as string) : this.customers.slice();
+                // Fix: ensure customers is array before slice
+                return name ? this._filter(name as string) : (Array.isArray(this.customers) ? this.customers.slice() : []);
             }),
         );
 
@@ -120,6 +123,7 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
 
     private _filter(name: string): any[] {
         const filterValue = name.toLowerCase();
+        if (!Array.isArray(this.customers)) return [];
         return this.customers.filter(customer =>
             (customer.name as string).toLowerCase().includes(filterValue) ||
             customer.id.toString().includes(filterValue)
@@ -173,6 +177,7 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
     loadLedger() {
         if (this.customerId && this.customerId > 0) {
             this.isLoading = true;
+            this.loadingService.setLoading(true);
 
             const request = {
                 customerId: this.customerId,
@@ -190,6 +195,7 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
             this.financeService.getCustomerLedger(request).subscribe({
                 next: (data: any) => {
                     this.isLoading = false;
+                    this.loadingService.setLoading(false);
                     this.ledgerData = data;
                     if (data && data.ledger) {
                         const items = (data.ledger.items || []).map((item: any) => {
@@ -201,10 +207,18 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
                         this.dataSource.data = items;
                         this.totalCount = data.ledger.totalCount || 0;
                         this.currentBalance = data.currentBalance || 0;
+
+                        // Stats
+                        this.summaryStats = [
+                            { label: 'Current Balance', value: `₹${this.currentBalance.toFixed(2)}`, icon: 'account_balance_wallet', type: this.currentBalance > 0 ? 'warning' : 'success' },
+                            { label: 'Transactions', value: this.totalCount, icon: 'receipt_long', type: 'info' }
+                        ];
+                        console.log('Customer Stats updated:', this.summaryStats);
                     } else {
                         this.dataSource.data = [];
                         this.currentBalance = 0;
                         this.totalCount = 0;
+                        this.summaryStats = [];
                     }
 
                     if (this.isFirstLoad) {
@@ -216,10 +230,12 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
                 },
                 error: (err) => {
                     this.isLoading = false;
+                    this.loadingService.setLoading(false);
                     console.error('Error fetching ledger:', err);
                     this.ledgerData = null;
                     this.dataSource.data = [];
                     this.totalCount = 0;
+                    this.summaryStats = [];
 
                     if (this.isFirstLoad) {
                         this.isFirstLoad = false;

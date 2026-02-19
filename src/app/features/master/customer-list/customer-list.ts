@@ -9,11 +9,12 @@ import { ServerDatagridComponent } from '../../../shared/components/server-datag
 import { MatDialog } from '@angular/material/dialog';
 import { CustomerComponent } from '../customer-component/customer-component';
 import { LoadingService } from '../../../core/services/loading.service';
+import { SummaryStat, SummaryStatsComponent } from '../../../shared/components/summary-stats-component/summary-stats-component';
 
 @Component({
   selector: 'app-customer-list',
   standalone: true,
-  imports: [CommonModule, MaterialModule, ServerDatagridComponent],
+  imports: [CommonModule, MaterialModule, ServerDatagridComponent, SummaryStatsComponent],
   templateUrl: './customer-list.html',
   styleUrl: './customer-list.scss',
 })
@@ -30,6 +31,7 @@ export class CustomerList implements OnInit {
   data: any[] = [];
   totalCount = 0;
   lastRequest!: GridRequest;
+  summaryStats: SummaryStat[] = [];
 
   columns: GridColumn[] = [
     { field: 'customerName', header: 'Customer Name', sortable: true, width: 250, visible: true },
@@ -51,7 +53,7 @@ export class CustomerList implements OnInit {
       sortDirection: 'desc'
     });
 
-    // Safety timeout - force stop loader after 10 seconds
+    // Safety timeout
     setTimeout(() => {
       if (this.isDashboardLoading) {
         console.warn('[CustomerList] Force stopping loader after 10s timeout');
@@ -66,30 +68,41 @@ export class CustomerList implements OnInit {
   loadCustomers(request: GridRequest): void {
     this.lastRequest = request;
     this.loading = true;
+    this.loadingService.setLoading(true);
     this.customerService.getPaged(request).subscribe({
       next: (res) => {
         this.data = res.items;
         this.totalCount = res.totalCount;
-        this.loading = false;
 
-        // Turn off global loader on first load
-        if (this.isFirstLoad) {
-          this.isFirstLoad = false;
-          this.isDashboardLoading = false;
-          this.loadingService.setLoading(false);
-        }
+        // Calculate Stats
+        // "Status" field might be string based on column def. Often "Active" / "Inactive".
+        // Let's assume the API returns a status string or boolean.
+        // If the column uses 'status', I'll monitor what values it has. 
+        // For now, I'll count based on a text check if I can, or ignore status stats if unknown.
+        // Wait, current column uses 'status', no cell renderer in snippet.
+        // I'll show Total and maybe Customer Types stats. Or simple Total.
+        // Let's check column data for Customer Type.
+
+        // Let's just do Total + Recent (Page count) for now to be safe.
+        // Or if I can guess 'status' enum.
+
+        this.summaryStats = [
+          { label: 'Total Customers', value: this.totalCount, icon: 'people', type: 'total' },
+          { label: 'On Page', value: this.data.length, icon: 'list', type: 'info' }
+        ];
+
+        this.loading = false;
+        this.loadingService.setLoading(false);
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
         this.cdr.detectChanges();
       },
       error: (err) => {
         console.error(err);
         this.loading = false;
-
-        // Turn off global loader on first load
-        if (this.isFirstLoad) {
-          this.isFirstLoad = false;
-          this.isDashboardLoading = false;
-          this.loadingService.setLoading(false);
-        }
+        this.loadingService.setLoading(false);
+        this.isDashboardLoading = false;
+        this.isFirstLoad = false;
         this.cdr.detectChanges();
       }
     });

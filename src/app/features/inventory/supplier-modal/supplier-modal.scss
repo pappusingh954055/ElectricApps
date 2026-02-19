@@ -4,6 +4,13 @@
   position: relative;
   overflow-x: hidden;
 
+  &.disabled-content {
+      pointer-events: none;
+      user-select: none;
+      opacity: 0.5;
+      filter: blur(2px);
+  }
+
   .modal-header {
     margin: 0 !important;
     padding: 16px 24px !important;

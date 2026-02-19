@@ -61,23 +61,28 @@
                         <input matInput formControlName="vehicleNo" placeholder="DL-01-AB-1234" required>
                         <mat-hint>Format: AA-00-AA-0000</mat-hint>
                         <mat-error *ngIf="gatePassForm.get('vehicleNo')?.hasError('pattern')">Invalid Format (Ex: MH-12-AB-1234)</mat-error>
+                        <mat-error *ngIf="gatePassForm.get('vehicleNo')?.hasError('required')">Vehicle No is required</mat-error>
                     </mat-form-field>
 
                     <mat-form-field appearance="outline">
                         <mat-label>Vehicle Type</mat-label>
-                        <mat-select formControlName="vehicleType">
+                        <mat-select formControlName="vehicleType" required>
                             <mat-option *ngFor="let v of vehicleTypes" [value]="v">{{v}}</mat-option>
                         </mat-select>
+                        <mat-error *ngIf="gatePassForm.get('vehicleType')?.hasError('required')">Vehicle Type is required</mat-error>
                     </mat-form-field>
                     
                     <mat-form-field appearance="outline">
                         <mat-label>Driver Name</mat-label>
                         <input matInput formControlName="driverName" placeholder="Driver Name" required>
+                        <mat-error *ngIf="gatePassForm.get('driverName')?.hasError('required')">Driver Name is required</mat-error>
                     </mat-form-field>
                     
                     <mat-form-field appearance="outline">
                         <mat-label>Driver Phone</mat-label>
                         <input matInput formControlName="driverPhone" placeholder="10 Digit Mobile" required>
+                        <mat-error *ngIf="gatePassForm.get('driverPhone')?.hasError('required')">Driver Phone is required</mat-error>
+                        <mat-error *ngIf="gatePassForm.get('driverPhone')?.hasError('pattern')">Invalid Phone Number</mat-error>
                     </mat-form-field>
                     
                     <mat-form-field appearance="outline">
@@ -92,6 +97,7 @@
                     <mat-form-field appearance="outline">
                         <mat-label>Total Qty</mat-label>
                         <input matInput type="number" formControlName="totalQty" required [readonly]="isRedirected">
+                         <mat-error *ngIf="gatePassForm.get('totalQty')?.hasError('required')">Total Qty is required</mat-error>
                     </mat-form-field>
                     
                     <mat-form-field appearance="outline">
@@ -111,6 +117,7 @@
                     <mat-form-field appearance="outline">
                         <mat-label>Security Guard Name</mat-label>
                         <input matInput formControlName="securityGuard" required>
+                        <mat-error *ngIf="gatePassForm.get('securityGuard')?.hasError('required')">Guard Name is required</mat-error>
                     </mat-form-field>
                     
                     <mat-form-field appearance="outline">
@@ -124,6 +131,9 @@
                         CONFIRM: Consignment verified & allowed to exit.
                     </mat-checkbox>
                 </div>
+                <div class="error-msg" *ngIf="gatePassForm.get('securitySign')?.invalid && gatePassForm.get('securitySign')?.touched">
+                    <small class="text-danger">Confirmation is required</small>
+                </div>
 
             </form>
         </mat-card-content>
@@ -131,7 +141,7 @@
         <mat-card-actions align="end">
             <button mat-button (click)="goBack()">BACK TO LIST</button>
             <button mat-button (click)="resetForm()" *ngIf="!isEditMode">RESET</button>
-            <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="gatePassForm.invalid || isSaving">
+            <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="isSaving">
                 <mat-icon>{{isEditMode ? 'save' : 'logout'}}</mat-icon>
                 {{isEditMode ? 'UPDATE GATE PASS' : 'GENERATE OUTWARD PASS'}}
             </button>

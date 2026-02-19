@@ -234,4 +234,11 @@ mat-card-header {
 .text-xs { font-size: 0.75rem; }
 .text-blue-600 { color: #2563eb; }
 
+.disabled-content {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.5;
+  filter: blur(2px);
+}
+
 

@@ -11,12 +11,12 @@ import { LoadingService } from '../../../core/services/loading.service';
 import { SupplierService, Supplier } from '../../inventory/service/supplier.service';
 import { Observable, Subscription } from 'rxjs';
 import { map, startWith, finalize } from 'rxjs/operators';
-
+import { SummaryStat, SummaryStatsComponent } from '../../../shared/components/summary-stats-component/summary-stats-component';
 
 @Component({
     selector: 'app-supplier-ledger',
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, MaterialModule, SummaryStatsComponent],
     templateUrl: './supplier-ledger.component.html',
     styleUrl: './supplier-ledger.component.scss'
 })
@@ -42,6 +42,7 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
     sortBy = 'TransactionDate';
     sortOrder = 'desc';
     isLoading = false;
+    summaryStats: SummaryStat[] = [];
 
     filters = {
         startDate: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
@@ -185,6 +186,7 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
     loadLedger() {
         if (this.supplierId && this.supplierId > 0) {
             this.isLoading = true;
+            this.loadingService.setLoading(true); // Global Loader
 
             const request = {
                 supplierId: this.supplierId,
@@ -202,10 +204,10 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
             this.financeService.getSupplierLedger(request).pipe(
                 finalize(() => {
                     this.isLoading = false;
+                    this.loadingService.setLoading(false);
                     if (this.isFirstLoad) {
                         this.isFirstLoad = false;
                         this.isDashboardLoading = false;
-                        this.loadingService.setLoading(false);
                     }
                     this.cdr.detectChanges();
                 })
@@ -222,6 +224,18 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
                         this.dataSource.data = items;
                         this.totalCount = result.ledger.totalCount || 0;
                         this.currentBalance = result.currentBalance || 0;
+
+                        // Stats
+                        this.summaryStats = [
+                            { label: 'Current Balance', value: `₹${this.currentBalance.toFixed(2)}`, icon: 'account_balance_wallet', type: this.currentBalance > 0 ? 'warning' : 'success' },
+                            { label: 'Transactions', value: this.totalCount, icon: 'receipt_long', type: 'info' }
+                        ];
+                        console.log('Stats updated:', this.summaryStats);
+                    } else {
+                        this.dataSource.data = [];
+                        this.currentBalance = 0;
+                        this.totalCount = 0;
+                        this.summaryStats = [];
                     }
 
                 },
@@ -230,6 +244,7 @@ export class SupplierLedgerComponent implements OnInit, AfterViewInit, OnDestroy
                     this.ledgerData = null;
                     this.dataSource.data = [];
                     this.totalCount = 0;
+                    this.summaryStats = [];
 
                     if (err.status === 404) {
                         this.ledgerData = { supplierName: 'Not Found', ledger: [] };

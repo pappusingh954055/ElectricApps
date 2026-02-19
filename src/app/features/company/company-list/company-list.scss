@@ -6,6 +6,13 @@
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+.disabled-content {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.5;
+  filter: blur(2px);
+}
+
 .page-container {
   padding: 24px;
   background-color: #f8fafc;
