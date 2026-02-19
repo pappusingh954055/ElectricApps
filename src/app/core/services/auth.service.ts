@@ -35,6 +35,18 @@ export class AuthService {
     );
   }
 
+  changePassword(data: any): Observable<any> {
+    return this.api.post<any>('change-password', data, this.baseUrl);
+  }
+
+  forgotPassword(email: string): Observable<any> {
+    return this.api.post<any>('forgot-password', { email }, this.baseUrl);
+  }
+
+  resetPassword(data: any): Observable<any> {
+    return this.api.post<any>('reset-password', data, this.baseUrl);
+  }
+
   // 💾 STORE TOKENS
   storeTokens(res: any): void {
     if (!res) return;

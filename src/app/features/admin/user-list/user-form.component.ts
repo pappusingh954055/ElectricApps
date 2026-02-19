@@ -204,8 +204,8 @@ export class UserFormComponent implements OnInit {
   ) {
     this.isEdit = !!data;
     this.userForm = this.fb.group({
-      UserName: [{ value: '', disabled: this.isEdit }, Validators.required],
-      Email: [{ value: '', disabled: this.isEdit }, [Validators.required, Validators.email]],
+      UserName: [{ value: '', disabled: false }, Validators.required],
+      Email: [{ value: '', disabled: false }, [Validators.required, Validators.email]],
       Password: ['', this.isEdit ? [] : [Validators.required]],
       RoleIds: [[], Validators.required]
     });
@@ -253,6 +253,8 @@ export class UserFormComponent implements OnInit {
           }
 
           if (this.isEdit) {
+            dto.Id = this.data.id;
+            dto.IsActive = this.data.isActive;
             this.userService.updateUser(this.data.id, dto).subscribe({
               next: () => {
                 this.notificationService.showStatus(true, 'User Updated Successfully');
