@@ -15,6 +15,8 @@ import { customerService } from '../../master/customer-component/customer.servic
 import { ProductSelectionDialogComponent } from '../../../shared/components/product-selection-dialog/product-selection-dialog';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { trigger, transition, style, animate } from '@angular/animations';
+import { FinanceService } from '../../finance/service/finance.service';
+import { SoSuccessDialogComponent } from '../so-success-dialog/so-success-dialog.component';
 
 @Component({
   selector: 'app-so-form',
@@ -73,6 +75,7 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
   private customerService = inject(customerService);
   private productService = inject(ProductService);
   private soService = inject(SaleOrderService);
+  private financeService = inject(FinanceService);
   private destroy$ = new Subject<void>();
   private router = inject(Router);
 
@@ -423,17 +426,39 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
           next: (res: any) => {
             // ✅ Order Number Display Fix
             const orderNo = res.soNumber || res.SONumber || 'N/A';
+            const soId = res.id || res.Id;
+
+            // Find customer name for the dialog
+            const selectedCust = this.customers.find((c: any) => String(c.id) == String(formValues.customerId));
+            const customerName = selectedCust?.customerName || selectedCust?.name || 'Customer';
+
             this.generatedSoNumber = orderNo;
 
-            this.dialog.open(StatusDialogComponent, {
-              width: '400px',
+            // Show success dialog with payment option
+            const dialogRef = this.dialog.open(SoSuccessDialogComponent, {
+              width: '500px',
+              disableClose: true,
               data: {
-                isSuccess: true,
-                title: 'Order Saved!',
-                message: `Order #${orderNo}: ${successMessageText}`
+                soNumber: orderNo,
+                grandTotal: Number(formValues.grandTotal) || 0,
+                customerId: formValues.customerId,
+                customerName: customerName
               }
-            }).afterClosed().subscribe(() => {
-              this.router.navigate(['/app/inventory/solist']);
+            });
+
+            dialogRef.afterClosed().subscribe(result => {
+              if (result === 'make-payment') {
+                this.performDirectPayment({
+                  soId: soId,
+                  soNumber: orderNo,
+                  grandTotal: Number(formValues.grandTotal) || 0,
+                  customerId: formValues.customerId,
+                  customerName: customerName
+                });
+              } else {
+                // Navigate to SO List
+                this.router.navigate(['/app/inventory/solist']);
+              }
             });
           },
           error: (err) => {
@@ -448,6 +473,64 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
       }
     });
   }
+
+  performDirectPayment(data: any) {
+    console.log('🚀 Initiating Direct Receipt with data:', data);
+
+    const receiptPayload = {
+      customerId: data.customerId,
+      amount: data.grandTotal,
+      paymentMode: 'Cash', // Default to Cash
+      referenceNumber: data.soNumber,
+      paymentDate: new Date().toISOString(),
+      remarks: `Direct Receipt for SO: ${data.soNumber}`,
+      createdBy: localStorage.getItem('email') || 'Admin'
+    };
+
+    // Calculate total quantity for Gate Pass
+    const totalQty = this.items.controls.reduce((sum, item) => sum + (Number(item.get('qty')?.value) || 0), 0);
+
+    // Add a small delay to ensure SO transaction is fully committed
+    setTimeout(() => {
+      this.financeService.recordCustomerReceipt(receiptPayload).subscribe({
+        next: () => {
+          this.dialog.open(StatusDialogComponent, {
+            width: '350px',
+            data: {
+              isSuccess: true,
+              title: 'Payment Successful',
+              message: `Receipt of ₹${data.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })} recorded. Redirecting to Outward Gate Pass...`,
+              status: 'success'
+            }
+          });
+          // Redirect to Outward Gate Pass with pre-filled data
+          this.router.navigate(['/app/inventory/gate-pass/outward'], {
+            queryParams: {
+              type: 'sale-order',
+              refId: data.soId,
+              refNo: data.soNumber,
+              partyName: data.customerName,
+              qty: totalQty
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Direct receipt failed:', err);
+          this.dialog.open(StatusDialogComponent, {
+            width: '350px',
+            data: {
+              isSuccess: false,
+              title: 'Payment Failed',
+              message: 'Sale Order saved but payment recording failed.',
+              status: 'error'
+            }
+          });
+          this.router.navigate(['/app/inventory/solist']);
+        }
+      });
+    }, 500);
+  }
+
   goBack() {
     this.router.navigate(['/app/inventory/solist']);
   }
