@@ -218,8 +218,13 @@ export class ReceiptEntryComponent implements OnInit {
           error: (err) => {
             this.isLoading = false;
             console.error(err);
+            const errorMessage = err.error?.message || err.error || 'Failed to record receipt.';
             this.dialog.open(StatusDialogComponent, {
-              data: { isSuccess: false, message: 'Failed to record receipt.' }
+              data: {
+                isSuccess: false,
+                title: 'Action Failed',
+                message: errorMessage
+              }
             });
           }
         });

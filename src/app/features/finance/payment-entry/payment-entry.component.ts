@@ -383,12 +383,14 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
         });
       },
       error: (err) => {
+        this.updateLoading(-1);
         console.error(err);
-        const errorMessage = err.error?.message || err.error || err.statusText || 'Failed to record payment.';
+        const errorMessage = err.error?.message || err.error || 'Failed to record payment.';
         this.dialog.open(StatusDialogComponent, {
           data: {
             isSuccess: false,
-            message: `Error: ${errorMessage}`
+            title: 'Action Failed',
+            message: errorMessage
           }
         });
       }
