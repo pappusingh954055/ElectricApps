@@ -2,6 +2,13 @@
     padding: 10px;
     background-color: var(--bg-body);
     min-height: calc(100vh - 70px);
+    transition: filter 0.3s ease;
+
+    &.disabled-content {
+        filter: blur(4px);
+        pointer-events: none;
+        user-select: none;
+    }
 }
 
 .page-header {

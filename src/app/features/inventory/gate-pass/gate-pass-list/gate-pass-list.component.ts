@@ -20,8 +20,7 @@ import { GatePassPrintDialogComponent } from '../gate-pass-print-dialog/gate-pas
     imports: [
         CommonModule,
         MaterialModule,
-        FormsModule,
-        GatePassPrintDialogComponent
+        FormsModule
     ],
     providers: [DatePipe],
     templateUrl: './gate-pass-list.component.html',
@@ -60,6 +59,7 @@ export class GatePassListComponent implements OnInit {
 
     loadData() {
         this.isLoading = true;
+        this.loadingService.setLoading(true);
         this.cdr.detectChanges();
 
         const request = {
@@ -77,10 +77,12 @@ export class GatePassListComponent implements OnInit {
                 this.dataSource.data = res.data || [];
                 this.totalRecords = res.totalRecords || 0;
                 this.isLoading = false;
+                this.loadingService.setLoading(false);
                 this.cdr.detectChanges();
             },
             error: (err) => {
                 this.isLoading = false;
+                this.loadingService.setLoading(false);
                 this.cdr.detectChanges();
                 console.error('Error loading gate passes:', err);
                 this.notification.showStatus(false, 'Failed to load Gate Passes');
@@ -135,14 +137,17 @@ export class GatePassListComponent implements OnInit {
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
                 this.isLoading = true;
+                this.loadingService.setLoading(true);
                 this.gatePassService.deleteGatePass(row.id).subscribe({
                     next: () => {
                         this.isLoading = false;
+                        this.loadingService.setLoading(false);
                         this.notification.showStatus(true, 'Gate Pass deleted successfully');
                         this.loadData();
                     },
                     error: (err) => {
                         this.isLoading = false;
+                        this.loadingService.setLoading(false);
                         this.notification.showStatus(false, 'Failed to delete Gate Pass');
                     }
                 });

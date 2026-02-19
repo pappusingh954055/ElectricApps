@@ -11,6 +11,7 @@ import { GatePass, GatePassReferenceType, GatePassStatus } from '../models/gate-
 import { AuthService } from '../../../../core/services/auth.service';
 import { POService } from '../../service/po.service';
 import { SaleReturnService } from '../../sale-return/services/sale-return.service';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 
 @Component({
     selector: 'app-inward-gate-pass',
@@ -109,6 +110,7 @@ export class InwardGatePassComponent implements OnInit {
                         remarks: data.remarks
                     });
 
+                    this.gatePassForm.get('referenceType')?.disable();
                     this.cdr.detectChanges();
                 }
             },
@@ -140,6 +142,7 @@ export class InwardGatePassComponent implements OnInit {
             invoiceNo: `CH-${refNo.replace(/\//g, '-')}`
         });
 
+        this.gatePassForm.get('referenceType')?.disable();
         this.gatePassForm.get('invoiceNo')?.disable(); // Extra safety to make it readonly
         this.gatePassForm.updateValueAndValidity();
         this.cdr.detectChanges();
@@ -162,9 +165,11 @@ export class InwardGatePassComponent implements OnInit {
                 referenceNo: refNo,
                 partyName: params['partyName'] || '',
                 expectedQty: params['qty'] || 0,
+                referenceType: GatePassReferenceType.SaleReturn,
                 invoiceNo: `CH-${refNo}`
             });
 
+            this.gatePassForm.get('referenceType')?.disable();
             this.gatePassForm.updateValueAndValidity();
             this.cdr.detectChanges();
         });
@@ -262,6 +267,21 @@ export class InwardGatePassComponent implements OnInit {
             return;
         }
 
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            data: {
+                title: this.isEditMode ? 'Update Inward Pass' : 'Generate Inward Pass',
+                message: `Are you sure you want to ${this.isEditMode ? 'update' : 'generate'} this inward gate pass?`
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.saveGatePass();
+            }
+        });
+    }
+
+    saveGatePass() {
         const formValue = this.gatePassForm.getRawValue();
 
         // Create Inward Gate Pass Payload
@@ -288,13 +308,13 @@ export class InwardGatePassComponent implements OnInit {
         };
 
         this.isSaving = true;
-        const request = this.isEditMode
-            ? this.gatePassService.createGatePass(gatePassData) // Assuming Save endpoint handles both or there's an update endpoint
-            : this.gatePassService.createGatePass(gatePassData);
+        this.loadingService.setLoading(true);
+        const request = this.gatePassService.createGatePass(gatePassData);
 
         request.subscribe({
             next: (res: any) => {
                 this.isSaving = false;
+                this.loadingService.setLoading(false);
                 const message = this.isEditMode ? 'Gate Pass updated successfully!' : `Inward Gate Pass Generated! Pass No: ${res.passNo || 'GP-IN-2026-XXXX'}`;
 
                 this.dialog.open(StatusDialogComponent, {
@@ -317,6 +337,7 @@ export class InwardGatePassComponent implements OnInit {
             },
             error: (err) => {
                 this.isSaving = false;
+                this.loadingService.setLoading(false);
                 console.error(err);
                 this.dialog.open(StatusDialogComponent, {
                     data: {

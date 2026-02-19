@@ -1,4 +1,4 @@
-<div class="container">
+<div class="container" [class.disabled-content]="isSaving">
     <mat-card class="wrapper">
         <mat-card-header>
             <button mat-icon-button (click)="goBack()" class="back-button" matTooltip="Back to List">

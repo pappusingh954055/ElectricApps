@@ -4,6 +4,13 @@
     justify-content: center;
     background-color: #f5f5f5;
     min-height: calc(100vh - 64px);
+    transition: filter 0.3s ease;
+
+    &.disabled-content {
+        filter: blur(4px);
+        pointer-events: none;
+        user-select: none;
+    }
 }
 
 .wrapper {
@@ -100,5 +107,16 @@ mat-card-actions {
     
     button {
         margin-left: 10px;
+    }
+}
+
+.error-msg {
+    margin-top: -10px;
+    margin-left: 10px;
+    
+    .text-danger {
+        color: #f44336; // Material Red
+        font-size: 12px;
+        font-weight: 500;
     }
 }
