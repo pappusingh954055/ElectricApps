@@ -7,10 +7,11 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router, RouterLink } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
 import { UnitService } from '../services/units.service';
+import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
 
 @Component({
   selector: 'app-unitslist-component',
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink, SummaryStatsComponent],
   templateUrl: './unitslist-component.html',
   styleUrl: './unitslist-component.scss',
 })
@@ -19,6 +20,7 @@ export class UnitslistComponent implements OnInit {
   displayedColumns: string[] = ['index', 'name', 'description', 'status', 'actions'];
   dataSource = new MatTableDataSource<any>();
   isLoading = true;
+  summaryStats: SummaryStat[] = [];
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -32,14 +34,15 @@ export class UnitslistComponent implements OnInit {
   loadUnits() {
     this.isLoading = true;
     this.unitService.getAll().subscribe({
-      next: (data) => {  
+      next: (data) => {
         console.log(data);
-               
+
         this.dataSource.data = data;
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
+        this.updateStats();
         this.isLoading = false;
-         this.cdr.detectChanges();
+        this.cdr.detectChanges();
       },
       error: () => {
         this.isLoading = false;
@@ -47,6 +50,18 @@ export class UnitslistComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private updateStats(): void {
+    const total = this.dataSource.data.length;
+    const active = this.dataSource.data.filter(u => u.isActive).length;
+    const inactive = total - active;
+
+    this.summaryStats = [
+      { label: 'Total Units', value: total, icon: 'straighten', type: 'info' },
+      { label: 'Active', value: active, icon: 'check_circle', type: 'success' },
+      { label: 'Inactive', value: inactive, icon: 'block', type: 'warning' }
+    ];
   }
 
   // Client-side search logic

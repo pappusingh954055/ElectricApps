@@ -1,10 +1,14 @@
 <div class="bulk-unit-container">
-  <div fxLayout="row" fxLayoutAlign="space-between center" style="margin-bottom: 15px;">
+  <div fxLayout="row" fxLayoutAlign="space-between center" style="margin-bottom: 24px;">
     <h2>Unit Master</h2>
     <button mat-raised-button color="primary" routerLink="/app/master/units/new">
       <mat-icon>add</mat-icon> Add New Unit
     </button>
   </div>
+
+  <app-summary-stats [stats]="summaryStats" [isLoading]="isLoading"></app-summary-stats>
+
+  <div style="margin-top: 24px;"></div>
 
   <mat-form-field appearance="outline" style="width: 100%; margin-bottom: 10px;">
     <mat-label>Search Units (e.g. Kg, Pcs)</mat-label>
