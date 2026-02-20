@@ -1,12 +1,21 @@
+:host {
+  display: block;
+  overflow: hidden !important;
+}
+
 .expense-container {
-  padding: 24px;
+  padding: 0 24px;
   background-color: #f8f9fa;
-  min-height: calc(100vh - 64px);
+  height: calc(100vh - 260px); // Aggressive reduction to account for parent padding and layout headers
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important; 
+  box-sizing: border-box;
 
   .header-section {
-    margin-bottom: 24px;
+    margin-bottom: 4px; // Minimized
     h1 {
-      font-size: 24px;
+      font-size: 18px; // Smaller
       font-weight: 600;
       color: #333;
       margin: 0;
@@ -15,25 +24,36 @@
 
   app-summary-stats {
     display: block;
-    margin-bottom: 24px;
+    margin-bottom: 8px; // Smaller
   }
 
   .main-content {
     display: grid;
     grid-template-columns: 1fr 2fr;
-    gap: 24px;
+    gap: 12px; // Smaller gap
+    flex: 1;
+    min-height: 0;
 
     @media (max-width: 960px) {
       grid-template-columns: 1fr;
+      overflow-y: auto;
     }
   }
 
   .form-card {
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 
     mat-card-header {
-      margin-bottom: 16px;
+      margin-bottom: 8px; // Reduced margin
+    }
+
+    mat-card-content {
+      overflow-y: auto;
+      flex: 1;
     }
 
     .category-form {
@@ -60,6 +80,18 @@
   .list-card {
     border-radius: 12px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+
+    mat-card-header {
+      margin-bottom: 8px; // Reduced margin
+    }
+
+    mat-card-content {
+      overflow-y: auto;
+      flex: 1;
+    }
 
     table {
       width: 100%;

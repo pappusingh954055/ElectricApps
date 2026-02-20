@@ -1,12 +1,15 @@
 .expense-container {
-  padding: 24px;
+  padding: 12px 24px;
   background-color: #f8f9fa;
-  min-height: calc(100vh - 64px);
+  height: calc(100vh - 84px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 
   .header-section {
-    margin-bottom: 24px;
+    margin-bottom: 8px;
     h1 {
-      font-size: 24px;
+      font-size: 20px;
       font-weight: 600;
       color: #333;
       margin: 0;
@@ -15,13 +18,16 @@
 
   app-summary-stats {
     display: block;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
   }
 
   .main-content {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
   }
 
   .form-card {
