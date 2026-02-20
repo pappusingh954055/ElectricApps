@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { MaterialModule } from '../../shared/material/material/material-module';
 import { CommonModule } from '@angular/common';
 import { RouterModule, RouterOutlet, Router } from '@angular/router';
@@ -44,6 +44,8 @@ export class MainLayoutComponent implements OnInit {
   userEmail: string | null = null;
   notifications: NotificationDto[] = [];
   unreadCount = 0;
+  currentTime = new Date();
+  private timerInstance: any;
 
   currentYear = new Date().getFullYear();
 
@@ -141,6 +143,18 @@ export class MainLayoutComponent implements OnInit {
 
     // Step 1: Count Check on Page Load
     this.loadUnreadCount();
+
+    // Sidenav Clock Timer
+    this.timerInstance = setInterval(() => {
+      this.currentTime = new Date();
+      this.cdr.detectChanges();
+    }, 1000);
+  }
+
+  ngOnDestroy(): void {
+    if (this.timerInstance) {
+      clearInterval(this.timerInstance);
+    }
   }
 
   toggleTheme(): void {

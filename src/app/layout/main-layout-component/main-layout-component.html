@@ -49,6 +49,19 @@
       </mat-nested-tree-node>
 
     </mat-tree>
+    
+    <div class="sidenav-footer">
+      <div class="clock-calendar-section">
+        <div class="live-clock">
+          <mat-icon>schedule</mat-icon>
+          <span>{{ currentTime | date:'hh:mm:ss a' }}</span>
+        </div>
+        <div class="current-date">
+          <mat-icon>calendar_month</mat-icon>
+          <span>{{ currentTime | date:'dd MMM yyyy' }}</span>
+        </div>
+      </div>
+    </div>
 
   </mat-sidenav>
 

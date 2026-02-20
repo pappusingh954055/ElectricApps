@@ -1,51 +1,105 @@
 <div class="dashboard-container" [class.disabled-content]="isDashboardLoading">
     
     <div class="header-section">
-      <h1>Inventory Dashboard</h1>
+      <div class="title-group">
+        <div class="main-title">
+          <h1>Inventory Dashboard</h1>
+          <span class="live-badge">LIVE</span>
+        </div>
+        <p class="subtitle">Welcome back! Here's what's happening today.</p>
+      </div>
+
+      <div class="header-info-bar">
+        <div class="info-item">
+          <mat-icon>calendar_today</mat-icon>
+          <div class="info-text">
+            <span>Business Date</span>
+            <strong>{{ currentDate | date:'fullDate' }}</strong>
+          </div>
+        </div>
+        <div class="info-item">
+          <mat-icon>cloud_done</mat-icon>
+          <div class="info-text">
+            <span>System Status</span>
+            <strong class="status-online">Operational</strong>
+          </div>
+        </div>
+      </div>
+
       <div class="export-actions">
         <button mat-flat-button 
                 class="export-btn" 
                 (click)="exportToExcel()" 
-                [disabled]="isExcelLoading || isExcelLoading">
+                [disabled]="isExcelLoading">
           <mat-icon *ngIf="!isExcelLoading">file_download</mat-icon>
           <mat-spinner *ngIf="isExcelLoading" diameter="20"></mat-spinner>
-          Export Excel
+          Excel
         </button>
 
         <button mat-flat-button 
                 color="warn" 
                 (click)="exportToPdf()" 
-                [disabled]="isPdfLoading || isPdfLoading">
+                [disabled]="isPdfLoading">
           <mat-icon *ngIf="!isPdfLoading">picture_as_pdf</mat-icon>
           <mat-spinner *ngIf="isPdfLoading" diameter="20"></mat-spinner>
-          Download PDF
+          PDF
         </button>
       </div>
     </div>
 
-   <div class="kpi-grid">
-  <mat-card *ngFor="let item of stats" 
-            class="kpi-card hover-card" 
-            [matTooltip]="item.tooltip" 
-            matTooltipPosition="above"
-            [class.clickable]="item.title === 'Low Stock'"
-            (click)="item.title === 'Low Stock' ? navigateToLowStockReport() : null">
-    
-    <div class="card-content">
-      <div class="icon-box" [style.background-color]="item.color">
-        <mat-icon>{{item.icon}}</mat-icon>
+    <!-- Quick Actions Section -->
+    <div class="quick-actions-section">
+      <div class="section-header">
+        <mat-icon>flash_on</mat-icon>
+        <span>Quick Actions</span>
       </div>
-      <div class="text-box">
-        <div class="pulse-container">
-          <p class="card-label">{{item.title}}</p>
-          <div *ngIf="item.title === 'Low Stock' && item.hasAlert" class="red-dot pulse"></div>
-        </div>
-        <h2 class="card-value">{{item.value}}</h2>
-        <p *ngIf="item.subLabel" class="card-sublabel">{{item.subLabel}}</p>
+      <div class="actions-grid">
+        <button mat-flat-button class="action-card sales" (click)="router.navigate(['/app/inventory/so-form'])" id="btn-new-so">
+          <mat-icon>add_shopping_cart</mat-icon>
+          <span>New Sale Order</span>
+        </button>
+        <button mat-flat-button class="action-card purchase" (click)="router.navigate(['/app/inventory/po-form'])" id="btn-new-po">
+          <mat-icon>post_add</mat-icon>
+          <span>New Purchase Order</span>
+        </button>
+        <button mat-flat-button class="action-card receipt" (click)="router.navigate(['/app/finance/customers/receipt'])" id="btn-record-receipt">
+          <mat-icon>account_balance_wallet</mat-icon>
+          <span>Record Receipt</span>
+        </button>
+        <button mat-flat-button class="action-card payment" (click)="router.navigate(['/app/finance/suppliers/payment'])" id="btn-record-payment">
+          <mat-icon>payments</mat-icon>
+          <span>Record Payment</span>
+        </button>
       </div>
     </div>
-  </mat-card>
-</div>
+
+    <!-- KPI Grid -->
+    <div class="kpi-grid">
+      <mat-card *ngFor="let item of stats; let i = index" 
+                class="kpi-card hover-card" 
+                [matTooltip]="item.tooltip" 
+                matTooltipPosition="above"
+                [class.clickable]="item.title === 'Low Stock' || item.title === 'Receivables' || item.title === 'Payables'"
+                (click)="item.title === 'Low Stock' ? navigateToLowStockReport() : 
+                         item.title === 'Receivables' ? router.navigate(['/app/finance/customers/tracker']) :
+                         item.title === 'Payables' ? router.navigate(['/app/finance/suppliers/dues']) : null"
+                [id]="'kpi-card-' + i">
+        
+        <div class="card-content">
+          <div class="icon-box" [style.background-color]="item.color">
+            <mat-icon>{{item.icon}}</mat-icon>
+          </div>
+          <div class="text-box">
+            <div class="pulse-container">
+              <p class="card-label">{{item.title}}</p>
+              <div *ngIf="item.title === 'Low Stock' && item.hasAlert" class="red-dot pulse"></div>
+            </div>
+            <h2 class="card-value">{{item.value}}</h2>
+            <p *ngIf="item.subLabel" class="card-sublabel">{{item.subLabel}}</p>
+          </div>
+        </div>
+      </mat-card>
+    </div>
 
     <div class="charts-grid">
       <mat-card class="chart-container hover-card">
@@ -80,11 +134,11 @@
     </div>
 
     <mat-card class="activity-card hover-card">
-      <mat-card-header><mat-card-title>Recent Stock Movements</mat-card-title></mat-card-header>
+      <mat-card-header><mat-card-title>Recent Activity Feed</mat-card-title></mat-card-header>
       <mat-card-content class="table-container">
         <!-- Header Row (Fixed) -->
         <div class="table-header">
-          <div>Product</div>
+          <div>Entity / Product</div>
           <div>Type</div>
           <div>Qty</div>
           <div>Date</div>

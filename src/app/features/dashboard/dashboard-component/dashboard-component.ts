@@ -9,6 +9,12 @@ import { ProductService } from '../../master/product/service/product.service';
 import { forkJoin, BehaviorSubject } from 'rxjs';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { LoadingService } from '../../../core/services/loading.service';
+import { FinanceService } from '../../finance/service/finance.service';
+import { CompanyService } from '../../company/services/company.service';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { CompanyProfileDto } from '../../company/model/company.model';
+import { environment } from '../../../enviornments/environment';
 
 @Component({
   selector: 'app-dashboard-component',
@@ -21,14 +27,18 @@ import { LoadingService } from '../../../core/services/loading.service';
 export class DashboardComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private decimalPipe = inject(DecimalPipe);
-  private router = inject(Router);
+  public router = inject(Router);
   private loadingService = inject(LoadingService);
 
   isExcelLoading = false;
   isPdfLoading = false;
   isDashboardLoading = true;
+  currentDate = new Date();
   private productService = inject(ProductService);
+  public financeService = inject(FinanceService);
+  private companyService = inject(CompanyService);
 
+  companyInfo: CompanyProfileDto | null = null;
 
 
   // Stats array with 'hasAlert' property for type safety in HTML
@@ -41,12 +51,11 @@ export class DashboardComponent implements OnInit {
       tooltip: 'Total revenue generated from all completed sale orders'
     },
     {
-      title: 'Purchase Orders',
-      value: '0 Pending',
-      icon: 'shopping_cart',
-      color: '#2196f3',
-      // Isse user ko pata chalega ki 0 kyu hai
-      tooltip: 'Orders submitted by users and waiting for Manager Approval'
+      title: 'Receivables',
+      value: '₹0',
+      icon: 'account_balance_wallet',
+      color: '#00bcd4',
+      tooltip: 'Total amount yet to be collected from customers (Outstanding)'
     },
     {
       title: 'Stock Value',
@@ -55,6 +64,20 @@ export class DashboardComponent implements OnInit {
       color: '#ff9800',
       subLabel: '0 Units',
       tooltip: 'Total value of current stock (Stock Quantity × Purchase Price)'
+    },
+    {
+      title: 'Payables',
+      value: '₹0',
+      icon: 'payments',
+      color: '#673ab7',
+      tooltip: 'Total amount yet to be paid to suppliers (Pending Dues)'
+    },
+    {
+      title: 'Purchase Orders',
+      value: '0 Pending',
+      icon: 'shopping_cart',
+      color: '#2196f3',
+      tooltip: 'Purchase orders waiting for delivery or processing'
     },
     {
       title: 'Low Stock',
@@ -102,6 +125,14 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDashboardData();
+    this.loadCompanyInfo();
+  }
+
+  loadCompanyInfo() {
+    this.companyService.getCompanyProfile().subscribe({
+      next: (profile) => this.companyInfo = profile,
+      error: (err) => console.error('Failed to load company info for reports:', err)
+    });
   }
 
   loadDashboardData() {
@@ -109,22 +140,38 @@ export class DashboardComponent implements OnInit {
     this.loadingService.setLoading(true); // Global loading ON
     this.cdr.detectChanges();
 
-    // Teeno APIs ko ek saath call kar rahe hain
+    // APIs ko ek saath call kar rahe hain
     forkJoin({
       summary: this.dashboardService.getSummary(),
       charts: this.dashboardService.getChartData(),
-      activities: this.dashboardService.getRecentMovements(this.page, this.pageSize)
+      activities: this.dashboardService.getRecentMovements(this.page, this.pageSize),
+      receivables: this.financeService.getTotalReceivables(),
+      payables: this.financeService.getTotalPayables()
     }).subscribe({
-      next: (res) => {
+      next: (res: any) => {
         // 1. Summary Stats Update
         this.stats[0].value = '₹' + (this.decimalPipe.transform(res.summary.totalSales, '1.0-0') || '0');
-        this.stats[1].value = (res.summary.pendingPurchaseOrders || 0) + ' Pending';
+
+        // Receivables
+        const recAmt = res.receivables?.totalOutstanding || res.receivables?.totalReceivable || 0;
+        this.stats[1].value = '₹' + (this.decimalPipe.transform(recAmt, '1.0-0') || '0');
+
+        // Stock
         this.stats[2].value = '₹' + (this.decimalPipe.transform(res.summary.totalStockValue, '1.0-0') || '0');
         this.stats[2].subLabel = (this.decimalPipe.transform(res.summary.totalStockItems) || '0') + ' Units In Stock';
 
+        // Payables
+        const payAmt = res.payables?.totalPending || res.payables?.totalPayable || 0;
+        this.stats[3].value = '₹' + (this.decimalPipe.transform(payAmt, '1.0-0') || '0');
+
+        // POs
+        this.stats[4].value = (res.summary.pendingPurchaseOrders || 0) + ' Pending';
+
+        // Low Stock
         const lowStockCount = res.summary.lowStockAlertCount || 0;
-        this.stats[3].value = lowStockCount + (lowStockCount === 1 ? ' Item' : ' Items');
-        this.stats[3].hasAlert = lowStockCount > 0;
+        this.stats[5].value = lowStockCount + (lowStockCount === 1 ? ' Item' : ' Items');
+        this.stats[5].hasAlert = lowStockCount > 0;
+
         this.stats = [...this.stats];
 
         // 2. Charts Update
@@ -207,36 +254,156 @@ export class DashboardComponent implements OnInit {
     });
   }
   exportToPdf() {
-    this.isPdfLoading = true; // Dashboard par spinner dikhane ke liye
+    this.isPdfLoading = true;
     this.cdr.detectChanges();
-    this.productService.downloadLowStockPdf().subscribe({
-      next: (blob: Blob) => {
-        // 1. Browser memory mein temporary URL banayein
-        const url = window.URL.createObjectURL(blob);
 
-        // 2. Hidden link element create karein
-        const a = document.createElement('a');
-        a.href = url;
-
-        // 3. File name set karein
-        a.download = `LowStock_Report_${new Date().toLocaleDateString()}.pdf`;
-
-        // 4. Download trigger karein
-        a.click();
-
-        // 5. Cleanup
-        window.URL.revokeObjectURL(url);
-        a.remove();
-
-        this.isPdfLoading = false;
-        this.cdr.detectChanges();
+    // Fetch low stock products first
+    this.productService.getLowStockProducts().subscribe({
+      next: (products) => {
+        this.generateBrandedPdf(products);
       },
       error: (err) => {
-        console.error('PDF export failed:', err);
+        console.error('PDF data fetch failed:', err);
         this.isPdfLoading = false;
         this.cdr.detectChanges();
       }
     });
+  }
+
+  private generateBrandedPdf(products: any[]) {
+    const doc = new jsPDF();
+    const info = this.companyInfo;
+
+    // Load logo if exists
+    if (info?.logoUrl) {
+      const cleanLogoUrl = info.logoUrl.startsWith('/') ? info.logoUrl.substring(1) : info.logoUrl;
+      const fullLogoUrl = `${environment.CompanyRootUrl}/${cleanLogoUrl}`;
+
+      const img = new Image();
+      img.src = fullLogoUrl;
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        this.renderPdfWithData(doc, products, info, img);
+      };
+      img.onerror = () => {
+        this.renderPdfWithData(doc, products, info, null);
+      };
+    } else {
+      this.renderPdfWithData(doc, products, info, null);
+    }
+  }
+
+  private renderPdfWithData(doc: jsPDF, products: any[], info: any, logoImg: HTMLImageElement | null) {
+    // 1. Company Header (Rectangle Accent)
+    doc.setFillColor(33, 150, 243); // Material Blue
+    doc.rect(0, 0, 210, 40, 'F');
+
+    // 2. Company Identity & Logo
+    if (logoImg) {
+      try {
+        doc.addImage(logoImg, 'PNG', 15, 5, 30, 30);
+        doc.setTextColor(255, 255, 255);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(24);
+        doc.text(info?.name || 'REYAKAT ELECTRONICS', 55, 20);
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(info?.tagline || '', 55, 28);
+      } catch (e) {
+        this.renderHeaderTextOnly(doc, info);
+      }
+    } else {
+      this.renderHeaderTextOnly(doc, info);
+    }
+
+    // 3. Contact Details (Right Aligned in Blue Header)
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(8);
+    const rightMargin = 195;
+    doc.text(`GSTIN: ${info?.gstin || 'N/A'}`, rightMargin, 15, { align: 'right' });
+    doc.text(`Email: ${info?.primaryEmail || 'N/A'}`, rightMargin, 22, { align: 'right' });
+    doc.text(`Phone: ${info?.primaryPhone || 'N/A'}`, rightMargin, 29, { align: 'right' });
+
+    // 4. Report Title
+    doc.setTextColor(33, 37, 41);
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text('LOW STOCK ALERT REPORT', 105, 55, { align: 'center' });
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, 105, 62, { align: 'center' });
+
+    // 5. Products Table
+    const tableData = products.map((p, index) => [
+      index + 1,
+      p.productName,
+      p.sku || 'N/A',
+      `${p.currentStock} ${p.unit}`,
+      `${p.minStock} ${p.unit}`,
+      p.categoryName || 'N/A'
+    ]);
+
+    autoTable(doc, {
+      startY: 72,
+      head: [['Sr.', 'Product Name', 'SKU', 'Current Stock', 'Min. Stock', 'Category']],
+      body: tableData,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [33, 150, 243],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      styles: {
+        fontSize: 9,
+        cellPadding: 4,
+        valign: 'middle'
+      },
+      columnStyles: {
+        0: { cellWidth: 15, halign: 'center' }, // Fixed wrapping
+        1: { cellWidth: 'auto' },
+        2: { halign: 'center' },
+        3: { fontStyle: 'bold', textColor: [220, 53, 69], halign: 'center' },
+        4: { halign: 'center' },
+        5: { halign: 'center' }
+      },
+      didDrawPage: (data) => {
+        // Footer (Page Number)
+        const str = 'Page ' + doc.getNumberOfPages();
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(str, data.settings.margin.left, doc.internal.pageSize.height - 10);
+      }
+    });
+
+    // 6. Signature Placeholder
+    const finalY = (doc as any).lastAutoTable.finalY + 30;
+    if (finalY < 270) {
+      doc.setDrawColor(200);
+      doc.line(140, finalY, 190, finalY);
+      doc.setFontSize(9);
+      doc.text('Authorized Signatory', 165, finalY + 7, { align: 'center' });
+    }
+
+    // 7. Save
+    doc.save(`LowStockReport_${new Date().toISOString().split('T')[0]}.pdf`);
+
+    this.isPdfLoading = false;
+    this.cdr.detectChanges();
+  }
+
+  private renderHeaderTextOnly(doc: jsPDF, info: any) {
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.text(info?.name || 'REYAKAT ELECTRONICS', 15, 20);
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(info?.tagline || 'Excellence in Electronics & Electricals', 15, 28);
   }
 
   onScroll(index: number) {

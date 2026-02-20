@@ -7,6 +7,8 @@
   background-color: #1a1c23; // Professional dark background
   color: #d1d5db;
   border-right: none;
+  display: flex !important;
+  flex-direction: column !important;
 }
 
 .branding {
@@ -393,6 +395,53 @@ mat-accordion {
 
 .mat-divider {
   border-top-color: #e2e8f0 !important;
+}
+
+.sidenav-footer {
+  margin-top: auto;
+  padding: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(to top, #111317, #1a1c23);
+}
+
+.clock-calendar-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+
+  .live-clock, .current-date {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    
+    mat-icon {
+      font-size: 18px;
+      width: 18px;
+      height: 18px;
+      color: #3b82f6; // Modern blue accent
+    }
+
+    span {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .live-clock span {
+    font-family: 'Inter', monospace;
+    color: #ffffff;
+  }
+
+  .current-date span {
+    color: #94a3b8;
+    font-size: 0.8rem;
+  }
 }
 
 /* 🔹 Selection styles for professional look */
