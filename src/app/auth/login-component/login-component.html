@@ -12,7 +12,7 @@
       <form [formGroup]="loginForm" (ngSubmit)="Login()" *ngIf="!changePasswordMode && !forgotPasswordMode && !resetPasswordMode">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Email</mat-label>
-          <input matInput formControlName="Email">
+          <input matInput formControlName="Email" type="email" name="username" autocomplete="username" #emailInputField>
         </mat-form-field>
 
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
@@ -59,6 +59,11 @@
 
       <!-- RESET PASSWORD FORM -->
       <form [formGroup]="resetPasswordForm" (ngSubmit)="onResetPassword()" *ngIf="resetPasswordMode">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Email</mat-label>
+          <input matInput formControlName="Email" readonly>
+        </mat-form-field>
+
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Reset Token</mat-label>
           <input matInput formControlName="ResetToken" placeholder="Paste token here">

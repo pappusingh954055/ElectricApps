@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { finalize } from 'rxjs';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from '../../shared/material/material/material-module';
@@ -21,6 +21,8 @@ export class LoginComponent implements OnInit {
   resetPasswordMode = false;
   forgotPasswordForm: FormGroup;
   resetPasswordForm: FormGroup;
+
+  @ViewChild('emailInputField') emailInputField!: ElementRef;
 
   // existing
   changePasswordMode = false;
@@ -49,6 +51,7 @@ export class LoginComponent implements OnInit {
     });
 
     this.resetPasswordForm = this.fb.group({
+      Email: ['', [Validators.required, Validators.email]],
       ResetToken: ['', Validators.required],
       NewPassword: ['', [Validators.required, Validators.minLength(6)]]
     });
@@ -192,8 +195,11 @@ export class LoginComponent implements OnInit {
           this.dialog.open(StatusDialogComponent, {
             data: { isSuccess: true, message: `Token generated (Dev Mode): ${res.token}` }
           });
-          // pre-fill token
-          this.resetPasswordForm.patchValue({ ResetToken: res.token });
+          // pre-fill email and token
+          this.resetPasswordForm.patchValue({
+            Email: email,
+            ResetToken: res.token
+          });
         } else {
           this.dialog.open(StatusDialogComponent, {
             data: { isSuccess: true, message: 'If the email exists, a reset link has been sent.' }
@@ -247,12 +253,26 @@ export class LoginComponent implements OnInit {
       })
     ).subscribe({
       next: () => {
+        const userEmail = this.resetPasswordForm.value.Email;
         this.dialog.open(StatusDialogComponent, {
           data: { isSuccess: true, message: 'Password reset successfully. Please login.' }
         });
         this.resetPasswordMode = false;
         this.forgotPasswordMode = false;
-        this.loginForm.reset();
+
+        // Pre-fill login form with the reset email
+        this.loginForm.reset({
+          Email: userEmail,
+          Password: '',
+          rememberMe: this.loginForm.value.rememberMe
+        });
+
+        // Focus the email field after a short delay to allow UI to switch
+        setTimeout(() => {
+          if (this.emailInputField) {
+            this.emailInputField.nativeElement.focus();
+          }
+        }, 500);
       },
       error: err => {
         console.error('Reset Password Error:', err);

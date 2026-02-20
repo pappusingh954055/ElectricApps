@@ -271,38 +271,56 @@ export class DashboardComponent implements OnInit {
   }
 
   private generateBrandedPdf(products: any[]) {
-    const doc = new jsPDF();
+    this.isPdfLoading = true;
+    this.cdr.detectChanges();
+
     const info = this.companyInfo;
 
-    // Load logo if exists
     if (info?.logoUrl) {
       const cleanLogoUrl = info.logoUrl.startsWith('/') ? info.logoUrl.substring(1) : info.logoUrl;
-      const fullLogoUrl = `${environment.CompanyRootUrl}/${cleanLogoUrl}`;
+      const fullLogoUrl = info.logoUrl.startsWith('http') ? info.logoUrl : `${environment.CompanyRootUrl}/${cleanLogoUrl}`;
 
-      const img = new Image();
-      img.src = fullLogoUrl;
-      img.crossOrigin = 'Anonymous';
-      img.onload = () => {
-        this.renderPdfWithData(doc, products, info, img);
-      };
-      img.onerror = () => {
-        this.renderPdfWithData(doc, products, info, null);
-      };
+      this.fetchImageAsBase64(fullLogoUrl)
+        .then(base64Data => {
+          this.renderPdfWithBranding(products, info, base64Data);
+        })
+        .catch(err => {
+          console.error('Logo fetching failed:', err);
+          this.renderPdfWithBranding(products, info, null);
+        });
     } else {
-      this.renderPdfWithData(doc, products, info, null);
+      this.renderPdfWithBranding(products, info, null);
     }
   }
 
-  private renderPdfWithData(doc: jsPDF, products: any[], info: any, logoImg: HTMLImageElement | null) {
+  private async fetchImageAsBase64(url: string): Promise<string> {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  private renderPdfWithBranding(products: any[], info: any, logoBase64: string | null) {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
     // 1. Company Header (Rectangle Accent)
     doc.setFillColor(33, 150, 243); // Material Blue
-    doc.rect(0, 0, 210, 40, 'F');
+    doc.rect(0, 0, pageWidth, 40, 'F');
 
     // 2. Company Identity & Logo
-    if (logoImg) {
+    doc.setTextColor(255, 255, 255);
+    if (logoBase64) {
       try {
-        doc.addImage(logoImg, 'PNG', 15, 5, 30, 30);
-        doc.setTextColor(255, 255, 255);
+        doc.addImage(logoBase64, 'PNG', 15, 5, 30, 30);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(24);
         doc.text(info?.name || 'REYAKAT ELECTRONICS', 55, 20);
@@ -317,24 +335,24 @@ export class DashboardComponent implements OnInit {
       this.renderHeaderTextOnly(doc, info);
     }
 
-    // 3. Contact Details (Right Aligned in Blue Header)
+    // 3. Contact Details
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(8);
-    const rightMargin = 195;
+    doc.setFontSize(9);
+    const rightMargin = pageWidth - 15;
     doc.text(`GSTIN: ${info?.gstin || 'N/A'}`, rightMargin, 15, { align: 'right' });
-    doc.text(`Email: ${info?.primaryEmail || 'N/A'}`, rightMargin, 22, { align: 'right' });
-    doc.text(`Phone: ${info?.primaryPhone || 'N/A'}`, rightMargin, 29, { align: 'right' });
+    doc.text(`Email: ${info?.primaryEmail || 'N/A'}`, rightMargin, 23, { align: 'right' });
+    doc.text(`Phone: ${info?.primaryPhone || 'N/A'}`, rightMargin, 31, { align: 'right' });
 
     // 4. Report Title
     doc.setTextColor(33, 37, 41);
-    doc.setFontSize(16);
+    doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('LOW STOCK ALERT REPORT', 105, 55, { align: 'center' });
+    doc.text('LOW STOCK ALERT REPORT', pageWidth / 2, 55, { align: 'center' });
 
-    doc.setFontSize(9);
+    doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100);
-    doc.text(`Generated on: ${new Date().toLocaleString()}`, 105, 62, { align: 'center' });
+    doc.text(`Generated on: ${new Date().toLocaleString()}`, pageWidth / 2, 63, { align: 'center' });
 
     // 5. Products Table
     const tableData = products.map((p, index) => [
@@ -363,7 +381,7 @@ export class DashboardComponent implements OnInit {
         valign: 'middle'
       },
       columnStyles: {
-        0: { cellWidth: 15, halign: 'center' }, // Fixed wrapping
+        0: { cellWidth: 15, halign: 'center' },
         1: { cellWidth: 'auto' },
         2: { halign: 'center' },
         3: { fontStyle: 'bold', textColor: [220, 53, 69], halign: 'center' },
@@ -371,7 +389,6 @@ export class DashboardComponent implements OnInit {
         5: { halign: 'center' }
       },
       didDrawPage: (data) => {
-        // Footer (Page Number)
         const str = 'Page ' + doc.getNumberOfPages();
         doc.setFontSize(8);
         doc.setTextColor(150);
@@ -379,18 +396,18 @@ export class DashboardComponent implements OnInit {
       }
     });
 
-    // 6. Signature Placeholder
-    const finalY = (doc as any).lastAutoTable.finalY + 30;
-    if (finalY < 270) {
+    // 6. Signature
+    const lastY = (doc as any).lastAutoTable.finalY || 150;
+    const footerY = lastY + 25;
+    if (footerY < doc.internal.pageSize.height - 20) {
       doc.setDrawColor(200);
-      doc.line(140, finalY, 190, finalY);
+      doc.line(pageWidth - 65, footerY, pageWidth - 15, footerY);
       doc.setFontSize(9);
-      doc.text('Authorized Signatory', 165, finalY + 7, { align: 'center' });
+      doc.setTextColor(50);
+      doc.text('Authorized Signatory', pageWidth - 40, footerY + 7, { align: 'center' });
     }
 
-    // 7. Save
     doc.save(`LowStockReport_${new Date().toISOString().split('T')[0]}.pdf`);
-
     this.isPdfLoading = false;
     this.cdr.detectChanges();
   }
