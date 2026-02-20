@@ -15,6 +15,7 @@ import { StatusDialogComponent } from '../../../../shared/components/status-dial
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { FinanceService } from '../../service/finance.service';
 import { LoadingService } from '../../../../core/services/loading.service';
+import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
 
 @Component({
     selector: 'app-expense-entry',
@@ -30,7 +31,8 @@ import { LoadingService } from '../../../../core/services/loading.service';
         MatCardModule,
         MatSelectModule,
         MatDatepickerModule,
-        MatNativeDateModule
+        MatNativeDateModule,
+        SummaryStatsComponent
     ],
     templateUrl: './expense-entry.component.html',
     styleUrls: ['./expense-entry.component.scss']
@@ -43,6 +45,8 @@ export class ExpenseEntryComponent implements OnInit {
     displayedColumns: string[] = ['date', 'category', 'amount', 'mode', 'refNo', 'actions'];
     isEditing = false;
     editingId: number | null = null;
+    summaryStats: SummaryStat[] = [];
+    isLoading = false;
 
     constructor(
         private fb: FormBuilder,
@@ -75,18 +79,51 @@ export class ExpenseEntryComponent implements OnInit {
     }
 
     loadExpenses(): void {
-        this.financeService.getExpenseEntries(1, 50).subscribe({
+        this.isLoading = true;
+        this.financeService.getExpenseEntries(1, 100).subscribe({
             next: (res) => {
                 this.expenses = res.items || [];
+                this.updateStats();
+                this.isLoading = false;
                 this.loadingService.setLoading(false);
                 this.cdr.detectChanges();
             },
             error: () => {
+                this.isLoading = false;
                 this.loadingService.setLoading(false);
                 this.showError('Failed to load expenses');
                 this.cdr.detectChanges();
             }
         });
+    }
+
+    private updateStats(): void {
+        const totalAmount = this.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
+
+        // This Month
+        const now = new Date();
+        const thisMonth = this.expenses
+            .filter(e => {
+                const d = new Date(e.expenseDate);
+                return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+            })
+            .reduce((sum, e) => sum + (e.amount || 0), 0);
+
+        // Today
+        const today = this.expenses
+            .filter(e => {
+                const d = new Date(e.expenseDate);
+                return d.getDate() === now.getDate() &&
+                    d.getMonth() === now.getMonth() &&
+                    d.getFullYear() === now.getFullYear();
+            })
+            .reduce((sum, e) => sum + (e.amount || 0), 0);
+
+        this.summaryStats = [
+            { label: 'Total Volume', value: `₹${totalAmount.toLocaleString('en-IN')}`, icon: 'receipt_long', type: 'info' },
+            { label: 'This Month', value: `₹${thisMonth.toLocaleString('en-IN')}`, icon: 'calendar_month', type: 'primary' as any },
+            { label: 'Today', value: `₹${today.toLocaleString('en-IN')}`, icon: 'today', type: 'success' }
+        ];
     }
 
     onSubmit(): void {

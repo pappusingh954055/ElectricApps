@@ -12,6 +12,7 @@ import { StatusDialogComponent } from '../../../../shared/components/status-dial
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { FinanceService } from '../../service/finance.service';
 import { LoadingService } from '../../../../core/services/loading.service';
+import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
 
 @Component({
     selector: 'app-expense-category',
@@ -24,7 +25,8 @@ import { LoadingService } from '../../../../core/services/loading.service';
         MatIconModule,
         MatInputModule,
         MatFormFieldModule,
-        MatCardModule
+        MatCardModule,
+        SummaryStatsComponent
     ],
     templateUrl: './expense-category.component.html',
     styleUrls: ['./expense-category.component.scss']
@@ -35,6 +37,8 @@ export class ExpenseCategoryComponent implements OnInit {
     displayedColumns: string[] = ['name', 'description', 'isActive', 'actions'];
     isEditing = false;
     editingId: number | null = null;
+    summaryStats: SummaryStat[] = [];
+    isLoading = false;
 
     constructor(
         private fb: FormBuilder,
@@ -55,19 +59,35 @@ export class ExpenseCategoryComponent implements OnInit {
     }
 
     loadCategories(): void {
+        this.isLoading = true;
         this.loadingService.setLoading(true);
         this.financeService.getExpenseCategories().subscribe({
             next: (data) => {
-                this.categories = data;
+                this.categories = data || [];
+                this.updateStats();
+                this.isLoading = false;
                 this.loadingService.setLoading(false);
                 this.cdr.detectChanges();
             },
             error: (err) => {
+                this.isLoading = false;
                 this.loadingService.setLoading(false);
                 this.showError('Failed to load categories');
                 this.cdr.detectChanges();
             }
         });
+    }
+
+    private updateStats(): void {
+        const total = this.categories.length;
+        const active = this.categories.filter(c => c.isActive).length;
+        const inactive = total - active;
+
+        this.summaryStats = [
+            { label: 'Total Categories', value: total, icon: 'category', type: 'info' },
+            { label: 'Active', value: active, icon: 'check_circle', type: 'success' },
+            { label: 'Inactive', value: inactive, icon: 'block', type: 'warning' }
+        ];
     }
 
     onSubmit(): void {

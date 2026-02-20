@@ -13,6 +13,11 @@
     }
   }
 
+  app-summary-stats {
+    display: block;
+    margin-bottom: 24px;
+  }
+
   .main-content {
     display: grid;
     grid-template-columns: 1fr 2fr;

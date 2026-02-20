@@ -58,7 +58,10 @@
                 <mat-card-subtitle>From Customers</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-                <h2 class="stat-value text-primary">₹{{ totalReceivables | number:'1.2-2' }}</h2>
+                <h2 class="stat-value" [class.text-advance]="totalReceivables < 0">
+                    ₹{{ (totalReceivables < 0 ? -totalReceivables : totalReceivables) | number:'1.2-2' }}
+                    <span *ngIf="totalReceivables < 0" class="adv-suffix">(Adv)</span>
+                </h2>
                 <button mat-button color="primary" routerLink="/app/finance/customers/outstanding">View Tracker</button>
             </mat-card-content>
         </mat-card>
@@ -72,7 +75,10 @@
                 <mat-card-subtitle>To Suppliers</mat-card-subtitle>
             </mat-card-header>
             <mat-card-content>
-                <h2 class="stat-value text-warn">₹{{ totalPayables | number:'1.2-2' }}</h2>
+                <h2 class="stat-value" [class.text-advance]="totalPayables < 0">
+                    ₹{{ (totalPayables < 0 ? -totalPayables : totalPayables) | number:'1.2-2' }}
+                    <span *ngIf="totalPayables < 0" class="adv-suffix">(Adv)</span>
+                </h2>
                 <button mat-button color="warn" routerLink="/app/finance/suppliers/dues">View Dues</button>
             </mat-card-content>
         </mat-card>
