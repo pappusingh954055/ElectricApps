@@ -4,7 +4,7 @@
       <button mat-icon-button (click)="goBack()" title="Back to List">
         <mat-icon>arrow_back</mat-icon>
       </button>
-      <h2>Bulk Unit Master Entry</h2>
+      <h2>{{ isEditMode ? 'Edit Unit' : 'Bulk Unit Master Entry' }}</h2>
     </div>
   </div>
 
@@ -24,13 +24,17 @@
                 <mat-error *ngIf="unit.get('name')?.invalid">Unit Name is Required</mat-error>
               </mat-form-field>
 
-              <mat-form-field appearance="outline" fxFlex="100" fxFlex.gt-sm="50">
+              <mat-form-field appearance="outline" fxFlex="100" fxFlex.gt-sm="40">
                 <mat-label>Description</mat-label>
                 <input matInput formControlName="description" placeholder="Details about this unit">
               </mat-form-field>
 
+              <div fxFlex="nogrow" *ngIf="isEditMode">
+                <mat-slide-toggle formControlName="isActive" color="primary">Active</mat-slide-toggle>
+              </div>
+
               <div fxFlex="nogrow">
-                <button type="button" mat-icon-button class="delete-btn" (click)="removeUnitRow(i)" *ngIf="units.length > 1">
+                <button type="button" mat-icon-button class="delete-btn" (click)="removeUnitRow(i)" *ngIf="units.length > 1 && !isEditMode">
                   <mat-icon>delete_outline</mat-icon>
                 </button>
               </div>
@@ -38,12 +42,14 @@
           </div>
 
           <div class="action-buttons" fxLayout="row" fxLayoutAlign="space-between center">
-            <button type="button" mat-stroked-button class="add-btn" (click)="addUnitRow()">
+            <button type="button" mat-stroked-button class="add-btn" (click)="addUnitRow()" *ngIf="!isEditMode">
               <mat-icon>add</mat-icon> Add Another Unit
             </button>
             
+            <span *ngIf="isEditMode"></span>
+
             <button type="submit" mat-raised-button class="save-btn" (click)="saveUnits()" [disabled]="unitForm.invalid">
-              SAVE ALL UNITS
+              {{ isEditMode ? 'UPDATE UNIT' : 'SAVE ALL UNITS' }}
             </button>
           </div>
         </form>
