@@ -1,10 +1,10 @@
 <div class="bulk-unit-container">
-  <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="12px" style="margin-bottom: 24px;">
+  <div fxLayout="row" fxLayoutAlign="end center" fxLayoutGap="12px" style="margin-bottom: 24px;">
     <button mat-raised-button color="primary" routerLink="/app/master/units/add">
       <mat-icon>add</mat-icon> ADD NEW UNIT
     </button>
 
-    <button mat-stroked-button color="primary" (click)="fileInput.click()">
+    <button mat-stroked-button color="primary" (click)="fileInput.click()" style="margin-left: 10px;">
       <mat-icon>upload_file</mat-icon> BULK UPLOAD
     </button>
     <input #fileInput type="file" (change)="onFileSelected($event)" accept=".xlsx, .xls" style="display: none;">
