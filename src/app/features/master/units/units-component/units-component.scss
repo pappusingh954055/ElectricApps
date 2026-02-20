@@ -1,0 +1,109 @@
+// Main Wrapper
+.bulk-unit-container {
+  padding: 24px;
+  background-color: #f4f7fe; // ERP light grey background
+  min-height: calc(100vh - 70px);
+}
+
+// Professional Card Styling
+.unit-card {
+  background: #ffffff;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05) !important;
+  overflow: hidden;
+
+  .card-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f0f2f5;
+    background: #ffffff;
+
+    h2 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1b2559; // Dark ERP blue
+      margin: 0;
+    }
+  }
+}
+
+// Professional Dynamic Row
+.unit-row {
+  background-color: #ffffff;
+  padding: 20px;
+  margin: 0 24px;
+  border-bottom: 1px solid #edf2f7; // Clean separation
+  transition: all 0.2s ease-in-out;
+
+  &:hover {
+    background-color: #fafcfe;
+    border-left: 4px solid #1a73e8; // Highlighting active row
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+// Form Field Refinement
+::ng-deep .mat-form-field-appearance-outline {
+  width: 100%;
+  
+  .mat-form-field-outline {
+    color: #e2e8f0 !important; // Soft border color
+  }
+
+  &.mat-focused .mat-form-field-outline-thick {
+    color: #1a73e8 !important; // Reyakat Blue
+  }
+
+  .mat-form-field-label {
+    color: #718096 !important;
+  }
+}
+
+// Action Buttons Section
+.action-buttons {
+  padding: 24px;
+  background-color: #ffffff;
+  border-top: 1px solid #f0f2f5;
+
+  .add-btn {
+    color: #1a73e8;
+    border: 1px dashed #1a73e8; // Dashed look for 'Add' action
+    font-weight: 600;
+    border-radius: 8px;
+    
+    &:hover {
+      background-color: rgba(26, 115, 232, 0.05);
+    }
+  }
+
+  .save-btn {
+    background-color: #1a73e8 !important; // Matching header blue
+    color: white !important;
+    font-weight: 600;
+    border-radius: 25px; // Rounded like your screenshot
+    padding: 0 32px;
+    box-shadow: 0 4px 11px rgba(26, 115, 232, 0.35);
+  }
+}
+
+// Delete Button
+.delete-btn {
+  color: #a0aec0;
+  transition: color 0.2s;
+
+  &:hover {
+    color: #f44336; // Red on hover
+    background-color: #fff5f5;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 960px) {
+  .unit-row {
+    padding: 15px;
+    margin: 0 10px;
+  }
+}

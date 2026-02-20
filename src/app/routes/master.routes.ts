@@ -47,6 +47,15 @@ export const MASTER_ROUTES: Routes = [
     ]
   },
 
-
+  {
+    path: 'units',
+    canActivate: [PermissionGuard],
+    data: { breadcrumb: 'Units' },
+    children: [
+      { path: '', data: { breadcrumb: 'List' }, loadComponent: () => import('../features/master/units/unitslist-component/unitslist-component').then(m => m.UnitslistComponent) },
+      { path: 'add', data: { breadcrumb: 'Add New' }, loadComponent: () => import('../features/master/units/units-component/units-component').then(m => m.UnitsComponent) },
+      { path: 'edit/:id', data: { breadcrumb: 'Edit' }, loadComponent: () => import('../features/master/units/units-component/units-component').then(m => m.UnitsComponent) }
+    ]
+  },
 
 ];

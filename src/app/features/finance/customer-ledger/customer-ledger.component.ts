@@ -210,7 +210,12 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
 
                         // Stats
                         this.summaryStats = [
-                            { label: 'Current Balance', value: `₹${this.currentBalance.toFixed(2)}`, icon: 'account_balance_wallet', type: this.currentBalance > 0 ? 'warning' : 'success' },
+                            {
+                                label: 'Current Balance',
+                                value: this.currentBalance >= 0 ? `₹${this.currentBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : `₹${Math.abs(this.currentBalance).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (Adv)`,
+                                icon: 'account_balance_wallet',
+                                type: this.currentBalance > 0 ? 'warning' : 'success'
+                            },
                             { label: 'Transactions', value: this.totalCount, icon: 'receipt_long', type: 'info' }
                         ];
                         console.log('Customer Stats updated:', this.summaryStats);
