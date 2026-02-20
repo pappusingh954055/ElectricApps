@@ -485,10 +485,15 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
     console.log('🚀 Initiating Direct Receipt with data:', data);
 
     const receiptPayload = {
-      customerId: data.customerId,
-      amount: data.grandTotal,
-      paymentMode: 'Cash', // Default to Cash
-      referenceNumber: data.soNumber,
+      id: 0,
+      customerId: Number(data.customerId),
+      amount: Number(data.grandTotal),
+      totalAmount: Number(data.grandTotal),
+      discountAmount: 0,
+      netAmount: Number(data.grandTotal),
+      paymentMode: 'Cash',
+      // Add unique suffix to prevent duplicate reference block
+      referenceNumber: `${data.soNumber}-${new Date().getTime().toString().slice(-4)}`,
       paymentDate: new Date().toISOString(),
       remarks: `Direct Receipt for SO: ${data.soNumber}`,
       createdBy: localStorage.getItem('email') || 'Admin'
@@ -497,7 +502,7 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
     // Calculate total quantity for Gate Pass
     const totalQty = this.items.controls.reduce((sum, item) => sum + (Number(item.get('qty')?.value) || 0), 0);
 
-    // Add a small delay to ensure SO transaction is fully committed
+    // Increase delay to ensure SO transaction is committed
     setTimeout(() => {
       this.financeService.recordCustomerReceipt(receiptPayload).subscribe({
         next: () => {
@@ -510,32 +515,27 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
               status: 'success'
             }
           });
-          // Redirect to Outward Gate Pass with pre-filled data
           this.router.navigate(['/app/inventory/gate-pass/outward'], {
-            queryParams: {
-              type: 'sale-order',
-              refId: data.soId,
-              refNo: data.soNumber,
-              partyName: data.customerName,
-              qty: totalQty
-            }
+            queryParams: { type: 'sale-order', refId: data.soId, refNo: data.soNumber, partyName: data.customerName, qty: totalQty }
           });
         },
         error: (err) => {
-          console.error('Direct receipt failed:', err);
+          console.error('❌ Direct receipt failed:', err);
+          const serverMsg = err.error?.message || err.message || 'Unknown server error';
+
           this.dialog.open(StatusDialogComponent, {
-            width: '350px',
+            width: '400px',
             data: {
               isSuccess: false,
               title: 'Payment Failed',
-              message: 'Sale Order saved but payment recording failed.',
+              message: `Sale Order saved but payment failed.\n\nReason: ${serverMsg}`,
               status: 'error'
             }
           });
           this.router.navigate(['/app/inventory/solist']);
         }
       });
-    }, 500);
+    }, 800);
   }
 
   goBack() {

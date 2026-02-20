@@ -12,7 +12,7 @@
     <div class="po-header-grid">
       <div class="field-item">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Select Supplier</mat-label>
+          <mat-label>Select Supplier*</mat-label>
           <mat-select formControlName="supplierId" (selectionChange)="onSupplierChange($event.value)" [disabled]="isLoadingSuppliers">
             <mat-option [value]="null">Please Select Supplier</mat-option>
             <mat-option *ngFor="let s of suppliers" [value]="s.id">
@@ -22,7 +22,10 @@
           <div matSuffix *ngIf="isLoadingSuppliers" class="dropdown-loader">
             <mat-spinner diameter="18"></mat-spinner>
           </div>
-          <mat-error *ngIf="suppliers.length === 0 && !isLoadingSuppliers">
+          <mat-error *ngIf="poForm.get('supplierId')?.hasError('required')">
+            Supplier is required.
+          </mat-error>
+          <mat-error *ngIf="suppliers.length === 0 && !isLoadingSuppliers && !poForm.get('supplierId')?.hasError('required')">
             No suppliers found.
           </mat-error>
         </mat-form-field>
@@ -34,7 +37,7 @@
 
       <div class="field-item">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Applicable Price List</mat-label>
+          <mat-label>Applicable Price List*</mat-label>
           <mat-select formControlName="priceListId" (selectionChange)="refreshAllItemRates($event.value)" [disabled]="isLoadingPriceLists">
             <mat-option [value]="null">Please Select</mat-option>
             <mat-option *ngFor="let pl of priceLists" [value]="pl.id">
@@ -44,7 +47,10 @@
           <div matSuffix *ngIf="isLoadingPriceLists" class="dropdown-loader">
             <mat-spinner diameter="18"></mat-spinner>
           </div>
-          <mat-error *ngIf="priceLists.length === 0 && !isLoadingPriceLists">
+          <mat-error *ngIf="poForm.get('priceListId')?.hasError('required')">
+            Price List is required.
+          </mat-error>
+          <mat-error *ngIf="priceLists.length === 0 && !isLoadingPriceLists && !poForm.get('priceListId')?.hasError('required')">
             No price lists found.
           </mat-error>
           <mat-hint *ngIf="isPriceListAutoSelected" style="color: green; font-size: 10px;">

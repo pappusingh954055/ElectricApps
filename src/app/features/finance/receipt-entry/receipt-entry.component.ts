@@ -173,8 +173,20 @@ export class ReceiptEntryComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.isLoading = true;
+        let ref = this.receipt.referenceNumber || '';
+        // If it looks like a standard SO/GRN reference (Prefix-Year-Number), add a unique suffix
+        if ((ref.startsWith('SO-') || ref.startsWith('GRN-')) && ref.split('-').length < 4) {
+          ref = `${ref}-${new Date().getTime().toString().slice(-4)}`;
+        }
+
         const payload = {
+          id: 0,
           ...this.receipt,
+          amount: Number(this.receipt.amount),
+          totalAmount: Number(this.receipt.amount),
+          discountAmount: 0,
+          netAmount: Number(this.receipt.amount),
+          referenceNumber: ref,
           paymentDate: this.receipt.paymentDate instanceof Date ? this.receipt.paymentDate.toISOString() : this.receipt.paymentDate
         };
 

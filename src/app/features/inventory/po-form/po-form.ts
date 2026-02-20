@@ -303,10 +303,19 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   onSupplierChange(supplierId: number): void {
     if (!supplierId) return;
     this.supplierService.getSupplierById(supplierId).subscribe((res: any) => {
-      if (res.defaultpricelistId) {
-        this.poForm.get('priceListId')?.setValue(res.defaultpricelistId);
+      console.log('🔍 Supplier Data Received:', res);
+
+      // Checking multiple common casing variations for the price list property
+      const pListId = res.defaultpricelistId || res.defaultPriceListId || res.priceListId;
+
+      if (pListId) {
+        console.log('✅ Auto-populating Price List ID:', pListId);
+        this.poForm.get('priceListId')?.setValue(pListId);
         this.isPriceListAutoSelected = true;
-        this.refreshAllItemRates(res.defaultpricelistId);
+        this.refreshAllItemRates(pListId);
+      } else {
+        console.warn('⚠️ No default price list found for this supplier in Master.');
+        this.isPriceListAutoSelected = false;
       }
       this.cdr.detectChanges();
     });
