@@ -8,6 +8,7 @@ import { Router, RouterLink } from '@angular/router';
 import { MatSort } from '@angular/material/sort';
 import { UnitService } from '../services/units.service';
 import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
+import { LoadingService } from '../../../../core/services/loading.service';
 
 @Component({
   selector: 'app-unitslist-component',
@@ -25,7 +26,12 @@ export class UnitslistComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private unitService: UnitService, private cdr: ChangeDetectorRef, private router: Router) { }
+  constructor(
+    private unitService: UnitService,
+    private cdr: ChangeDetectorRef,
+    private router: Router,
+    private loadingService: LoadingService
+  ) { }
 
   ngOnInit(): void {
     this.loadUnits();
@@ -33,20 +39,23 @@ export class UnitslistComponent implements OnInit {
 
   loadUnits() {
     this.isLoading = true;
+    this.loadingService.setLoading(true);
     this.unitService.getAll().subscribe({
       next: (data) => {
         console.log(data);
 
-        this.dataSource.data = data;
+        this.dataSource.data = data || [];
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
         this.updateStats();
         this.isLoading = false;
+        this.loadingService.setLoading(false);
         this.cdr.detectChanges();
       },
       error: () => {
         this.isLoading = false;
         // Error handling logic
+        this.loadingService.setLoading(false);
         this.cdr.detectChanges();
       }
     });

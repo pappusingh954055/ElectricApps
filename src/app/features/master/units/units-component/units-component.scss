@@ -1,11 +1,63 @@
 // Main Wrapper
 .bulk-unit-container {
-  padding: 24px;
-  background-color: #f4f7fe; // ERP light grey background
-  min-height: calc(100vh - 70px);
+  padding: 0 24px;
+  background-color: #f8f9fa;
+  height: calc(100vh - 260px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden !important;
+  box-sizing: border-box;
+
+  .header-section {
+    margin-bottom: 8px;
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 600;
+        color: #333;
+      }
+    }
+  }
+
+  app-summary-stats {
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    gap: 16px;
+
+    .unit-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+
+      mat-card-content {
+        flex: 1;
+        overflow-y: auto;
+        padding-top: 16px;
+      }
+    }
+  }
 }
 
 // Professional Card Styling
+:host {
+  display: block;
+  overflow: hidden !important;
+}
+
 .unit-card {
   background: #ffffff;
   border-radius: 12px;

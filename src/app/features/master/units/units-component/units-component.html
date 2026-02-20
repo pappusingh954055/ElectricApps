@@ -1,39 +1,53 @@
 <div class="bulk-unit-container">
-  <mat-card class="unit-card">
+  <div class="header-section">
+    <div class="title-row">
+      <button mat-icon-button (click)="goBack()" title="Back to List">
+        <mat-icon>arrow_back</mat-icon>
+      </button>
+      <h2>Bulk Unit Master Entry</h2>
+    </div>
+  </div>
 
-    <form [formGroup]="unitForm">
-      <div formArrayName="units">
-        <div *ngFor="let unit of units.controls; let i=index" [formGroupName]="i" 
-             class="unit-row" fxLayout="row wrap" fxLayoutGap="20px" fxLayoutAlign="start center">
-          
-          <mat-form-field appearance="outline" fxFlex="100" fxFlex.gt-sm="35">
-            <mat-label>Unit Name</mat-label>
-            <input matInput formControlName="name" placeholder="Enter Unit">
-            <mat-error *ngIf="unit.get('name')?.invalid">Unit Name is Required</mat-error>
-          </mat-form-field>
+  <app-summary-stats [stats]="summaryStats" [isLoading]="isLoading"></app-summary-stats>
 
-          <mat-form-field appearance="outline" fxFlex="100" fxFlex.gt-sm="50">
-            <mat-label>Description</mat-label>
-            <input matInput formControlName="description" placeholder="Details about this unit">
-          </mat-form-field>
+  <div class="main-content">
+    <mat-card class="unit-card">
+      <mat-card-content>
+        <form [formGroup]="unitForm">
+          <div formArrayName="units">
+            <div *ngFor="let unit of units.controls; let i=index" [formGroupName]="i" 
+                 class="unit-row" fxLayout="row wrap" fxLayoutGap="20px" fxLayoutAlign="start center">
+              
+              <mat-form-field appearance="outline" fxFlex="100" fxFlex.gt-sm="35">
+                <mat-label>Unit Name</mat-label>
+                <input matInput formControlName="name" placeholder="Enter Unit">
+                <mat-error *ngIf="unit.get('name')?.invalid">Unit Name is Required</mat-error>
+              </mat-form-field>
 
-          <div fxFlex="nogrow">
-            <button type="button" mat-icon-button class="delete-btn" (click)="removeUnitRow(i)" *ngIf="units.length > 1">
-              <mat-icon>delete_outline</mat-icon>
+              <mat-form-field appearance="outline" fxFlex="100" fxFlex.gt-sm="50">
+                <mat-label>Description</mat-label>
+                <input matInput formControlName="description" placeholder="Details about this unit">
+              </mat-form-field>
+
+              <div fxFlex="nogrow">
+                <button type="button" mat-icon-button class="delete-btn" (click)="removeUnitRow(i)" *ngIf="units.length > 1">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="action-buttons" fxLayout="row" fxLayoutAlign="space-between center">
+            <button type="button" mat-stroked-button class="add-btn" (click)="addUnitRow()">
+              <mat-icon>add</mat-icon> Add Another Unit
+            </button>
+            
+            <button type="submit" mat-raised-button class="save-btn" (click)="saveUnits()" [disabled]="unitForm.invalid">
+              SAVE ALL UNITS
             </button>
           </div>
-        </div>
-      </div>
-
-      <div class="action-buttons" fxLayout="row" fxLayoutAlign="space-between center">
-        <button type="button" mat-stroked-button class="add-btn" (click)="addUnitRow()">
-          <mat-icon>add</mat-icon> Add Another Unit
-        </button>
-        
-        <button type="submit" mat-raised-button class="save-btn" (click)="saveUnits()" [disabled]="unitForm.invalid">
-          SAVE ALL UNITS
-        </button>
-      </div>
-    </form>
-  </mat-card>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
 </div>

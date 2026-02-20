@@ -7,9 +7,7 @@
 
   <app-summary-stats [stats]="summaryStats" [isLoading]="isLoading"></app-summary-stats>
 
-  <div style="margin-top: 24px;"></div>
-
-  <mat-form-field appearance="outline" style="width: 100%; margin-bottom: 10px;">
+  <mat-form-field appearance="outline" style="width: 100%; margin-bottom: 8px;">
     <mat-label>Search Units (e.g. Kg, Pcs)</mat-label>
     <input matInput (keyup)="applyFilter($event)" placeholder="Search anything...">
     <mat-icon matSuffix>search</mat-icon>
