@@ -245,60 +245,89 @@ export class ReceiptEntryComponent implements OnInit {
   }
 
   printVoucher(receipt: any) {
+    const prevBal = this.currentBalance || 0;
+    const received = receipt.amount || 0;
+    const closingBal = prevBal - received; // Customer ledger: Due decreases when received
+
+    const formatCurrency = (amt: number) => {
+      const absAmt = Math.abs(amt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      return `₹${absAmt}${amt < 0 ? ' (Adv)' : ''}`;
+    };
+
+    const balanceText = closingBal < 0 ? 'Advance Amount' : 'Remaining Due';
+
     const printContent = `
-          <div style="font-family: sans-serif; padding: 40px; border: 2px solid #333; max-width: 800px; margin: auto;">
-            <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 20px;">
-              <h1 style="margin: 0; color: #1976d2;">PAYMENT RECEIPT</h1>
-              <p style="margin: 5px 0;">Official Acknowledgement of Payment</p>
+          <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 30px; border: 1px solid #e0e0e0; max-width: 700px; margin: auto; color: #333;">
+            <div style="text-align: center; border-bottom: 2px solid #1976d2; padding-bottom: 15px; margin-bottom: 20px;">
+              <h1 style="margin: 0; color: #1976d2; font-size: 24px;">PAYMENT RECEIPT</h1>
+              <p style="margin: 5px 0; font-size: 13px; color: #666;">Official Receipt of Funds</p>
             </div>
             
-            <div style="display: flex; justify-content: space-between; margin-bottom: 30px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 25px; font-size: 13px;">
               <div>
-                <strong>Receipt No:</strong> CR-${receipt.id}<br>
-                <strong>Date:</strong> ${new Date(receipt.paymentDate).toLocaleDateString()}
+                <span style="color: #888;">Receipt No:</span> <strong>CR-${receipt.id}</strong><br>
+                <span style="color: #888;">Date:</span> <strong>${new Date(receipt.paymentDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</strong>
               </div>
               <div style="text-align: right;">
-                <strong>Reference:</strong> ${receipt.referenceNumber || 'N/A'}<br>
-                <strong>Mode:</strong> ${receipt.paymentMode}
+                <span style="color: #888;">Reference:</span> <strong>${receipt.referenceNumber || 'N/A'}</strong><br>
+                <span style="color: #888;">Mode:</span> <strong>${receipt.paymentMode}</strong>
               </div>
             </div>
     
-            <div style="margin-bottom: 40px; padding: 20px; background: #f0f7ff; border-radius: 8px;">
-              <p style="font-size: 1.1rem; margin-bottom: 10px;">Received From:</p>
-              <h2 style="margin: 0;">${receipt.customerName}</h2>
-              <p style="color: #666; margin-top: 5px;">Customer ID: #${receipt.customerId}</p>
+            <div style="margin-bottom: 25px; padding: 15px; background: #f8f9fa; border-left: 4px solid #1976d2; border-radius: 4px;">
+              <p style="font-size: 12px; color: #888; margin: 0 0 5px 0;">Received From:</p>
+              <h2 style="margin: 0; font-size: 18px; color: #1976d2;">${receipt.customerName}</h2>
+              <p style="color: #555; margin: 4px 0 0 0; font-size: 12px;">Customer ID: #${receipt.customerId}</p>
             </div>
     
-            <div style="border: 1px solid #ddd; border-radius: 8px; overflow: hidden; margin-bottom: 40px;">
-              <table style="width: 100%; border-collapse: collapse;">
-                <tr style="background: #eee;">
-                  <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Description</th>
-                  <th style="padding: 12px; text-align: right; border-bottom: 1px solid #ddd;">Amount</th>
-                </tr>
-                <tr>
-                  <td style="padding: 15px; border-bottom: 1px solid #eee;">
-                    ${receipt.remarks || 'Payment received towards outstanding balance.'}
-                  </td>
-                  <td style="padding: 15px; text-align: right; font-weight: bold; border-bottom: 1px solid #eee;">
-                    ₹${receipt.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </td>
-                </tr>
-                <tr style="background: #fcfcfc;">
-                  <td style="padding: 15px; text-align: right;"><strong>TOTAL RECEIVED</strong></td>
-                  <td style="padding: 15px; text-align: right; font-size: 1.25rem; font-weight: bold; color: #1976d2;">
-                    ₹${receipt.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </td>
-                </tr>
+            <div style="border: 1px solid #eee; border-radius: 8px; overflow: hidden; margin-bottom: 25px;">
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                <thead style="background: #f1f3f4;">
+                  <tr>
+                    <th style="padding: 12px; text-align: left; border-bottom: 1px solid #ddd;">Description</th>
+                    <th style="padding: 12px; text-align: right; border-bottom: 1px solid #ddd;">Amount</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="padding: 12px; border-bottom: 1px solid #eee; color: #555;">
+                      ${receipt.remarks || 'Payment received towards outstanding balance.'}
+                    </td>
+                    <td style="padding: 12px; text-align: right; font-weight: bold; border-bottom: 1px solid #eee;">
+                      ${formatCurrency(received)}
+                    </td>
+                  </tr>
+                </tbody>
               </table>
             </div>
+
+            <!-- Balance Summary Section -->
+            <div style="margin-left: auto; width: 60%; font-size: 13px;">
+              <div style="display: flex; justify-content: space-between; padding: 6px 0; color: #666;">
+                <span>Previous Balance:</span>
+                <span>${formatCurrency(prevBal)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 6px 0; color: #1976d2; font-weight: 600; border-top: 1px solid #eee;">
+                <span>Amount Received:</span>
+                <span>- ${formatCurrency(received)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; padding: 10px 0; margin-top: 5px; border-top: 2px solid #333; font-size: 15px;">
+                <strong>${balanceText}:</strong>
+                <strong style="color: ${closingBal < 0 ? '#2e7d32' : '#c62828'};">${formatCurrency(closingBal)}</strong>
+              </div>
+            </div>
     
-            <div style="margin-top: 60px; display: flex; justify-content: space-between;">
-              <div style="border-top: 1px solid #333; width: 200px; text-align: center; padding-top: 10px;">
+            <div style="margin-top: 50px; display: flex; justify-content: space-between; font-size: 12px; color: #666;">
+              <div style="border-top: 1px solid #ddd; width: 170px; text-align: center; padding-top: 8px;">
                 Customer Signature
               </div>
-              <div style="border-top: 1px solid #333; width: 200px; text-align: center; padding-top: 10px;">
+              <div style="border-top: 1px solid #ddd; width: 170px; text-align: center; padding-top: 8px;">
                 Authorized Receiver
               </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 40px; font-size: 10px; color: #aaa;">
+              This is a computer-generated receipt. No signature required.
             </div>
           </div>
         `;
