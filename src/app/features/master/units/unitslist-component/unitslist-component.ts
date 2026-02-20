@@ -9,6 +9,8 @@ import { MatSort } from '@angular/material/sort';
 import { UnitService } from '../services/units.service';
 import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
 import { LoadingService } from '../../../../core/services/loading.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-unitslist-component',
@@ -30,7 +32,8 @@ export class UnitslistComponent implements OnInit {
     private unitService: UnitService,
     private cdr: ChangeDetectorRef,
     private router: Router,
-    private loadingService: LoadingService
+    private loadingService: LoadingService,
+    private snackBar: MatSnackBar
   ) { }
 
   ngOnInit(): void {
@@ -42,8 +45,6 @@ export class UnitslistComponent implements OnInit {
     this.loadingService.setLoading(true);
     this.unitService.getAll().subscribe({
       next: (data) => {
-        console.log(data);
-
         this.dataSource.data = data || [];
         this.dataSource.paginator = this.paginator;
         this.dataSource.sort = this.sort;
@@ -54,11 +55,71 @@ export class UnitslistComponent implements OnInit {
       },
       error: () => {
         this.isLoading = false;
-        // Error handling logic
         this.loadingService.setLoading(false);
         this.cdr.detectChanges();
       }
     });
+  }
+
+  onFileSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.isLoading = true;
+      this.loadingService.setLoading(true);
+      this.unitService.importUnits(file).subscribe({
+        next: (res: any) => {
+          this.snackBar.open(res.message || 'Units imported successfully', 'Close', { duration: 3000 });
+          this.loadUnits();
+        },
+        error: (err) => {
+          console.error(err);
+          const errorMsg = err.error?.message || err.error || 'Failed to import units';
+          this.snackBar.open(errorMsg, 'Close', { duration: 5000 });
+          this.isLoading = false;
+          this.loadingService.setLoading(false);
+          this.cdr.detectChanges();
+        }
+      });
+    }
+    event.target.value = '';
+  }
+
+  downloadTemplate() {
+    const data = [
+      ['Unit Name', 'Description'],
+      ['KG', 'Main weight unit used for items like rice, flour, or wire weight'],
+      ['GRAM', 'Used for measuring small weights'],
+      ['QUINTAL', 'Equals 100 kilograms, used for bulk stock'],
+      ['TON', 'Equals 1000 kilograms, used for heavy stock'],
+      ['LITER', 'Used for measuring liquids like oil'],
+      ['ML', 'Used for small liquid measurements'],
+      ['PIECE', 'Used for countable items like bulbs'],
+      ['PACKET', 'Used for packed items like screw packets'],
+      ['POUCH', 'Used for small packs'],
+      ['BOTTLE', 'Used for bottled items'],
+      ['BOX', 'Used for boxed items'],
+      ['BAG', 'Used for sack or bag items'],
+      ['TIN', 'Used for tin containers'],
+      ['DOZEN', 'Set of 12 items'],
+      ['METER', 'Used to measure wire or cable length'],
+      ['ROLL', 'Used for wire or tape rolls'],
+      ['COIL', 'Used for large wire coils'],
+      ['FOOT', 'Small length measurement'],
+      ['INCH', 'Very small length measurement'],
+      ['MM', 'Millimeter measurement for thickness or diameter'],
+      ['SQMM', 'Used to measure wire cross-section size'],
+      ['WATT', 'Electrical power rating unit'],
+      ['VOLT', 'Voltage measurement unit'],
+      ['AMPERE', 'Electric current measurement unit'],
+      ['SET', 'Items sold as a set'],
+      ['PAIR', 'Set of two items'],
+      ['BUNDLE', 'Grouped items tied together']
+    ];
+
+    const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(data);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'UnitsTemplate');
+    XLSX.writeFile(wb, 'Units_Bulk_Upload_Template.xlsx');
   }
 
   private updateStats(): void {

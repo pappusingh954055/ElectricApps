@@ -31,6 +31,12 @@ export class UnitService {
         return this.api.get<Unit[]>('units/get');
     }
 
+    importUnits(file: File): Observable<any> {
+        const formData = new FormData();
+        formData.append('file', file);
+        return this.api.post('units/import', formData);
+    }
+
 
     getById(id: string): Observable<Unit> {
         return this.api.get<Unit>(`units/getbyid/${id}`);
