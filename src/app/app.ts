@@ -1,13 +1,16 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { AuthService } from './core/services/auth.service';
+import { CommonModule } from '@angular/common';
 import { IdleService } from './core/services/idle.service';
 import { ThemeService } from './core/services/theme.service';
 import { OverlayContainer } from '@angular/cdk/overlay';
+import { LoadingService } from './core/services/loading.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet],
+  standalone: true,
+  imports: [RouterOutlet, CommonModule, MatProgressSpinnerModule],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
@@ -15,15 +18,19 @@ export class App implements OnInit {
   private idleService = inject(IdleService);
   private themeService = inject(ThemeService);
   private overlayContainer = inject(OverlayContainer);
+  private loadingService = inject(LoadingService);
+  private cdr = inject(ChangeDetectorRef);
+
+  isGlobalLoading = false;
 
   ngOnInit(): void {
     if (localStorage.getItem('access_token')) {
       this.idleService.startWatching();
     }
 
-    // Theme is automatically applied by ThemeService constructor
-    this.themeService.darkMode$.subscribe(); // Ensure subscription to keep it alive if needed, or just let it exist. 
-    // Actually, just injecting it is enough if it does work in constructor. 
-    // But to be safe, I'll just leave it injected.
+    this.loadingService.loading$.subscribe(isLoading => {
+      this.isGlobalLoading = isLoading;
+      this.cdr.detectChanges(); // Ensure the loader shows/hides immediately even if outside zone
+    });
   }
 }

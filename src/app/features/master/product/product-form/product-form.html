@@ -118,8 +118,8 @@
                formControlName="unit"
                [matAutocomplete]="autoUnit">
         <mat-autocomplete #autoUnit="matAutocomplete">
-          <mat-option *ngFor="let u of filteredUnits | async" [value]="u">
-            {{ u }}
+          <mat-option *ngFor="let u of filteredUnits | async" [value]="u.name">
+            {{ u.name }}
           </mat-option>
         </mat-autocomplete>
         <div matSuffix *ngIf="isSearchingUnits" class="input-spinner">

@@ -105,7 +105,9 @@
 
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="unit-field">
               <mat-label>Unit</mat-label>
-              <input matInput formControlName="unit" readonly class="bg-light">
+              <mat-select formControlName="unit">
+                <mat-option *ngFor="let u of allUnits" [value]="u.name">{{u.name}}</mat-option>
+              </mat-select>
             </mat-form-field>
 
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="rate-field">

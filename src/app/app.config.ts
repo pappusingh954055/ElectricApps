@@ -19,9 +19,8 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideAnimations(),
     provideRouter(routes),
-    provideHttpClient(),
     provideHttpClient(
-      withInterceptors([authInterceptor]) // Yahan register karein
+      withInterceptors([authInterceptor])
     ),
     provideCharts(withDefaultRegisterables()),
     { provide: LOCALE_ID, useValue: 'en-IN' }

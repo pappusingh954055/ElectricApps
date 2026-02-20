@@ -11,6 +11,7 @@ import { debounceTime, distinctUntilChanged, switchMap, takeUntil, finalize, cat
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../../master/product/service/product.service';
 import { POService } from '../service/po.service';
+import { UnitService } from '../../master/units/services/units.service';
 import { DateHelper } from '../../../shared/models/date-helper';
 import { NotificationService } from '../../shared/notification.service';
 import { ProductSelectionDialogComponent } from '../../../shared/components/product-selection-dialog/product-selection-dialog';
@@ -76,6 +77,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   private inventoryService = inject(InventoryService);
   private productService = inject(ProductService);
   private poService = inject(POService);
+  private unitService = inject(UnitService);
   private router = inject(Router);
   private destroy$ = new Subject<void>();
   private route = inject(ActivatedRoute);
@@ -89,6 +91,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   isLoadingSuppliers = false;
   isLoadingPriceLists = false;
   isLoading = false;
+  allUnits: any[] = [];
   grandTotal = 0;
   totalTaxAmount = 0;
   subTotal = 0;
@@ -112,6 +115,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
     this.initForm();
     this.loadSuppliers();
     this.bindDropdownPriceList();
+    this.loadUnits();
 
     if (id && id !== '0') {
       this.poId = id;
@@ -469,6 +473,10 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   bindDropdownPriceList() {
     this.isLoadingPriceLists = true;
     this.inventoryService.getPriceListsForDropdown().pipe(finalize(() => this.isLoadingPriceLists = false)).subscribe(data => this.priceLists = data || []);
+  }
+
+  loadUnits() {
+    this.unitService.getAll().pipe(takeUntil(this.destroy$)).subscribe(data => this.allUnits = data || []);
   }
 
   ngOnDestroy() {

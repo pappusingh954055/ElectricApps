@@ -190,7 +190,7 @@ mat-card {
 .item-row {
   display: grid;
   /* Columns: Product(Large), Qty, Unit, Rate, Disc, GST, TaxAmt, Total, Delete */
-  grid-template-columns: 2.5fr 0.6fr 0.6fr 1fr 0.7fr 0.7fr 1fr 1.2fr 45px;
+  grid-template-columns: 2.5fr 0.5fr 1fr 0.6fr 0.7fr 0.7fr 1fr 1.2fr 45px;
   gap: 12px;
   align-items: center;
   /* Fields ko barabar line mein lane ke liye */
@@ -362,7 +362,7 @@ input.bg-light {
 /* ================= RESPONSIVE ================= */
 @media (max-width: 1400px) {
   .item-row {
-    grid-template-columns: 2fr 0.8fr 0.8fr 1fr 0.8fr 0.8fr 1fr 1fr 45px;
+    grid-template-columns: 2fr 0.6fr 1.2fr 0.6fr 0.8fr 0.8fr 1fr 1fr 45px;
   }
 }
 

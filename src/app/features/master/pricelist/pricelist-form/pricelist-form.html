@@ -45,6 +45,12 @@
       </mat-form-field>
 
       <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Default Discount (%)</mat-label>
+        <input matInput type="number" formControlName="defaultDiscount" placeholder="0">
+        <mat-icon matSuffix style="font-size: 1.1rem; opacity: 0.7;">percent</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
         <mat-label>Valid From</mat-label>
         <input matInput [matDatepicker]="p1" formControlName="validFrom">
         <mat-datepicker-toggle matSuffix [for]="p1"></mat-datepicker-toggle>
@@ -88,8 +94,14 @@
       </h6>
       
       <!-- Buttons on Right / Center on Mobile -->
-      <div class="d-flex gap-3 justify-content-center justify-content-md-end" style="flex: 1; min-width: 200px;">
-        <button type="button" mat-stroked-button color="primary" class="btn-sm-responsive" style="margin-right: 15px;" (click)="openBulkAddDialog()">
+      <div class="d-flex gap-3 align-items-center justify-content-center justify-content-md-end" style="flex: 1; min-width: 250px;">
+        <span class="badge border text-primary bg-white px-3 py-2 rounded-pill shadow-sm d-flex align-items-center gap-2" 
+              style="font-size: 0.85rem; font-weight: 600; border-color: #dee2e6 !important;">
+          <mat-icon style="font-size: 18px; width: 18px; height: 18px;">inventory_2</mat-icon>
+          {{ items.length }} Products
+        </span>
+
+        <button type="button" mat-stroked-button color="primary" class="btn-sm-responsive" (click)="openBulkAddDialog()">
           <mat-icon>list_alt</mat-icon> <span class="d-none d-sm-inline">Bulk </span>Add
         </button>        
         <button type="button" mat-flat-button class="add-item-btn btn-sm-responsive" (click)="addItemRow()">

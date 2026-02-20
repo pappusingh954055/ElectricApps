@@ -355,10 +355,11 @@ th.child-th {
 }
 
 .detail-panel.is-expanded {
-  max-height: 1200px;
+  max-height: 5000px; /* Increased to accommodate large orders and footer */
   opacity: 1;
   border-left: 4px solid #3b82f6;
   padding: 15px;
+  overflow: visible; /* Ensure footer isn't clipped by panel */
 }
 
 .active-filter {
@@ -735,14 +736,17 @@ th.child-th {
 .summary-box {
   display: flex;
   flex-direction: column;
-  align-items: flex-end; /* Totals right align honge */
-  gap: 4px;
+  align-items: flex-end; 
+  gap: 8px;
+  width: 100%;
 }
 
 .summary-item {
   display: flex;
-  justify-content: space-between;
-  width: 280px; /* Desktop standard */
+  justify-content: flex-end;
+  gap: 20px;
+  width: 100%;
+  max-width: 350px;
   font-size: 14px;
   color: #444;
 }

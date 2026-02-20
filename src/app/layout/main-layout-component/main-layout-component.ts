@@ -41,7 +41,6 @@ export class MainLayoutComponent implements OnInit {
   isMobile = false;
   isDarkMode = false;
   currentTheme = '';
-  isGlobalLoading = false; // Track global loading state
   userEmail: string | null = null;
   notifications: NotificationDto[] = [];
   unreadCount = 0;
@@ -137,11 +136,8 @@ export class MainLayoutComponent implements OnInit {
       this.cdr.detectChanges();
     });
 
-    // Subscribe to global loading state
-    this.loadingService.loading$.subscribe(isLoading => {
-      this.isGlobalLoading = isLoading;
-      this.cdr.detectChanges();
-    });
+    // Global loading state handled at App level for covering dialogs
+    // Logic moved to app.ts
 
     // Step 1: Count Check on Page Load
     this.loadUnreadCount();

@@ -11,6 +11,7 @@ import { ProductService } from '../../master/product/service/product.service';
 import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
 import { SaleOrderService } from '../service/saleorder.service';
 import { Router } from '@angular/router';
+import { UnitService } from '../../master/units/services/units.service';
 import { customerService } from '../../master/customer-component/customer.service';
 import { ProductSelectionDialogComponent } from '../../../shared/components/product-selection-dialog/product-selection-dialog';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
@@ -75,6 +76,7 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
   private customerService = inject(customerService);
   private productService = inject(ProductService);
   private soService = inject(SaleOrderService);
+  private unitService = inject(UnitService);
   private financeService = inject(FinanceService);
   private destroy$ = new Subject<void>();
   private router = inject(Router);
@@ -87,13 +89,14 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
   subTotal = 0;
   totalTax = 0;
   grandTotal = 0;
-
+  allUnits: any[] = [];
   customers: any = [];
   public generatedSoNumber: string = 'NEW ORDER';
 
   ngOnInit(): void {
     this.initForm();
     this.loadCustomers();
+    this.loadUnits();
     this.addRow();
   }
 
@@ -128,6 +131,10 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
         this.isLoading = false;
       }
     });
+  }
+
+  loadUnits() {
+    this.unitService.getAll().pipe(takeUntil(this.destroy$)).subscribe(data => this.allUnits = data || []);
   }
 
   get items(): FormArray {

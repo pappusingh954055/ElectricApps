@@ -126,6 +126,17 @@ export class PricelistForm implements OnInit, OnChanges, AfterViewInit, OnDestro
     this.priceListForm.get('priceType')?.valueChanges.subscribe(type => {
       this.updateAllRates(type);
     });
+
+    this.priceListForm.get('defaultDiscount')?.valueChanges.subscribe(disc => {
+      this.updateAllDiscounts(disc);
+    });
+  }
+
+  updateAllDiscounts(disc: number) {
+    this.items.controls.forEach(control => {
+      control.get('discountPercent')?.setValue(disc, { emitEvent: false });
+    });
+    this.cdr.detectChanges();
   }
 
   initForm() {
@@ -139,6 +150,7 @@ export class PricelistForm implements OnInit, OnChanges, AfterViewInit, OnDestro
       validFrom: [new Date(), Validators.required],
       validTo: [null],
       isActive: [true],
+      defaultDiscount: [0, [Validators.min(0), Validators.max(100)]],
       priceListItems: this.fb.array([])
     });
   }
@@ -151,7 +163,9 @@ export class PricelistForm implements OnInit, OnChanges, AfterViewInit, OnDestro
     this.items.controls.forEach((control) => {
       const product = control.get('productSearch')?.value;
       if (product && typeof product === 'object') {
-        const newRate = type === 'SALES' ? (product.mrp || 0) : (product.basePurchasePrice || 0);
+        const newRate = type === 'SALES'
+          ? (product.saleRate || product.mrp || product.rate || product.basePurchasePrice || 0)
+          : (product.basePurchasePrice || 0);
         control.get('rate')?.setValue(newRate);
       }
     });
@@ -159,10 +173,15 @@ export class PricelistForm implements OnInit, OnChanges, AfterViewInit, OnDestro
   }
 
   openBulkAddDialog() {
+    const existingIds = this.items.controls
+      .map(c => c.get('productId')?.value)
+      .filter(id => id);
+
     const dialogRef = this.dialog.open(ProductSelectionDialogComponent, {
-      width: '850px',
+      width: '950px',
       maxWidth: '95vw',
-      disableClose: false
+      disableClose: false,
+      data: { existingIds }
     });
 
     dialogRef.afterClosed().subscribe((selectedProducts: any[]) => {
@@ -185,13 +204,16 @@ export class PricelistForm implements OnInit, OnChanges, AfterViewInit, OnDestro
 
   addProductToForm(product: any) {
     const priceType = this.priceListForm.get('priceType')?.value;
-    const defaultRate = priceType === 'SALES' ? (product.mrp || 0) : (product.basePurchasePrice || 0);
+    const defaultRate = priceType === 'SALES'
+      ? (product.saleRate || product.mrp || product.rate || product.basePurchasePrice || 0)
+      : (product.basePurchasePrice || 0);
 
+    const defaultDisc = this.priceListForm.get('defaultDiscount')?.value || 0;
     const itemRow = this.fb.group({
       productId: [product.id, Validators.required],
       productSearch: [product, Validators.required],
       unit: [{ value: product.unit || product.uomName || product.uom || '-', disabled: true }],
-      discountPercent: [0, [Validators.min(0), Validators.max(100)]],
+      discountPercent: [defaultDisc, [Validators.min(0), Validators.max(100)]],
       rate: [defaultRate, [Validators.required, Validators.min(0)]],
       minQty: [1, [Validators.required, Validators.min(1)]],
       maxQty: [999999, Validators.required]
@@ -203,12 +225,13 @@ export class PricelistForm implements OnInit, OnChanges, AfterViewInit, OnDestro
   }
 
   addItemRow() {
+    const defaultDisc = this.priceListForm?.get('defaultDiscount')?.value || 0;
     const index = this.items.length;
     const itemRow = this.fb.group({
       productId: [null, Validators.required],
       productSearch: ['', Validators.required],
       unit: [''],
-      discountPercent: [0, [Validators.min(0), Validators.max(100)]],
+      discountPercent: [defaultDisc, [Validators.min(0), Validators.max(100)]],
       rate: [0, [Validators.required, Validators.min(0)]],
       minQty: [1, [Validators.required, Validators.min(1)]],
       maxQty: [999999, Validators.required]
@@ -276,7 +299,9 @@ export class PricelistForm implements OnInit, OnChanges, AfterViewInit, OnDestro
     }
 
     const priceType = this.priceListForm.get('priceType')?.value;
-    const defaultRate = priceType === 'SALES' ? (selectedProduct.mrp || 0) : (selectedProduct.basePurchasePrice || 0);
+    const defaultRate = priceType === 'SALES'
+      ? (selectedProduct.saleRate || selectedProduct.mrp || selectedProduct.rate || selectedProduct.basePurchasePrice || 0)
+      : (selectedProduct.basePurchasePrice || 0);
 
     this.items.at(index).patchValue({
       productId: selectedProduct.id,

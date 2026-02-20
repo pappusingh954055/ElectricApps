@@ -17,7 +17,7 @@ import { FinanceService } from '../../finance/service/finance.service';
   styleUrl: './grn-form-component.scss',
 })
 export class GrnFormComponent implements OnInit {
-  grnForm!: FormGroup;
+  grnForm: FormGroup;
   items: any[] = [];
   poId: number = 0;
   supplierId: number = 0;
@@ -34,7 +34,15 @@ export class GrnFormComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private inventoryService: InventoryService
   ) {
-    this.initForm();
+    // Initialize form here IMMEDIATELY to prevent validator errors in template
+    this.grnForm = this.fb.group({
+      grnNumber: [{ value: 'AUTO-GEN', disabled: true }],
+      receivedDate: [new Date(), Validators.required],
+      supplierName: [{ value: '', disabled: true }],
+      poNumber: [{ value: '', disabled: true }],
+      gatePassNo: [{ value: '', disabled: true }],
+      remarks: ['']
+    });
   }
 
   ngOnInit(): void {
@@ -330,19 +338,27 @@ export class GrnFormComponent implements OnInit {
     }
 
     const paymentPayload = {
-      supplierId: data.supplierId,
-      amount: data.grandTotal,
-      paymentMode: 'Cash', // Default to Cash for direct payment from GRN
-      referenceNumber: data.grnNumber,
+      id: 0,
+      supplierId: Number(data.supplierId),
+      amount: Number(data.grandTotal),
+      totalAmount: Number(data.grandTotal),
+      discountAmount: 0,
+      netAmount: Number(data.grandTotal),
+      paymentMode: 'Cash',
+      // Adding a unique suffix to avoid "Duplicate Reference" error if user re-tries
+      referenceNumber: `${data.grnNumber}-${new Date().getTime().toString().slice(-4)}`,
       paymentDate: new Date().toISOString(),
       remarks: `Direct Payment for GRN: ${data.grnNumber}`,
       createdBy: localStorage.getItem('email') || 'Admin'
     };
 
+    console.log('💰 Sending Payment Payload:', paymentPayload);
+
     // Add a small delay to ensure Purchase transaction is fully committed
     setTimeout(() => {
       this.financeService.recordSupplierPayment(paymentPayload).subscribe({
         next: () => {
+          console.log('✅ Direct Payment Successful');
           this.dialog.open(StatusDialogComponent, {
             width: '350px',
             data: {
@@ -355,20 +371,25 @@ export class GrnFormComponent implements OnInit {
           this.router.navigate(['/app/inventory/grn-list']);
         },
         error: (err) => {
-          console.error('Direct payment failed:', err);
+          console.group('❌ Direct Payment Error Details');
+          console.error('Raw Error Object:', err);
+          const serverMsg = err.error?.message || err.message || 'Unknown server error';
+          console.error('Server Message:', serverMsg);
+          console.groupEnd();
+
           this.dialog.open(StatusDialogComponent, {
-            width: '350px',
+            width: '400px',
             data: {
               isSuccess: false,
               title: 'Payment Failed',
-              message: 'GRN saved but direct payment failed. You can record it manually from the GRN list.',
+              message: `GRN saved but direct payment failed.\n\nReason: ${serverMsg}\n\nYou can record it manually from the GRN list.`,
               status: 'error'
             }
           });
           this.router.navigate(['/app/inventory/grn-list']);
         }
       });
-    }, 500);
+    }, 800);
   }
 
   goBack() { this.router.navigate(['/app/inventory/grn-list']); }

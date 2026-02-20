@@ -5,8 +5,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FinanceService } from '../service/finance.service';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { SupplierService, Supplier } from '../../inventory/service/supplier.service';
-import { Observable, Subscription } from 'rxjs';
-import { map, startWith, finalize } from 'rxjs/operators';
+import { Observable, Subscription, Subject } from 'rxjs';
+import { map, startWith, finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
@@ -40,6 +40,9 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
   loadingCount: number = 0;
   isDashboardLoading: boolean = true;
   private isFirstLoad: boolean = true;
+  isDuplicateRef: boolean = false;
+  isCheckingRef: boolean = false;
+  private refChangeSubject = new Subject<string>();
   private routeSub!: Subscription;
 
   constructor(
@@ -97,6 +100,13 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
         this.cdr.detectChanges();
       }
     }, 10000);
+
+    this.refChangeSubject.pipe(
+      debounceTime(600),
+      distinctUntilChanged()
+    ).subscribe(ref => {
+      this.checkRefDuplicate(ref);
+    });
 
     this.filteredSuppliers = this.supplierControl.valueChanges.pipe(
       startWith(''),
@@ -266,6 +276,31 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
     });
   }
 
+  onRefChange(val: any) {
+    const ref = typeof val === 'string' ? val : (val?.target?.value || '');
+    this.isDuplicateRef = false;
+    if (ref && ref.trim().length >= 3) {
+      this.refChangeSubject.next(ref);
+    }
+  }
+
+  checkRefDuplicate(ref: string) {
+    if (!ref || ref.trim().length < 3) return;
+
+    this.isCheckingRef = true;
+    this.financeService.checkDuplicateReference(ref).subscribe({
+      next: (exists) => {
+        this.isDuplicateRef = exists;
+        this.isCheckingRef = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.isCheckingRef = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
 
 
   payFullDue() {
@@ -350,7 +385,18 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
 
   performPayment() {
     this.updateLoading(1);
-    const payload = { ...this.payment, paymentDate: this.payment.paymentDate instanceof Date ? this.payment.paymentDate.toISOString() : this.payment.paymentDate };
+
+    // Ensure unique reference by adding a small suffix if it looks like a GRN reference
+    let ref = this.payment.referenceNumber || '';
+    if (ref.startsWith('GRN-') && !ref.includes('-', ref.indexOf('-', 5) + 1)) {
+      ref = `${ref}-${new Date().getTime().toString().slice(-4)}`;
+    }
+
+    const payload = {
+      ...this.payment,
+      referenceNumber: ref,
+      paymentDate: this.payment.paymentDate instanceof Date ? this.payment.paymentDate.toISOString() : this.payment.paymentDate
+    };
 
     this.financeService.recordSupplierPayment(payload).pipe(
       finalize(() => this.updateLoading(-1))

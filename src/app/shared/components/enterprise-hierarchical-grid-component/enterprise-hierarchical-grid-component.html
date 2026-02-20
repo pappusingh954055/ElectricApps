@@ -308,7 +308,7 @@
                           <div class="summary-box">
                             <div class="summary-item">
                               <span class="label">Sub-Total:</span>
-                              <span class="value">{{ (element.subTotal || 0) | currency:'INR' }}</span>
+                              <span class="value">{{ calculateSubTotal(element) | currency:'INR' }}</span>
                             </div>
                             <div class="summary-item">
                               <span class="label">Total Tax:</span>

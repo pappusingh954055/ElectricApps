@@ -464,9 +464,10 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   // enterprise-hierarchical-grid.ts
 
   calculateSubTotal(element: any): number {
-    // Logic: Grand Total mein se Tax hata do toh Sub-Total mil jayega
+    if (element.subTotal) return element.subTotal;
+    // Fallback logic
     const grand = element.grandTotal || 0;
-    const tax = element.totalTaxAmount || 0;
+    const tax = element.totalTax || 0;
     return grand - tax;
   }
 

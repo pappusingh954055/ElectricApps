@@ -88,8 +88,18 @@
                     <div class="col-4">
                         <mat-form-field appearance="outline">
                             <mat-label>Reference / Cheque No.</mat-label>
-                            <input matInput type="text" [(ngModel)]="payment.referenceNumber" name="ref" placeholder="e.g. TXN-8842">
-                            <mat-icon matSuffix>receipt_long</mat-icon>
+                            <input matInput type="text" 
+                                   [(ngModel)]="payment.referenceNumber" 
+                                   name="ref" 
+                                   placeholder="e.g. TXN-8842"
+                                   (keyup)="onRefChange($event)"
+                                   (change)="onRefChange($event)">
+                            <mat-icon matSuffix *ngIf="!isCheckingRef">receipt_long</mat-icon>
+                            <mat-spinner matSuffix diameter="18" *ngIf="isCheckingRef"></mat-spinner>
+                            <mat-hint *ngIf="isDuplicateRef" class="text-danger">
+                                <mat-icon style="font-size: 14px; height: 14px; width: 14px; vertical-align: middle;">error</mat-icon>
+                                <strong>Duplicate!</strong> Already exists in system.
+                            </mat-hint>
                         </mat-form-field>
                     </div>
                     
@@ -117,8 +127,8 @@
                     <button mat-button color="warn" type="button" (click)="resetForm()">
                         Reset Form
                     </button>
-                    <button mat-flat-button color="primary" type="submit" [disabled]="!payment.supplierId || !payment.amount">
-                        <mat-icon>save</mat-icon> Record Payment
+                    <button mat-flat-button color="primary" type="submit" [disabled]="!payment.supplierId || !payment.amount || isDuplicateRef || isCheckingRef">
+                        <mat-icon>save</mat-icon> {{ isDuplicateRef ? 'Invalid Reference' : 'Record Payment' }}
                     </button>
                 </div>
             </form>

@@ -5,6 +5,7 @@ import { MaterialModule } from '../../../../shared/material/material/material-mo
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductService } from '../service/product.service';
 import { ProductLookUpService } from '../service/product.lookup.sercice';
+import { UnitService } from '../../units/services/units.service';
 import { FormFooter } from '../../../shared/form-footer/form-footer';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { Product } from '../model/product.model';
@@ -28,6 +29,7 @@ export class ProductForm implements OnInit, OnDestroy {
   private dialog = inject(MatDialog);
   private productLukupService = inject(ProductLookUpService);
   private productService = inject(ProductService);
+  private unitService = inject(UnitService);
   private destroy$ = new Subject<void>();
 
   productsForm!: FormGroup;
@@ -37,11 +39,11 @@ export class ProductForm implements OnInit, OnDestroy {
 
   categories: any[] = [];
   subcategories: any[] = [];
-  units: string[] = ['PCS', 'KG', 'BOX', 'NOS', 'COIL', 'PACK', 'LTR', 'LENGTH', 'METER', 'BUNDLE'];
+  units: any[] = [];
 
   filteredCategories!: Observable<any[]>;
   filteredSubcategories!: Observable<any[]>;
-  filteredUnits!: Observable<string[]>;
+  filteredUnits!: Observable<any[]>;
 
   isSearchingCategories = false;
   isSearchingSubcategories = false;
@@ -119,8 +121,8 @@ export class ProductForm implements OnInit, OnDestroy {
       startWith(''),
       map(value => {
         this.isSearchingUnits = true;
-        const filterValue = (value || '').toLowerCase();
-        const results = this.units.filter(u => u.toLowerCase().includes(filterValue));
+        const filterValue = (typeof value === 'string' ? value : value?.name || '').toLowerCase();
+        const results = this.units.filter(u => u.name.toLowerCase().includes(filterValue));
 
         Promise.resolve().then(() => {
           this.isSearchingUnits = false;
@@ -401,6 +403,7 @@ export class ProductForm implements OnInit, OnDestroy {
   }
 
   loadInitialLookups() {
+    this.unitService.getAll().subscribe(data => this.units = data || []);
     this.productLukupService.getLookups().pipe(takeUntil(this.destroy$)).subscribe({
       next: (res: any) => {
         this.categories = res.categories;

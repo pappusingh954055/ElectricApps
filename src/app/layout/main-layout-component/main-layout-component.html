@@ -1,16 +1,8 @@
-<!-- Global Loading Overlay - Covers entire viewport -->
-<div *ngIf="isGlobalLoading" class="global-loading-overlay">
-  <div class="global-loading-content">
-    <mat-spinner diameter="60" strokeWidth="5"></mat-spinner>
-    <p class="global-loading-text">Fetching Inventory Insights...</p>
-    <p class="global-loading-subtext">Please wait while we load your dashboard</p>
-  </div>
-</div>
 
 <mat-sidenav-container class="sidenav-container">
 
   <!-- SIDE NAV -->
-  <mat-sidenav #sidenav class="sidenav" [mode]="isMobile ? 'over' : 'side'" [opened]="!isMobile" [class.disabled-sidenav]="isGlobalLoading">
+  <mat-sidenav #sidenav class="sidenav" [mode]="isMobile ? 'over' : 'side'" [opened]="!isMobile">
 
     <div class="branding">
       <div class="logo">
@@ -61,10 +53,10 @@
   </mat-sidenav>
 
   <!-- MAIN CONTENT -->
-  <mat-sidenav-content [class.disabled-content]="isGlobalLoading">
+  <mat-sidenav-content>
 
     <!-- TOOLBAR -->
-    <mat-toolbar color="primary" class="toolbar" [class.disabled-toolbar]="isGlobalLoading">
+    <mat-toolbar color="primary" class="toolbar">
       <button mat-icon-button (click)="toggleSidenav()" aria-label="Menu">
         <mat-icon>menu</mat-icon>
       </button>

@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ViewChild, OnDestroy } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MaterialModule } from '../../material/material/material-module';
 import { FormsModule } from '@angular/forms';
@@ -7,36 +7,55 @@ import { ProductService } from '../../../features/master/product/service/product
 import { SelectionModel } from '@angular/cdk/collections';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
-import { finalize, Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
+import { finalize, Subject, debounceTime, distinctUntilChanged, takeUntil, firstValueFrom, timeout, catchError, of } from 'rxjs';
+import { ProductLookUpService } from '../../../features/master/product/service/product.lookup.sercice';
+import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
   selector: 'app-product-selection-dialog',
   standalone: true,
   imports: [CommonModule, MaterialModule, FormsModule],
   template: `
-    <div class="product-selection-container">
+    <div class="dialog-container">
+      <!-- Global-style Loader inside Dialog -->
+      <div *ngIf="isLoading" class="dialog-loader-overlay">
+        <div class="loader-content">
+          <mat-spinner diameter="50" strokeWidth="4"></mat-spinner>
+          <p class="loader-text">Fetching Inventory Items...</p>
+          <p class="loader-subtext">Optimizing selection for you</p>
+        </div>
+      </div>
+
       <div class="dialog-header">
         <h2 class="title">Select Products</h2>
         <button class="header-close-btn" (click)="close()"><mat-icon>close</mat-icon></button>
       </div>
 
-      <div class="search-bar">
-        <mat-form-field appearance="outline" class="w-100 search-field" subscriptSizing="dynamic">
+      <div class="search-bar d-flex gap-4 align-items-center">
+        <mat-form-field appearance="outline" class="flex-grow-1 search-field" subscriptSizing="dynamic">
           <mat-label>Search by Name or SKU</mat-label>
           <input matInput [(ngModel)]="searchQuery" (input)="onSearchChange()" (keyup.enter)="loadProducts()" placeholder="Start typing to search...">
           <button mat-icon-button matSuffix (click)="loadProducts()" class="search-btn">
             <mat-icon>search</mat-icon>
           </button>
         </mat-form-field>
+
+        <mat-form-field appearance="outline" class="category-field" subscriptSizing="dynamic" style="width: 200px; margin-left: 20px;">
+          <mat-label>Filter Category</mat-label>
+          <mat-select [(ngModel)]="selectedCategoryId" (selectionChange)="onCategoryChange()">
+            <mat-option [value]="null">All Categories</mat-option>
+            <mat-option *ngFor="let cat of categories" [value]="cat.id">{{cat.name}}</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-stroked-button color="primary" class="bulk-select-btn" (click)="selectAllMatching()" 
+                style="margin-left: 20px;"
+                [disabled]="isLoading || totalRecords <= dataSource.data.length">
+           Select All ({{totalRecords}})
+        </button>
       </div>
 
       <div class="table-container" [class.loading]="isLoading">
-        @if (isLoading) {
-          <div class="loading-overlay">
-            <mat-spinner diameter="40"></mat-spinner>
-          </div>
-        }
-
         <table mat-table [dataSource]="dataSource" class="product-table">
           <ng-container matColumnDef="select">
             <th mat-header-cell *matHeaderCellDef class="checkbox-col">
@@ -47,8 +66,8 @@ import { finalize, Subject, debounceTime, distinctUntilChanged, takeUntil } from
             </th>
             <td mat-cell *matCellDef="let row" class="checkbox-col">
               <mat-checkbox (click)="$event.stopPropagation()"
-                            (change)="$event ? selection.toggle(row) : null"
-                            [checked]="selection.isSelected(row)">
+                            (change)="$event ? toggleRow(row) : null"
+                            [checked]="isRowSelected(row)">
               </mat-checkbox>
             </td>
           </ng-container>
@@ -69,9 +88,20 @@ import { finalize, Subject, debounceTime, distinctUntilChanged, takeUntil } from
                <span class="category-badge">{{row.categoryName}}</span>
             </td>
           </ng-container>
+          
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef> Status </th>
+            <td mat-cell *matCellDef="let row">
+              @if (isAlreadyInList(row.id)) {
+                <span class="status-badge added">Already Added</span>
+              } @else {
+                <span class="status-badge available">Available</span>
+              }
+            </td>
+          </ng-container>
 
           <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-          <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="selection.toggle(row)" [class.selected-row]="selection.isSelected(row)"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="toggleRow(row)" [class.selected-row]="isRowSelected(row)"></tr>
         </table>
       </div>
 
@@ -99,13 +129,64 @@ import { finalize, Subject, debounceTime, distinctUntilChanged, takeUntil } from
     </div>
   `,
   styles: [`
-    .product-selection-container {
+    .dialog-container {
+      position: relative; /* For loader positioning */
+      padding: 0;
       display: flex;
       flex-direction: column;
-      max-height: 90vh;
+      max-height: 90vh; /* Kept from original product-selection-container */
+      height: 100%;
+      min-height: 500px;
       background: #ffffff;
       border-radius: 12px;
       overflow: hidden;
+    }
+
+    /* Standard Global Style Loader for Dialog */
+    .dialog-loader-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      animation: fadeIn 0.2s ease-in;
+    }
+
+    .loader-content {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 15px;
+      text-align: center;
+    }
+
+    .loader-text {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #1e293b;
+    }
+
+    .loader-subtext {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .dialog-header {
@@ -214,6 +295,21 @@ import { finalize, Subject, debounceTime, distinctUntilChanged, takeUntil } from
       font-weight: 500;
     }
 
+    .status-badge {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+      &.added { background: #fee2e2; color: #b91c1c; }
+      &.available { background: #d1fae5; color: #065f46; }
+    }
+
+    .bulk-select-btn {
+      height: 48px !important;
+      border-radius: 10px !important;
+      font-weight: 600 !important;
+    }
+
     .selected-row {
       background-color: #f5f3ff !important;
     }
@@ -285,21 +381,30 @@ import { finalize, Subject, debounceTime, distinctUntilChanged, takeUntil } from
 })
 export class ProductSelectionDialogComponent implements OnInit, OnDestroy {
   private productService = inject(ProductService);
+  private lookupService = inject(ProductLookUpService);
+  private loadingService = inject(LoadingService);
+  private cdr = inject(ChangeDetectorRef);
   private dialogRef = inject(MatDialogRef<ProductSelectionDialogComponent>);
+  public data = inject(MAT_DIALOG_DATA);
   private destroy$ = new Subject<void>();
   private searchSubject = new Subject<string>();
 
-  displayedColumns: string[] = ['select', 'sku', 'name', 'category'];
+  existingIds: any[] = [];
+  displayedColumns: string[] = ['select', 'sku', 'name', 'category', 'status'];
   dataSource = new MatTableDataSource<any>([]);
   selection = new SelectionModel<any>(true, []);
 
   searchQuery: string = '';
+  selectedCategoryId: any = null;
+  categories: any[] = [];
   isLoading: boolean = false;
   totalRecords: number = 0;
   pageSize: number = 10;
   pageIndex: number = 0;
 
   ngOnInit() {
+    this.existingIds = this.data?.existingIds || [];
+    this.loadCategories();
     this.loadProducts();
 
     // 🔍 Reactive Search Logic
@@ -317,8 +422,21 @@ export class ProductSelectionDialogComponent implements OnInit, OnDestroy {
     this.searchSubject.next(this.searchQuery);
   }
 
+  onCategoryChange() {
+    this.pageIndex = 0;
+    this.loadProducts();
+  }
+
+  loadCategories() {
+    this.lookupService.getLookups().pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
+      this.categories = res.categories || [];
+    });
+  }
+
   loadProducts() {
     this.isLoading = true;
+    this.loadingService.setLoading(true);
+    this.cdr.detectChanges(); // Force internal loader to show immediately
     const request = {
       pageIndex: this.pageIndex, // 0-based
       pageNumber: this.pageIndex + 1, // 1-based
@@ -328,16 +446,30 @@ export class ProductSelectionDialogComponent implements OnInit, OnDestroy {
       term: this.searchQuery || '',   // another fallback key
       termSearch: this.searchQuery || '',
       searchTerm: this.searchQuery || '',
+      categoryId: this.selectedCategoryId || null,
       sortBy: 'ProductName',
       sortDirection: 'asc' as 'asc' | 'desc'
     };
 
     this.productService.getPaged(request).pipe(
-      finalize(() => this.isLoading = false),
+      timeout(15000), // Safety Timeout
+      finalize(() => {
+        this.isLoading = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      }),
       takeUntil(this.destroy$)
-    ).subscribe(res => {
-      this.dataSource.data = res.items || [];
-      this.totalRecords = res.totalCount || 0;
+    ).subscribe({
+      next: (res) => {
+        this.dataSource.data = res.items || [];
+        this.totalRecords = res.totalCount || 0;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error loading products:', err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 
@@ -347,16 +479,92 @@ export class ProductSelectionDialogComponent implements OnInit, OnDestroy {
     this.loadProducts();
   }
 
+  isRowSelected(row: any): boolean {
+    return this.selection.selected.some(item => item.id === row.id);
+  }
+
+  toggleRow(row: any) {
+    if (this.isAlreadyInList(row.id)) return;
+    const found = this.selection.selected.find(item => item.id === row.id);
+    if (found) {
+      this.selection.deselect(found);
+    } else {
+      this.selection.select(row);
+    }
+    this.cdr.detectChanges();
+  }
+
   isAllSelected() {
-    const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
-    return numSelected === numRows && numRows > 0;
+    const activeRows = this.dataSource.data.filter(row => !this.isAlreadyInList(row.id));
+    if (activeRows.length === 0) return false;
+    return activeRows.every(row => this.isRowSelected(row));
+  }
+
+  isAlreadyInList(id: string): boolean {
+    return this.existingIds.includes(id);
   }
 
   masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.data.forEach(row => this.selection.select(row));
+    if (this.isAllSelected()) {
+      this.dataSource.data.forEach(row => this.selection.deselect(row));
+    } else {
+      this.dataSource.data.forEach(row => {
+        if (!this.isAlreadyInList(row.id)) {
+          this.selection.select(row);
+        }
+      });
+    }
+  }
+
+  selectAllMatching() {
+    if (this.totalRecords <= 0 || this.isLoading) return;
+
+    this.isLoading = true;
+    this.loadingService.setLoading(true);
+    this.cdr.detectChanges(); // Force UI update
+    const fullRequest = {
+      pageIndex: 0,
+      pageNumber: 1,
+      pageSize: this.totalRecords, // Get everything
+      search: this.searchQuery || '',
+      filter: this.searchQuery || '',
+      term: this.searchQuery || '',
+      termSearch: this.searchQuery || '',
+      searchTerm: this.searchQuery || '',
+      categoryId: this.selectedCategoryId || null,
+      sortBy: 'ProductName',
+      sortDirection: 'asc' as 'asc' | 'desc'
+    };
+
+    this.productService.getPaged(fullRequest).pipe(
+      timeout(20000), // Bulk selection takes a bit longer
+      finalize(() => {
+        this.isLoading = false;
+        this.loadingService.setLoading(false);
+        this.cdr.detectChanges();
+      }),
+      takeUntil(this.destroy$)
+    ).subscribe({
+      next: (res) => {
+        if (res.items && res.items.length > 0) {
+          // Identify items not in existing list
+          const eligibleItems = res.items.filter((item: any) => !this.isAlreadyInList(item.id));
+
+          // Sync with visible references to ensure checkmarks show up on current page
+          const visibleIdMap = new Map(this.dataSource.data.map(i => [i.id, i]));
+          const finalizedItems = eligibleItems.map(item => visibleIdMap.get(item.id) || item);
+
+          this.selection.clear();
+          this.selection.select(...finalizedItems);
+        }
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error in Select All:', err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   addSelected() {

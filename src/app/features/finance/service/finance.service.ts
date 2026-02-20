@@ -43,6 +43,28 @@ export class FinanceService {
         return this.http.post<any>(`${this.supplierApi}/payments-report`, request);
     }
 
+    checkDuplicateReference(reference: string): Observable<boolean> {
+        if (!reference || reference.trim().length === 0) return new Observable(obs => obs.next(false));
+
+        const request = {
+            searchTerm: reference.trim(),
+            pageNumber: 1,
+            pageSize: 10, // Small page size is enough
+            sortBy: 'Date',
+            sortOrder: 'desc'
+        };
+
+        return this.getPaymentsReport(request).pipe(
+            map((res: any) => {
+                const items = res?.items?.items || res?.items || [];
+                // Exact match check (case insensitive)
+                return items.some((item: any) =>
+                    (item.referenceNumber || item.ReferenceNumber || '').toLowerCase() === reference.trim().toLowerCase()
+                );
+            })
+        );
+    }
+
     // Customer Methods
     getCustomerLedger(request: any): Observable<any> {
         return this.http.post(`${this.customerApi}/ledger`, request);
