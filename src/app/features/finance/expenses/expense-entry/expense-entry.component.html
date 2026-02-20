@@ -124,6 +124,13 @@
           </table>
         </div>
 
+        <mat-paginator [length]="totalCount" 
+                       [pageSize]="pageSize" 
+                       [pageSizeOptions]="[10, 25, 50, 100]" 
+                       (page)="onPageChange($event)"
+                       showFirstLastButtons>
+        </mat-paginator>
+
         <div *ngIf="expenses.length === 0" class="no-data">
           No expenses recorded yet.
         </div>

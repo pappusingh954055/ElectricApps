@@ -11,6 +11,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { ViewChild } from '@angular/core';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { FinanceService } from '../../service/finance.service';
@@ -32,6 +34,7 @@ import { SummaryStat, SummaryStatsComponent } from '../../../../shared/component
         MatSelectModule,
         MatDatepickerModule,
         MatNativeDateModule,
+        MatPaginatorModule,
         SummaryStatsComponent
     ],
     templateUrl: './expense-entry.component.html',
@@ -47,6 +50,13 @@ export class ExpenseEntryComponent implements OnInit {
     editingId: number | null = null;
     summaryStats: SummaryStat[] = [];
     isLoading = false;
+
+    // Pagination
+    totalCount = 0;
+    pageSize = 10;
+    pageNumber = 1;
+
+    @ViewChild(MatPaginator) paginator!: MatPaginator;
 
     constructor(
         private fb: FormBuilder,
@@ -80,9 +90,10 @@ export class ExpenseEntryComponent implements OnInit {
 
     loadExpenses(): void {
         this.isLoading = true;
-        this.financeService.getExpenseEntries(1, 100).subscribe({
+        this.financeService.getExpenseEntries(this.pageNumber, this.pageSize).subscribe({
             next: (res) => {
                 this.expenses = res.items || [];
+                this.totalCount = res.totalCount || 0;
                 this.updateStats();
                 this.isLoading = false;
                 this.loadingService.setLoading(false);
@@ -204,6 +215,12 @@ export class ExpenseEntryComponent implements OnInit {
             }
             this.cdr.detectChanges();
         });
+    }
+
+    onPageChange(event: PageEvent): void {
+        this.pageNumber = event.pageIndex + 1;
+        this.pageSize = event.pageSize;
+        this.loadExpenses();
     }
 
     resetForm(): void {

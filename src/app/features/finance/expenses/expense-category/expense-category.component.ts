@@ -8,6 +8,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatCardModule } from '@angular/material/card';
 import { MatDialog } from '@angular/material/dialog';
+import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { ViewChild } from '@angular/core';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { FinanceService } from '../../service/finance.service';
@@ -26,6 +29,7 @@ import { SummaryStat, SummaryStatsComponent } from '../../../../shared/component
         MatInputModule,
         MatFormFieldModule,
         MatCardModule,
+        MatPaginatorModule,
         SummaryStatsComponent
     ],
     templateUrl: './expense-category.component.html',
@@ -34,11 +38,14 @@ import { SummaryStat, SummaryStatsComponent } from '../../../../shared/component
 export class ExpenseCategoryComponent implements OnInit {
     categoryForm: FormGroup;
     categories: any[] = [];
+    dataSource = new MatTableDataSource<any>([]);
     displayedColumns: string[] = ['name', 'description', 'isActive', 'actions'];
     isEditing = false;
     editingId: number | null = null;
     summaryStats: SummaryStat[] = [];
     isLoading = false;
+
+    @ViewChild(MatPaginator) paginator!: MatPaginator;
 
     constructor(
         private fb: FormBuilder,
@@ -64,6 +71,10 @@ export class ExpenseCategoryComponent implements OnInit {
         this.financeService.getExpenseCategories().subscribe({
             next: (data) => {
                 this.categories = data || [];
+                this.dataSource.data = this.categories;
+                setTimeout(() => {
+                    this.dataSource.paginator = this.paginator;
+                });
                 this.updateStats();
                 this.isLoading = false;
                 this.loadingService.setLoading(false);
