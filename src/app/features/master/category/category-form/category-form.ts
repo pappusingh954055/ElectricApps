@@ -12,6 +12,7 @@ import { Category } from '../models/category.model';
 import { FormFooter } from '../../../shared/form-footer/form-footer';
 import { ActivatedRoute, Router } from '@angular/router';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
+import * as XLSX from 'xlsx';
 
 
 @Component({
@@ -120,10 +121,26 @@ export class CategoryForm implements OnInit {
   }
 
   downloadTemplate() {
-    const link = document.createElement('a');
-    link.href = '/assets/templates/category_template.xlsx';
-    link.download = 'category_template.xlsx';
-    link.click();
+    const data = [
+      ["CategoryCode", "CategoryName", "DefaultGst", "Description"],
+      ["ELEC", "Smart Electrical", 18, "Electrical items and appliances"],
+      ["GROC1", "Grains & Pulses", 5, "Rice, Wheat, Dals"],
+      ["GROC2", "Edible Oils", 5, "Cooking and refined oils"],
+      ["GROC3", "Spices", 5, "Whole and powdered spices"],
+      ["GROC4", "Beverages", 5, "Tea, Coffee, Juices"],
+      ["GROC5", "Snacks", 12, "Biscuits, Chips, Namkeen"],
+      ["GROC6", "Dairy", 12, "Milk, Ghee, Butter, Paneer"],
+      ["GROC7", "Cleaning", 18, "Detergents, Soaps, Cleaners"],
+      ["GROC8", "Personal Care", 18, "Shampoo, Conditioners, Face wash"],
+      ["GROC9", "Noodles & Pasta", 12, "Instant noodles and pasta"],
+      ["GROC10", "Sauces & Spreads", 12, "Ketchup, Jams, Mayo"],
+      ["GROC11", "Groceries", 5, "Sugar, Salt, General items"]
+    ];
+
+    const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(data);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'CategoryTemplate');
+    XLSX.writeFile(wb, 'category_template.xlsx');
   }
 
   uploadExcel(): void {

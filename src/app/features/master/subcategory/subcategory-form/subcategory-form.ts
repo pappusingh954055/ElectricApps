@@ -9,6 +9,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SubCategoryService } from '../services/subcategory.service';
 import { FormFooter } from '../../../shared/form-footer/form-footer';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
+import * as XLSX from 'xlsx';
 import { Observable, Subject } from 'rxjs';
 import { map, startWith, takeUntil } from 'rxjs/operators';
 
@@ -300,10 +301,48 @@ export class SubcategoryForm implements OnInit, OnDestroy {
   }
 
   downloadTemplate() {
-    const link = document.createElement('a');
-    link.href = '/assets/templates/subcategory_template.xlsx';
-    link.download = 'subcategory_template.xlsx';
-    link.click();
+    const data = [
+      ["SubcategoryCode", "CategoryName", "SubcategoryName", "DefaultGst", "Description"],
+      // --- Electrical ---
+      ["ELEC_FAN", "Smart Electrical", "Fans", 18, "Ceiling, Wall, Exhaust fans"],
+      ["ELEC_LGT", "Smart Electrical", "Lights", 12, "LED Bulbs, Tubes, Sync panel"],
+      ["ELEC_SWT", "Smart Electrical", "Switches", 18, "Modular switches and sockets"],
+      ["ELEC_WIR", "Smart Electrical", "Wires", 18, "Copper and house wires"],
+      ["ELEC_APP", "Smart Electrical", "Appliances", 18, "Mixer, Kettle, Iron"],
+      ["ELEC_PRO", "Smart Electrical", "Protection", 18, "MCB, RCCB, Isolators"],
+      ["ELEC_CAB", "Smart Electrical", "Cables", 18, "Data and TV cables"],
+      ["ELEC_TOL", "Smart Electrical", "Tools", 18, "Testers, Multimeters"],
+      ["ELEC_BAT", "Smart Electrical", "Batteries", 28, "Inverter and car batteries"],
+      ["ELEC_ACC", "Smart Electrical", "Accessories", 18, "Spike strips, Holders"],
+
+      // --- Grocery ---
+      ["GROC_RICE", "Grains & Pulses", "Rice", 5, "Basmati, Kolam, Sona Masuri"],
+      ["GROC_FLOU", "Grains & Pulses", "Flour", 5, "Atta, Maida, Besan"],
+      ["GROC_PULS", "Grains & Pulses", "Pulses", 5, "Moong, Toor, Chana Dals"],
+      ["GROC_MUSO", "Edible Oils", "Mustard Oil", 5, "Cold pressed mustard oil"],
+      ["GROC_REFO", "Edible Oils", "Refined Oil", 5, "Sunflower and Soyabean oil"],
+      ["GROC_SPIC", "Spices", "Powder Spices", 5, "Turmeric, Chilli, Coriander"],
+      ["GROC_TEA", "Beverages", "Tea", 5, "CTC and Masala tea"],
+      ["GROC_COFF", "Beverages", "Coffee", 18, "Filter and Instant coffee"],
+      ["GROC_BISC", "Snacks", "Biscuits", 12, "Cookies and energy biscuits"],
+      ["GROC_NAMK", "Snacks", "Namkeen", 12, "Bhujia, Mixture, Gathiya"],
+      ["GROC_GHEE", "Dairy", "Ghee", 12, "Cow and buffalo ghee"],
+      ["GROC_PANE", "Dairy", "Paneer", 5, "Fresh malai paneer"],
+      ["GROC_DETR", "Cleaning", "Detergent", 18, "Washing powder and liquid"],
+      ["GROC_DISH", "Cleaning", "Dishwash", 18, "Soap and gel for dishes"],
+      ["GROC_SOAP", "Personal Care", "Soap", 18, "Bathing bars"],
+      ["GROC_SHAM", "Personal Care", "Shampoo", 18, "Hair care products"],
+      ["GROC_NOOD", "Noodles & Pasta", "Noodles", 12, "Instant snack noodles"],
+      ["GROC_KET0", "Sauces & Spreads", "Ketchup", 12, "Tomato and Chilli sauces"],
+      ["GROC_JAM", "Sauces & Spreads", "Jam", 12, "Fruit spreads"],
+      ["GROC_SUGA", "Groceries", "Sugar", 5, "White and Brown sugar"],
+      ["GROC_SALT", "Groceries", "Salt", 0, "Table and Pink salt"]
+    ];
+
+    const ws: XLSX.WorkSheet = XLSX.utils.aoa_to_sheet(data);
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'SubcategoryTemplate');
+    XLSX.writeFile(wb, 'subcategory_template.xlsx');
   }
 
   uploadExcel(): void {
