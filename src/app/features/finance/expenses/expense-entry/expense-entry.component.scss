@@ -1,98 +1,332 @@
+// Variables
+$bg-color: #f8fafc;
+$text-primary: #0f172a;
+$text-secondary: #64748b;
+$primary-color: #3f51b5;
+$border-color: #e2e8f0;
+
 .expense-container {
-  padding: 12px 24px;
-  background-color: #f8f9fa;
-  height: calc(100vh - 84px);
+  background-color: $bg-color;
+  padding: 20px;
+  height: calc(100vh - 210px); // More aggressive reduction to remove page scrollbar
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  overflow: hidden !important;
+  box-sizing: border-box;
+}
 
-  .header-section {
-    margin-bottom: 8px;
-    h1 {
-      font-size: 20px;
-      font-weight: 600;
-      color: #333;
-      margin: 0;
+// Professional Header
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  margin-bottom: 20px;
+  gap: 16px;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+
+    .back-link {
+      background-color: white !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #64748b !important;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      transition: all 0.2s ease !important;
+
+      &:hover {
+        background-color: #f8fafc !important;
+        color: #4f46e5 !important;
+        border-color: #4f46e5 !important;
+        transform: translateX(-3px);
+      }
+    }
+
+    .title-group {
+      .title {
+        color: $text-primary;
+        font-size: 22px;
+        letter-spacing: -0.02em;
+        margin: 0;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+      .subtitle {
+        color: $text-secondary;
+        margin: 2px 0 0 0;
+        font-size: 13px;
+      }
     }
   }
 
-  app-summary-stats {
-    display: block;
-    margin-bottom: 12px;
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .save-btn {
+      background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%) !important;
+      color: white !important;
+      box-shadow: 0 4px 14px 0 rgba(59, 130, 246, 0.39) !important;
+      border-radius: 24px !important;
+      font-weight: 600 !important;
+      letter-spacing: 0.5px !important;
+      height: 40px !important;
+      padding: 0 24px !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border: none;
+      
+      mat-icon {
+        margin-right: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+
+      &:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45) !important;
+      }
+
+      &:disabled {
+        background: #e2e8f0 !important;
+        color: #94a3b8 !important;
+        box-shadow: none !important;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+app-summary-stats {
+  display: block;
+  flex-shrink: 0;
+  margin-bottom: 20px;
+}
+
+.main-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+
+  .content-row {
+     display: flex;
+     gap: 24px;
+     flex: 1;
+     min-height: 0;
+     overflow: hidden; 
+     
+     @media (max-width: 1200px) {
+        flex-direction: column;
+        padding-right: 0;
+     }
+  }
+}
+
+// Professional Card Base
+.professional-card {
+  background: white;
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08) !important;
+  }
+  
+  .card-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    background: #fafbfc;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    
+    .header-text {
+      color: $text-secondary;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: 0.05em;
+    }
+  }
+}
+
+// Form Styling
+.form-card {
+  width: 380px;
+  flex-shrink: 0;
+  
+  @media (max-width: 1200px) {
+     width: 100%;
   }
 
-  .main-content {
+  .expense-form {
+    padding: 12px 0;
+    
+    .input-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .custom-field {
+      width: 100%;
+      margin-bottom: 4px;
+      
+      ::ng-deep .mat-mdc-text-field-wrapper {
+        background-color: #f8fafc !important;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+      }
+      
+      ::ng-deep .mat-mdc-form-field-focus-overlay {
+        background-color: transparent !important;
+      }
+    }
+
+    .form-footer-actions {
+       margin-top: 12px;
+       display: flex;
+       justify-content: center;
+    }
+  }
+}
+
+// List Styling
+.list-card {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+
+  mat-card-content {
+     flex: 1;
+     display: flex;
+     flex-direction: column;
+     min-height: 0;
+     padding: 0 !important;
+  }
+  
+  .items-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .items-title-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .items-count-badge {
+      background: #eff6ff;
+      color: #3b82f6;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      border: 1px solid #dbeafe;
+    }
+  }
+
+  .table-container {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    padding-right: 4px; // Slight gap for scrollbar
+
+    table.clean-table {
+      width: 100%;
+      border-spacing: 0;
+
+      th.mat-header-cell {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        padding: 14px 16px;
+        border-bottom: 2px solid #e2e8f0;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+      }
+
+      td.mat-cell {
+        padding: 12px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 13px;
+        color: #334155;
+      }
+
+      .category-badge {
+        background: #f1f5f9;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        color: #475569;
+      }
+
+      .amount-cell {
+        font-weight: 700;
+        color: #ef4444;
+      }
+
+      .mode-tag {
+        background: #fdf2f8;
+        color: #be185d;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 10px;
+      }
+
+      tr.hover-row {
+        transition: all 0.2s ease;
+        &:hover {
+          background-color: #f8fafc !important;
+        }
+      }
+    }
+  }
+
+  .compact-paginator {
+     border-top: 1px solid #f1f5f9;
+     font-size: 12px;
+  }
+
+  .no-data {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
+    align-items: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+    
+    mat-icon {
+      font-size: 40px;
+      width: 40px;
+      height: 40px;
+      margin-bottom: 10px;
+    }
+    p { margin: 0; font-weight: 500; font-style: italic; }
   }
+}
 
-  .form-card {
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-
-    .expense-form {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-
-      .form-row {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-
-        @media (max-width: 600px) {
-          grid-template-columns: 1fr;
-          gap: 0;
-        }
-      }
-
-      mat-form-field {
-        width: 100%;
-      }
-
-      .form-actions {
-        display: flex;
-        gap: 12px;
-        margin-top: 16px;
-        
-        button {
-          padding: 0 32px;
-        }
-      }
-    }
-  }
-
-  .list-card {
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-
-    .table-container {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-    }
-
-    .amount-cell {
-      font-weight: 600;
-      color: #d32f2f;
-    }
-
-    .action-buttons {
-      display: flex;
-      gap: 4px;
-    }
-
-    .no-data {
-      padding: 48px;
-      text-align: center;
-      color: #999;
-      font-style: italic;
-    }
-  }
+.small-icon {
+   font-size: 18px;
+   width: 18px;
+   height: 18px;
 }
