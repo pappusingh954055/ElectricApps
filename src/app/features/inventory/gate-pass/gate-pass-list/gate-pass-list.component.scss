@@ -186,6 +186,38 @@
     color: var(--primary-color);
 }
 
+.vehicle-info-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.vehicle-number {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.driver-info {
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    color: var(--text-secondary);
+    gap: 3px;
+
+    .mini-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+        opacity: 0.7;
+    }
+
+    .phone-link {
+        color: var(--primary-color);
+        font-weight: 500;
+        opacity: 0.8;
+    }
+}
+
 .type-badge {
     padding: 4px 10px;
     border-radius: 6px;

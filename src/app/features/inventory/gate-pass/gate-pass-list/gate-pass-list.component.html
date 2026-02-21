@@ -99,7 +99,16 @@
             <!-- Vehicle Column -->
             <ng-container matColumnDef="vehicleNo">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header> Vehicle </th>
-                <td mat-cell *matCellDef="let row"> {{row.vehicleNo}} </td>
+                <td mat-cell *matCellDef="let row"> 
+                    <div class="vehicle-info-cell">
+                        <span class="vehicle-number">{{row.vehicleNo}}</span>
+                        <div class="driver-info" *ngIf="row.driverName || row.driverPhone">
+                            <mat-icon class="mini-icon">person</mat-icon>
+                            <span>{{row.driverName || 'N/A'}}</span>
+                            <span class="phone-link" *ngIf="row.driverPhone"> ({{row.driverPhone}})</span>
+                        </div>
+                    </div>
+                </td>
             </ng-container>
 
             <!-- Qty Column -->
