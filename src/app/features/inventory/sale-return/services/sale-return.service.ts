@@ -84,5 +84,9 @@ export class SaleReturnService {
     getPendingSaleReturns(): Observable<any[]> {
         return this.api.get<any[]>('SaleReturn/pending-returns');
     }
+
+    bulkInward(ids: number[]): Observable<any> {
+        return this.api.post('SaleReturn/bulk-inward', ids);
+    }
 }
 

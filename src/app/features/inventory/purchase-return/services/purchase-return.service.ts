@@ -66,4 +66,8 @@ export class PurchaseReturnService {
     getPendingPRs(): Observable<any[]> {
         return this.api.get<any[]>('PurchaseReturn/pending-prs');
     }
+
+    bulkOutward(ids: string[]): Observable<any> {
+        return this.api.post('PurchaseReturn/bulk-outward', ids);
+    }
 }

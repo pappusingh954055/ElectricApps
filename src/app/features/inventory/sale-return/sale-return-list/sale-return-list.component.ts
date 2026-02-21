@@ -187,8 +187,11 @@ export class SaleReturnListComponent implements OnInit {
                         item.returnDate = item.returnDate + 'Z';
                     }
 
-                    // Match by RefNo (ReturnNumber)
-                    const matchingPass = gatePasses.find((gp: any) => gp.referenceNo === item.returnNumber);
+                    // Match by RefNo (ReturnNumber) - Support bulk (comma)
+                    const matchingPass = gatePasses.find((gp: any) =>
+                        gp.referenceNo === item.returnNumber ||
+                        (gp.referenceNo && gp.referenceNo.split(',').includes(item.returnNumber))
+                    );
                     if (matchingPass) {
                         item.gatePassNo = matchingPass.passNo;
                     }
@@ -308,39 +311,54 @@ export class SaleReturnListComponent implements OnInit {
             if (result) {
                 this.loadingService.setLoading(true);
                 const selectedItems = this.selection.selected;
+                const ids = selectedItems.map(item => item.saleReturnHeaderId || item.id);
 
-                // Fetch full details for each selected item to get exact quantities
-                const detailRequests = selectedItems.map(item =>
-                    this.srService.getSaleReturnById(item.saleReturnHeaderId || item.id)
-                );
+                // 1. Bulk Inward Status Update call [cite: 2026-02-21]
+                this.srService.bulkInward(ids).subscribe({
+                    next: () => {
+                        // 2. Fetch full details for each selected item to get mapping data for Gate Pass
+                        const detailRequests = selectedItems.map(item =>
+                            this.srService.getPrintData(item.saleReturnHeaderId || item.id)
+                        );
 
-                forkJoin(detailRequests).subscribe({
-                    next: (details: any[]) => {
-                        const refNos = selectedItems.map(item => item.returnNumber).join(',');
-                        const refIds = selectedItems.map(item => item.saleReturnHeaderId || item.id).join(',');
-                        const partyName = selectedItems[0].customerName;
+                        forkJoin(detailRequests).subscribe({
+                            next: (details: any[]) => {
+                                const refNos = selectedItems.map(item => item.returnNumber).join(',');
+                                const refIds = ids.join(',');
+                                const partyName = selectedItems[0].customerName;
 
-                        // Sum up returnQty from all line items of all selected returns
-                        const totalSumQty = details.reduce((total, d) => {
-                            const itemSum = (d.items || []).reduce((s: number, i: any) => s + (Number(i.returnQty) || 0), 0);
-                            return total + itemSum;
-                        }, 0);
+                                // Sum up Qty from all line items (using fields from getPrintData response)
+                                const totalSumQty = details.reduce((total, d) => {
+                                    const itemsList = d.items || d.saleReturnItems || d.returnItems || [];
+                                    const itemSum = itemsList.reduce((s: number, i: any) => s + (Number(i.qty) || Number(i.returnQty) || 0), 0);
+                                    return total + itemSum;
+                                }, 0);
 
-                        this.loadingService.setLoading(false);
-                        this.router.navigate(['/app/inventory/gate-pass/inward'], {
-                            queryParams: {
-                                type: 'sale-return',
-                                refNo: refNos,
-                                refId: refIds,
-                                partyName: partyName,
-                                qty: totalSumQty,
-                                isBulk: true
+                                this.loadingService.setLoading(false);
+                                this.router.navigate(['/app/inventory/gate-pass/inward'], {
+                                    queryParams: {
+                                        type: 'sale-return',
+                                        refNo: refNos,
+                                        refId: refIds,
+                                        partyName: partyName,
+                                        qty: totalSumQty,
+                                        isBulk: true
+                                    }
+                                });
+                            },
+                            error: (err) => {
+                                this.loadingService.setLoading(false);
+                                console.error('Error fetching details for bulk:', err);
+                                // Default redirect anyway even if qty fetch fails to not block the user
+                                this.router.navigate(['/app/inventory/gate-pass/inward'], {
+                                    queryParams: { type: 'sale-return', refNo: selectedItems.map(item => item.returnNumber).join(','), refId: ids.join(','), isBulk: true }
+                                });
                             }
                         });
                     },
                     error: (err) => {
                         this.loadingService.setLoading(false);
-                        console.error('Error fetching details for bulk:', err);
+                        console.error('Bulk Inward Status update failed', err);
                     }
                 });
             }

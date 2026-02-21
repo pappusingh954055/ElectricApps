@@ -160,7 +160,10 @@ export class PurchaseReturnList implements OnInit {
             item.returnDate = item.returnDate + 'Z';
           }
 
-          const matchingPass = gatePasses.find((gp: any) => gp.referenceNo === item.returnNumber);
+          const matchingPass = gatePasses.find((gp: any) =>
+            gp.referenceNo === item.returnNumber ||
+            (gp.referenceNo && gp.referenceNo.split(',').includes(item.returnNumber))
+          );
           if (matchingPass) {
             item.gatePassNo = matchingPass.passNo;
           }
@@ -291,39 +294,53 @@ export class PurchaseReturnList implements OnInit {
       if (result) {
         this.loadingService.setLoading(true);
         const selectedItems = this.selection.selected;
+        const ids = selectedItems.map(item => item.purchaseReturnHeaderId || item.id);
 
-        // Fetch full details for each selected item to get exact quantities
-        const detailRequests = selectedItems.map(item =>
-          this.prService.getPurchaseReturnById(item.purchaseReturnHeaderId || item.id)
-        );
+        // 1. Bulk Outward Status Update call [cite: 2026-02-21]
+        this.prService.bulkOutward(ids).subscribe({
+          next: () => {
+            // 2. Fetch full details for each selected item to get mapping data for Gate Pass
+            const detailRequests = selectedItems.map(item =>
+              this.prService.getPurchaseReturnById(item.purchaseReturnHeaderId || item.id)
+            );
 
-        forkJoin(detailRequests).subscribe({
-          next: (details: any[]) => {
-            const refNos = selectedItems.map(item => item.returnNumber).join(',');
-            const refIds = selectedItems.map(item => item.purchaseReturnHeaderId || item.id).join(',');
-            const partyName = selectedItems[0].supplierName;
+            forkJoin(detailRequests).subscribe({
+              next: (details: any[]) => {
+                const refNos = selectedItems.map(item => item.returnNumber).join(',');
+                const refIds = ids.join(',');
+                const partyName = selectedItems[0].supplierName;
 
-            // Sum up returnQty from all line items of all selected returns
-            const totalSumQty = details.reduce((total, d) => {
-              const itemSum = (d.items || []).reduce((s: number, i: any) => s + (Number(i.returnQty) || 0), 0);
-              return total + itemSum;
-            }, 0);
+                // Sum up returnQty from all line items of all selected returns
+                const totalSumQty = details.reduce((total, d) => {
+                  const itemSum = (d.items || []).reduce((s: number, i: any) => s + (Number(i.returnQty) || 0), 0);
+                  return total + itemSum;
+                }, 0);
 
-            this.loadingService.setLoading(false);
-            this.router.navigate(['/app/inventory/gate-pass/outward'], {
-              queryParams: {
-                type: 'purchase-return',
-                refNo: refNos,
-                refId: refIds,
-                partyName: partyName,
-                qty: totalSumQty,
-                isBulk: true
+                this.loadingService.setLoading(false);
+                this.router.navigate(['/app/inventory/gate-pass/outward'], {
+                  queryParams: {
+                    type: 'purchase-return',
+                    refNo: refNos,
+                    refId: refIds,
+                    partyName: partyName,
+                    qty: totalSumQty,
+                    isBulk: true
+                  }
+                });
+              },
+              error: (err) => {
+                this.loadingService.setLoading(false);
+                console.error('Error fetching details for bulk:', err);
+                // Fallback redirect
+                this.router.navigate(['/app/inventory/gate-pass/outward'], {
+                  queryParams: { type: 'purchase-return', refNo: selectedItems.map(item => item.returnNumber).join(','), refId: ids.join(','), isBulk: true }
+                });
               }
             });
           },
           error: (err) => {
             this.loadingService.setLoading(false);
-            console.error('Error fetching details for bulk:', err);
+            console.error('Bulk Outward update failed', err);
           }
         });
       }

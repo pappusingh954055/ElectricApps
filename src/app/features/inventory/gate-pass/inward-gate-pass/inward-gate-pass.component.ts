@@ -129,7 +129,7 @@ export class InwardGatePassComponent implements OnInit {
 
         const refIdControl = this.gatePassForm.get('referenceId');
         if (refIdControl) {
-            refIdControl.clearValidators();
+            refIdControl.setValidators([]);
             refIdControl.setErrors(null);
         }
 
@@ -155,7 +155,7 @@ export class InwardGatePassComponent implements OnInit {
 
             const refIdControl = this.gatePassForm.get('referenceId');
             if (refIdControl) {
-                refIdControl.clearValidators();
+                refIdControl.setValidators([]);
                 refIdControl.setErrors(null);
             }
 
@@ -346,10 +346,11 @@ export class InwardGatePassComponent implements OnInit {
                 this.isSaving = false;
                 this.loadingService.setLoading(false);
                 console.error(err);
+                const errorMessage = err.error?.message || err.message || `Failed to ${this.isEditMode ? 'update' : 'generate'} Inward Pass.`;
                 this.dialog.open(StatusDialogComponent, {
                     data: {
                         title: 'Error',
-                        message: `Failed to ${this.isEditMode ? 'update' : 'generate'} Inward Pass.`,
+                        message: errorMessage,
                         status: 'error',
                         isSuccess: false
                     }
