@@ -301,7 +301,7 @@ export class InwardGatePassComponent implements OnInit {
             totalWeight: Number(formValue.totalWeight) || 0,
             gateEntryTime: this.isEditMode ? undefined : new Date(), // Don't overwrite entry time on edit
             securityGuard: formValue.securityGuard,
-            status: GatePassStatus.Entered,
+            status: Number(formValue.referenceType) === GatePassReferenceType.SaleReturn ? GatePassStatus.Completed : GatePassStatus.Entered,
             remarks: formValue.remarks,
             createdBy: this.authService.getUserName()
         };
@@ -335,6 +335,8 @@ export class InwardGatePassComponent implements OnInit {
                                 gatePassNo: generatedPassNo
                             }
                         });
+                    } else if (formValue.referenceType === GatePassReferenceType.SaleReturn) {
+                        this.router.navigate(['/app/inventory/sale-return']);
                     } else {
                         this.router.navigate(['/app/inventory/gate-pass']);
                     }
@@ -357,6 +359,14 @@ export class InwardGatePassComponent implements OnInit {
     }
 
     goBack() {
-        this.router.navigate(['/app/inventory/gate-pass']);
+        // Intelligent back button: Go back to source if available
+        const type = this.route.snapshot.queryParams['type'];
+        if (type === 'sale-return') {
+            this.router.navigate(['/app/inventory/sale-return']);
+        } else if (type === 'po') {
+            this.router.navigate(['/app/inventory/purchase-order']);
+        } else {
+            this.router.navigate(['/app/inventory/gate-pass']);
+        }
     }
 }

@@ -8,11 +8,16 @@ import { PurchaseReturnService } from '../services/purchase-return.service';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
+import { CompanyService } from '../../../company/services/company.service';
+import { LoadingService } from '../../../../core/services/loading.service';
+import { CurrencyPipe, DatePipe } from '@angular/common';
+import { environment } from '../../../../enviornments/environment';
 
 @Component({
   selector: 'app-purchase-return-form',
   standalone: true,
   imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule],
+  providers: [DatePipe, CurrencyPipe],
   templateUrl: './purchase-return-form.html',
   styleUrl: './purchase-return-form.scss',
 })
@@ -31,6 +36,10 @@ export class PurchaseReturnForm implements OnInit {
     private snackBar: MatSnackBar,
     public router: Router,
     private dialog: MatDialog,
+    private companyService: CompanyService,
+    private loadingService: LoadingService,
+    private datePipe: DatePipe,
+    private currencyPipe: CurrencyPipe
   ) { }
 
   ngOnInit(): void {
@@ -320,31 +329,9 @@ export class PurchaseReturnForm implements OnInit {
 
         const totalQty = itemsToReturn.reduce((sum: number, item: any) => sum + Number(item.returnQty), 0);
 
-        console.log(`[PurchaseReturn] Submitting: Supplier=${supplierName}, Qty=${totalQty}, ID=${rawData.supplierId}`);
-
         this.prService.savePurchaseReturn(payload).subscribe({
           next: (res) => {
-            this.cdr.detectChanges();
-            const dialogRef = this.dialog.open(StatusDialogComponent, {
-              width: '400px',
-              data: {
-                isSuccess: true,
-                message: `Purchase Return ${res.returnNumber} successfully created.`
-              }
-            });
-
-            dialogRef.afterClosed().subscribe(() => {
-              // Redirect to Outward Gate Pass
-              this.router.navigate(['/app/inventory/gate-pass/outward'], {
-                queryParams: {
-                  refNo: res.returnNumber,
-                  refId: res.id,
-                  type: 'purchase-return',
-                  partyName: supplierName,
-                  qty: totalQty
-                }
-              });
-            });
+            this.handleSuccess(res, res.returnNumber, res.id, supplierName, totalQty);
           },
           error: (err) => {
             this.cdr.detectChanges();
@@ -353,6 +340,196 @@ export class PurchaseReturnForm implements OnInit {
         });
       }
     });
+  }
+
+  private handleSuccess(res: any, returnNo: string, returnId: number, supplierName: string, totalQty: number) {
+    this.cdr.detectChanges();
+    const dialogRef = this.dialog.open(StatusDialogComponent, {
+      width: '450px',
+      disableClose: true,
+      data: {
+        isSuccess: true,
+        title: 'Return Saved!',
+        message: `Purchase Return ${res.returnNumber} successfully created.`,
+        actions: [
+          { label: 'Continue to Gate Pass', role: 'ok' }
+        ]
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.navigateToGatePass(returnNo, returnId, supplierName, totalQty);
+    });
+  }
+
+  private navigateToGatePass(returnNo: string, returnId: number, supplierName: string, totalQty: number) {
+    this.loadingService.setLoading(true);
+    setTimeout(() => {
+      this.router.navigate(['/app/inventory/gate-pass/outward'], {
+        queryParams: {
+          refNo: returnNo,
+          refId: returnId,
+          type: 'purchase-return',
+          partyName: supplierName,
+          qty: totalQty
+        }
+      });
+    }, 300);
+  }
+
+  private printAfterSave(returnId: number, existingWindow: Window, callback: () => void) {
+    this.loadingService.setLoading(true);
+    this.prService.getPurchaseReturnById(returnId).subscribe({
+      next: (data) => {
+        this.companyService.getCompanyProfile().subscribe(company => {
+          this.triggerPrintWithWindow(data, company, existingWindow);
+          this.loadingService.setLoading(false);
+          callback();
+        });
+      },
+      error: () => {
+        this.loadingService.setLoading(false);
+        existingWindow.close();
+        callback();
+      }
+    });
+  }
+
+  private triggerPrintWithWindow(data: any, company: any, printWindow: Window) {
+    const companyName = company?.name || 'Electric Inventory System';
+    const logoUrl = company?.logoUrl ? this.getImgUrl(company.logoUrl) : '';
+    let addressStr = '';
+    if (company?.address) {
+      const addr = company.address;
+      addressStr = `${addr.addressLine1}, ${addr.addressLine2 ? addr.addressLine2 + ', ' : ''}${addr.city}, ${addr.state} - ${addr.pinCode}`;
+    }
+    const contactInfo = `Contact: ${company?.primaryPhone || ''} | Email: ${company?.primaryEmail || ''}`;
+
+    const returnDate = this.datePipe.transform(data.returnDate, 'dd MMM yyyy');
+    const subTotal = this.currencyPipe.transform(data.subTotal || 0, 'INR');
+    const taxAmount = this.currencyPipe.transform(data.taxAmount || 0, 'INR');
+    const grandTotal = this.currencyPipe.transform(data.grandTotal || 0, 'INR');
+    const totalInWords = this.numberToWords(Math.round(data.grandTotal || 0));
+
+    const itemsRows = data.items.map((item: any, index: number) => `
+            <tr>
+                <td style="text-align: center;">${index + 1}</td>
+                <td>${item.productName}</td>
+                <td style="text-align: center;">${item.returnQty}</td>
+                <td style="text-align: right;">${this.currencyPipe.transform(item.rate, 'INR')}</td>
+                <td style="text-align: center;">${item.discountPercent}%</td>
+                <td style="text-align: center;">${item.gstPercent}%</td>
+                <td style="text-align: right;">${this.currencyPipe.transform(item.totalAmount, 'INR')}</td>
+            </tr>
+        `).join('');
+
+    const grnRef = data.items[0]?.grnRef || 'N/A';
+
+    printWindow.document.open();
+    printWindow.document.write(`
+            <html>
+                <head>
+                    <title>Debit Note - ${data.returnNumber}</title>
+                    <style>
+                        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; line-height: 1.4; }
+                        .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+                        .logo-section { display: flex; align-items: center; gap: 15px; }
+                        .company-logo { width: 70px; height: 70px; object-fit: contain; }
+                        .company-name h1 { margin: 0; font-size: 26px; color: #1a56db; font-weight: 800; }
+                        .company-name p { margin: 2px 0; font-size: 13px; color: #4b5563; }
+                        .doc-title { text-align: right; }
+                        .doc-title h2 { margin: 0; color: #1f2937; font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+                        .doc-title p { margin: 5px 0 0 0; font-size: 16px; font-weight: 700; color: #4b5563; }
+                        .info-card { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 30px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+                        .info-group { display: flex; flex-direction: column; }
+                        .info-group label { font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+                        .info-group .value { font-weight: 700; font-size: 15px; color: #111827; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 20px; border: 1px solid #e5e7eb; }
+                        th { background: #f3f4f6; padding: 12px 10px; border: 1px solid #e5e7eb; text-align: left; font-size: 11px; text-transform: uppercase; color: #374151; font-weight: 800; }
+                        td { padding: 12px 10px; border: 1px solid #e5e7eb; font-size: 13px; color: #1f2937; }
+                        .bottom-section { display: flex; justify-content: space-between; margin-top: 40px; }
+                        .words-section { flex: 1; padding-right: 40px; }
+                        .words-section .value { font-weight: 700; color: #111827; text-transform: capitalize; font-style: italic; font-size: 14px; margin-top: 5px; }
+                        .invoice-summary { width: 300px; }
+                        .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px dashed #e5e7eb; }
+                        .summary-row.grand-total { font-weight: 900; font-size: 18px; color: #1a56db; border-top: 2px solid #1a56db; margin-top: 10px; padding-top: 10px; border-bottom: none; }
+                        .footer-note { margin-top: 80px; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding-top: 40px; }
+                        .signature-box { text-align: center; min-width: 200px; }
+                        .signature-line { border-top: 1px solid #333; margin-bottom: 8px; margin-top: 50px; }
+                    </style>
+                </head>
+                <body onload="window.print()">
+                    <div class="header">
+                        <div class="logo-section">
+                            ${logoUrl ? `<img src="${logoUrl}" class="company-logo" alt="Logo">` : ''}
+                            <div class="company-name">
+                                <h1>${companyName}</h1>
+                                <p>${addressStr}</p>
+                                <p>${contactInfo}</p>
+                            </div>
+                        </div>
+                        <div class="doc-title">
+                             <h2>PURCHASE RETURN (DEBIT NOTE)</h2>
+                             <p>#${data.returnNumber}</p>
+                             <div style="font-size: 13px; font-weight: 600; color: #6b7280; margin-top: 5px;">Date: ${returnDate}</div>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                      <div class="info-group"><label>Supplier Name</label><div class="value">${data.supplierName}</div></div>
+                      <div class="info-group"><label>Reference No (GRN)</label><div class="value">${grnRef}</div></div>
+                      <div class="info-group"><label>Document Status</label><div class="value">${data.status}</div></div>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="text-align: center; width: 30px;">#</th>
+                                <th>Product Name / Description</th>
+                                <th style="text-align: center; width: 60px;">Qty</th>
+                                <th style="text-align: right; width: 100px;">Rate</th>
+                                <th style="text-align: center; width: 60px;">Disc%</th>
+                                <th style="text-align: center; width: 60px;">Tax%</th>
+                                <th style="text-align: right; width: 120px;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>${itemsRows}</tbody>
+                    </table>
+                    <div class="bottom-section">
+                        <div class="words-section"><p>Amount in Words:</p><div class="value">Rupees ${totalInWords}</div></div>
+                        <div class="invoice-summary">
+                            <div class="summary-row"><span class="label">Sub Total</span><span class="value">${subTotal}</span></div>
+                            <div class="summary-row"><span class="label">Total Tax</span><span class="value">${taxAmount}</span></div>
+                            <div class="summary-row grand-total"><span class="label">Grand Total</span><span class="value">${grandTotal}</span></div>
+                        </div>
+                    </div>
+                    <div class="footer-note">
+                        <div class="signature-box" style="text-align: left;"><p style="font-size: 11px; margin-bottom: 50px;">Received By / Supplier Signature</p><div class="signature-line" style="width: 180px;"></div></div>
+                        <div class="signature-box"><p style="font-size: 11px; margin-bottom: 50px;">For ${companyName}</p><div class="signature-line"></div><label>Authorized Signatory</label></div>
+                    </div>
+                </body>
+            </html>
+        `);
+    printWindow.document.close();
+  }
+
+  private getImgUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    if (url.startsWith('data:image') || url.startsWith('http')) return url;
+    const cleanUrl = url.startsWith('/') ? url.substring(1) : url;
+    return `${environment.CompanyRootUrl}/${cleanUrl}`;
+  }
+
+  private numberToWords(num: number): string {
+    const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+    const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+    const n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n) return '';
+    let str = '';
+    str += Number(n[1]) != 0 ? (a[Number(n[1])] || b[Number(n[1].toString().charAt(0))] + ' ' + a[Number(n[1].toString().charAt(1))]) + 'Crore ' : '';
+    str += Number(n[2]) != 0 ? (a[Number(n[2])] || b[Number(n[2].toString().charAt(0))] + ' ' + a[Number(n[2].toString().charAt(1))]) + 'Lakh ' : '';
+    str += Number(n[3]) != 0 ? (a[Number(n[3])] || b[Number(n[3].toString().charAt(0))] + ' ' + a[Number(n[3].toString().charAt(1))]) + 'Thousand ' : '';
+    str += Number(n[4]) != 0 ? (a[Number(n[4])] || b[Number(n[4].toString().charAt(0))] + ' ' + a[Number(n[4].toString().charAt(1))]) + 'Hundred ' : '';
+    str += Number(n[5]) != 0 ? (str != '' ? 'and ' : '') + (a[Number(n[5])] || b[Number(n[5].toString().charAt(0))] + ' ' + a[Number(n[5].toString().charAt(1))]) + 'only' : '';
+    return str;
   }
 
   openDialog(isSuccess: boolean, message: string) {

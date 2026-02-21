@@ -11,6 +11,9 @@ import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { SaleReturnDetailsModal } from '../sale-return-details-modal/sale-return-details-modal';
 import { LoadingService } from '../../../../core/services/loading.service';
+import { GatePassService } from '../../gate-pass/services/gate-pass.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
     selector: 'app-sale-return-list',
@@ -21,12 +24,13 @@ import { LoadingService } from '../../../../core/services/loading.service';
 })
 export class SaleReturnListComponent implements OnInit {
     private srService = inject(SaleReturnService);
+    private gatePassService = inject(GatePassService);
     private router = inject(Router);
     private cdr = inject(ChangeDetectorRef);
     private dialog = inject(MatDialog);
 
     dataSource = new MatTableDataSource<any>();
-    displayedColumns: string[] = ['returnNumber', 'returnDate', 'customerName', 'soRef', 'totalAmount', 'status', 'actions'];
+    displayedColumns: string[] = ['returnNumber', 'gatePassNo', 'returnDate', 'customerName', 'soRef', 'totalAmount', 'status', 'actions'];
 
     isTableLoading = true;
     isDashboardLoading: boolean = true;
@@ -151,44 +155,61 @@ export class SaleReturnListComponent implements OnInit {
     loadReturns() {
         this.isTableLoading = true;
 
-        this.srService.getSaleReturns(
-            this.searchKey, // Global search alag rahega
-            this.pageIndex,
-            this.pageSize,
-            this.sortField,
-            this.sortOrder,
-            this.fromDate || undefined,
-            this.toDate || undefined,
-            this.activeStatus // Widgets se aane wala status yahan jayega
-        )
-            .subscribe({
-                next: (res) => {
-                    this.dataSource.data = res.items;
-                    this.totalRecords = res.totalCount;
-                    this.calculateStats(res.items);
-                    this.isTableLoading = false;
+        forkJoin({
+            returns: this.srService.getSaleReturns(
+                this.searchKey,
+                this.pageIndex,
+                this.pageSize,
+                this.sortField,
+                this.sortOrder,
+                this.fromDate || undefined,
+                this.toDate || undefined,
+                this.activeStatus
+            ),
+            gatePasses: this.gatePassService.getGatePassesPaged({ pageSize: 150, sortField: 'CreatedAt', sortOrder: 'desc' }).pipe(catchError(() => of({ data: [] })))
+        }).subscribe({
+            next: (res: any) => {
+                const returnData = res.returns;
+                const gatePasses = res.gatePasses?.data || [];
 
-                    // Turn off global loader on first load
-                    if (this.isFirstLoad) {
-                        this.isFirstLoad = false;
-                        this.isDashboardLoading = false;
-                        this.loadingService.setLoading(false);
+                // 🚛 Match Returns with Gate Passes & Fix Timezone
+                const processedItems = returnData.items.map((item: any) => {
+                    // Fix Date to UTC if it doesn't have timezone info
+                    if (item.returnDate && !item.returnDate.includes('Z')) {
+                        item.returnDate = item.returnDate + 'Z';
                     }
-                    this.cdr.detectChanges();
-                },
-                error: (err) => {
-                    console.error("Error loading returns", err);
-                    this.isTableLoading = false;
 
-                    // Turn off global loader on first load
-                    if (this.isFirstLoad) {
-                        this.isFirstLoad = false;
-                        this.isDashboardLoading = false;
-                        this.loadingService.setLoading(false);
+                    // Match by RefNo (ReturnNumber)
+                    const matchingPass = gatePasses.find((gp: any) => gp.referenceNo === item.returnNumber);
+                    if (matchingPass) {
+                        item.gatePassNo = matchingPass.passNo;
                     }
-                    this.cdr.detectChanges();
+                    return item;
+                });
+
+                this.dataSource.data = processedItems;
+                this.totalRecords = returnData.totalCount;
+                this.calculateStats(returnData.items);
+                this.isTableLoading = false;
+
+                if (this.isFirstLoad) {
+                    this.isFirstLoad = false;
+                    this.isDashboardLoading = false;
+                    this.loadingService.setLoading(false);
                 }
-            });
+                this.cdr.detectChanges();
+            },
+            error: (err) => {
+                console.error("Error loading returns", err);
+                this.isTableLoading = false;
+                if (this.isFirstLoad) {
+                    this.isFirstLoad = false;
+                    this.isDashboardLoading = false;
+                    this.loadingService.setLoading(false);
+                }
+                this.cdr.detectChanges();
+            }
+        });
     }
 
     onPageChange(event: PageEvent) {
@@ -207,6 +228,18 @@ export class SaleReturnListComponent implements OnInit {
 
     navigateToCreate() {
         this.router.navigate(['/app/inventory/sale-return/add']);
+    }
+
+    createInwardGatePass(row: any) {
+        this.router.navigate(['/app/inventory/gate-pass/inward'], {
+            queryParams: {
+                type: 'sale-return',
+                refNo: row.returnNumber,
+                refId: row.saleReturnHeaderId || row.id,
+                partyName: row.customerName,
+                qty: row.totalQty || 1
+            }
+        });
     }
 
     viewCreditNote(row: any) {

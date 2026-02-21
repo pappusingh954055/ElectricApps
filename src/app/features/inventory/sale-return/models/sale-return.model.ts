@@ -7,6 +7,7 @@ export interface SaleReturnListDto {
     soRef: string; // SONumber mapped from SaleOrders
     totalAmount: number;
     status: string;
+    gatePassNo?: string;
 }
 
 export interface SaleReturnPagedResponse {

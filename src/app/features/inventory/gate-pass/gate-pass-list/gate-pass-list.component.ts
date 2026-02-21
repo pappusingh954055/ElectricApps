@@ -74,7 +74,13 @@ export class GatePassListComponent implements OnInit {
 
         this.gatePassService.getGatePassesPaged(request).subscribe({
             next: (res) => {
-                this.dataSource.data = res.data || [];
+                const items = res.data || [];
+                items.forEach((item: any) => {
+                    if (item.gateEntryTime && !item.gateEntryTime.includes('Z')) {
+                        item.gateEntryTime = item.gateEntryTime + 'Z';
+                    }
+                });
+                this.dataSource.data = items;
                 this.totalRecords = res.totalRecords || 0;
                 this.isLoading = false;
                 this.loadingService.setLoading(false);

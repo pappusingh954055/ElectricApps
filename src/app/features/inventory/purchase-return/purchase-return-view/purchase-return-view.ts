@@ -23,8 +23,21 @@ export class PurchaseReturnView implements OnInit {
     private cdr: ChangeDetectorRef,
     private datePipe: DatePipe,
     private currencyPipe: CurrencyPipe
-  ) {
-    console.log('dada', data);
+  ) { }
+
+  numberToWords(num: number): string {
+    const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+    const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    const n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n) return '';
+    let str = '';
+    str += Number(n[1]) != 0 ? (a[Number(n[1])] || b[Number(n[1].toString().charAt(0))] + ' ' + a[Number(n[1].toString().charAt(1))]) + 'Crore ' : '';
+    str += Number(n[2]) != 0 ? (a[Number(n[2])] || b[Number(n[2].toString().charAt(0))] + ' ' + a[Number(n[2].toString().charAt(1))]) + 'Lakh ' : '';
+    str += Number(n[3]) != 0 ? (a[Number(n[3])] || b[Number(n[3].toString().charAt(0))] + ' ' + a[Number(n[3].toString().charAt(1))]) + 'Thousand ' : '';
+    str += Number(n[4]) != 0 ? (a[Number(n[4])] || b[Number(n[4].toString().charAt(0))] + ' ' + a[Number(n[4].toString().charAt(1))]) + 'Hundred ' : '';
+    str += Number(n[5]) != 0 ? (str != '' ? 'and ' : '') + (a[Number(n[5])] || b[Number(n[5].toString().charAt(0))] + ' ' + a[Number(n[5].toString().charAt(1))]) + 'only' : '';
+    return str;
   }
 
   ngOnInit(): void {
@@ -69,6 +82,8 @@ export class PurchaseReturnView implements OnInit {
     const taxAmount = this.currencyPipe.transform(this.data.taxAmount || 0, 'INR');
     const grandTotal = this.currencyPipe.transform(this.data.grandTotal || 0, 'INR');
 
+    const totalInWords = this.numberToWords(Math.round(this.data.grandTotal || 0));
+
     // Build items table rows
     const itemsRows = this.data.items.map((item: any, index: number) => `
         <tr>
@@ -90,32 +105,46 @@ export class PurchaseReturnView implements OnInit {
     WindowPrt.document.write(`
         <html>
             <head>
-                <title>Print Return - ${this.data.returnNumber}</title>
+                <title>Debit Note - ${this.data.returnNumber}</title>
                 <style>
-                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; }
-                    .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+                    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; line-height: 1.4; }
+                    .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
                     .logo-section { display: flex; align-items: center; gap: 15px; }
-                    .company-logo { width: 60px; height: 60px; object-fit: contain; }
-                    .company-name h1 { margin: 0; font-size: 24px; color: #1a56db; }
-                    .company-name p { margin: 2px 0; font-size: 12px; color: #666; }
-                    .doc-title h2 { margin: 0; color: #444; text-transform: uppercase; }
+                    .company-logo { width: 70px; height: 70px; object-fit: contain; }
+                    .company-name h1 { margin: 0; font-size: 26px; color: #1a56db; font-weight: 800; }
+                    .company-name p { margin: 2px 0; font-size: 13px; color: #4b5563; }
+                    .doc-title { text-align: right; }
+                    .doc-title h2 { margin: 0; color: #1f2937; font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+                    .doc-title p { margin: 5px 0 0 0; font-size: 16px; font-weight: 700; color: #4b5563; }
 
-                    .info-card { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
-                    .info-group { display: flex; flex-direction: column; min-width: 150px; }
-                    .info-group label { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
-                    .info-group .value { font-weight: 600; font-size: 14px; }
+                    .info-card { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 30px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+                    .info-group { display: flex; flex-direction: column; }
+                    .info-group label { font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+                    .info-group .value { font-weight: 700; font-size: 15px; color: #111827; }
 
-                    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    th { background: #f1f5f9; padding: 10px; text-align: left; font-size: 12px; text-transform: uppercase; color: #555; }
-                    td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 20px; border: 1px solid #e5e7eb; }
+                    th { background: #f3f4f6; padding: 12px 10px; border: 1px solid #e5e7eb; text-align: left; font-size: 11px; text-transform: uppercase; color: #374151; font-weight: 800; }
+                    td { padding: 12px 10px; border: 1px solid #e5e7eb; font-size: 13px; color: #1f2937; }
                     
-                    .invoice-summary { margin-top: 30px; display: flex; flex-direction: column; align-items: flex-end; }
-                    .summary-row { display: flex; justify-content: space-between; width: 250px; padding: 5px 0; }
-                    .summary-row.grand-total { font-weight: bold; font-size: 16px; color: #1a56db; border-top: 1px solid #eee; margin-top: 10px; padding-top: 10px; }
+                    .bottom-section { display: flex; justify-content: space-between; margin-top: 40px; }
+                    .words-section { flex: 1; padding-right: 40px; }
+                    .words-section p { font-size: 12px; margin: 0; }
+                    .words-section .value { font-weight: 700; color: #111827; text-transform: capitalize; font-style: italic; font-size: 14px; margin-top: 5px; }
+
+                    .invoice-summary { width: 300px; }
+                    .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px dashed #e5e7eb; }
+                    .summary-row:last-child { border-bottom: none; }
+                    .summary-row.grand-total { font-weight: 900; font-size: 18px; color: #1a56db; border-top: 2px solid #1a56db; margin-top: 10px; padding-top: 10px; border-bottom: none; }
                     
+                    .footer-note { margin-top: 80px; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding-top: 40px; }
+                    .signature-box { text-align: center; min-width: 200px; }
+                    .signature-line { border-top: 1px solid #333; margin-bottom: 8px; margin-top: 50px; }
+                    .signature-box label { font-size: 12px; font-weight: 700; color: #4b5563; }
+
                     @media print {
+                        body { padding: 0px; }
                         .no-print { display: none; }
-                        body { -webkit-print-color-adjust: exact; }
+                        @page { margin: 1cm; }
                     }
                 </style>
             </head>
@@ -130,8 +159,9 @@ export class PurchaseReturnView implements OnInit {
                         </div>
                     </div>
                     <div class="doc-title">
-                         <h2>PURCHASE RETURN</h2>
+                         <h2>PURCHASE RETURN (DEBIT NOTE)</h2>
                          <p>#${this.data.returnNumber}</p>
+                         <div style="font-size: 13px; font-weight: 600; color: #6b7280; margin-top: 5px;">Date: ${returnDate}</div>
                     </div>
                 </div>
 
@@ -141,29 +171,25 @@ export class PurchaseReturnView implements OnInit {
                     <div class="value">${this.data.supplierName}</div>
                   </div>
                   <div class="info-group">
-                    <label>Return Date</label>
-                    <div class="value">${returnDate}</div>
-                  </div>
-                  <div class="info-group">
-                    <label>Status</label>
-                    <div class="value">${this.data.status}</div>
-                  </div>
-                  <div class="info-group">
-                    <label>GRN Reference</label>
+                    <label>Reference No (GRN)</label>
                     <div class="value">${grnRef}</div>
+                  </div>
+                   <div class="info-group">
+                    <label>Document Status</label>
+                    <div class="value">${this.data.status || 'Confirmed'}</div>
                   </div>
                 </div>
 
                 <table>
                     <thead>
                         <tr>
-                            <th style="text-align: center;">#</th>
-                            <th>Product Description</th>
-                            <th style="text-align: center;">Return Qty</th>
-                            <th style="text-align: right;">Rate</th>
-                        <th style="text-align: center;">Disc (%)</th>
-                        <th style="text-align: center;">Tax (%)</th>
-                        <th style="text-align: right;">Total</th>
+                            <th style="text-align: center; width: 30px;">#</th>
+                            <th>Product Name / Description</th>
+                            <th style="text-align: center; width: 60px;">Qty</th>
+                            <th style="text-align: right; width: 100px;">Rate</th>
+                            <th style="text-align: center; width: 60px;">Disc%</th>
+                            <th style="text-align: center; width: 60px;">Tax%</th>
+                            <th style="text-align: right; width: 120px;">Total</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -171,19 +197,41 @@ export class PurchaseReturnView implements OnInit {
                     </tbody>
                 </table>
 
-                <div class="invoice-summary">
-                    <div class="summary-row">
-                        <span class="label">Sub Total</span>
-                        <span class="value">${subTotal}</span>
+                <div class="bottom-section">
+                    <div class="words-section">
+                        <p>Amount in Words:</p>
+                        <div class="value">Rupees ${totalInWords}</div>
                     </div>
-                    <div class="summary-row">
-                        <span class="label">Total Tax</span>
-                        <span class="value">${taxAmount}</span>
+                    <div class="invoice-summary">
+                        <div class="summary-row">
+                            <span class="label">Sub Total</span>
+                            <span class="value">${subTotal}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="label">Total Tax</span>
+                            <span class="value">${taxAmount}</span>
+                        </div>
+                        <div class="summary-row grand-total">
+                            <span class="label">Grand Total</span>
+                            <span class="value">${grandTotal}</span>
+                        </div>
                     </div>
-                    <div class="summary-row grand-total">
-                        <span class="label">Grand Total</span>
-                        <span class="value">${grandTotal}</span>
+                </div>
+
+                <div class="footer-note">
+                    <div class="signature-box" style="text-align: left;">
+                        <p style="font-size: 11px; margin-bottom: 50px;">Received By / Supplier Signature</p>
+                        <div class="signature-line" style="width: 180px;"></div>
                     </div>
+                    <div class="signature-box">
+                        <p style="font-size: 11px; margin-bottom: 50px;">For ${companyName}</p>
+                        <div class="signature-line"></div>
+                        <label>Authorized Signatory</label>
+                    </div>
+                </div>
+
+                <div style="margin-top: 50px; font-size: 10px; color: #9ca3af; text-align: center; border-top: 1px solid #f3f4f6; padding-top: 10px;">
+                    This is a computer generated document and does not require a physical signature.
                 </div>
 
             </body>

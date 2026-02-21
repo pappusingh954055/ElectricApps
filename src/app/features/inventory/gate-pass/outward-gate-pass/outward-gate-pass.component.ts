@@ -240,8 +240,11 @@ export class OutwardGatePassComponent implements OnInit {
                 this.dialog.open(StatusDialogComponent, {
                     data: { title: 'Success', message: msg, status: 'success', isSuccess: true }
                 }).afterClosed().subscribe(() => {
-                    // Always redirect to Gate Pass List after Outward submission for printing
-                    this.router.navigate(['/app/inventory/gate-pass']);
+                    if (formValue.referenceType === GatePassReferenceType.PurchaseReturn) {
+                        this.router.navigate(['/app/inventory/purchase-return']);
+                    } else {
+                        this.router.navigate(['/app/inventory/gate-pass']);
+                    }
                 });
             },
             error: (err: any) => {
@@ -255,7 +258,15 @@ export class OutwardGatePassComponent implements OnInit {
     }
 
     goBack() {
-        this.router.navigate(['/app/inventory/gate-pass']);
+        // Intelligent back button: Go back to source if available
+        const type = this.route.snapshot.queryParams['type'];
+        if (type === 'purchase-return') {
+            this.router.navigate(['/app/inventory/purchase-return']);
+        } else if (type === 'sale-order') {
+            this.router.navigate(['/app/inventory/sale-order']);
+        } else {
+            this.router.navigate(['/app/inventory/gate-pass']);
+        }
     }
 
     resetForm() {

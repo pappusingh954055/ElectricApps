@@ -13,6 +13,9 @@ import { CompanyService } from '../../../company/services/company.service';
 import { CompanyProfileDto } from '../../../company/model/company.model';
 import { environment } from '../../../../enviornments/environment';
 import { LoadingService } from '../../../../core/services/loading.service';
+import { GatePassService } from '../../gate-pass/services/gate-pass.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 @Component({
   selector: 'app-purchase-return-list',
@@ -25,6 +28,7 @@ import { LoadingService } from '../../../../core/services/loading.service';
 export class PurchaseReturnList implements OnInit {
   private loadingService = inject(LoadingService);
   private prService = inject(PurchaseReturnService);
+  private gatePassService = inject(GatePassService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private companyService = inject(CompanyService);
@@ -34,7 +38,7 @@ export class PurchaseReturnList implements OnInit {
   companyInfo: CompanyProfileDto | null = null;
 
   dataSource = new MatTableDataSource<any>();
-  displayedColumns: string[] = ['returnNumber', 'returnDate', 'supplierName', 'grnRef', 'totalAmount', 'status', 'actions'];
+  displayedColumns: string[] = ['returnNumber', 'gatePassNo', 'returnDate', 'supplierName', 'grnRef', 'totalAmount', 'status', 'actions'];
 
   // Separate Loading States [cite: 2026-02-04]
   isTableLoading = true;
@@ -59,6 +63,21 @@ export class PurchaseReturnList implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
   private dialog = inject(MatDialog);
+
+  numberToWords(num: number): string {
+    const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
+    const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+    const n = ('000000000' + num).substr(-9).match(/^(\d{2})(\d{2})(\d{2})(\d{1})(\d{2})$/);
+    if (!n) return '';
+    let str = '';
+    str += Number(n[1]) != 0 ? (a[Number(n[1])] || b[Number(n[1].toString().charAt(0))] + ' ' + a[Number(n[1].toString().charAt(1))]) + 'Crore ' : '';
+    str += Number(n[2]) != 0 ? (a[Number(n[2])] || b[Number(n[2].toString().charAt(0))] + ' ' + a[Number(n[2].toString().charAt(1))]) + 'Lakh ' : '';
+    str += Number(n[3]) != 0 ? (a[Number(n[3])] || b[Number(n[3].toString().charAt(0))] + ' ' + a[Number(n[3].toString().charAt(1))]) + 'Thousand ' : '';
+    str += Number(n[4]) != 0 ? (a[Number(n[4])] || b[Number(n[4].toString().charAt(0))] + ' ' + a[Number(n[4].toString().charAt(1))]) + 'Hundred ' : '';
+    str += Number(n[5]) != 0 ? (str != '' ? 'and ' : '') + (a[Number(n[5])] || b[Number(n[5].toString().charAt(0))] + ' ' + a[Number(n[5].toString().charAt(1))]) + 'only' : '';
+    return str;
+  }
 
   ngOnInit(): void {
     // Global loader ON - same as dashboard pattern
@@ -106,45 +125,55 @@ export class PurchaseReturnList implements OnInit {
 
     const start = this.fromDate ? this.fromDate.toISOString() : undefined;
     const end = this.toDate ? this.toDate.toISOString() : undefined;
-
-    // IMPORTANT: sortField aur sortOrder pass karna zaruri hai [cite: 2026-02-04]
     const sortField = this.sort?.active || 'ReturnDate';
     const sortOrder = this.sort?.direction || 'desc';
 
-    this.prService.getPurchaseReturns(
-      this.searchKey,
-      this.pageIndex,
-      this.pageSize,
-      start,
-      end,
-      sortField,
-      sortOrder
-    ).subscribe({
-      next: (res) => {
-        // Backend mapping match karein: res.items aur res.totalCount [cite: 2026-02-04]
-        this.dataSource.data = res.items || [];
-        this.totalRecords = res.totalCount || 0;
+    forkJoin({
+      returns: this.prService.getPurchaseReturns(
+        this.searchKey,
+        this.pageIndex,
+        this.pageSize,
+        start,
+        end,
+        sortField,
+        sortOrder
+      ),
+      gatePasses: this.gatePassService.getGatePassesPaged({ pageSize: 150, sortField: 'CreatedAt', sortOrder: 'desc' }).pipe(catchError(() => of({ data: [] })))
+    }).subscribe({
+      next: (res: any) => {
+        const returnData = res.returns;
+        const gatePasses = res.gatePasses?.data || [];
+        const items = returnData.items || [];
+
+        // 🚛 Match Returns with Gate Passes & Fix Timezone
+        items.forEach((item: any) => {
+          // Fix Date to UTC if it doesn't have timezone info
+          if (item.returnDate && !item.returnDate.includes('Z')) {
+            item.returnDate = item.returnDate + 'Z';
+          }
+
+          const matchingPass = gatePasses.find((gp: any) => gp.referenceNo === item.returnNumber);
+          if (matchingPass) {
+            item.gatePassNo = matchingPass.passNo;
+          }
+        });
+
+        this.dataSource.data = items;
+        this.totalRecords = returnData.totalCount || 0;
 
         // Calculate Stats
         this.totalReturnAmount = 0;
         this.confirmedReturnsCount = 0;
-        this.totalReturnsCount = this.totalRecords; // Usually backend sends total records count
+        this.totalReturnsCount = this.totalRecords;
 
-        // If items are returned, we calculate from the current list (or if backend provides it)
-        // Note: For accurate 'Total Amount', backend should ideally provide it in the summary.
-        // For now, we aggregate from the items we have, but this might only be for the current page.
-        // However, if the user wants it like SO list, calculating from items list is what's done there.
-        (res.items || []).forEach((item: any) => {
+        items.forEach((item: any) => {
           if (item.status === 'Completed' || item.status === 'Confirmed') {
             this.totalReturnAmount += item.totalAmount || 0;
             this.confirmedReturnsCount++;
           }
         });
 
-        console.log('Purchase Return List Data:', this.dataSource.data);
         this.isTableLoading = false;
-
-        // Pehli baar load hone ke baad global loader OFF
         if (this.isFirstLoad) {
           this.isFirstLoad = false;
           this.isDashboardLoading = false;
@@ -155,8 +184,6 @@ export class PurchaseReturnList implements OnInit {
       error: (err) => {
         console.error("Load Error:", err);
         this.isTableLoading = false;
-
-        // Pehli baar error pe bhi global loader OFF
         if (this.isFirstLoad) {
           this.isFirstLoad = false;
           this.isDashboardLoading = false;
@@ -182,6 +209,18 @@ export class PurchaseReturnList implements OnInit {
 
   navigateToCreate() {
     this.router.navigate(['/app/inventory/purchase-return/add']);
+  }
+
+  createOutwardGatePass(row: any) {
+    this.router.navigate(['/app/inventory/gate-pass/outward'], {
+      queryParams: {
+        type: 'purchase-return',
+        refNo: row.returnNumber,
+        refId: row.id,
+        partyName: row.supplierName,
+        qty: row.totalQty || 1
+      }
+    });
   }
 
   viewDetails(row: any) {
@@ -238,6 +277,8 @@ export class PurchaseReturnList implements OnInit {
     const taxAmount = this.currencyPipe.transform(this.selectedReturn.taxAmount || 0, 'INR');
     const grandTotal = this.currencyPipe.transform(this.selectedReturn.grandTotal || 0, 'INR');
 
+    const totalInWords = this.numberToWords(Math.round(this.selectedReturn.grandTotal || 0));
+
     // Build items table rows
     const itemsRows = (this.selectedReturn.items || []).map((item: any, index: number) => `
         <tr>
@@ -260,30 +301,44 @@ export class PurchaseReturnList implements OnInit {
           <head>
             <title>Debit Note - ${this.selectedReturn.returnNumber}</title>
             <style>
-                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; }
-                .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #eee; padding-bottom: 20px; }
+                body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #333; line-height: 1.4; }
+                .header { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
                 .logo-section { display: flex; align-items: center; gap: 15px; }
-                .company-logo { width: 60px; height: 60px; object-fit: contain; }
-                .company-name h1 { margin: 0; font-size: 24px; color: #1a56db; }
-                .company-name p { margin: 2px 0; font-size: 12px; color: #666; }
-                .doc-title h2 { margin: 0; color: #444; text-transform: uppercase; }
+                .company-logo { width: 70px; height: 70px; object-fit: contain; }
+                .company-name h1 { margin: 0; font-size: 26px; color: #1a56db; font-weight: 800; }
+                .company-name p { margin: 2px 0; font-size: 13px; color: #4b5563; }
+                .doc-title { text-align: right; }
+                .doc-title h2 { margin: 0; color: #1f2937; font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; }
+                .doc-title p { margin: 5px 0 0 0; font-size: 16px; font-weight: 700; color: #4b5563; }
 
-                .info-card { background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 20px; }
-                .info-group { display: flex; flex-direction: column; min-width: 150px; }
-                .info-group label { font-size: 11px; color: #888; text-transform: uppercase; margin-bottom: 4px; }
-                .info-group .value { font-weight: 600; font-size: 14px; }
+                .info-card { background: #f9fafb; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 30px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+                .info-group { display: flex; flex-direction: column; }
+                .info-group label { font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+                .info-group .value { font-weight: 700; font-size: 15px; color: #111827; }
 
-                table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                th { background: #f1f5f9; padding: 10px; text-align: left; font-size: 12px; text-transform: uppercase; color: #555; }
-                td { padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 20px; border: 1px solid #e5e7eb; }
+                th { background: #f3f4f6; padding: 12px 10px; border: 1px solid #e5e7eb; text-align: left; font-size: 11px; text-transform: uppercase; color: #374151; font-weight: 800; }
+                td { padding: 12px 10px; border: 1px solid #e5e7eb; font-size: 13px; color: #1f2937; }
                 
-                .invoice-summary { margin-top: 30px; display: flex; flex-direction: column; align-items: flex-end; }
-                .summary-row { display: flex; justify-content: space-between; width: 250px; padding: 5px 0; }
-                .summary-row.grand-total { font-weight: bold; font-size: 16px; color: #1a56db; border-top: 1px solid #eee; margin-top: 10px; padding-top: 10px; }
+                .bottom-section { display: flex; justify-content: space-between; margin-top: 40px; }
+                .words-section { flex: 1; padding-right: 40px; }
+                .words-section p { font-size: 12px; margin: 0; }
+                .words-section .value { font-weight: 700; color: #111827; text-transform: capitalize; font-style: italic; font-size: 14px; margin-top: 5px; }
+
+                .invoice-summary { width: 300px; }
+                .summary-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 14px; border-bottom: 1px dashed #e5e7eb; }
+                .summary-row:last-child { border-bottom: none; }
+                .summary-row.grand-total { font-weight: 900; font-size: 18px; color: #1a56db; border-top: 2px solid #1a56db; margin-top: 10px; padding-top: 10px; border-bottom: none; }
                 
+                .footer-note { margin-top: 80px; display: flex; justify-content: space-between; border-top: 1px solid #eee; padding-top: 40px; }
+                .signature-box { text-align: center; min-width: 200px; }
+                .signature-line { border-top: 1px solid #333; margin-bottom: 8px; margin-top: 50px; }
+                .signature-box label { font-size: 12px; font-weight: 700; color: #4b5563; }
+
                 @media print {
+                    body { padding: 0px; }
                     .no-print { display: none; }
-                    body { -webkit-print-color-adjust: exact; }
+                    @page { margin: 1cm; }
                 }
             </style>
           </head>
@@ -300,6 +355,7 @@ export class PurchaseReturnList implements OnInit {
                 <div class="doc-title">
                      <h2>PURCHASE RETURN (DEBIT NOTE)</h2>
                      <p>#${this.selectedReturn.returnNumber}</p>
+                     <div style="font-size: 13px; font-weight: 600; color: #6b7280; margin-top: 5px;">Date: ${returnDate}</div>
                 </div>
             </div>
 
@@ -309,29 +365,25 @@ export class PurchaseReturnList implements OnInit {
                 <div class="value">${this.selectedReturn.supplierName}</div>
               </div>
               <div class="info-group">
-                <label>Return Date</label>
-                <div class="value">${returnDate}</div>
-              </div>
-              <div class="info-group">
-                <label>Status</label>
-                <div class="value">${this.selectedReturn.status}</div>
-              </div>
-              <div class="info-group">
-                <label>GRN Reference</label>
+                <label>Reference No (GRN)</label>
                 <div class="value">${grnRef}</div>
+              </div>
+              <div class="info-group">
+                <label>Document Status</label>
+                <div class="value">${this.selectedReturn.status}</div>
               </div>
             </div>
 
             <table>
                 <thead>
                     <tr>
-                        <th style="text-align: center;">#</th>
-                        <th>Product Description</th>
-                        <th style="text-align: center;">Return Qty</th>
-                        <th style="text-align: right;">Rate</th>
-                        <th style="text-align: center;">Disc (%)</th>
-                        <th style="text-align: center;">Tax (%)</th>
-                        <th style="text-align: right;">Total</th>
+                        <th style="text-align: center; width: 30px;">#</th>
+                        <th>Product Name / Description</th>
+                        <th style="text-align: center; width: 60px;">Qty</th>
+                        <th style="text-align: right; width: 100px;">Rate</th>
+                        <th style="text-align: center; width: 60px;">Disc%</th>
+                        <th style="text-align: center; width: 60px;">Tax%</th>
+                        <th style="text-align: right; width: 120px;">Total</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -339,19 +391,41 @@ export class PurchaseReturnList implements OnInit {
                 </tbody>
             </table>
 
-            <div class="invoice-summary">
-                <div class="summary-row">
-                    <span class="label">Sub Total</span>
-                    <span class="value">${subTotal}</span>
+            <div class="bottom-section">
+                <div class="words-section">
+                    <p>Amount in Words:</p>
+                    <div class="value">Rupees ${totalInWords}</div>
                 </div>
-                <div class="summary-row">
-                    <span class="label">Total Tax</span>
-                    <span class="value">${taxAmount}</span>
+                <div class="invoice-summary">
+                    <div class="summary-row">
+                        <span class="label">Sub Total</span>
+                        <span class="value">${subTotal}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span class="label">Total Tax</span>
+                        <span class="value">${taxAmount}</span>
+                    </div>
+                    <div class="summary-row grand-total">
+                        <span class="label">Grand Total</span>
+                        <span class="value">${grandTotal}</span>
+                    </div>
                 </div>
-                <div class="summary-row grand-total">
-                    <span class="label">Grand Total</span>
-                    <span class="value">${grandTotal}</span>
+            </div>
+
+            <div class="footer-note">
+                <div class="signature-box" style="text-align: left;">
+                    <p style="font-size: 11px; margin-bottom: 50px;">Received By / Supplier Signature</p>
+                    <div class="signature-line" style="width: 180px;"></div>
                 </div>
+                <div class="signature-box">
+                    <p style="font-size: 11px; margin-bottom: 50px;">For ${companyName}</p>
+                    <div class="signature-line"></div>
+                    <label>Authorized Signatory</label>
+                </div>
+            </div>
+
+            <div style="margin-top: 50px; font-size: 10px; color: #9ca3af; text-align: center; border-top: 1px solid #f3f4f6; padding-top: 10px;">
+                This is a computer generated document and does not require a physical signature.
             </div>
           </body>
         </html>

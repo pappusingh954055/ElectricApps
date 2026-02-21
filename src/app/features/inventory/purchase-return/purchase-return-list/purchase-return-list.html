@@ -99,10 +99,30 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header> RETURN # </th>
             <td mat-cell *matCellDef="let row" class="text-primary fw-bold"> {{row.returnNumber}} </td>
           </ng-container>
+
+          <ng-container matColumnDef="gatePassNo">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> GATE PASS </th>
+            <td mat-cell *matCellDef="let row">
+                <ng-container *ngIf="row.gatePassNo; else noPass">
+                    <div class="status-badge-container">
+                        <span class="premium-badge dispatched">
+                            <mat-icon>local_shipping</mat-icon>
+                            DISPATCHED
+                        </span>
+                        <span class="pass-subtext">{{row.gatePassNo}}</span>
+                    </div>
+                </ng-container>
+                <ng-template #noPass>
+                    <button mat-icon-button (click)="createOutwardGatePass(row)" color="primary" matTooltip="Generate Outward Pass">
+                        <mat-icon class="pending-pass-icon">local_shipping</mat-icon>
+                    </button>
+                </ng-template>
+            </td>
+          </ng-container>
   
           <ng-container matColumnDef="returnDate">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> DATE </th>
-            <td mat-cell *matCellDef="let row"> {{row.returnDate | date:'mediumDate'}} </td>
+            <td mat-cell *matCellDef="let row"> {{row.returnDate | date:'dd-MMM-yy hh:mm a':'+0530'}} </td>
           </ng-container>
   
           <ng-container matColumnDef="supplierName">
