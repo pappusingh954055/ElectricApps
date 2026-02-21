@@ -239,6 +239,7 @@ export class PurchaseReturnList implements OnInit {
 
   applySearch(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
+    console.log("filterValue", filterValue);
     this.searchKey = filterValue.trim().toLowerCase();
     this.pageIndex = 0;
     this.loadReturns();

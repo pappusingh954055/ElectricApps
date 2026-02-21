@@ -15,13 +15,14 @@ import { FinanceService } from '../../../finance/service/finance.service';
 import { LoadingService } from '../../../../core/services/loading.service';
 import { CompanyService } from '../../../company/services/company.service';
 import { CurrencyPipe, DatePipe } from '@angular/common';
+import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
 
 import { environment } from '../../../../enviornments/environment';
 
 @Component({
     selector: 'app-sale-return-form',
     standalone: true,
-    imports: [CommonModule, MaterialModule, ReactiveFormsModule],
+    imports: [CommonModule, MaterialModule, ReactiveFormsModule, SummaryStatsComponent],
     providers: [DatePipe, CurrencyPipe],
     templateUrl: './sale-return-form.component.html',
     styleUrl: './sale-return-form.component.scss',
@@ -51,6 +52,7 @@ export class SaleReturnFormComponent implements OnInit {
     isLoadingCustomers = false;
     isLoadingSaleOrders = false;
     noItemsFound = false;
+    summaryStats: SummaryStat[] = [];
 
     itemsDataSource = new MatTableDataSource<AbstractControl>();
     displayedColumns: string[] = ['productName', 'quantity', 'rate', 'itemCondition', 'reason', 'returnQty', 'discount', 'tax', 'total'];
@@ -67,6 +69,7 @@ export class SaleReturnFormComponent implements OnInit {
 
     ngOnInit(): void {
         this.loadCustomersLookup();
+        this.updateSummaryStats();
         this.route.params.subscribe(params => {
             if (params['id']) {
                 this.isEditMode = true;
@@ -147,6 +150,7 @@ export class SaleReturnFormComponent implements OnInit {
                     });
                     this.itemsDataSource.data = this.itemsFormArray.controls;
                     this.isLoading = false;
+                    this.updateSummaryStats();
                     this.cdr.detectChanges();
                 },
                 error: () => {
@@ -219,6 +223,41 @@ export class SaleReturnFormComponent implements OnInit {
         // console.log(`Rate: ${rate}, Qty: ${qty}, Disc%: ${discountPercent}, NetRate: ${netRate}, Taxable: ${taxableAmount}, Tax: ${taxAmount}, Total: ${total}`);
 
         group.patchValue({ amount: total }, { emitEvent: false });
+        this.updateSummaryStats();
+    }
+
+    updateSummaryStats() {
+        const totalAmount = this.totalReturnAmount;
+        const totalQty = this.totalReturnQty;
+        const itemsCount = this.itemsFormArray.length;
+
+        this.summaryStats = [
+            {
+                label: 'Total Refund Value',
+                value: this.currencyPipe.transform(totalAmount, 'INR') || '₹0.00',
+                icon: 'payments',
+                type: 'success'
+            },
+            {
+                label: 'Total Return Qty',
+                value: `${totalQty} PCS`,
+                icon: 'move_to_inbox',
+                type: 'active',
+                badge: 'ITEMS'
+            },
+            {
+                label: 'Items Count',
+                value: itemsCount,
+                icon: 'inventory',
+                type: 'total'
+            },
+            {
+                label: 'Return Status',
+                value: this.isEditMode ? 'Editing' : 'New Draft',
+                icon: 'edit_note',
+                type: 'info'
+            }
+        ];
     }
 
     get totalReturnAmount(): number {
