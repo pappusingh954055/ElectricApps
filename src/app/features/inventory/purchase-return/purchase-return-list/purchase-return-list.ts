@@ -1,14 +1,16 @@
 import { CommonModule, DatePipe, CurrencyPipe } from '@angular/common';
 import { ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
+import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
+import { SelectionModel } from '@angular/cdk/collections';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { PurchaseReturnService } from '../services/purchase-return.service';
 import { FormsModule } from '@angular/forms';
 import { PurchaseReturnView } from '../purchase-return-view/purchase-return-view';
 import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { CompanyService } from '../../../company/services/company.service';
 import { CompanyProfileDto } from '../../../company/model/company.model';
 import { environment } from '../../../../enviornments/environment';
@@ -30,6 +32,7 @@ export class PurchaseReturnList implements OnInit {
   private prService = inject(PurchaseReturnService);
   private gatePassService = inject(GatePassService);
   private router = inject(Router);
+  private dialog = inject(MatDialog);
   private cdr = inject(ChangeDetectorRef);
   private companyService = inject(CompanyService);
   private datePipe = inject(DatePipe);
@@ -38,7 +41,8 @@ export class PurchaseReturnList implements OnInit {
   companyInfo: CompanyProfileDto | null = null;
 
   dataSource = new MatTableDataSource<any>();
-  displayedColumns: string[] = ['returnNumber', 'gatePassNo', 'returnDate', 'supplierName', 'grnRef', 'totalAmount', 'status', 'actions'];
+  selection = new SelectionModel<any>(true, []);
+  displayedColumns: string[] = ['select', 'returnNumber', 'gatePassNo', 'returnDate', 'supplierName', 'grnRef', 'totalQty', 'totalAmount', 'status', 'actions'];
 
   // Separate Loading States [cite: 2026-02-04]
   isTableLoading = true;
@@ -59,10 +63,14 @@ export class PurchaseReturnList implements OnInit {
   totalReturnAmount: number = 0;
   confirmedReturnsCount: number = 0;
   totalReturnsCount: number = 0;
+  totalItemsReturned: number = 0;
+
+  get selectedTotalQty(): number {
+    return this.selection.selected.reduce((sum, item) => sum + (Number(item.totalQty) || Number(item.qty) || Number(item.quantity) || Number(item.returnQty) || Number(item.returnQuantity) || 0), 0);
+  }
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
-  private dialog = inject(MatDialog);
 
   numberToWords(num: number): string {
     const a = ['', 'One ', 'Two ', 'Three ', 'Four ', 'Five ', 'Six ', 'Seven ', 'Eight ', 'Nine ', 'Ten ', 'Eleven ', 'Twelve ', 'Thirteen ', 'Fourteen ', 'Fifteen ', 'Sixteen ', 'Seventeen ', 'Eighteen ', 'Nineteen '];
@@ -161,37 +169,63 @@ export class PurchaseReturnList implements OnInit {
         this.dataSource.data = items;
         this.totalRecords = returnData.totalCount || 0;
 
-        // Calculate Stats
-        this.totalReturnAmount = 0;
-        this.confirmedReturnsCount = 0;
-        this.totalReturnsCount = this.totalRecords;
+        // Fetch Detail for each item to populate Qty [cite: 2026-02-21]
+        // This is necessary because the list API doesn't return totalQty
+        if (items.length > 0) {
+          const detailRequests = items.map((item: any) =>
+            this.prService.getPurchaseReturnById(item.purchaseReturnHeaderId || item.id).pipe(
+              catchError(() => of(null))
+            )
+          );
 
-        items.forEach((item: any) => {
-          if (item.status === 'Completed' || item.status === 'Confirmed') {
-            this.totalReturnAmount += item.totalAmount || 0;
-            this.confirmedReturnsCount++;
-          }
-        });
+          forkJoin(detailRequests).subscribe((details: any) => {
+            items.forEach((item: any, index: number) => {
+              const detail = (details as any[])[index];
+              if (detail && detail.items) {
+                item.totalQty = detail.items.reduce((sum: number, i: any) => sum + (Number(i.returnQty) || 0), 0);
+              }
+            });
 
-        this.isTableLoading = false;
-        if (this.isFirstLoad) {
-          this.isFirstLoad = false;
-          this.isDashboardLoading = false;
-          this.loadingService.setLoading(false);
+            this.calculateSummaryStats(items);
+            this.dataSource.data = [...items];
+            this.finishLoading();
+          });
+        } else {
+          this.calculateSummaryStats(items);
+          this.dataSource.data = items;
+          this.finishLoading();
         }
-        this.cdr.detectChanges();
       },
       error: (err) => {
         console.error("Load Error:", err);
-        this.isTableLoading = false;
-        if (this.isFirstLoad) {
-          this.isFirstLoad = false;
-          this.isDashboardLoading = false;
-          this.loadingService.setLoading(false);
-        }
-        this.cdr.detectChanges();
+        this.finishLoading();
       }
     });
+
+  }
+
+  private calculateSummaryStats(items: any[]) {
+    this.totalReturnAmount = 0;
+    this.confirmedReturnsCount = 0;
+    this.totalReturnsCount = this.totalRecords;
+    this.totalItemsReturned = items.reduce((sum: number, item: any) => sum + (Number(item.totalQty) || Number(item.qty) || Number(item.quantity) || Number(item.returnQty) || Number(item.returnQuantity) || 0), 0);
+
+    items.forEach((item: any) => {
+      if (item.status === 'Completed' || item.status === 'Confirmed') {
+        this.totalReturnAmount += item.totalAmount || 0;
+        this.confirmedReturnsCount++;
+      }
+    });
+  }
+
+  private finishLoading() {
+    this.isTableLoading = false;
+    if (this.isFirstLoad) {
+      this.isFirstLoad = false;
+      this.isDashboardLoading = false;
+      this.loadingService.setLoading(false);
+    }
+    this.cdr.detectChanges();
   }
 
   onPageChange(event: PageEvent) {
@@ -216,9 +250,82 @@ export class PurchaseReturnList implements OnInit {
       queryParams: {
         type: 'purchase-return',
         refNo: row.returnNumber,
-        refId: row.id,
+        refId: row.purchaseReturnHeaderId || row.id,
         partyName: row.supplierName,
         qty: row.totalQty || 1
+      }
+    });
+  }
+
+  // Bulk Logic [cite: 2026-02-21]
+  isAllSelected() {
+    const numSelected = this.selection.selected.length;
+    const selectableRows = this.dataSource.data.filter(row => !row.gatePassNo);
+    const numRows = selectableRows.length;
+    return numSelected > 0 && numSelected === numRows;
+  }
+
+  masterToggle() {
+    this.isAllSelected() ?
+      this.selection.clear() :
+      this.dataSource.data.forEach(row => {
+        if (!row.gatePassNo) {
+          this.selection.select(row);
+        }
+      });
+  }
+
+  createBulkOutwardGatePass() {
+    if (this.selection.selected.length < 2) return;
+
+    const selectedCount = this.selection.selected.length;
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: {
+        title: 'Confirm Bulk Outward',
+        message: `Are you sure you want to generate a single Outward Gate Pass for ${selectedCount} Purchase Returns?`,
+        confirmText: 'Yes, Proceed'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadingService.setLoading(true);
+        const selectedItems = this.selection.selected;
+
+        // Fetch full details for each selected item to get exact quantities
+        const detailRequests = selectedItems.map(item =>
+          this.prService.getPurchaseReturnById(item.purchaseReturnHeaderId || item.id)
+        );
+
+        forkJoin(detailRequests).subscribe({
+          next: (details: any[]) => {
+            const refNos = selectedItems.map(item => item.returnNumber).join(',');
+            const refIds = selectedItems.map(item => item.purchaseReturnHeaderId || item.id).join(',');
+            const partyName = selectedItems[0].supplierName;
+
+            // Sum up returnQty from all line items of all selected returns
+            const totalSumQty = details.reduce((total, d) => {
+              const itemSum = (d.items || []).reduce((s: number, i: any) => s + (Number(i.returnQty) || 0), 0);
+              return total + itemSum;
+            }, 0);
+
+            this.loadingService.setLoading(false);
+            this.router.navigate(['/app/inventory/gate-pass/outward'], {
+              queryParams: {
+                type: 'purchase-return',
+                refNo: refNos,
+                refId: refIds,
+                partyName: partyName,
+                qty: totalSumQty,
+                isBulk: true
+              }
+            });
+          },
+          error: (err) => {
+            this.loadingService.setLoading(false);
+            console.error('Error fetching details for bulk:', err);
+          }
+        });
       }
     });
   }

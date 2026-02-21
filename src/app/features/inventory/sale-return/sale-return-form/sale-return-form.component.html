@@ -78,7 +78,7 @@
 
         <div class="items-section mat-elevation-z4">
             <h3>Items to Return</h3>
-            <table mat-table [dataSource]="itemsDataSource">
+            <table mat-table [dataSource]="itemsDataSource" *ngIf="!noItemsFound">
 
                 <ng-container matColumnDef="productName">
                     <th mat-header-cell *matHeaderCellDef> Product </th>
@@ -147,6 +147,11 @@
                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
             </table>
+
+            <div class="empty-state" *ngIf="noItemsFound && !isLoading">
+                <mat-icon>inventory_2</mat-icon>
+                <p>No pending items found for this Sale Order. It may be fully returned already.</p>
+            </div>
 
             <div class="footer-summary">
                 <span class="total-label">Total Refund Amount:</span>

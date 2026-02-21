@@ -249,6 +249,35 @@
     }
   }
 
+  .bulk-action-btn {
+    background: linear-gradient(135deg, #0f172a 0%, #334155 100%) !important;
+    color: white !important;
+    box-shadow: 0 4px 14px 0 rgba(15, 23, 42, 0.3) !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: 0.5px !important;
+    height: 42px !important;
+    padding: 0 20px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;
+    margin-right: 8px;
+
+    mat-icon {
+        margin-right: 8px;
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+    }
+
+    &:hover {
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.4) !important;
+    }
+  }
+
   .table-wrapper {
     display: flex;
     flex-direction: column;
@@ -297,39 +326,43 @@
       background-color: #f8fafc !important;
       color: #475569;
       font-weight: 600;
-      font-size: 11px;
+      font-size: 10px;
       letter-spacing: 0.05em;
       text-transform: uppercase;
-      padding: 12px 16px;
+      padding: 8px 12px;
       border-bottom: 2px solid #e2e8f0;
       white-space: nowrap;
     }
 
     td.mat-cell {
-      padding: 8px 16px;
-      font-size: 13px;
+      padding: 2px 8px;
+      font-size: 12px;
       color: #1e293b;
       border-bottom: 1px solid #f1f5f9;
 
       &.mat-column-returnNumber {
-        min-width: 100px;
+        min-width: 90px;
       }
       &.mat-column-supplierName {
-        min-width: 140px;
+        min-width: 120px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
       &.mat-column-totalAmount {
-        min-width: 100px;
+        min-width: 80px;
         white-space: nowrap;
+      }
+      &.mat-column-actions {
+        width: 80px;
+        white-space: nowrap !important;
       }
       
       white-space: nowrap;
     }
 
     tr.hover-row {
-      height: 44px;
+      height: 36px;
       transition: all 0.2s ease;
       cursor: pointer;
 
@@ -573,3 +606,33 @@
   align-items: center;
   z-index: 2000;
 }
+
+// Fix for disabled checkbox cursor
+:host ::ng-deep .mat-mdc-checkbox-disabled {
+    cursor: default !important;
+    pointer-events: none; // Completely disable interaction feel
+    .mdc-checkbox__native-control:disabled {
+        cursor: default !important;
+    }
+    label {
+        cursor: default !important;
+    }
+}
+// Small Action Buttons [cite: 2026-02-21]
+.small-action-btn {
+    width: 32px !important;
+    height: 32px !important;
+    line-height: 32px !important;
+    
+    mat-icon {
+        font-size: 18px !important;
+        width: 18px !important;
+        height: 18px !important;
+    }
+    
+    &:not(:last-child) {
+        margin-right: 4px !important;
+    }
+}
+
+.text-center { text-align: center; }

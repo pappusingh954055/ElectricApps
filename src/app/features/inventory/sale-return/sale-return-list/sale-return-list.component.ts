@@ -5,11 +5,13 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
+import { SelectionModel } from '@angular/cdk/collections';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { SaleReturnService } from '../services/sale-return.service';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { SaleReturnDetailsModal } from '../sale-return-details-modal/sale-return-details-modal';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { LoadingService } from '../../../../core/services/loading.service';
 import { GatePassService } from '../../gate-pass/services/gate-pass.service';
 import { forkJoin, of } from 'rxjs';
@@ -30,7 +32,8 @@ export class SaleReturnListComponent implements OnInit {
     private dialog = inject(MatDialog);
 
     dataSource = new MatTableDataSource<any>();
-    displayedColumns: string[] = ['returnNumber', 'gatePassNo', 'returnDate', 'customerName', 'soRef', 'totalAmount', 'status', 'actions'];
+    selection = new SelectionModel<any>(true, []);
+    displayedColumns: string[] = ['select', 'returnNumber', 'gatePassNo', 'returnDate', 'customerName', 'soRef', 'totalQty', 'totalAmount', 'status', 'actions'];
 
     isTableLoading = true;
     isDashboardLoading: boolean = true;
@@ -124,7 +127,12 @@ export class SaleReturnListComponent implements OnInit {
         this.stats.todayCount = items.filter(x => new Date(x.returnDate).toDateString() === todayStr).length;
         this.stats.totalRefund = items.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
         this.stats.confirmedReturns = items.filter(x => x.status?.toUpperCase() === 'CONFIRMED').length;
-        this.stats.itemsReturned = items.reduce((acc, curr) => acc + (curr.totalQty || 0), 0);
+        // Try multiple field names for Qty fallbacks [cite: 2026-02-21]
+        this.stats.itemsReturned = items.reduce((acc, curr) => acc + (Number(curr.totalQty) || Number(curr.qty) || Number(curr.quantity) || Number(curr.returnQty) || Number(curr.returnQuantity) || 0), 0);
+    }
+
+    get selectedTotalQty(): number {
+        return this.selection.selected.reduce((acc, curr) => acc + (Number(curr.totalQty) || Number(curr.qty) || Number(curr.quantity) || Number(curr.returnQty) || Number(curr.returnQuantity) || 0), 0);
     }
 
     applyColumnFilter(key: string, value: any) {
@@ -187,29 +195,53 @@ export class SaleReturnListComponent implements OnInit {
                     return item;
                 });
 
-                this.dataSource.data = processedItems;
                 this.totalRecords = returnData.totalCount;
-                this.calculateStats(returnData.items);
-                this.isTableLoading = false;
 
-                if (this.isFirstLoad) {
-                    this.isFirstLoad = false;
-                    this.isDashboardLoading = false;
-                    this.loadingService.setLoading(false);
+                // Fetch Detail for each item to populate Qty [cite: 2026-02-21]
+                // Using getPrintData instead of getSaleReturnById as it is confirmed to work for qty
+                if (processedItems.length > 0) {
+                    const detailRequests = processedItems.map((item: any) =>
+                        this.srService.getPrintData(item.saleReturnHeaderId || item.id).pipe(
+                            catchError(() => of(null))
+                        )
+                    );
+
+                    forkJoin(detailRequests).subscribe((details: any) => {
+                        processedItems.forEach((item: any, index: number) => {
+                            const detail = (details as any[])[index];
+                            if (detail) {
+                                // Try Multiple fields as per Popup mapping [cite: 2026-02-21]
+                                const returnItems = detail.items || detail.saleReturnItems || detail.returnItems || [];
+                                item.totalQty = returnItems.reduce((sum: number, i: any) =>
+                                    sum + (Number(i.qty) || Number(i.returnQty) || Number(i.returnQuantity) || 0), 0);
+                            }
+                        });
+
+                        this.calculateStats(processedItems);
+                        this.dataSource.data = [...processedItems];
+                        this.finishLoading();
+                    });
+                } else {
+                    this.calculateStats(processedItems);
+                    this.dataSource.data = processedItems;
+                    this.finishLoading();
                 }
-                this.cdr.detectChanges();
             },
             error: (err) => {
                 console.error("Error loading returns", err);
-                this.isTableLoading = false;
-                if (this.isFirstLoad) {
-                    this.isFirstLoad = false;
-                    this.isDashboardLoading = false;
-                    this.loadingService.setLoading(false);
-                }
-                this.cdr.detectChanges();
+                this.finishLoading();
             }
         });
+    }
+
+    private finishLoading() {
+        this.isTableLoading = false;
+        if (this.isFirstLoad) {
+            this.isFirstLoad = false;
+            this.isDashboardLoading = false;
+            this.loadingService.setLoading(false);
+        }
+        this.cdr.detectChanges();
     }
 
     onPageChange(event: PageEvent) {
@@ -238,6 +270,79 @@ export class SaleReturnListComponent implements OnInit {
                 refId: row.saleReturnHeaderId || row.id,
                 partyName: row.customerName,
                 qty: row.totalQty || 1
+            }
+        });
+    }
+
+    // Bulk Logic [cite: 2026-02-21]
+    isAllSelected() {
+        const numSelected = this.selection.selected.length;
+        const selectableRows = this.dataSource.data.filter(row => !row.gatePassNo);
+        const numRows = selectableRows.length;
+        return numSelected > 0 && numSelected === numRows;
+    }
+
+    masterToggle() {
+        this.isAllSelected() ?
+            this.selection.clear() :
+            this.dataSource.data.forEach(row => {
+                if (!row.gatePassNo) {
+                    this.selection.select(row);
+                }
+            });
+    }
+
+    createBulkInwardGatePass() {
+        if (this.selection.selected.length < 2) return;
+
+        const selectedCount = this.selection.selected.length;
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            data: {
+                title: 'Confirm Bulk Inward',
+                message: `Are you sure you want to generate a single Inward Gate Pass for ${selectedCount} Sale Returns?`,
+                confirmText: 'Yes, Proceed'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.loadingService.setLoading(true);
+                const selectedItems = this.selection.selected;
+
+                // Fetch full details for each selected item to get exact quantities
+                const detailRequests = selectedItems.map(item =>
+                    this.srService.getSaleReturnById(item.saleReturnHeaderId || item.id)
+                );
+
+                forkJoin(detailRequests).subscribe({
+                    next: (details: any[]) => {
+                        const refNos = selectedItems.map(item => item.returnNumber).join(',');
+                        const refIds = selectedItems.map(item => item.saleReturnHeaderId || item.id).join(',');
+                        const partyName = selectedItems[0].customerName;
+
+                        // Sum up returnQty from all line items of all selected returns
+                        const totalSumQty = details.reduce((total, d) => {
+                            const itemSum = (d.items || []).reduce((s: number, i: any) => s + (Number(i.returnQty) || 0), 0);
+                            return total + itemSum;
+                        }, 0);
+
+                        this.loadingService.setLoading(false);
+                        this.router.navigate(['/app/inventory/gate-pass/inward'], {
+                            queryParams: {
+                                type: 'sale-return',
+                                refNo: refNos,
+                                refId: refIds,
+                                partyName: partyName,
+                                qty: totalSumQty,
+                                isBulk: true
+                            }
+                        });
+                    },
+                    error: (err) => {
+                        this.loadingService.setLoading(false);
+                        console.error('Error fetching details for bulk:', err);
+                    }
+                });
             }
         });
     }

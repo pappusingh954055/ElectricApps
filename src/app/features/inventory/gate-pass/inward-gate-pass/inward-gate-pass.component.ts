@@ -160,12 +160,12 @@ export class InwardGatePassComponent implements OnInit {
             }
 
             this.gatePassForm.patchValue({
-                referenceId: params['refId'] ? String(params['refId']) : '', // Ensure empty string if missing
+                referenceId: params['refId'] ? String(params['refId']) : '',
                 referenceNo: refNo,
                 partyName: params['partyName'] || '',
                 expectedQty: params['qty'] || 0,
                 referenceType: GatePassReferenceType.SaleReturn,
-                invoiceNo: `CH-${refNo}`
+                invoiceNo: params['isBulk'] === 'true' ? 'BULK-INWARD' : `CH-${refNo}`
             });
 
             this.gatePassForm.get('referenceType')?.disable();

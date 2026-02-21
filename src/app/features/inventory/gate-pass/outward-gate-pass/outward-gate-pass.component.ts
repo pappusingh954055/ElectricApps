@@ -110,7 +110,8 @@ export class OutwardGatePassComponent implements OnInit {
             referenceId: refId || '',
             referenceNo: refNo,
             partyName: partyName,
-            totalQty: qty
+            totalQty: qty,
+            remarks: params['isBulk'] === 'true' ? 'BULK-OUTWARD DISPATCH' : ''
         });
 
         this.cdr.detectChanges();

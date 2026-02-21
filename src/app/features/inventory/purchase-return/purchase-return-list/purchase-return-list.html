@@ -3,6 +3,13 @@
     <h1 class="page-title m-0">Purchase Return (Debit Note)</h1>
     <div class="d-flex gap-2">
       <button mat-raised-button 
+        class="bulk-action-btn" 
+        (click)="createBulkOutwardGatePass()" 
+        *ngIf="selection.selected.length > 1">
+        <mat-icon>merge_type</mat-icon>
+        Bulk Outward ({{selection.selected.length}})
+      </button>
+      <button mat-raised-button 
         class="export-action-btn" 
         (click)="exportToExcel()" 
         [disabled]="isExportLoading || dataSource.data.length === 0">
@@ -27,7 +34,18 @@
         </mat-card-content>
     </mat-card>
 
-    <mat-card class="stat-card overdue">
+    <mat-card class="stat-card active" (click)="loadReturns()" style="cursor: pointer;">
+        <mat-card-content>
+            <div class="stat-icon"><mat-icon>inventory_2</mat-icon></div>
+            <div class="stat-info">
+                <span class="label">{{selection.selected.length > 0 ? 'Selected Qty' : 'Total Return Qty'}}</span>
+                <span class="value">{{selection.selected.length > 0 ? selectedTotalQty : totalItemsReturned}} PCS</span>
+            </div>
+            <div class="stat-badge" style="background: #E0E7FF; color: #4338CA;">Items</div>
+        </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card overdue" (click)="loadReturns()" style="cursor: pointer;">
         <mat-card-content>
             <div class="stat-icon"><mat-icon>check_circle</mat-icon></div>
             <div class="stat-info">
@@ -38,11 +56,11 @@
         </mat-card-content>
     </mat-card>
 
-    <mat-card class="stat-card active">
+    <mat-card class="stat-card active" (click)="loadReturns()" style="cursor: pointer;">
         <mat-card-content>
             <div class="stat-icon"><mat-icon>assignment_return</mat-icon></div>
             <div class="stat-info">
-                <span class="label">Total Return Records</span>
+                <span class="label">Total Records</span>
                 <span class="value">{{totalReturnsCount}}</span>
             </div>
         </mat-card-content>
@@ -95,11 +113,30 @@
       <div class="table-responsive">
         <table mat-table [dataSource]="dataSource" matSort (matSortChange)="loadReturns()">
           
+          <!-- Checkbox Column -->
+          <ng-container matColumnDef="select">
+            <th mat-header-cell *matHeaderCellDef>
+              <mat-checkbox (change)="$event ? masterToggle() : null"
+                            [checked]="selection.hasValue() && isAllSelected()"
+                            [indeterminate]="selection.hasValue() && !isAllSelected()"
+                            color="primary">
+              </mat-checkbox>
+            </th>
+            <td mat-cell *matCellDef="let row">
+              <mat-checkbox (click)="$event.stopPropagation()"
+                            (change)="$event ? selection.toggle(row) : null"
+                            [checked]="selection.isSelected(row)"
+                            [disabled]="row.gatePassNo"
+                            color="primary">
+              </mat-checkbox>
+            </td>
+          </ng-container>
+
           <ng-container matColumnDef="returnNumber">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> RETURN # </th>
             <td mat-cell *matCellDef="let row" class="text-primary fw-bold"> {{row.returnNumber}} </td>
           </ng-container>
-
+  
           <ng-container matColumnDef="gatePassNo">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> GATE PASS </th>
             <td mat-cell *matCellDef="let row">
@@ -134,6 +171,13 @@
             <th mat-header-cell *matHeaderCellDef mat-sort-header> GRN REF </th>
             <td mat-cell *matCellDef="let row"> {{row.grnRef}} </td>
           </ng-container>
+
+          <ng-container matColumnDef="totalQty">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header> QTY </th>
+            <td mat-cell *matCellDef="let row" class="text-center fw-bold"> 
+              {{row.totalQty || row.qty || row.quantity || row.returnQty || row.returnQuantity || 0}} 
+            </td>
+          </ng-container>
   
           <ng-container matColumnDef="totalAmount">
             <th mat-header-cell *matHeaderCellDef mat-sort-header> AMOUNT </th>
@@ -155,10 +199,10 @@
           <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef class="text-end pe-3"> ACTIONS </th>
             <td mat-cell *matCellDef="let row" class="text-end pe-3">
-              <button mat-icon-button color="primary" title="View Details" style="margin-right: 10px;" (click)="viewDetails(row)">
+              <button mat-icon-button color="primary" title="View Details" (click)="viewDetails(row)" class="small-action-btn">
                 <mat-icon>visibility</mat-icon>
               </button>
-              <button mat-icon-button color="warn" title="Print/Download" (click)="printReturn(row)">
+              <button mat-icon-button color="warn" title="Print/Download" (click)="printReturn(row)" class="small-action-btn">
                 <mat-icon>print</mat-icon>
               </button>
             </td>

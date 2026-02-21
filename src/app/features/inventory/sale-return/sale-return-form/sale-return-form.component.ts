@@ -50,6 +50,7 @@ export class SaleReturnFormComponent implements OnInit {
     isLoading = false;
     isLoadingCustomers = false;
     isLoadingSaleOrders = false;
+    noItemsFound = false;
 
     itemsDataSource = new MatTableDataSource<AbstractControl>();
     displayedColumns: string[] = ['productName', 'quantity', 'rate', 'itemCondition', 'reason', 'returnQty', 'discount', 'tax', 'total'];
@@ -115,10 +116,12 @@ export class SaleReturnFormComponent implements OnInit {
 
     onSOChange(soId: number) {
         this.clearItems();
+        this.noItemsFound = false;
         if (soId) {
             this.isLoading = true;
             this.saleOrderService.getSaleOrderItems(soId).subscribe({
                 next: (items) => {
+                    this.noItemsFound = items.length === 0;
                     items.forEach(item => {
                         const itemGroup = this.fb.group({
                             productId: [item.productId],
