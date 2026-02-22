@@ -1,4 +1,6 @@
 import { CommonModule } from '@angular/common';
+import { forkJoin } from 'rxjs'; // Import forkJoin for parallel API calls
+
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core'; // CDR add kiya
 import { FormGroup, FormBuilder, Validators, FormArray, FormsModule, ReactiveFormsModule, FormControl } from '@angular/forms';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
@@ -95,25 +97,32 @@ export class PurchaseReturnForm implements OnInit {
     this.expandedGrn = null;
     this.isLoadingStock = true;
 
-    // 1. Load Rejected Items (Auto-load)
-    this.prService.getRejectedItems(supplierId).subscribe({
-      next: (res) => {
-        this.cdr.detectChanges();
-        if (res && res.length > 0) {
-          res.forEach(item => {
-            this.addReturnItem(item, 'Rejected');
-          });
-          this.tableDataSource = [...this.items.controls];
-          this.cdr.detectChanges();
-        }
-      },
-      error: () => { }
-    });
+    this.isLoadingStock = true;
 
-    // 2. Load Received Stock (For Search/Select)
-    this.prService.getReceivedStock(supplierId).subscribe({
-      next: (data) => {
-        this.receivedStockItems = data || [];
+    // Use forkJoin to load both rejected items and regular stock in parallel
+    forkJoin({
+      rejected: this.prService.getRejectedItems(supplierId),
+      received: this.prService.getReceivedStock(supplierId)
+    }).subscribe({
+      next: (res) => {
+        // Map rejected items with specific flags
+        const rejected = (res.rejected || []).map((item: any) => ({
+          ...item,
+          availableQty: item.rejectedQty ?? item.AvailableQty ?? 0,
+          isRejected: true,
+          itemType: 'Rejected'
+        }));
+
+        // Map regular received stock
+        const received = (res.received || []).map((item: any) => ({
+          ...item,
+          isRejected: false,
+          itemType: 'Received'
+        }));
+
+        // Combine both into one list for the accordion
+        this.receivedStockItems = [...rejected, ...received];
+
         this.groupStockByGrn();
         this.isLoadingStock = false;
         this.cdr.detectChanges();
@@ -181,7 +190,8 @@ export class PurchaseReturnForm implements OnInit {
   isItemInGrid(item: any): boolean {
     return this.items.controls.some(c =>
       c.get('productId')?.value === item.productId &&
-      c.get('grnRef')?.value === item.grnRef
+      c.get('grnRef')?.value === item.grnRef &&
+      c.get('itemType')?.value === item.itemType
     );
   }
 
@@ -198,6 +208,20 @@ export class PurchaseReturnForm implements OnInit {
     this.cdr.detectChanges();
   }
 
+  selectAllFiltered() {
+    if (this.filteredGroupedStock.length === 0) return;
+
+    this.filteredGroupedStock.forEach(group => {
+      group.items.forEach((item: any) => {
+        if (!item.selected) {
+          item.selected = true;
+          this.onItemToggle(item);
+        }
+      });
+    });
+    this.cdr.detectChanges();
+  }
+
   toggleGrn(grnRef: string) {
     if (this.expandedGrn === grnRef) {
       this.expandedGrn = null; // Collapse if already open
@@ -209,17 +233,18 @@ export class PurchaseReturnForm implements OnInit {
 
   onItemToggle(item: any) {
     if (item.selected) {
-      // Add to grid if not exists
-      const isDuplicate = this.addReturnItem(item, 'Received');
+      // Add to grid using its specific type (Rejected/Received)
+      const isDuplicate = this.addReturnItem(item, item.itemType);
       if (isDuplicate) {
-        this.openDialog(false, `${item.productName} is already added.`);
-        item.selected = true; // Stay checked
+        this.openDialog(false, `${item.productName} (${item.itemType}) is already added.`);
+        item.selected = true;
       }
     } else {
-      // Remove from grid
+      // Remove specific type instance from grid
       const index = this.items.controls.findIndex(c =>
         c.get('productId')?.value === item.productId &&
-        c.get('grnRef')?.value === item.grnRef
+        c.get('grnRef')?.value === item.grnRef &&
+        c.get('itemType')?.value === item.itemType
       );
       if (index !== -1) {
         this.items.removeAt(index);
@@ -232,7 +257,8 @@ export class PurchaseReturnForm implements OnInit {
   addReturnItem(item: any, type: string) {
     const existingIndex = this.items.controls.findIndex(c =>
       c.get('productId')?.value === item.productId &&
-      c.get('grnRef')?.value === item.grnRef
+      c.get('grnRef')?.value === item.grnRef &&
+      c.get('itemType')?.value === type
     );
 
     if (existingIndex !== -1) {
@@ -318,7 +344,8 @@ export class PurchaseReturnForm implements OnInit {
             discountPercent: item.discountPercent,
             gstPercent: item.gstPercent,
             taxAmount: item.taxAmount,
-            totalAmount: item.total
+            totalAmount: item.total,
+            itemType: item.itemType // Dynamic tracking: Rejected or Received
           }))
         };
 
@@ -548,9 +575,11 @@ export class PurchaseReturnForm implements OnInit {
     this.items.removeAt(index);
     this.tableDataSource = [...this.items.controls];
 
-    // Update selection state in the raw list for synchronization
+    // Update selection state specifically for this productId + grnRef + itemType combo
     const stockItem = this.receivedStockItems.find(i =>
-      i.productId === itemToRemove.productId && i.grnRef === itemToRemove.grnRef
+      i.productId === itemToRemove.productId &&
+      i.grnRef === itemToRemove.grnRef &&
+      i.itemType === itemToRemove.itemType
     );
     if (stockItem) {
       stockItem.selected = false;

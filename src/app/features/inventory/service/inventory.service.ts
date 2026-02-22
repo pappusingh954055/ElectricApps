@@ -67,7 +67,7 @@ export class InventoryService {
 
 
     bulkDeletePurchaseOrders(ids: number[]): Observable<any> {
-        return this.api.post('PurchaseOrders/bulk-delete-orders', {ids} );
+        return this.api.post('PurchaseOrders/bulk-delete-orders', { ids });
     }
 
     /**
@@ -96,11 +96,10 @@ export class InventoryService {
     }
 
     // PO Data pick karne ke liye
-    getPODataForGRN(poId: number, grnHeaderId: number | null = null): Observable<any> {
-        let url = `GRN/GetPOData/${poId}`;
-        if (grnHeaderId !== null && grnHeaderId !== undefined) {
-            url += `?grnHeaderId=${grnHeaderId}`;
-        }
+    getPODataForGRN(poId: number, grnHeaderId: number | null = null, gatePassNo: string | null = null): Observable<any> {
+        let url = `GRN/GetPOData/${poId}?`;
+        if (grnHeaderId) url += `grnHeaderId=${grnHeaderId}&`;
+        if (gatePassNo) url += `gatePassNo=${gatePassNo}`;
         return this.api.get(url);
     }
 

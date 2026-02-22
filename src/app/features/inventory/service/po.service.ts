@@ -50,4 +50,8 @@ export class POService {
   getPendingPOs(): Observable<any[]> {
     return this.api.get<any[]>('PurchaseOrders/pending-pos');
   }
+
+  getReplacementQty(poId: number): Observable<any> {
+    return this.api.get(`PurchaseOrders/replacement-qty/${poId}`);
+  }
 }

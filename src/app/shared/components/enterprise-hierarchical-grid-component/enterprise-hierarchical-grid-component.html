@@ -195,25 +195,25 @@
           <mat-icon color="primary">print</mat-icon>
         </button>
         
-        <!-- Red Truck: Process Return (Only if rejections haven't been outwarded yet) -->
+        <!-- Red Truck: Process Return (Priority: Hide if any inwarding is pending) -->
         <button mat-icon-button color="warn" 
-                *ngIf="(row.totalRejected || 0) > (row.totalReturned || 0)"
+                *ngIf="(row.totalRejected || 0) > 0 && !((row.totalAccepted || 0) < (row.totalOrdered || 0))"
                 (click)="$event.stopPropagation(); handleAction('PROCESS_RETURN', row)" 
                 matTooltip="Process Purchase Return (Outward)">
           <mat-icon>local_shipping</mat-icon>
         </button>
-
-        <!-- Blue Truck: Inward Replacement (Only if no pending returns, and something is missing/rejected) -->
+        
+        <!-- Blue Truck: Inward Replacement (Priority: Always show if inwarding is baki) -->
         <button mat-icon-button color="primary" 
-                *ngIf="!((row.totalRejected || 0) > (row.totalReturned || 0)) && ((row.totalAccepted < row.totalOrdered) || (row.totalPending > 0))"
+                *ngIf="(row.totalAccepted || 0) < (row.totalOrdered || 0)"
                 (click)="$event.stopPropagation(); handleAction('CREATE_GRN', row)" 
                 matTooltip="Inward Replacement/Pending Items">
           <mat-icon>local_shipping</mat-icon>
         </button>
 
         <!-- Verified: Show only if nothing is pending return and nothing is missing -->
-        <mat-icon *ngIf="!((row.totalRejected || 0) > (row.totalReturned || 0)) && !((row.totalAccepted < row.totalOrdered) || (row.totalPending > 0))" 
-                  style="color: #4caf50;" matTooltip="Goods Fully Received">verified</mat-icon>
+        <mat-icon *ngIf="!((row.totalRejected || 0) > 0) && !((row.totalAccepted || 0) < (row.totalOrdered || 0))" 
+                  style="color: #4caf50;" matTooltip="Order Completed">verified</mat-icon>
       </ng-container>
 
     </div>

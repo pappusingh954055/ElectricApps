@@ -62,7 +62,9 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let item of items; let i = index">
+            <tr *ngFor="let item of items; let i = index" 
+                [class.replacement-row]="item.isReplacement"
+                [class.normal-row]="!item.isReplacement">
               <td class="col-product text-wrap">{{item.productName}}</td>
               <td class="text-center">{{item.orderedQty}}</td>
               <td class="text-center text-primary"><b>{{item.pendingQty}}</b></td>

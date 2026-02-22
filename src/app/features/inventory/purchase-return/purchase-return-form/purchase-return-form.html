@@ -72,6 +72,11 @@
                       {{isLoadingStock ? 'sync' : 'search'}}
                    </mat-icon>
                 </mat-form-field>
+                <button mat-flat-button color="primary" class="select-all-btn" 
+                        [disabled]="filteredGroupedStock.length === 0"
+                        (click)="selectAllFiltered()">
+                   <mat-icon>done_all</mat-icon> Select All
+                </button>
              </div>
 
              <!-- Hierarchical Stock List (Accordion) -->
@@ -90,7 +95,7 @@
                    </div>
                    
                    <div class="grn-content" *ngIf="expandedGrn === group.grnRef">
-                      <div class="stock-item-row" *ngFor="let item of group.items">
+                      <div class="stock-item-row" *ngFor="let item of group.items" [class.item-rejected]="item.isRejected">
                          <mat-checkbox [(ngModel)]="item.selected" [ngModelOptions]="{standalone: true}" 
                                        (change)="onItemToggle(item)" color="primary">
                             <span class="item-details-inline">
@@ -155,6 +160,7 @@
             <td mat-cell *matCellDef="let element; let i = index" class="text-center">
               <mat-form-field appearance="outline" subscriptSizing="dynamic" class="qty-input compact-input d-inline-block" *ngIf="element">
                 <input matInput type="number" min="0" [max]="element.value.maxQty" 
+                       [readonly]="element.value.itemType === 'Rejected'"
                        [formControl]="getControl(element, 'returnQty')" (input)="calculateTotal(i)" class="text-center fw-bold">
                 <mat-error *ngIf="getControl(element, 'returnQty').hasError('max')" style="font-size: 9px; white-space: nowrap;">
                   Max: {{element.value.maxQty}}

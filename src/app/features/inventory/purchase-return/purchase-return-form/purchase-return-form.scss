@@ -183,7 +183,19 @@ $border-color: #e2e8f0;
 
     .search-header-row {
        display: flex;
+       align-items: center;
+       gap: 16px;
        margin-bottom: 16px;
+
+       .select-all-btn {
+          height: 48px;
+          border-radius: 8px;
+          margin-bottom: 22px; // Align with mat-form-field center
+          font-weight: 600;
+          background: #3f51b5;
+          
+          mat-icon { margin-right: 4px; }
+       }
     }
 
     .hierarchical-stock-list {
@@ -263,6 +275,11 @@ $border-color: #e2e8f0;
 
                    .item-name { font-weight: 600; color: #334155; }
                    .item-avail { color: #64748b; font-size: 0.8rem; }
+                }
+
+                &.item-rejected {
+                   .item-name { color: #ef4444 !important; }
+                   .item-avail { color: #f87171 !important; }
                 }
              }
           }
@@ -535,6 +552,11 @@ table.clean-table {
     color: $text-primary; 
     padding: 0 !important;
     margin: 0 !important;
+
+    &[readonly] {
+      color: #64748b !important;
+      cursor: not-allowed;
+    }
   }
 
   ::ng-deep .mat-mdc-notched-outline {

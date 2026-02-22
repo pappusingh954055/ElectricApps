@@ -70,16 +70,18 @@ export class GrnFormComponent implements OnInit {
         }
         if (params['gatePassNo']) {
           this.grnForm.patchValue({ gatePassNo: params['gatePassNo'] });
+          this.gatePassNo = params['gatePassNo'];
         }
         if (params['qty']) {
           this.gatePassQty = Number(params['qty']);
         }
-        this.loadPOData(this.poId);
+        this.loadPOData(this.poId, null, this.gatePassNo);
       }
     });
   }
 
   gatePassQty: number | null = null;
+  gatePassNo: string | null = null;
 
   private resetFormBeforeLoad() {
     this.items = [];
@@ -97,8 +99,8 @@ export class GrnFormComponent implements OnInit {
     });
   }
 
-  loadPOData(id: number, grnHeaderId: number | null = null) {
-    this.inventoryService.getPODataForGRN(id, grnHeaderId).subscribe({
+  loadPOData(id: number, grnHeaderId: number | null = null, gatePassNo: string | null = null) {
+    this.inventoryService.getPODataForGRN(id, grnHeaderId, gatePassNo).subscribe({
       next: (res) => {
         if (!res) return;
         console.log('pendingqtycheck:', res);
@@ -148,18 +150,14 @@ export class GrnFormComponent implements OnInit {
         pending = ordered - acceptedSoFar;
       }
 
-      // PRIORITY OVERRIDE: If we coming from Inward Gate Pass with a specific quantity, use it.
-      // This handles cases where backend hasn't updated its pending status yet.
-      if (!this.isViewMode && this.gatePassQty && incomingItems.length === 1) {
-        pending = this.gatePassQty;
-      }
+      // BACKEND NOW HANDLES THIS: Logic is moved to repository for multi-item accuracy
 
       const rate = Number(item.unitRate || item.unitPrice || item.UnitPrice || 0);
 
-      // LOGIC: Naya GRN banate waqt default receivedQty pendingQty ke barabar honi chahiye
+      // LOGIC: Naya GRN banate waqt default receivedQty backend se aayi hui value honi chahiye
       const received = this.isViewMode
         ? Number(item.receivedQty || item.ReceivedQty || 0)
-        : pending;
+        : Number(item.receivedQty || 0); // Backend suggests 0 for items not in GP
 
       const rejected = 0; // Fresh receive mein 0 reject maan ke chalte hain
 
@@ -180,6 +178,7 @@ export class GrnFormComponent implements OnInit {
         orderedQty: ordered,
         pendingQty: pending,
         receivedQty: received,
+        isReplacement: !!(item.isReplacement || item.IsReplacement),
         rejectedQty: rejected,
         acceptedQty: accepted,
         unitRate: rate,

@@ -246,3 +246,30 @@
   }
 }
 
+/* --- Replacement vs Normal Item Styling --- */
+.replacement-row {
+  background: rgba(254, 226, 226, 0.4) !important; // Soft Red background
+  &:hover td { background: rgba(254, 226, 226, 0.6) !important; }
+  
+  .col-product {
+    color: #dc2626 !important; // Red text
+    &::before {
+      content: '● ';
+      font-size: 10px;
+    }
+  }
+}
+
+.normal-row {
+  background: rgba(240, 253, 244, 0.4) !important; // Soft Green background
+  &:hover td { background: rgba(240, 253, 244, 0.6) !important; }
+
+  .col-product {
+    color: #16a34a !important; // Green text
+    &::before {
+      content: '● ';
+      font-size: 10px;
+    }
+  }
+}
+

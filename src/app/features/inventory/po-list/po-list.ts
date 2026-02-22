@@ -175,7 +175,7 @@ export class PoList implements OnInit {
         header: 'Received Qty',
         width: 80,
         align: 'left',
-        cell: (row) => row.acceptedQty || 0
+        cell: (row) => row.receivedQty || 0
       },
       {
         field: 'pendingQty',
@@ -525,21 +525,24 @@ export class PoList implements OnInit {
   redirectToInwardGatePass(row: any) {
     console.log('--- REDIRECTING TO INWARD GATE PASS ---', row.poNumber);
 
-    // Shortage = Ordered - Accepted (This captures missing items even if rejectedQty is not set)
+    // DYNAMIC QTY LOGIC:
+    // Hum woh quantity expect kar rahe hain jo factory se bahar gayi hai (Returned).
+    // Isme 'totalReturned' (Normal stock returns) aur 'totalRejected' (Rejected items) dono ho sakte hain.
+    const totalReturned = Number(row.totalReturned || 0);
+    const totalRejected = Number(row.totalRejected || 0);
+
+    // Agar dono 0 hain, toh Ordered - Accepted (Shortage) pick karein
     const shortage = (row.totalOrdered || 0) - (row.totalAccepted || 0);
 
-    // Total to receive = Shortage + any explicitly marked rejected items
-    const qtyToReceive = shortage > 0 ? shortage : (row.totalRejected || 0);
+    // Final dynamic qty: Dono returns ka sum ya shortage
+    let resultQty = (totalReturned > 0 || totalRejected > 0) ? (totalReturned + totalRejected) : shortage;
 
-    // Use the calculated shortage/rejection qty, or fallback to pending
-    const finalQty = qtyToReceive > 0 ? qtyToReceive : (row.totalPending || 0);
-
-    // Final check: if still 0 (means full order), use total calculated from items as fallback
-    const resultQty = finalQty > 0 ? finalQty : (row.items ? row.items.reduce((sum: number, item: any) => sum + (item.qty || 0), 0) : 0);
+    // Safest fallback: if result is still 0, use totalPending
+    if (resultQty <= 0) resultQty = (row.totalPending || 0);
 
     this.router.navigate(['/app/inventory/gate-pass/inward'], {
       queryParams: {
-        type: 'po', // 'po' type is consistent with InwardGatePass expectations
+        type: 'po',
         refNo: row.poNumber,
         refId: row.id,
         partyName: row.supplierName,
