@@ -71,10 +71,15 @@ export class GrnFormComponent implements OnInit {
         if (params['gatePassNo']) {
           this.grnForm.patchValue({ gatePassNo: params['gatePassNo'] });
         }
+        if (params['qty']) {
+          this.gatePassQty = Number(params['qty']);
+        }
         this.loadPOData(this.poId);
       }
     });
   }
+
+  gatePassQty: number | null = null;
 
   private resetFormBeforeLoad() {
     this.items = [];
@@ -134,7 +139,21 @@ export class GrnFormComponent implements OnInit {
   mapItems(incomingItems: any[]) {
     this.items = incomingItems.map((item: any) => {
       const ordered = Number(item.orderedQty || item.OrderedQty || 0);
-      const pending = Number(item.pendingQty || item.PendingQty || 0);
+      const acceptedSoFar = Number(item.acceptedQty || item.AcceptedQty || 0);
+
+      // LOGIC FIX: If backend says 0 pending but total accepted < ordered, 
+      // it means some quantity was rejected/returned and needs replacement inwarding.
+      let pending = Number(item.pendingQty || item.PendingQty || 0);
+      if (pending === 0 && acceptedSoFar < ordered) {
+        pending = ordered - acceptedSoFar;
+      }
+
+      // PRIORITY OVERRIDE: If we coming from Inward Gate Pass with a specific quantity, use it.
+      // This handles cases where backend hasn't updated its pending status yet.
+      if (!this.isViewMode && this.gatePassQty && incomingItems.length === 1) {
+        pending = this.gatePassQty;
+      }
+
       const rate = Number(item.unitRate || item.unitPrice || item.UnitPrice || 0);
 
       // LOGIC: Naya GRN banate waqt default receivedQty pendingQty ke barabar honi chahiye
@@ -142,7 +161,7 @@ export class GrnFormComponent implements OnInit {
         ? Number(item.receivedQty || item.ReceivedQty || 0)
         : pending;
 
-      const rejected = Number(item.rejectedQty || item.RejectedQty || 0);
+      const rejected = 0; // Fresh receive mein 0 reject maan ke chalte hain
 
       const accepted = received - rejected;
 

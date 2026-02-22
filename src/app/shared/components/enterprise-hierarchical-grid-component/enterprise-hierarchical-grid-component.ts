@@ -97,6 +97,18 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
     }
   }
 
+  getStatusBadgeClass(status: any): string {
+    if (!status) return '';
+    const s = String(status).toLowerCase();
+    if (s.includes('partial')) return 'status-partial';
+    if (s.includes('receive')) return 'status-received';
+    if (s.includes('approve')) return 'status-approved';
+    if (s.includes('reject')) return 'status-rejected';
+    if (s.includes('draft')) return 'status-draft';
+    if (s.includes('submit')) return 'status-submitted';
+    return '';
+  }
+
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
     this.cdr.detectChanges();

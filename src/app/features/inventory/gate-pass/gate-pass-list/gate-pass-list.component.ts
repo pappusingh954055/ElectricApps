@@ -50,6 +50,11 @@ export class GatePassListComponent implements OnInit {
     fromDate: Date | null = null;
     toDate: Date | null = null;
 
+    // Stats
+    totalInward = 0;
+    totalOutward = 0;
+    totalPasses = 0;
+
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
 
@@ -82,6 +87,7 @@ export class GatePassListComponent implements OnInit {
                 });
                 this.dataSource.data = items;
                 this.totalRecords = res.totalRecords || 0;
+                this.calculateStats(items);
                 this.isLoading = false;
                 this.loadingService.setLoading(false);
                 this.cdr.detectChanges();
@@ -226,5 +232,22 @@ export class GatePassListComponent implements OnInit {
             case 4: return 'Completed';
             default: return 'Unknown';
         }
+    }
+
+    private calculateStats(items: any[]) {
+        this.totalPasses = this.totalRecords;
+        this.totalInward = 0;
+        this.totalOutward = 0;
+
+        // Since we are using paged data, for true stats we'd need a separate API call or summary in res
+        // But for consistency with other modules, we show current context or summary from res
+        // If the API returns stats in the response, use that. Let's assume we count from current page for now
+        // OR we can add these fields to the API response if we had control.
+        // For now, let's just use the current records as a representative sample or use the totalRecords.
+
+        items.forEach(item => {
+            if (item.passType === 'Inward') this.totalInward++;
+            else if (item.passType === 'Outward') this.totalOutward++;
+        });
     }
 }

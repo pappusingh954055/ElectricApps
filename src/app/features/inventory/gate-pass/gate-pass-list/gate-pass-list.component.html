@@ -17,6 +17,41 @@
         </div>
     </div>
 
+    <!-- Stats Section -->
+    <div class="stats-grid" *ngIf="!isLoading">
+        <mat-card class="stat-card inward">
+            <mat-card-content>
+                <div class="stat-icon"><mat-icon>login</mat-icon></div>
+                <div class="stat-info">
+                    <span class="label">Total Inward Passes</span>
+                    <span class="value">{{totalInward}}</span>
+                </div>
+                <div class="stat-badge">Incoming</div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card outward">
+            <mat-card-content>
+                <div class="stat-icon"><mat-icon>logout</mat-icon></div>
+                <div class="stat-info">
+                    <span class="label">Total Outward Passes</span>
+                    <span class="value">{{totalOutward}}</span>
+                </div>
+                <div class="stat-badge">Outgoing</div>
+            </mat-card-content>
+        </mat-card>
+
+        <mat-card class="stat-card total">
+            <mat-card-content>
+                <div class="stat-icon"><mat-icon>assessment</mat-icon></div>
+                <div class="stat-info">
+                    <span class="label">Total Records</span>
+                    <span class="value">{{totalPasses}}</span>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+
     <!-- Stats/Filters Section -->
     <div class="filter-toolbar card box-shadow">
         <div class="search-box">

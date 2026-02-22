@@ -119,11 +119,11 @@ export class OutwardGatePassComponent implements OnInit {
 
     initForm() {
         this.gatePassForm = this.fb.group({
-            referenceType: [{ value: GatePassReferenceType.SaleOrder, disabled: true }, Validators.required],
+            referenceType: [GatePassReferenceType.SaleOrder, Validators.required],
             referenceNo: ['', Validators.required],
             referenceId: [null],
             partyName: [{ value: '', disabled: true }, Validators.required],
-            vehicleNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$/i)]],
+            vehicleNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{2}[-\s]?[0-9]{1,4}[-\s]?[A-Z]{0,3}[-\s]?[0-9]{4}$/i)]],
             vehicleType: ['Truck', Validators.required],
             driverName: ['', Validators.required],
             driverPhone: ['', [Validators.required, Validators.pattern(/^[0-9]{10}$/)]],

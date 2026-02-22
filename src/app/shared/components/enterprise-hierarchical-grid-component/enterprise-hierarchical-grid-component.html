@@ -120,7 +120,15 @@
             </mat-menu>
           </th>
           <td mat-cell *matCellDef="let row" [style.display]="col.visible === false ? 'none' : 'table-cell'">
-            {{ col.cell ? col.cell(row) : row[col.field] }}
+            <ng-container *ngIf="col.field === 'status'; else normalCell">
+              <span class="status-badge" 
+                    [ngClass]="getStatusBadgeClass(col.cell ? col.cell(row) : row[col.field])"
+                    [innerHTML]="col.cell ? col.cell(row) : row[col.field]">
+              </span>
+            </ng-container>
+            <ng-template #normalCell>
+              {{ col.cell ? col.cell(row) : row[col.field] }}
+            </ng-template>
           </td>
         </ng-container>
 
@@ -182,23 +190,30 @@
         </div>
       </ng-container>
 
-      <ng-container *ngIf="row.status === 'Received'">
+      <ng-container *ngIf="row.status === 'Received' || row.status === 'Partially Received'">
         <button mat-icon-button (click)="$event.stopPropagation(); handleAction('PRINT', row)" matTooltip="Print PO">
           <mat-icon color="primary">print</mat-icon>
         </button>
-        <mat-icon style="color: #4caf50;" matTooltip="Goods Fully Received">verified</mat-icon>
-      </ng-container>
- 
-      <ng-container *ngIf="row.status === 'Partially Received'">
-        <button mat-icon-button color="primary" (click)="$event.stopPropagation(); handleAction('VIEW', row)" matTooltip="View Details">
-          <mat-icon style="opacity: 0.7;">visibility</mat-icon>
-        </button>
-        <button mat-icon-button color="accent" (click)="$event.stopPropagation(); handleAction('CREATE_GRN', row)" matTooltip="Receive More Items">
+        
+        <!-- Red Truck: Process Return (Only if rejections haven't been outwarded yet) -->
+        <button mat-icon-button color="warn" 
+                *ngIf="(row.totalRejected || 0) > (row.totalReturned || 0)"
+                (click)="$event.stopPropagation(); handleAction('PROCESS_RETURN', row)" 
+                matTooltip="Process Purchase Return (Outward)">
           <mat-icon>local_shipping</mat-icon>
         </button>
-        <button mat-icon-button (click)="$event.stopPropagation(); handleAction('PRINT', row)" matTooltip="Print PO Status">
-          <mat-icon style="color: #607d8b;">print</mat-icon>
+
+        <!-- Blue Truck: Inward Replacement (Only if no pending returns, and something is missing/rejected) -->
+        <button mat-icon-button color="primary" 
+                *ngIf="!((row.totalRejected || 0) > (row.totalReturned || 0)) && ((row.totalAccepted < row.totalOrdered) || (row.totalPending > 0))"
+                (click)="$event.stopPropagation(); handleAction('CREATE_GRN', row)" 
+                matTooltip="Inward Replacement/Pending Items">
+          <mat-icon>local_shipping</mat-icon>
         </button>
+
+        <!-- Verified: Show only if nothing is pending return and nothing is missing -->
+        <mat-icon *ngIf="!((row.totalRejected || 0) > (row.totalReturned || 0)) && !((row.totalAccepted < row.totalOrdered) || (row.totalPending > 0))" 
+                  style="color: #4caf50;" matTooltip="Goods Fully Received">verified</mat-icon>
       </ng-container>
 
     </div>

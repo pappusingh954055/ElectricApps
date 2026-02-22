@@ -257,6 +257,7 @@ table {
   font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
+  padding: 0 4px;
 }
 
 .sort-indicator {
@@ -1131,4 +1132,64 @@ div[style*="display: flex"] {
 .qty-neutral {
   color: #455a64 !important;
   font-weight: bold;
+}
+
+/* Status Badges */
+.status-badge {
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 8.5px !important; /* Matches Partial Received size */
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  min-width: 70px; /* Very compact */
+  text-align: center;
+  line-height: 1;
+}
+
+/* Ensure table cells with badges have space */
+[mat-cell] .status-badge {
+  margin: 4px 0;
+}
+
+.status-partial {
+  background: #ecfdf5; /* Light Emerald */
+  color: #059669;      /* Dark Emerald */
+  border: 1px solid #10b98133;
+  line-height: 1.1;
+  white-space: normal; /* Allow wrapping for <br> */
+}
+
+.status-received {
+  background: #f0fdf4; /* Light Green */
+  color: #16a34a;      /* Dark Green */
+  border: 1px solid #22c55e33;
+}
+
+.status-approved {
+  background: #eff6ff; /* Light Blue */
+  color: #2563eb;      /* Dark Blue */
+  border: 1px solid #3b82f633;
+}
+
+.status-rejected {
+  background: #fef2f2; /* Light Red */
+  color: #dc2626;      /* Dark Red */
+  border: 1px solid #ef444433;
+}
+
+.status-draft {
+  background: #f9fafb; /* Light Grey */
+  color: #4b5563;      /* Dark Grey */
+  border: 1px solid #9ca3af33;
+}
+
+.status-submitted {
+  background: #fffbeb; /* Light Amber */
+  color: #d97706;      /* Dark Amber */
+  border: 1px solid #f59e0b33;
 }

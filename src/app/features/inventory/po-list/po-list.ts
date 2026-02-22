@@ -147,14 +147,47 @@ export class PoList implements OnInit {
         align: 'left',
         cell: (row: any) => this.currencyPipe.transform(row.grandTotal, 'INR', 'symbol', '1.2-2')
       },
-      { field: 'status', header: 'Status', sortable: true, isResizable: true, width: 100, isFilterable: true }
+      {
+        field: 'status',
+        header: 'Status',
+        sortable: true,
+        isResizable: true,
+        width: 140,
+        isFilterable: true,
+        cell: (row: any) => {
+          const status = row.status;
+          const isFulfillmentPending = (row.totalAccepted || 0) < (row.totalOrdered || 0);
+          const hasReturns = (row.totalReturned || 0) > 0;
+
+          if (status === 'Received' && (isFulfillmentPending || hasReturns)) {
+            return 'Partially <br> Received';
+          }
+          return status;
+        }
+      }
     ];
 
     this.itemColumns = [
       { field: 'productName', header: 'Product Name', width: 200, sortable: true, isFilterable: true, isResizable: true },
       { field: 'qty', header: 'Ordered Qty', width: 80, align: 'left' },
-      { field: 'receivedQty', header: 'Received Qty', width: 80, align: 'left', cell: (row) => row.receivedQty || 0 },
-      { field: 'pendingQty', header: 'Pending Qty', width: 80, align: 'left', cell: (row) => row.pendingQty || 0 },
+      {
+        field: 'receivedQty',
+        header: 'Received Qty',
+        width: 80,
+        align: 'left',
+        cell: (row) => row.acceptedQty || 0
+      },
+      {
+        field: 'pendingQty',
+        header: 'Pending Qty',
+        width: 80,
+        align: 'left',
+        cell: (row) => {
+          // Logic: Pending should be what is actually missing from the accepted stock
+          const pending = (row.qty || 0) - (row.acceptedQty || 0);
+          return pending > 0 ? pending : 0;
+        }
+      },
       { field: 'rejectedQty', header: 'Rejected Qty', width: 80, align: 'left', cell: (row) => row.rejectedQty || 0 },
       { field: 'acceptedQty', header: 'Accepted Qty', width: 80, align: 'left', cell: (row) => row.acceptedQty || 0 },
       { field: 'unit', header: 'Unit', width: 80, align: 'left' },
@@ -227,14 +260,34 @@ export class PoList implements OnInit {
 
         items.forEach((item: any) => {
           const status = item.status?.toLowerCase();
-          if (status === 'approved' || status === 'received') {
+
+          // 1. Calculate summary stats for the parent row (To drive action icons and counts)
+          const poItems = item.items || [];
+          item.totalOrdered = poItems.reduce((sum: number, i: any) => sum + (Number(i.qty) || 0), 0);
+          item.totalAccepted = poItems.reduce((sum: number, i: any) => sum + (Number(i.acceptedQty) || 0), 0);
+          item.totalRejected = poItems.reduce((sum: number, i: any) => sum + (Number(i.rejectedQty) || 0), 0);
+          item.totalReturned = poItems.reduce((sum: number, i: any) => sum + (Number(i.returnQty || i.returnedQty || 0) || 0), 0);
+          item.totalPending = poItems.reduce((sum: number, i: any) => sum + (Number(i.pendingQty) || 0), 0);
+
+          // 2. Aggregate Stats
+          if (status === 'approved' || status === 'received' || status === 'partially received') {
             this.totalPurchaseAmount += item.grandTotal || 0;
           }
-          if (status === 'approved') {
+
+          // Case: Even if status is 'Received', if Accepted < Ordered, it means something was rejected/lost and needs replacement.
+          const needsReplacement = (item.totalAccepted || 0) < (item.totalOrdered || 0);
+
+          if (status === 'approved' || status === 'partially received' || (status === 'received' && (needsReplacement || (item.totalPending || 0) > 0))) {
             this.pendingReceiveCount++;
           }
+
           if (status === 'submitted') {
             this.pendingApprovalCount++;
+          }
+
+          // Debugging log to verify rejections/shortage
+          if (item.totalRejected > 0 || needsReplacement) {
+            console.log(`[PoList] PO ${item.poNumber} needs attention: Rejected=${item.totalRejected}, Shortage=${item.totalOrdered - item.totalAccepted}`);
           }
         });
 
@@ -456,6 +509,9 @@ export class PoList implements OnInit {
       case 'CREATE_GRN':
         this.redirectToInwardGatePass(row);
         break;
+      case 'PROCESS_RETURN':
+        this.redirectToPurchaseReturn(row);
+        break;
       case 'DELETE':
         this.onDeleteSingleParentRecord(row);
         break;
@@ -468,15 +524,35 @@ export class PoList implements OnInit {
   // 1. Inward Gate Pass Page par bhejta hai (User: PO se pehle Gate Pass banna chahiye)
   redirectToInwardGatePass(row: any) {
     console.log('--- REDIRECTING TO INWARD GATE PASS ---', row.poNumber);
-    const totalQty = row.items ? row.items.reduce((sum: number, item: any) => sum + (item.qty || 0), 0) : 0;
+
+    // Shortage = Ordered - Accepted (This captures missing items even if rejectedQty is not set)
+    const shortage = (row.totalOrdered || 0) - (row.totalAccepted || 0);
+
+    // Total to receive = Shortage + any explicitly marked rejected items
+    const qtyToReceive = shortage > 0 ? shortage : (row.totalRejected || 0);
+
+    // Use the calculated shortage/rejection qty, or fallback to pending
+    const finalQty = qtyToReceive > 0 ? qtyToReceive : (row.totalPending || 0);
+
+    // Final check: if still 0 (means full order), use total calculated from items as fallback
+    const resultQty = finalQty > 0 ? finalQty : (row.items ? row.items.reduce((sum: number, item: any) => sum + (item.qty || 0), 0) : 0);
 
     this.router.navigate(['/app/inventory/gate-pass/inward'], {
       queryParams: {
-        type: 'po',
+        type: 'po', // 'po' type is consistent with InwardGatePass expectations
         refNo: row.poNumber,
         refId: row.id,
         partyName: row.supplierName,
-        qty: totalQty
+        qty: resultQty
+      }
+    });
+  }
+
+  redirectToPurchaseReturn(row: any) {
+    this.router.navigate(['/app/inventory/purchase-return/add'], {
+      queryParams: {
+        poId: row.id,
+        supplierId: row.supplierId
       }
     });
   }

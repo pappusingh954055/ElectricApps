@@ -191,13 +191,13 @@ export class InwardGatePassComponent implements OnInit {
 
         this.gatePassForm = this.fb.group({
             // 1. Reference Selection
-            referenceType: [{ value: GatePassReferenceType.PurchaseOrder, disabled: true }, Validators.required],
+            referenceType: [GatePassReferenceType.PurchaseOrder, Validators.required],
             referenceId: ['', Validators.required], // Holds internal ID of PO (String/GUID)
             referenceNo: ['', Validators.required], // Display No
             partyName: [{ value: '', disabled: true }], // Supplier Name
 
             // 2. Physical Vehicle Details
-            vehicleNo: ['', [Validators.required, Validators.pattern(/^[A-Za-z]{2}[0-9]{1,2}[A-Za-z]{0,3}[0-9]{4}$/)]],
+            vehicleNo: ['', [Validators.required, Validators.pattern(/^[A-Z]{2}[-\s]?[0-9]{1,4}[-\s]?[A-Z]{0,3}[-\s]?[0-9]{4}$/i)]],
             driverName: [''],
             driverPhone: ['', [Validators.pattern(/^[0-9]{10}$/)]],
             vehicleType: ['Tempo', Validators.required], // Default to Tempo
@@ -332,7 +332,8 @@ export class InwardGatePassComponent implements OnInit {
                         this.router.navigate(['/app/inventory/grn-list/add'], {
                             queryParams: {
                                 poId: formValue.referenceId,
-                                gatePassNo: generatedPassNo
+                                gatePassNo: generatedPassNo,
+                                qty: formValue.expectedQty
                             }
                         });
                     } else if (formValue.referenceType === GatePassReferenceType.SaleReturn) {
@@ -365,7 +366,7 @@ export class InwardGatePassComponent implements OnInit {
         if (type === 'sale-return') {
             this.router.navigate(['/app/inventory/sale-return']);
         } else if (type === 'po') {
-            this.router.navigate(['/app/inventory/purchase-order']);
+            this.router.navigate(['/app/inventory/polist']);
         } else {
             this.router.navigate(['/app/inventory/gate-pass']);
         }
