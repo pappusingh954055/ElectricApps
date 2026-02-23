@@ -33,5 +33,9 @@ export class customerService {
   update(id: any, customer: any): Observable<any> {
     return this.api.put(`Customers/${id}`, customer, this.baseUrl);
   }
+
+  delete(id: any): Observable<any> {
+    return this.api.delete(`Customers/${id}`, this.baseUrl);
+  }
 }
 

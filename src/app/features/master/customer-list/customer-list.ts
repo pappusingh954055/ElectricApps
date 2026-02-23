@@ -148,4 +148,35 @@ export class CustomerList implements OnInit {
       }
     });
   }
+
+  onDelete(rows: any[]) {
+    if (!rows || rows.length === 0) return;
+    const row = rows[0]; // Grid single row delete bhejta hai [row] format mein
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Customer',
+        message: `Are you sure you want to delete customer: ${row.customerName || row.name}? This action cannot be undone.`,
+        confirmText: 'Yes, Delete',
+        confirmColor: 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadingService.setLoading(true);
+        this.customerService.delete(row.id).subscribe({
+          next: () => {
+            this.loadCustomers(this.lastRequest);
+            this.loadingService.setLoading(false);
+          },
+          error: (err) => {
+            console.error('Delete failed', err);
+            this.loadingService.setLoading(false);
+          }
+        });
+      }
+    });
+  }
 }

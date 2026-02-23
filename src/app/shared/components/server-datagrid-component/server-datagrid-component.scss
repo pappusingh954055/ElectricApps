@@ -181,32 +181,12 @@
     box-shadow: -2px 0 5px rgba(0, 0, 0, 0.02); // Halki shadow for separation
   }
 
-  // 4. Compact Action Buttons
+  // 4. Compact Action Buttons (Consolidated with .actions-col block below)
   .action-btn-group {
     display: flex;
     justify-content: center;
-    gap: 2px;
-
-    button.mat-mdc-icon-button {
-      width: 28px !important;
-      height: 28px !important;
-      line-height: 28px !important;
-
-      mat-icon {
-        font-size: 16px !important;
-        width: 16px !important;
-        height: 16px !important;
-        color: #546e7a;
-      }
-
-      &:hover mat-icon {
-        color: #00796b; // Edit color
-      }
-
-      &.color-warn:hover mat-icon {
-        color: #d32f2f; // Delete color
-      }
-    }
+    align-items: center;
+    gap: 8px;
   }
 }
 
@@ -312,18 +292,64 @@ th.mat-mdc-header-cell.select-col {
     justify-content: center !important;
     align-items: center !important;
     height: 38px !important;
-    /* Row height match karein */
     width: 100%;
     gap: 12px;
     margin: 0 !important;
-    /* Extra margin hatayein */
 
-    // Buttons ke default margins ko neutralize karein
     button.mat-mdc-icon-button {
       margin: 0 !important;
-      display: flex !important;
+      width: 32px !important;
+      height: 32px !important;
+      padding: 0 !important; // 👈 Padding zero karna zaruri hai centering ke liye
+      display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
+      background-color: #ffffff !important;
+      border-radius: 50% !important;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08) !important;
+      transition: all 0.2s ease-in-out !important;
+      border: 1px solid #edf2f7 !important;
+
+      // Material button ke andar ek invisible span hota hai, usey bhi center karna padega
+      ::ng-deep .mat-mdc-button-touch-target {
+        display: none !important; // Touch target centering mein issue karta hai
+      }
+
+      mat-icon {
+        font-size: 16px !important;
+        width: 16px !important;
+        height: 16px !important;
+        color: #64748b !important;
+        margin: 0 !important; // Extra margins hataein
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 16px !important;
+      }
+
+      /* Hover states */
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12) !important;
+        background-color: #f0f7ff !important;
+        border-color: #00796b !important;
+
+        mat-icon {
+          color: #00796b !important;
+        }
+      }
+
+      /* Delete button specific */
+      &:nth-child(2) { 
+        &:hover {
+          background-color: #fff5f5 !important;
+          border-color: #fecaca !important;
+          mat-icon {
+            color: #d32f2f !important;
+          }
+        }
+      }
     }
   }
 }

@@ -150,4 +150,35 @@ export class SupplierList implements OnInit {
       }
     });
   }
+
+  onDelete(rows: any[]) {
+    if (!rows || rows.length === 0) return;
+    const row = rows[0];
+
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      width: '400px',
+      data: {
+        title: 'Delete Supplier',
+        message: `Are you sure you want to delete supplier: ${row.name}? This action cannot be undone.`,
+        confirmText: 'Yes, Delete',
+        confirmColor: 'warn'
+      }
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadingService.setLoading(true);
+        this.supplierService.deleteSupplier(row.id).subscribe({
+          next: () => {
+            this.loadSuppliers(this.lastRequest);
+            this.loadingService.setLoading(false);
+          },
+          error: (err) => {
+            console.error('Delete failed', err);
+            this.loadingService.setLoading(false);
+          }
+        });
+      }
+    });
+  }
 }

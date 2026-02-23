@@ -16,7 +16,8 @@
       [loading]="loading && !isDashboardLoading"
       [gridKey]="'supplier-grid'"
       (loadData)="loadSuppliers($event)"
-      (editAction)="onEdit($event)">
+      (editAction)="onEdit($event)"
+      (delete)="onDelete($event)">
     </app-server-datagrid>
   </div>
 </div>

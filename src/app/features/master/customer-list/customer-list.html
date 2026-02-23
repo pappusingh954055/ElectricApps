@@ -16,7 +16,8 @@
       [loading]="loading && !isDashboardLoading"
       [gridKey]="'customer-grid'"
       (loadData)="loadCustomers($event)"
-      (editAction)="onEdit($event)">
+      (editAction)="onEdit($event)"
+      (delete)="onDelete($event)">
     </app-server-datagrid>
   </div>
 </div>
