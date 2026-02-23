@@ -179,11 +179,10 @@ form#saleReturnForm {
         }
 
         td {
-            padding: 4px 16px; // Very compact vertical padding
+            padding: 0 16px;
             border-bottom: 1px solid #f1f5f9;
             font-size: 13px;
             color: #334155;
-            height: 48px; // Fixed height for consistency
         }
 
         /* Sticky Header */
@@ -279,11 +278,28 @@ form#saleReturnForm {
 
     .small-input {
         width: 70px;
-        
+
         input {
             text-align: center;
             font-weight: 600;
         }
+    }
+
+    // Ensure all rows have consistent height and alignment
+    ::ng-deep .mat-mdc-row {
+        height: 52px;
+        align-items: center;
+        overflow: visible; // Allow absolutely positioned error to show
+    }
+
+    // Allow cells to show overflow for floating errors
+    ::ng-deep td.mat-mdc-cell {
+        overflow: visible;
+    }
+
+    // Remove bottom margin from form fields inside table cells
+    ::ng-deep td .mat-mdc-form-field {
+        margin-bottom: 0 !important;
     }
 }
 
