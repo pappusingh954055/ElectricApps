@@ -444,6 +444,56 @@ mat-accordion {
   }
 }
 
+.dev-link-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 20px;
+  padding: 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  span {
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 500;
+  }
+
+  .dev-name {
+    color: #94a3b8;
+    transition: color 0.3s;
+  }
+
+  .heart-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    color: #00796b; // Match dev card theme
+    animation: pulse 2s infinite;
+  }
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    
+    .dev-name {
+      color: #3b82f6;
+    }
+    
+    .heart-icon {
+      color: #ff4081; // Soft pink on hover
+      transform: scale(1.2);
+    }
+  }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
 /* 🔹 Selection styles for professional look */
 ::selection {
   background: #3b82f6;

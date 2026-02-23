@@ -61,6 +61,11 @@
           <span>{{ currentTime | date:'dd MMM yyyy' }}</span>
         </div>
       </div>
+      <div class="dev-link-section" (click)="showDeveloperInfo()">
+        <span>Built with</span>
+        <mat-icon class="heart-icon">favorite</mat-icon>
+        <span class="dev-name">by Pappu Singh</span>
+      </div>
     </div>
 
   </mat-sidenav>
@@ -168,9 +173,9 @@
           <mat-icon>person</mat-icon>
           <span>Profile</span>
         </button>
-        <button mat-menu-item (click)="openSettings()">
-          <mat-icon>settings</mat-icon>
-          <span>Settings</span>
+        <button mat-menu-item (click)="showDeveloperInfo()">
+          <mat-icon>code</mat-icon>
+          <span>About Developer</span>
         </button>
         <mat-divider></mat-divider>
         <button mat-menu-item (click)="logout()">

@@ -4,6 +4,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, RouterOutlet, Router } from '@angular/router';
 import { BreadcrumbComponent } from './breadcrumb-component/breadcrumb-component';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { MatDialog } from '@angular/material/dialog';
+import { DeveloperInfoComponent } from '../../shared/components/developer-info/developer-info';
 import { MatSidenav } from '@angular/material/sidenav';
 import { MenuItem } from '../../core/models/menu-item.model';
 import { MenuService } from '../../core/services/menu.service';
@@ -37,6 +39,7 @@ export class MainLayoutComponent implements OnInit {
   private themeService = inject(ThemeService);
   private loadingService = inject(LoadingService);
   private companyService = inject(CompanyService);
+  private dialog = inject(MatDialog);
 
   isMobile = false;
   isDarkMode = false;
@@ -265,5 +268,13 @@ export class MainLayoutComponent implements OnInit {
       case 'info': return 'info';
       default: return 'notifications';
     }
+  }
+
+  showDeveloperInfo(): void {
+    this.dialog.open(DeveloperInfoComponent, {
+      panelClass: 'premium-dev-dialog',
+      maxWidth: '400px',
+      autoFocus: false
+    });
   }
 }
