@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -9,11 +9,12 @@ import { customerService } from './customer.service';
 
 @Component({
   selector: 'app-customer-component',
+  standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MaterialModule],
   templateUrl: './customer-component.html',
   styleUrl: './customer-component.scss',
 })
-export class CustomerComponent {
+export class CustomerComponent implements OnInit {
 
   readonly fb = inject(FormBuilder);
   readonly router = inject(Router);
@@ -27,6 +28,7 @@ export class CustomerComponent {
 
   isEdit = false;
   loading = false;
+  customerId: any = null;
 
   customerForm = this.fb.group({
     customerName: ['', Validators.required],
@@ -37,15 +39,47 @@ export class CustomerComponent {
     creditLimit: [0],
     billingAddress: ['', Validators.required],
     shippingAddress: [''],
-    customerStatus: ['']
+    customerStatus: ['Active']
   });
 
-  constructor() {
-    const id = this.route.snapshot.paramMap.get('id') || (this.data && this.data.id);
-    if (id) {
+  ngOnInit() {
+    this.customerId = this.route.snapshot.paramMap.get('id') || (this.data && this.data.id);
+    console.log('[CustomerComponent] Initializing with ID:', this.customerId);
+    if (this.customerId) {
       this.isEdit = true;
-      // Future: load customer by id if needed
+      this.loadCustomerData();
     }
+  }
+
+  loadCustomerData() {
+    this.loading = true;
+    this.customerService.getById(this.customerId).subscribe({
+      next: (response) => {
+        console.log('[CustomerComponent] Received data:', response);
+        // Handle potential result wrapping
+        const res = response.data || response;
+
+        this.customerForm.patchValue({
+          customerName: res.customerName,
+          customerType: res.customerType,
+          phone: res.phone,
+          email: res.email,
+          gst: res.gstNumber || res.gst,
+          creditLimit: res.creditLimit,
+          billingAddress: res.billingAddress,
+          shippingAddress: res.shippingAddress,
+          customerStatus: res.customerStatus || res.status || 'Active'
+        });
+
+        this.loading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('[CustomerComponent] Failed to load customer', err);
+        this.loading = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   // ================= SAVE =================
@@ -70,29 +104,26 @@ export class CustomerComponent {
       createdBy: currentUserId
     };
 
-    this.customerService
-      .addCustomer(payload)
-      .subscribe((res: any) => {
+    const request = this.isEdit
+      ? this.customerService.update(this.customerId, { id: this.customerId, ...payload })
+      : this.customerService.addCustomer(payload);
 
+    request.subscribe({
+      next: (res: any) => {
         this.loading = false;
         this.cdr.detectChanges();
-
-        // Close popup with data
         if (this.dialogRef) {
-          this.dialogRef.close({
-            id: res.id,
-            ...payload
-          });
+          this.dialogRef.close(true);
         } else {
-
+          this.router.navigate(['/app/master/customers']);
         }
-
-      }, (err) => {
-
+      },
+      error: (err) => {
         console.error('Customer save failed', err);
         this.loading = false;
         this.cdr.detectChanges();
-      });
+      }
+    });
   }
 
 

@@ -103,6 +103,28 @@ export class DashboardComponent implements OnInit {
   duesSearchQuery = '';
   customerDuesCount = 0;
   customerDuesTotalFormatted = '0';
+  selectedDues = new Set<any>();
+
+  get isAllSelected(): boolean {
+    const dues = this.filteredCustomerDues;
+    return dues.length > 0 && dues.every(d => this.selectedDues.has(d));
+  }
+
+  toggleSelection(due: any) {
+    if (this.selectedDues.has(due)) {
+      this.selectedDues.delete(due);
+    } else {
+      this.selectedDues.add(due);
+    }
+  }
+
+  toggleAllSelection() {
+    if (this.isAllSelected) {
+      this.selectedDues.clear();
+    } else {
+      this.filteredCustomerDues.forEach(d => this.selectedDues.add(d));
+    }
+  }
 
   get filteredCustomerDues(): any[] {
     if (!this.duesSearchQuery.trim()) return this.customerDues;
@@ -252,6 +274,7 @@ export class DashboardComponent implements OnInit {
   openCustomerDuesModal() {
     this.isDuesModalOpen = true;
     this.duesSearchQuery = '';
+    this.selectedDues.clear();
     this.loadCustomerDues();
   }
 
@@ -294,7 +317,7 @@ export class DashboardComponent implements OnInit {
   sendWhatsAppReminder(due: any) {
     const name = due.customerName || 'Customer';
     const amount = this.decimalPipe.transform(due.pendingAmount, '1.0-0') || '0';
-    const company = this.companyInfo?.name || 'Reyakat Electrics';
+    const company = this.companyInfo?.name || this.companyInfo?.tagline || '';
 
     // Company Master se dynamic message lo, warna fallback use karo
     const templateMsg = this.companyInfo?.message
@@ -307,21 +330,53 @@ export class DashboardComponent implements OnInit {
 
     const message = encodeURIComponent(templateMsg);
     const customerPhone = (due.phone || '').replace(/\D/g, '');
+    // wa.me = WhatsApp official click-to-chat API — session conflict nahi hoga
     const url = customerPhone
-      ? `https://web.whatsapp.com/send?phone=91${customerPhone}&text=${message}`
-      : `https://web.whatsapp.com/send?text=${message}`;
-    window.open(url, '_blank');
+      ? `whatsapp://send?phone=91${customerPhone}&text=${message}`
+      : `whatsapp://send?text=${message}`;
+    window.location.href = url;
   }
 
   sendBulkWhatsApp() {
-    const overdueList = this.filteredCustomerDues;
-    if (!overdueList.length) return;
+    const listToSend = this.selectedDues.size > 0
+      ? Array.from(this.selectedDues)
+      : this.filteredCustomerDues;
 
-    // Har customer ko individually unka apna amount ke saath message bhejo
-    overdueList.forEach((due, index) => {
+    if (!listToSend.length) {
+      console.warn('No customers selected.');
+      return;
+    }
+
+    console.log(`Sending reminders to ${listToSend.length} customers...`);
+
+    listToSend.forEach((due, index) => {
       setTimeout(() => {
-        this.sendWhatsAppReminder(due);
-      }, index * 500); // 0.5 sec delay — browser blocking avoid karne ke liye
+        const name = due.customerName || 'Customer';
+        const amount = this.decimalPipe.transform(due.pendingAmount, '1.0-0') || '0';
+        const company = this.companyInfo?.name || this.companyInfo?.tagline || '';
+
+        const templateMsg = this.companyInfo?.message
+          ? this.companyInfo.message
+            .replace(/\[Amount\]/g, `₹${amount}`)
+            .replace(/₹[\d,]+/g, `₹${amount}`)
+            .replace(/\[Name\]/g, `${name} ji`)
+            .replace(/\[Company\]/g, company)
+          : `Namaste ${name} ji! 🙏\n\nYe ${company} ki taraf se ek friendly reminder hai.\n\nAapka abhi *₹${amount}* ka payment pending hai.\n\nKripaya jald se jald payment karein.\n\nShukriya! 🙏`;
+
+        const message = encodeURIComponent(templateMsg);
+        const customerPhone = (due.phone || '').replace(/\D/g, '');
+
+        const url = customerPhone
+          ? `whatsapp://send?phone=91${customerPhone}&text=${message}`
+          : `whatsapp://send?text=${message}`;
+
+        console.log(`Triggering WhatsApp for: ${name} (${index + 1}/${listToSend.length})`);
+
+        // Unique target name (wa_window_0, wa_window_1...) use karne se
+        // browser multiple triggers ko asanise allow karta hai
+        window.open(url, `wa_window_${index}`);
+
+      }, index * 5000); // 5 sec delay per customer
     });
   }
   exportToExcel() {

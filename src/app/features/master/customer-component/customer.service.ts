@@ -11,19 +11,27 @@ export class customerService {
   private readonly baseUrl = environment.CustomerApiBaseUrl;
 
   addCustomer(customer: any) {
-    return this.api.post('customers', customer, this.baseUrl);
+    return this.api.post('Customers', customer, this.baseUrl);
   }
 
   getAllCustomers() {
-    return this.api.get('customers', this.baseUrl);
+    return this.api.get('Customers', this.baseUrl);
   }
 
   getCustomersLookup(): Observable<any[]> {
-    return this.api.get<any[]>('customers/lookup', this.baseUrl);
+    return this.api.get<any[]>('Customers/lookup', this.baseUrl);
   }
 
   getPaged(request: any): Observable<any> {
-    return this.api.post<any>('customers/paged', request, this.baseUrl);
+    return this.api.post<any>('Customers/paged', request, this.baseUrl);
+  }
+
+  getById(id: any): Observable<any> {
+    return this.api.get(`Customers/${id}`, this.baseUrl);
+  }
+
+  update(id: any, customer: any): Observable<any> {
+    return this.api.put(`Customers/${id}`, customer, this.baseUrl);
   }
 }
 

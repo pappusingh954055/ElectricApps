@@ -680,6 +680,18 @@
   }
 }
 
+.checkbox-col {
+  width: 40px;
+  text-align: center;
+  padding: 0 8px !important;
+}
+
+.selected-row {
+  background-color: #f0f7ff !important;
+  
+  .name-col { color: #1565c0; }
+}
+
 .serial-col { color: #adb5bd !important; font-weight: 600; width: 40px; }
 
 .name-col {
