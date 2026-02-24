@@ -53,6 +53,7 @@ export class SaleReturnFormComponent implements OnInit {
     isLoadingSaleOrders = false;
     noItemsFound = false;
     summaryStats: SummaryStat[] = [];
+    minDate: Date = new Date();
 
     itemsDataSource = new MatTableDataSource<AbstractControl>();
     displayedColumns: string[] = ['productName', 'quantity', 'rate', 'itemCondition', 'reason', 'returnQty', 'discount', 'tax', 'total'];
@@ -300,6 +301,19 @@ export class SaleReturnFormComponent implements OnInit {
 
         const userId = localStorage.getItem('email') || 'admin@admin.com';
         const rawValue = this.returnForm.value;
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const returnDate = new Date(rawValue.returnDate);
+        returnDate.setHours(0, 0, 0, 0);
+
+        if (returnDate < today) {
+            this.dialog.open(StatusDialogComponent, {
+                width: '400px',
+                data: { isSuccess: false, message: 'Sale Return Date cannot be in the past.' }
+            });
+            return;
+        }
 
         // Backend ko wahi naam chahiye jo SaleReturnItem interface mein hain
         const mappedItems: SaleReturnItem[] = rawValue.items

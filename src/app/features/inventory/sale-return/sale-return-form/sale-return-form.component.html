@@ -34,8 +34,8 @@
             <mat-card-content>
                 <div class="form-grid">
                     <mat-form-field appearance="outline">
-                        <mat-label>Return Date</mat-label>
-                        <input matInput [matDatepicker]="picker" formControlName="returnDate">
+                        <mat-label>Return Date*</mat-label>
+                        <input matInput [matDatepicker]="picker" formControlName="returnDate" [min]="minDate">
                         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
                         <mat-datepicker #picker></mat-datepicker>
                         <mat-error *ngIf="returnForm.get('returnDate')?.hasError('required')">

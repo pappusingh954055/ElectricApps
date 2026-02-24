@@ -36,16 +36,16 @@
 
           <!-- SO Date -->
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-100">
-            <mat-label>SO Date</mat-label>
-            <input matInput [matDatepicker]="soPicker" formControlName="soDate">
+            <mat-label>SO Date*</mat-label>
+            <input matInput [matDatepicker]="soPicker" formControlName="soDate" [min]="minDate">
             <mat-datepicker-toggle matSuffix [for]="soPicker"></mat-datepicker-toggle>
             <mat-datepicker #soPicker></mat-datepicker>
           </mat-form-field>
 
           <!-- Expected Delivery -->
           <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-100">
-            <mat-label>Expected Delivery</mat-label>
-            <input matInput [matDatepicker]="delPicker" formControlName="expectedDeliveryDate">
+            <mat-label>Expected Delivery*</mat-label>
+            <input matInput [matDatepicker]="delPicker" formControlName="expectedDeliveryDate" [min]="soForm.get('soDate')?.value || minDate">
             <mat-datepicker-toggle matSuffix [for]="delPicker"></mat-datepicker-toggle>
             <mat-datepicker #delPicker></mat-datepicker>
           </mat-form-field>

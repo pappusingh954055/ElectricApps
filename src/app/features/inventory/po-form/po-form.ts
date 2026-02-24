@@ -103,6 +103,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   private refillData: any = null;
   isReorder: boolean = false;
   reorderTooltipText: string = 'Items pre-filled from Reorder recommendations';
+  minDate: Date = new Date();
 
   constructor() {
     const navigation = this.router.getCurrentNavigation();
@@ -276,7 +277,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       supplierId: [null, Validators.required],
       priceListId: [null, Validators.required],
       poDate: [new Date(), Validators.required],
-      expectedDeliveryDate: [null],
+      expectedDeliveryDate: [new Date(), Validators.required],
       PoNumber: [{ value: '', disabled: true }],
       remarks: ['', Validators.required],
       items: this.fb.array([])
@@ -511,12 +512,28 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
 
   saveDraft() {
     const formValue = this.poForm.getRawValue();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const poDate = new Date(formValue.poDate);
+    poDate.setHours(0, 0, 0, 0);
+
+    if (poDate < today) {
+      this.notification.showStatus(false, 'PO Date cannot be in the past.');
+      return;
+    }
+
     if (formValue.expectedDeliveryDate) {
-      const poDate = new Date(formValue.poDate);
       const deliveryDate = new Date(formValue.expectedDeliveryDate);
-      poDate.setHours(0, 0, 0, 0); deliveryDate.setHours(0, 0, 0, 0);
+      deliveryDate.setHours(0, 0, 0, 0);
+
+      if (deliveryDate < today) {
+        this.notification.showStatus(false, 'Delivery Date cannot be in the past.');
+        return;
+      }
+
       if (deliveryDate < poDate) {
-        this.notification.showStatus(false, 'Expected Delivery Date mismatch.');
+        this.notification.showStatus(false, 'Delivery Date cannot be before PO Date.');
         return;
       }
     }

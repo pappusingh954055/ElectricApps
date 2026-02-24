@@ -68,8 +68,8 @@
 
       <div class="field-item">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>PO Date</mat-label>
-          <input matInput [matDatepicker]="picker" formControlName="poDate">
+          <mat-label>PO Date*</mat-label>
+          <input matInput [matDatepicker]="picker" formControlName="poDate" [min]="minDate">
           <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>
         </mat-form-field>
@@ -77,8 +77,8 @@
 
       <div class="field-item">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
-          <mat-label>Expected Delivery</mat-label>
-          <input matInput [matDatepicker]="expPicker" formControlName="expectedDeliveryDate">
+          <mat-label>Expected Delivery*</mat-label>
+          <input matInput [matDatepicker]="expPicker" formControlName="expectedDeliveryDate" [min]="poForm.get('poDate')?.value || minDate">
           <mat-datepicker-toggle matIconSuffix [for]="expPicker"></mat-datepicker-toggle>
           <mat-datepicker #expPicker></mat-datepicker>
         </mat-form-field>

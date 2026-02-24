@@ -92,6 +92,7 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
   allUnits: any[] = [];
   customers: any = [];
   public generatedSoNumber: string = 'NEW ORDER';
+  minDate: Date = new Date();
 
   ngOnInit(): void {
     this.initForm();
@@ -109,7 +110,7 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
     this.soForm = this.fb.group({
       customerId: [null, [Validators.required]],
       soDate: [new Date(), Validators.required],
-      expectedDeliveryDate: [null],
+      expectedDeliveryDate: [new Date(), Validators.required],
       remarks: [''],
       status: ['Draft'],
       subTotal: [0],
@@ -374,14 +375,31 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
       if (result) {
         const formValues = this.soForm.getRawValue();
 
-        // Date Validation: Delivery Date >= SO Date
-        if (formValues.expectedDeliveryDate) {
-          const soDate = new Date(formValues.soDate);
-          const deliveryDate = new Date(formValues.expectedDeliveryDate);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-          // Reset time to ensure we only subtract dates
-          soDate.setHours(0, 0, 0, 0);
+        const soDate = new Date(formValues.soDate);
+        soDate.setHours(0, 0, 0, 0);
+
+        if (soDate < today) {
+          this.dialog.open(StatusDialogComponent, {
+            width: '400px',
+            data: { isSuccess: false, title: 'Validation Error', message: 'Sale Order Date cannot be in the past.' }
+          });
+          return;
+        }
+
+        if (formValues.expectedDeliveryDate) {
+          const deliveryDate = new Date(formValues.expectedDeliveryDate);
           deliveryDate.setHours(0, 0, 0, 0);
+
+          if (deliveryDate < today) {
+            this.dialog.open(StatusDialogComponent, {
+              width: '400px',
+              data: { isSuccess: false, title: 'Validation Error', message: 'Expected Delivery Date cannot be in the past.' }
+            });
+            return;
+          }
 
           if (deliveryDate < soDate) {
             this.dialog.open(StatusDialogComponent, {

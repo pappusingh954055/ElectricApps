@@ -28,6 +28,7 @@ export class PurchaseReturnForm implements OnInit {
   suppliers: any[] = [];
   displayedColumns: string[] = ['product', 'rejectedQty', 'returnQty', 'rate', 'discount', 'gst', 'taxAmount', 'total', 'actions'];
   tableDataSource: any[] = []; // Explicit data source for MatTable binding
+  minDate: Date = new Date();
 
   // CDR inject kiya taaki table bind ho sake [cite: 2026-02-03]
   private cdr = inject(ChangeDetectorRef);
@@ -323,6 +324,16 @@ export class PurchaseReturnForm implements OnInit {
 
     if (itemsToReturn.length === 0) {
       this.openDialog(false, 'At least one item must be returned.');
+      return;
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const returnDate = new Date(rawData.returnDate);
+    returnDate.setHours(0, 0, 0, 0);
+
+    if (returnDate < today) {
+      this.openDialog(false, 'Return Date cannot be in the past.');
       return;
     }
 
