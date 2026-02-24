@@ -17,9 +17,9 @@ import { FinanceService } from '../../finance/service/finance.service';
   styleUrl: './grn-form-component.scss',
 })
 export class GrnFormComponent implements OnInit {
-  grnForm: FormGroup;
+  grnForm!: FormGroup;
   items: any[] = [];
-  poId: number = 0;
+  poId: string = '';
   supplierId: number = 0;
   supplierName: string = '';
   isFromPopup: boolean = false;
@@ -51,9 +51,9 @@ export class GrnFormComponent implements OnInit {
     this.route.params.subscribe(params => {
       if (params['id']) {
         this.resetFormBeforeLoad();
-        this.poId = +params['id'];
+        this.poId = params['id'].toString();
         if (this.isViewMode) {
-          this.loadPOData(0, this.poId);
+          this.loadPOData("0", +this.poId); // View mode uses grnHeaderId
         } else {
           this.loadPOData(this.poId);
         }
@@ -63,7 +63,7 @@ export class GrnFormComponent implements OnInit {
     this.route.queryParams.subscribe(params => {
       if (params['poId']) {
         this.resetFormBeforeLoad();
-        this.poId = +params['poId'];
+        this.poId = params['poId'].toString();
         this.isFromPopup = true;
         if (params['poNo']) {
           this.grnForm.patchValue({ poNumber: params['poNo'] });
@@ -85,7 +85,9 @@ export class GrnFormComponent implements OnInit {
 
   private resetFormBeforeLoad() {
     this.items = [];
-    this.grnForm.patchValue({ supplierName: '', poNumber: '' });
+    if (this.grnForm) {
+      this.grnForm.patchValue({ supplierName: '', poNumber: '' });
+    }
   }
 
   initForm() {
@@ -99,7 +101,7 @@ export class GrnFormComponent implements OnInit {
     });
   }
 
-  loadPOData(id: number, grnHeaderId: number | null = null, gatePassNo: string | null = null) {
+  loadPOData(id: string, grnHeaderId: number | null = null, gatePassNo: string | null = null) {
     this.inventoryService.getPODataForGRN(id, grnHeaderId, gatePassNo).subscribe({
       next: (res) => {
         if (!res) return;
@@ -267,10 +269,54 @@ export class GrnFormComponent implements OnInit {
   }
 
   performGRNSave() {
-    const currentUserId = localStorage.getItem('email') || '';
+    const currentUserId = localStorage.getItem('email') || 'Admin';
+
+    // BULK FLOW: If poId contains multiple IDs
+    if (this.poId && this.poId.includes(',')) {
+      const ids = this.poId.split(',').map(id => Number(id.trim())).filter(id => id > 0);
+      const formValue = this.grnForm.getRawValue();
+
+      const bulkRequest = {
+        purchaseOrderIds: ids,
+        createdBy: currentUserId,
+        receivedDate: formValue.receivedDate,
+        gatePassNo: formValue.gatePassNo,
+        remarks: formValue.remarks,
+        items: this.items.map(i => ({
+          poId: i.poId, // Backend DTO expected POId
+          productId: i.productId,
+          receivedQty: i.receivedQty,
+          rejectedQty: i.rejectedQty,
+          unitRate: i.unitRate
+        }))
+      };
+
+      this.inventoryService.createBulkGrn(bulkRequest).subscribe({
+        next: (response: any) => {
+          this.dialog.open(StatusDialogComponent, {
+            width: '350px',
+            data: {
+              title: 'Bulk Success',
+              message: `${ids.length} GRNs processed successfully from the Bulk Gate Pass!`,
+              status: 'success',
+              isSuccess: true
+            }
+          }).afterClosed().subscribe(() => {
+            this.router.navigate(['/app/inventory/grn-list']);
+          });
+        },
+        error: (err) => {
+          console.error('Error saving Bulk GRN:', err);
+          this.showValidationError('Bulk processing failed. Please check if all POs are Approved.');
+        }
+      });
+      return;
+    }
+
+    // SINGLE PO FLOW (Existing)
 
     const grnData = {
-      poHeaderId: this.poId,
+      poHeaderId: Number(this.poId),
       supplierId: this.supplierId,
       gatePassNo: this.grnForm.getRawValue().gatePassNo, // Linking the Gate Pass
       receivedDate: this.grnForm.getRawValue().receivedDate,

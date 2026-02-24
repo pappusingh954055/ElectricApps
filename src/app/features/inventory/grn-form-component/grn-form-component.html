@@ -49,6 +49,7 @@
           <thead>
             <tr>
               <th class="col-product">Product Name</th>
+              <th class="text-center" style="width: 120px;">Ref PO</th>
               <th class="text-center" style="width: 80px;">PO Qty</th>
               <th class="text-center" style="width: 70px;">Pend. Qty</th>
               <th class="text-center" style="width: 80px;">Recv. Qty</th>
@@ -66,6 +67,7 @@
                 [class.replacement-row]="item.isReplacement"
                 [class.normal-row]="!item.isReplacement">
               <td class="col-product text-wrap">{{item.productName}}</td>
+              <td class="text-center small text-secondary">{{item.poNumber}}</td>
               <td class="text-center">{{item.orderedQty}}</td>
               <td class="text-center text-primary"><b>{{item.pendingQty}}</b></td>
               <td class="text-center">

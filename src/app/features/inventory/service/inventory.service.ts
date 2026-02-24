@@ -96,10 +96,12 @@ export class InventoryService {
     }
 
     // PO Data pick karne ke liye
-    getPODataForGRN(poId: number, grnHeaderId: number | null = null, gatePassNo: string | null = null): Observable<any> {
-        let url = `GRN/GetPOData/${poId}?`;
+    getPODataForGRN(poIds: string, grnHeaderId: number | null = null, gatePassNo: string | null = null): Observable<any> {
+        let url = `GRN/GetPOData?poIds=${poIds}&`;
         if (grnHeaderId) url += `grnHeaderId=${grnHeaderId}&`;
         if (gatePassNo) url += `gatePassNo=${gatePassNo}`;
+        // Clean up trailing & or ?
+        url = url.endsWith('&') || url.endsWith('?') ? url.slice(0, -1) : url;
         return this.api.get(url);
     }
 

@@ -185,7 +185,7 @@
                 <table class="child-table">
                   <thead>
                     <tr>
-                      <th>Date</th>
+                      <th style="width: 170px;">Date</th>
                       <th>PO Reference</th>
                       <th>GRNNumber</th>
                       <th>Product</th> 
@@ -196,7 +196,7 @@
                   </thead>
                   <tbody>
                     <tr *ngFor="let h of $any(element).history">
-                      <td>{{$any(h).receivedDate | date:'mediumDate'}}</td>
+                      <td>{{$any(h).receivedDate | date:'dd MMM yyyy, hh:mm a'}}</td>
                       <td><span class="po-link">#{{$any(h).poNumber}}</span></td>
                       <td>{{$any(h).grnNumber}}</td>
                       <td>{{$any(h).productName}}</td> 

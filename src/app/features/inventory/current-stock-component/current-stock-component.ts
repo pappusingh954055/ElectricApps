@@ -147,19 +147,29 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
       if (items.length > 0) {
         this.lastpurchaseOrderId = items[0].lastPurchaseOrderId;
       }
-      const mappedData = items.map((item: any) => ({
-        productId: item.productId,
-        productName: item.productName,
-        totalReceived: item.totalReceived,
-        totalRejected: item.totalRejected,
-        // ✅ Updated: Mapping totalSold from Backend DTO
-        totalSold: item.totalSold || 0,
-        availableStock: item.availableStock,
-        unit: item.unit,
-        lastRate: item.lastRate,
-        minStockLevel: item.minStockLevel,
-        history: item.history
-      }));
+      const mappedData = items.map((item: any) => {
+        // Fix: History dates need same UTC-to-Local conversion as PO list
+        if (item.history && Array.isArray(item.history)) {
+          item.history.forEach((h: any) => {
+            if (h.receivedDate && typeof h.receivedDate === 'string' && !h.receivedDate.includes('Z') && !h.receivedDate.includes('+')) {
+              h.receivedDate = h.receivedDate + 'Z';
+            }
+          });
+        }
+
+        return {
+          productId: item.productId,
+          productName: item.productName,
+          totalReceived: item.totalReceived,
+          totalRejected: item.totalRejected,
+          totalSold: item.totalSold || 0,
+          availableStock: item.availableStock,
+          unit: item.unit,
+          lastRate: item.lastRate,
+          minStockLevel: item.minStockLevel,
+          history: item.history
+        };
+      });
       this.stockDataSource.data = mappedData;
       this.updateSummary(mappedData);
     }

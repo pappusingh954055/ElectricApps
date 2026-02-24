@@ -138,10 +138,28 @@ export class InwardGatePassComponent implements OnInit {
         this.referenceLabel = 'Link With PO No';
         const refNo = params['refNo'];
         const refId = params['refId'];
+        const isBulk = params['isBulk'] === 'true';
         this.isReplacement = params['isReplacement'] === 'true';
 
         if (!refId) return;
 
+        // --- BULK FLOW ---
+        if (isBulk) {
+            this.bulkBreakdown = params['breakdown'] || '';
+            this.gatePassForm.patchValue({
+                referenceType: GatePassReferenceType.PurchaseOrder,
+                referenceId: String(refId),
+                referenceNo: 'BULK-INWARD',
+                partyName: 'Multiple Suppliers',
+                expectedQty: params['qty'] || 0,
+                invoiceNo: 'BULK-INWARD'
+            });
+            this.gatePassForm.get('referenceType')?.disable();
+            this.cdr.detectChanges();
+            return;
+        }
+
+        // --- SINGLE PO FLOW ---
         this.loadingService.setLoading(true);
         // Call the new backend endpoint for accurate replacement quantity
         this.poService.getReplacementQty(Number(refId)).subscribe({

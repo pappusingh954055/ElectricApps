@@ -824,12 +824,33 @@ export class PoList implements OnInit {
   onBulkCreateGrn(selectedRows: any[]) {
     if (!selectedRows || selectedRows.length === 0) return;
 
+    // Filter only those which are eligible for receive: Approved or Partially Received
+    const eligibleOrders = selectedRows.filter(r =>
+      ['approved', 'partially received'].includes(r.status?.toLowerCase())
+    );
+
+    if (eligibleOrders.length === 0) {
+      this.dialog.open(StatusDialogComponent, {
+        width: '400px',
+        data: {
+          type: 'info',
+          title: 'Selection Invalid',
+          message: 'Only Approved or Partially Received orders can be selected for Bulk Receiving.'
+        }
+      });
+      return;
+    }
+
+    const totalQty = eligibleOrders.reduce((sum, r) => sum + (Number(r.totalPending || 0)), 0);
+    const poNumbers = eligibleOrders.map(r => r.poNumber).join(', ');
+    const breakdown = eligibleOrders.map(r => `${r.poNumber} (${r.totalPending || 0})`).join(', ');
+
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       width: '450px',
       data: {
         title: 'Bulk Receive Items',
-        message: `System will automatically create ${selectedRows.length} Goods Received Notes (GRN) for selected POs. Do you want to continue?`,
-        confirmText: 'Yes, Create All',
+        message: `System will redirect you to create a Bulk Inward Gate Pass for ${eligibleOrders.length} selected POs. Do you want to continue?`,
+        confirmText: 'Yes, Proceed',
         cancelText: 'Cancel',
         confirmColor: 'primary'
       }
@@ -837,28 +858,15 @@ export class PoList implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.isLoading = true;
-        this.cdr.detectChanges();
-
-        const request = {
-          purchaseOrderIds: selectedRows.map(r => r.id),
-          createdBy: this.authService.getUserName()
-        };
-
-        this.poService.createBulkGrn(request).subscribe({
-          next: (res) => {
-            this.isLoading = false;
-            this.notification.showStatus(true, `${selectedRows.length} GRNs created successfully!`);
-            if (this.grid && this.grid.selection) {
-              this.grid.selection.clear();
-            }
-            this.loadData(this.currentGridState);
-            this.cdr.detectChanges();
-          },
-          error: (err) => {
-            this.isLoading = false;
-            this.notification.showStatus(false, 'Bulk GRN creation failed. Please check if all selected items are Approved.');
-            this.cdr.detectChanges();
+        this.router.navigate(['/app/inventory/gate-pass/inward'], {
+          queryParams: {
+            type: 'po',
+            isBulk: 'true',
+            refNo: 'BULK-INWARD',
+            partyName: 'Multiple Suppliers',
+            qty: totalQty,
+            breakdown: breakdown,
+            refId: eligibleOrders.map(r => r.id).join(',')
           }
         });
       }
