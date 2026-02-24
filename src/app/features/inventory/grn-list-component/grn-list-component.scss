@@ -355,6 +355,18 @@
   }
 
   .text-danger { color: #d32f2f; font-weight: 600; }
+  .text-success { color: #2e7d32; font-weight: 600; }
+  
+  .inner-table-footer {
+    background: #f8fafc;
+    border-top: 2px solid #e2e8f0;
+    
+    td {
+      padding: 8px 10px;
+      font-size: 11px;
+      border-bottom: none;
+    }
+  }
 }
 
 /* Paginator [cite: 2026-01-22] */

@@ -38,9 +38,16 @@
       <button mat-raised-button color="warn" class="export-action-btn" 
               (click)="selection.hasValue() ? DownloadMultipleOrders(getSelectedIds()) : exportOrders()" 
               [disabled]="isLoading"
-              *ngIf="dataSource.data.length > 0">
+              *ngIf="dataSource.data.length > 0 && canShowExport">
         <mat-icon>download</mat-icon> 
         {{ selection.hasValue() ? 'Export (' + selection.selected.length + ')' : 'Export Excel' }}
+      </button>
+      <button mat-raised-button color="accent" class="bulk-action-btn" 
+              (click)="bulkCreateGatePass()" 
+              [disabled]="isLoading"
+              *ngIf="canShowBulkDispatch">
+        <mat-icon>local_shipping</mat-icon> 
+        Bulk Dispatch ({{ selection.selected.length }})
       </button>
       <button mat-raised-button color="primary" class="main-add-btn" *ngIf="!selection.hasValue()" (click)="createNewOrder()" [disabled]="isLoading">
         <mat-icon>add</mat-icon> New Sale Order
@@ -79,6 +86,7 @@
             <mat-checkbox (click)="$event.stopPropagation()"
                           (change)="$event ? selection.toggle(row) : null"
                           [checked]="selection.isSelected(row)"
+                          *ngIf="row.isDispatchPending"
                           color="primary">
             </mat-checkbox>
           </td>
@@ -92,7 +100,7 @@
                 <mat-icon>filter_list</mat-icon>
               </button>
             </div>
-
+            <div class="resize-handle" (mousedown)="onResizeColumn($event, 'soNumber')"></div>
           </th>
           <td mat-cell *matCellDef="let row"> {{row.soNumber}} </td>
         </ng-container>
@@ -102,6 +110,7 @@
             <div class="header-with-filter">
               <span mat-sort-header>Gate Pass</span>
             </div>
+            <div class="resize-handle" (mousedown)="onResizeColumn($event, 'gatePassNo')"></div>
           </th>
           <td mat-cell *matCellDef="let row">
             <span class="gate-pass-badge" *ngIf="row.gatePassNo">{{row.gatePassNo}}</span>
@@ -117,7 +126,7 @@
                 <mat-icon>filter_list</mat-icon>
               </button>
             </div>
-
+            <div class="resize-handle" (mousedown)="onResizeColumn($event, 'soDate')"></div>
           </th>
           <td mat-cell *matCellDef="let row"> {{row.soDate | date:'dd-MMM-yy hh:mm a':'+0530'}} </td>
         </ng-container>
@@ -130,9 +139,19 @@
                 <mat-icon>filter_list</mat-icon>
               </button>
             </div>
-
+            <div class="resize-handle" (mousedown)="onResizeColumn($event, 'customerName')"></div>
           </th>
           <td mat-cell *matCellDef="let row"> {{row.customerName}} </td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalQty">
+          <th mat-header-cell *matHeaderCellDef cdkDrag cdkDragLockAxis="x">
+            <div class="header-with-filter">
+              <span mat-sort-header>Total Qty</span>
+            </div>
+            <div class="resize-handle" (mousedown)="onResizeColumn($event, 'totalQty')"></div>
+          </th>
+          <td mat-cell *matCellDef="let row"> <b>{{row.totalQty}}</b> </td>
         </ng-container>
 
         <ng-container matColumnDef="grandTotal">
@@ -143,7 +162,7 @@
                 <mat-icon>filter_list</mat-icon>
               </button>
             </div>
-
+            <div class="resize-handle" (mousedown)="onResizeColumn($event, 'grandTotal')"></div>
           </th>
           <td mat-cell *matCellDef="let row"> {{row.grandTotal | currency:'INR'}} </td>
         </ng-container>
@@ -156,7 +175,7 @@
                 <mat-icon>filter_list</mat-icon>
               </button>
             </div>
-
+            <div class="resize-handle" (mousedown)="onResizeColumn($event, 'status')"></div>
           </th>
           <td mat-cell *matCellDef="let row">
             <span class="status-badge" [ngClass]="row.status?.toLowerCase()">
@@ -174,6 +193,7 @@
                 <mat-icon [color]="paymentFilter ? 'primary' : ''">filter_list</mat-icon>
               </button>
             </div>
+            <div class="resize-handle" (mousedown)="onResizeColumn($event, 'paymentStatus')"></div>
           </th>
           <td mat-cell *matCellDef="let row">
             <span class="payment-badge" [ngClass]="{
@@ -240,7 +260,7 @@
             cdkDropList
             cdkDropListOrientation="horizontal"
             (cdkDropListDropped)="drop($event)"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="selection.toggle(row)"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="row.isDispatchPending ? selection.toggle(row) : null"></tr>
       </table>
 
       <mat-paginator [length]="totalRecords" 

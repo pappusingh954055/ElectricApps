@@ -477,10 +477,14 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
 
   calculateSubTotal(element: any): number {
     if (element.subTotal) return element.subTotal;
-    // Fallback logic
     const grand = element.grandTotal || 0;
     const tax = element.totalTax || 0;
     return grand - tax;
+  }
+
+  calculateTotalQty(element: any): number {
+    const items = element[this.childDataField] || [];
+    return items.reduce((sum: number, item: any) => sum + (Number(item.qty) || 0), 0);
   }
 
   onDeletePO(row: any) {

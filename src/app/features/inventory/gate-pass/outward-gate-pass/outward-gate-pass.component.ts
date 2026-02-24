@@ -38,6 +38,7 @@ export class OutwardGatePassComponent implements OnInit {
     isRedirected = false; // Flag to prevent auto-reset
     gatePassId: number | null = null;
     currentPassNo = 'Auto-Generated Pass No: GP-OUT-2026-XXXX';
+    bulkBreakdown = '';
 
     referenceTypes = [
         { id: GatePassReferenceType.SaleOrder, name: 'Sale Order' },
@@ -85,11 +86,15 @@ export class OutwardGatePassComponent implements OnInit {
         const qty = params['qty'] || 0;
         const refId = params['refId'] || '';
 
+        this.bulkBreakdown = params['breakdown'] || '';
+        const isBulk = params['isBulk'] === 'true';
+
         this.gatePassForm.patchValue({
             referenceId: refId || '',
             referenceNo: refNo,
             partyName: partyName,
-            totalQty: qty
+            totalQty: qty,
+            remarks: isBulk ? 'BULK-OUTWARD DISPATCH' : ''
         });
         this.cdr.detectChanges();
     }
@@ -227,6 +232,11 @@ export class OutwardGatePassComponent implements OnInit {
             status: GatePassStatus.Completed,
             createdBy: this.authService.getUserName()
         };
+
+        // Append breakdown to remarks if bulk
+        if (this.bulkBreakdown && !gatePassData.remarks?.includes('Breakdown:')) {
+            gatePassData.remarks = gatePassData.remarks ? `${gatePassData.remarks} | Breakdown: ${this.bulkBreakdown}` : `Breakdown: ${this.bulkBreakdown}`;
+        }
 
         this.isSaving = true;
         this.loadingService.setLoading(true);

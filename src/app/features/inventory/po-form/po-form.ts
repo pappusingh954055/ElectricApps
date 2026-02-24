@@ -95,6 +95,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   grandTotal = 0;
   totalTaxAmount = 0;
   subTotal = 0;
+  totalQty = 0;
   poForm!: FormGroup;
   poId!: any;
   currentStatus = '';
@@ -411,14 +412,16 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   }
 
   calculateGrandTotal(): void {
-    let totalTax = 0, totalWithTax = 0;
+    let totalTax = 0, totalWithTax = 0, totalQtySum = 0;
     this.items.controls.forEach(c => {
       totalTax += Number(c.get('taxAmount')?.value || 0);
       totalWithTax += Number(c.get('total')?.value || 0);
+      totalQtySum += Number(c.get('qty')?.value || 0);
     });
     this.totalTaxAmount = Number(totalTax.toFixed(2));
     this.grandTotal = Number(totalWithTax.toFixed(2));
     this.subTotal = Number((this.grandTotal - this.totalTaxAmount).toFixed(2));
+    this.totalQty = totalQtySum;
     this.cdr.detectChanges();
   }
 

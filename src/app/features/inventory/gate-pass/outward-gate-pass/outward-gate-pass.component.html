@@ -110,6 +110,14 @@
                         <textarea matInput formControlName="remarks" rows="1"></textarea>
                     </mat-form-field>
                 </div>
+
+                <!-- Breakdown Preview (Similar to Inward) -->
+                <div class="row" *ngIf="bulkBreakdown">
+                    <div class="breakdown-info">
+                        <mat-icon>info</mat-icon>
+                        <span><strong>Dispatch Breakdown:</strong> {{bulkBreakdown}}</span>
+                    </div>
+                </div>
                 
                 <!-- Section 4: Security Check -->
                 <div class="section-title">4. Security Validation</div>

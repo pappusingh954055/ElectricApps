@@ -309,6 +309,23 @@ th.mat-header-cell, th.mat-mdc-header-cell {
   border-bottom: 1px solid #e5e7eb;
   padding: 0 16px; 
   height: 44px;
+  position: relative; /* For resize handle */
+
+  .resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 5px;
+    cursor: col-resize;
+    z-index: 10;
+    background: transparent;
+    transition: background 0.2s;
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.5); /* Blue highlight on hover */
+    }
+  }
 }
 
 .header-with-filter {
@@ -319,21 +336,33 @@ th.mat-header-cell, th.mat-mdc-header-cell {
   white-space: nowrap;
 
   .small-filter-btn {
-    width: 24px !important;
-    height: 24px !important;
-    line-height: 0 !important;
-    min-width: 24px !important;
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
     padding: 0 !important;
+    border-radius: 50% !important;
+    background-color: white !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.12) !important;
+    border: 1px solid #eef2f6 !important;
     
     display: flex !important;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    
+    &:hover {
+      background-color: #f8fafc !important;
+      box-shadow: 0 4px 10px rgba(59, 130, 246, 0.25) !important;
+      transform: translateY(-1px);
+    }
     
     mat-icon {
-      font-size: 16px !important;
-      width: 16px !important;
-      height: 16px !important;
-      line-height: 16px !important; // Ensure minimal height
+      font-size: 14px !important;
+      width: 14px !important;
+      height: 14px !important;
+      line-height: 14px !important;
+      color: #3b82f6; 
+      margin: 0 !important;
     }
   }
 }
@@ -475,11 +504,31 @@ button[color="warning"] {
   min-width: 260px !important;
   max-width: 300px !important;
   border-radius: 12px !important;
-  margin-top: 8px !important; /* Slight gap from header */
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+  margin-top: 12px !important; /* Gap for the arrow */
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2) !important;
+  
+  /* Fixed: Align with icon left-edge and expand towards the right of the table */
+  transform: none !important; 
+  overflow: visible !important; 
 
   .mat-mdc-menu-content {
     padding: 0 !important;
+    border-radius: 12px !important;
+    overflow: hidden !important;
+  }
+
+  /* Triangle Arrow (Pointing exactly to Filter Icon center) */
+  &::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 13px; /* Icon Center */
+    transform: translateX(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background-color: white;
+    box-shadow: -3px -3px 5px rgba(0,0,0,0.04);
+    z-index: -1;
   }
 }
 
@@ -609,12 +658,14 @@ button[color="warning"] {
   /* Specific Column Widths */
   .mat-column-select { width: 48px; min-width: 48px; max-width: 48px; }
   
-  .mat-column-soNumber { width: var(--col-soNumber-width, 140px); min-width: var(--col-soNumber-width, 140px); max-width: var(--col-soNumber-width, 140px); }
-  .mat-column-soDate { width: var(--col-soDate-width, 140px); min-width: var(--col-soDate-width, 140px); max-width: var(--col-soDate-width, 140px); }
-  .mat-column-customerName { width: var(--col-customerName-width, 200px); min-width: var(--col-customerName-width, 200px); max-width: var(--col-customerName-width, 200px); }
-  .mat-column-grandTotal { width: var(--col-grandTotal-width, 140px); min-width: var(--col-grandTotal-width, 140px); max-width: var(--col-grandTotal-width, 140px); }
-  .mat-column-status { width: var(--col-status-width, 130px); min-width: var(--col-status-width, 130px); max-width: var(--col-status-width, 130px); }
-  .mat-column-paymentStatus { width: var(--col-paymentStatus-width, 130px); min-width: var(--col-paymentStatus-width, 130px); max-width: var(--col-paymentStatus-width, 130px); }
+  .mat-column-soNumber { width: var(--col-soNumber-width, 130px); min-width: var(--col-soNumber-width, 130px); max-width: var(--col-soNumber-width, 130px); }
+  .mat-column-gatePassNo { width: var(--col-gatePassNo-width, 120px); min-width: var(--col-gatePassNo-width, 120px); max-width: var(--col-gatePassNo-width, 120px); }
+  .mat-column-soDate { width: var(--col-soDate-width, 170px); min-width: var(--col-soDate-width, 170px); max-width: var(--col-soDate-width, 170px); }
+  .mat-column-customerName { width: var(--col-customerName-width, 180px); min-width: var(--col-customerName-width, 180px); max-width: var(--col-customerName-width, 180px); }
+  .mat-column-totalQty { width: var(--col-totalQty-width, 80px); min-width: var(--col-totalQty-width, 80px); max-width: var(--col-totalQty-width, 80px); }
+  .mat-column-grandTotal { width: var(--col-grandTotal-width, 130px); min-width: var(--col-grandTotal-width, 130px); max-width: var(--col-grandTotal-width, 130px); }
+  .mat-column-status { width: var(--col-status-width, 120px); min-width: var(--col-status-width, 120px); max-width: var(--col-status-width, 120px); }
+  .mat-column-paymentStatus { width: var(--col-paymentStatus-width, 120px); min-width: var(--col-paymentStatus-width, 120px); max-width: var(--col-paymentStatus-width, 120px); }
   
   .mat-column-actions { width: 100px; min-width: 100px; }
 }

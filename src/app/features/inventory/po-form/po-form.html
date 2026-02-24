@@ -188,6 +188,10 @@
         <div class="summary-box">
           <div class="totals-container">
             <div class="total-row">
+              <span style="color: #64748b; font-weight: 500;">Total Items Qty:</span>
+              <span style="font-weight: 600;">{{ totalQty }}</span>
+            </div>
+            <div class="total-row">
               <span>Sub-Total:</span>
               <span>₹{{ grandTotal - totalTaxAmount | number:'1.2-2' }}</span>
             </div>

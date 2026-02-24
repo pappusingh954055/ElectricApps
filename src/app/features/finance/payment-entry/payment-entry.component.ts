@@ -42,6 +42,7 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
   private isFirstLoad: boolean = true;
   isDuplicateRef: boolean = false;
   isCheckingRef: boolean = false;
+  isSaving: boolean = false;
   private refChangeSubject = new Subject<string>();
   private routeSub!: Subscription;
 
@@ -206,6 +207,15 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
     const supplier = event.option.value as Supplier;
     this.payment.supplierId = supplier.id;
     this.fetchBalance(supplier.id!);
+  }
+
+  private formatErrorMessage(err: any): string {
+    let message = err.error?.message || err.error || 'Failed to record payment.';
+    if (typeof message === 'string' && message.includes('System.InvalidOperationException: ')) {
+      // Extract only the core message before the stack trace
+      message = message.split('System.InvalidOperationException: ')[1].split(' at ')[0].split('\n')[0].trim();
+    }
+    return message;
   }
 
   preselectSupplier(supplierId: number) {
@@ -384,7 +394,9 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
   }
 
   performPayment() {
+    this.isSaving = true;
     this.updateLoading(1);
+    this.cdr.detectChanges();
 
     // Ensure unique reference by adding a small suffix if it looks like a GRN reference
     let ref = this.payment.referenceNumber || '';
@@ -399,7 +411,11 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
     };
 
     this.financeService.recordSupplierPayment(payload).pipe(
-      finalize(() => this.updateLoading(-1))
+      finalize(() => {
+        this.updateLoading(-1);
+        this.isSaving = false;
+        this.cdr.detectChanges();
+      })
     ).subscribe({
       next: (res) => {
         const successDialog = this.dialog.open(StatusDialogComponent, {
@@ -431,7 +447,7 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
       error: (err) => {
         this.updateLoading(-1);
         console.error(err);
-        const errorMessage = err.error?.message || err.error || 'Failed to record payment.';
+        const errorMessage = this.formatErrorMessage(err);
         this.dialog.open(StatusDialogComponent, {
           data: {
             isSuccess: false,

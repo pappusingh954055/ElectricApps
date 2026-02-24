@@ -13,8 +13,8 @@
             <mat-card-subtitle>Enter details of payment received from customer</mat-card-subtitle>
         </mat-card-header>
         
-        <mat-card-content>
-            <form (ngSubmit)="saveReceipt()">
+        <form (ngSubmit)="saveReceipt()">
+            <mat-card-content>
                 <div class="form-grid">
                     <mat-form-field appearance="outline" class="full-width">
                         <mat-label>Customer Selection</mat-label>
@@ -86,20 +86,20 @@
                         <textarea matInput [(ngModel)]="receipt.remarks" name="remarks" rows="1" placeholder="Add additional notes..."></textarea>
                     </mat-form-field>
                 </div>
+            </mat-card-content>
 
-                <mat-divider></mat-divider>
+            <mat-divider></mat-divider>
 
-                <div class="actions">
-                    <button mat-button color="warn" type="button" (click)="resetForm()" [disabled]="isLoading">
-                        Reset Form
-                    </button>
-                    <button mat-flat-button color="primary" type="submit" [disabled]="!receipt.customerId || !receipt.amount || isLoading">
-                        <mat-icon *ngIf="!isLoading">save</mat-icon>
-                        <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
-                        {{isLoading ? 'Saving...' : 'Save Receipt'}}
-                    </button>
-                </div>
-            </form>
-        </mat-card-content>
+            <mat-card-actions align="end">
+                <button mat-raised-button type="button" (click)="resetForm()" [disabled]="isLoading">
+                    Reset Form
+                </button>
+                <button mat-raised-button color="primary" type="submit" [disabled]="!receipt.customerId || !receipt.amount || isLoading">
+                    <mat-icon *ngIf="!isLoading">save</mat-icon>
+                    <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
+                    {{isLoading ? 'Saving...' : 'Save Receipt'}}
+                </button>
+            </mat-card-actions>
+        </form>
     </mat-card>
 </div>

@@ -1,13 +1,5 @@
-
-<!-- Loading Spinner Overlay (Outside blurred container) -->
-<div class="loading-overlay" *ngIf="isDashboardLoading">
-    <mat-spinner diameter="50"></mat-spinner>
-</div>
-
 <div class="page-container" [class.disabled-content]="isDashboardLoading">
     <div class="page-header">
-
-
         <h1 class="mat-headline-4">Payment Entry</h1>
         <p class="subtitle">Record supplier payments and manage transaction details.</p>
     </div>
@@ -22,10 +14,8 @@
             <mat-card-title>New Transaction</mat-card-title>
             <mat-card-subtitle>Fill in the payment details below</mat-card-subtitle>
         </mat-card-header>
-        
-        <mat-card-content>
-
-            <form (ngSubmit)="savePayment()">
+        <form (ngSubmit)="savePayment()">
+            <mat-card-content>
                 <div class="form-grid">
                     <!-- Row 1: Supplier & Balance -->
                     <div class="col-12">
@@ -120,19 +110,21 @@
                         </mat-form-field>
                     </div>
                 </div>
+            </mat-card-content>
 
-                <mat-divider></mat-divider>
+            <mat-divider></mat-divider>
 
-                <div class="actions">
-                    <button mat-button color="warn" type="button" (click)="resetForm()">
-                        Reset Form
-                    </button>
-                    <button mat-flat-button color="primary" type="submit" [disabled]="!payment.supplierId || !payment.amount || isDuplicateRef || isCheckingRef">
-                        <mat-icon>save</mat-icon> {{ isDuplicateRef ? 'Invalid Reference' : 'Record Payment' }}
-                    </button>
-                </div>
-            </form>
-        </mat-card-content>
+            <mat-card-actions align="end">
+                <button mat-raised-button type="button" (click)="resetForm()" [disabled]="isSaving">
+                    Reset Form
+                </button>
+                <button mat-raised-button color="primary" type="submit" [disabled]="!payment.supplierId || !payment.amount || isDuplicateRef || isCheckingRef || isSaving">
+                    <mat-icon *ngIf="!isSaving">save</mat-icon>
+                    <mat-spinner diameter="20" *ngIf="isSaving"></mat-spinner>
+                    {{ isSaving ? 'Recording...' : (isDuplicateRef ? 'Invalid Reference' : 'Record Payment') }}
+                </button>
+            </mat-card-actions>
+        </form>
     </mat-card>
 
     <!-- Recent Transactions Section -->

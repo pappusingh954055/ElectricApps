@@ -38,12 +38,6 @@
     </div>
 
     <mat-card class="table-card elevation-z2" [class.is-loading]="isLoading">
-        <mat-progress-bar mode="indeterminate" color="primary" *ngIf="isLoading" class="top-loader"></mat-progress-bar>
-            
-        <div class="loading-shade" *ngIf="isLoading">
-            <mat-spinner diameter="45"></mat-spinner>
-        </div>
-
         <mat-card-header>
             <mat-card-title>
                 <div class="header-content">

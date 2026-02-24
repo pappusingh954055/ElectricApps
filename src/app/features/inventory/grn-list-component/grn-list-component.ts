@@ -264,6 +264,16 @@ export class GrnListComponent implements OnInit, AfterViewInit {
     return (row as GRNListRow).items || [];
   }
 
+  calculateTotalOrdered(row: any): number {
+    const items = (row as GRNListRow).items || [];
+    return items.reduce((sum, item) => sum + (Number(item.orderedQty) || 0), 0);
+  }
+
+  calculateTotalReceived(row: any): number {
+    const items = (row as GRNListRow).items || [];
+    return items.reduce((sum, item) => sum + (Number(item.receivedQty) || 0), 0);
+  }
+
   // Navigation Logic
   viewGRN(id: number) {
     this.router.navigate(['/app/inventory/grn-list/view', id]);

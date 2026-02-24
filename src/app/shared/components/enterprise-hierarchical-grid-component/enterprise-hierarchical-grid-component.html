@@ -322,6 +322,10 @@
                         <td class="footer-summary-container" colspan="2">
                           <div class="summary-box">
                             <div class="summary-item">
+                              <span class="label">Total Qty:</span>
+                              <span class="value">{{ calculateTotalQty(element) }}</span>
+                            </div>
+                            <div class="summary-item">
                               <span class="label">Sub-Total:</span>
                               <span class="value">{{ calculateSubTotal(element) | currency:'INR' }}</span>
                             </div>

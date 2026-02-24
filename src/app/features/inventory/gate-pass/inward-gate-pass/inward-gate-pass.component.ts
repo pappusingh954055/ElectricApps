@@ -43,6 +43,7 @@ export class InwardGatePassComponent implements OnInit {
     gatePassId: number | null = null;
     currentPassNo = 'Auto-Generated Pass No: GP-IN-2026-XXXX';
     bulkBreakdown: string = '';
+    isReplacement: boolean = false;
 
     // Reference Selection
     referenceTypes = [
@@ -137,6 +138,7 @@ export class InwardGatePassComponent implements OnInit {
         this.referenceLabel = 'Link With PO No';
         const refNo = params['refNo'];
         const refId = params['refId'];
+        this.isReplacement = params['isReplacement'] === 'true';
 
         if (!refId) return;
 
@@ -180,6 +182,7 @@ export class InwardGatePassComponent implements OnInit {
         setTimeout(() => {
             this.isExternalRef = true;
             this.referenceLabel = 'Sale Return No';
+            this.isReplacement = false;
             const refNo = params['refNo'];
 
             const refIdControl = this.gatePassForm.get('referenceId');
@@ -281,6 +284,7 @@ export class InwardGatePassComponent implements OnInit {
                 expectedQty: selectedSR.totalQty,
                 invoiceNo: selectedSR.returnNumber // For Sale Return, Return No is often the reference
             });
+            this.isReplacement = false; // Usually sale return is not called "replacement" here
         }
     }
 
@@ -293,6 +297,7 @@ export class InwardGatePassComponent implements OnInit {
                 expectedQty: selectedPO.expectedQty,
                 invoiceNo: `CH-${selectedPO.poNumber.replace(/\//g, '-')}` // Auto-filling Challan No for PO
             });
+            this.isReplacement = false;
         }
     }
 
@@ -305,6 +310,7 @@ export class InwardGatePassComponent implements OnInit {
                 expectedQty: selectedPR.totalQty,
                 invoiceNo: `REPLACEMENT-${selectedPR.returnNumber}`
             });
+            this.isReplacement = true;
         }
     }
 

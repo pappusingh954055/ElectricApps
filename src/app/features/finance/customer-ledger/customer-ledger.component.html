@@ -39,7 +39,7 @@
                     <mat-datepicker #endPicker></mat-datepicker>
                 </mat-form-field>
 
-                <button mat-flat-button color="primary" class="refresh-btn" (click)="updateReport()" [disabled]="isLoading || !customerId">
+                <button mat-raised-button color="primary" class="refresh-btn" (click)="updateReport()" [disabled]="isLoading || !customerId">
                     <mat-icon *ngIf="!isLoading">search</mat-icon>
                     <mat-spinner diameter="20" *ngIf="isLoading"></mat-spinner>
                     Show Ledger
@@ -66,7 +66,7 @@
                     </div>
                     
                     <div class="action-buttons">
-                        <button mat-flat-button color="primary" (click)="goToReceipt()" [disabled]="currentBalance <= 0">
+                        <button mat-raised-button color="primary" (click)="goToReceipt()" [disabled]="currentBalance <= 0">
                             <mat-icon>add_circle_outline</mat-icon> Record Receipt
                         </button>
                     </div>

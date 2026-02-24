@@ -553,7 +553,8 @@ export class PoList implements OnInit {
         refNo: row.poNumber,
         refId: row.id,
         partyName: row.supplierName,
-        qty: resultQty
+        qty: resultQty,
+        isReplacement: (totalReturned > 0 || totalRejected > 0) ? 'true' : 'false'
       }
     });
   }

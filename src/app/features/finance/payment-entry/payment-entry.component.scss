@@ -1,6 +1,21 @@
 .page-container {
-    padding: 24px;
+    padding: 10px 24px;
     animation: fadeIn 0.4s ease-in-out;
+}
+
+.page-header {
+    margin-bottom: 16px;
+    
+    h1 {
+        margin-bottom: 4px !important;
+        margin-top: 0 !important;
+    }
+    
+    .subtitle {
+        margin: 0;
+        color: var(--text-secondary);
+        font-size: 14px;
+    }
 }
 
 @keyframes fadeIn {
@@ -104,11 +119,22 @@ mat-form-field {
 
 .text-success { color: #2e7d32; }
 .text-danger { color: #c62828; }
+mat-card-actions {
+    padding: 16px 24px !important;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
 
+    button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
 
-
-
-
+        mat-spinner {
+            display: inline-block;
+        }
+    }
+}
 .loading-overlay {
     position: fixed; /* Fixed so it centers on screen regardless of scroll */
     top: 50%;

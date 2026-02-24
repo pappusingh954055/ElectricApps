@@ -144,6 +144,15 @@ export class ReceiptEntryComponent implements OnInit {
     });
   }
 
+  private formatErrorMessage(err: any): string {
+    let message = err.error?.message || err.error || 'Failed to record receipt.';
+    if (typeof message === 'string' && message.includes('System.InvalidOperationException: ')) {
+      // Extract only the core message before the stack trace
+      message = message.split('System.InvalidOperationException: ')[1].split(' at ')[0].split('\n')[0].trim();
+    }
+    return message;
+  }
+
   preselectCustomer(id: number) {
     const customer = this.customers.find(c => c.id === id);
     if (customer) {
@@ -173,6 +182,7 @@ export class ReceiptEntryComponent implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.isLoading = true;
+        this.cdr.detectChanges();
         let ref = this.receipt.referenceNumber || '';
         // If it looks like a standard SO/GRN reference (Prefix-Year-Number), add a unique suffix
         if ((ref.startsWith('SO-') || ref.startsWith('GRN-')) && ref.split('-').length < 4) {
@@ -193,6 +203,7 @@ export class ReceiptEntryComponent implements OnInit {
         this.financeService.recordCustomerReceipt(payload).subscribe({
           next: (res) => {
             this.isLoading = false;
+            this.cdr.detectChanges();
             const successDialog = this.dialog.open(StatusDialogComponent, {
               data: {
                 isSuccess: true,
@@ -229,8 +240,9 @@ export class ReceiptEntryComponent implements OnInit {
           },
           error: (err) => {
             this.isLoading = false;
+            this.cdr.detectChanges();
             console.error(err);
-            const errorMessage = err.error?.message || err.error || 'Failed to record receipt.';
+            const errorMessage = this.formatErrorMessage(err);
             this.dialog.open(StatusDialogComponent, {
               data: {
                 isSuccess: false,

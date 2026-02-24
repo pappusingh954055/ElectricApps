@@ -30,7 +30,7 @@ import { catchError } from 'rxjs/operators';
 export class SoList implements OnInit {
   private loadingService = inject(LoadingService);
 
-  displayedColumns: string[] = ['select', 'soNumber', 'gatePassNo', 'soDate', 'customerName', 'grandTotal', 'status', 'paymentStatus', 'actions'];
+  displayedColumns: string[] = ['select', 'soNumber', 'gatePassNo', 'soDate', 'customerName', 'totalQty', 'grandTotal', 'status', 'paymentStatus', 'actions'];
   dataSource = new MatTableDataSource<any>([]);
   isAdmin: boolean = false;
   isLoading: boolean = true;
@@ -61,6 +61,45 @@ export class SoList implements OnInit {
     private snackBar: MatSnackBar
   ) { }
 
+  // --- Column Resizing Logic ---
+  private resizingColumn: string = '';
+  private startX: number = 0;
+  private startWidth: number = 0;
+
+  onResizeColumn(event: MouseEvent, column: string) {
+    event.stopPropagation();
+    event.preventDefault();
+    this.resizingColumn = column;
+    this.startX = event.pageX;
+
+    const columnEl = (event.target as HTMLElement).parentElement;
+    if (columnEl) {
+      this.startWidth = columnEl.offsetWidth;
+    }
+
+    const mouseMoveListener = (e: MouseEvent) => this.onMouseMove(e);
+    const mouseUpListener = () => {
+      this.resizingColumn = '';
+      window.removeEventListener('mousemove', mouseMoveListener);
+      window.removeEventListener('mouseup', mouseUpListener);
+    };
+
+    window.addEventListener('mousemove', mouseMoveListener);
+    window.addEventListener('mouseup', mouseUpListener);
+  }
+
+  private onMouseMove(event: MouseEvent) {
+    if (!this.resizingColumn) return;
+
+    const deltaX = event.pageX - this.startX;
+    const newWidth = Math.max(50, this.startWidth + deltaX); // Min width 50px
+
+    // Apply width via CSS Variables
+    const root = document.documentElement;
+    document.body.style.setProperty(`--col-${this.resizingColumn}-width`, `${newWidth}px`);
+    this.cdr.detectChanges();
+  }
+
   ngOnInit() {
     this.checkUserRole();
 
@@ -87,18 +126,38 @@ export class SoList implements OnInit {
   // --- Selection Helper Logic (New) ---
   isAllSelected() {
     const numSelected = this.selection.selected.length;
-    const numRows = this.dataSource.data.length;
-    return numSelected === numRows;
+    const selectableRows = this.dataSource.data.filter(row => row.isDispatchPending);
+    return numSelected === selectableRows.length && selectableRows.length > 0;
   }
 
   masterToggle() {
-    this.isAllSelected() ?
-      this.selection.clear() :
-      this.dataSource.data.forEach(row => this.selection.select(row));
+    if (this.isAllSelected()) {
+      this.selection.clear();
+    } else {
+      this.dataSource.data.forEach(row => {
+        if (row.isDispatchPending) {
+          this.selection.select(row);
+        }
+      });
+    }
   }
 
   getSelectedIds(): string[] {
     return this.selection.selected.map(row => row.id);
+  }
+
+  get canShowBulkDispatch(): boolean {
+    return this.selection.hasValue() && this.selection.selected.some(r =>
+      r.status?.toLowerCase() === 'confirmed' &&
+      r.paymentStatus === 'Paid' &&
+      r.isDispatchPending
+    );
+  }
+
+  get canShowExport(): boolean {
+    if (!this.selection.hasValue()) return true;
+    // Hide Export if any selected order is eligible for bulk dispatch
+    return !this.canShowBulkDispatch;
   }
 
   // --- Existing Methods (Exactly as you provided) ---
@@ -328,6 +387,46 @@ export class SoList implements OnInit {
         refId: row.id,
         partyName: row.customerName,
         qty: row.totalQty || 0
+      }
+    });
+  }
+
+  bulkCreateGatePass() {
+    const selectedRows = this.selection.selected;
+    if (selectedRows.length === 0) return;
+
+    // Filter only those which are eligible for dispatch: Confirmed + Paid + Pending Dispatch
+    const eligibleOrders = selectedRows.filter(r =>
+      r.status?.toLowerCase() === 'confirmed' &&
+      r.paymentStatus === 'Paid' &&
+      r.isDispatchPending
+    );
+
+    if (eligibleOrders.length === 0) {
+      this.dialog.open(StatusDialogComponent, {
+        width: '400px',
+        data: {
+          type: 'info',
+          title: 'Selection Invalid',
+          message: 'Only Confirmed & Paid orders with pending dispatch can be selected for Bulk Outward.'
+        }
+      });
+      return;
+    }
+
+    const totalQty = eligibleOrders.reduce((sum, r) => sum + (r.totalQty || 0), 0);
+    const orderNumbers = eligibleOrders.map(r => r.soNumber).join(', ');
+    const breakdown = eligibleOrders.map(r => `${r.soNumber} (${r.totalQty || 0})`).join(', ');
+
+    this.router.navigate(['/app/inventory/gate-pass/outward'], {
+      queryParams: {
+        type: 'sale-order',
+        isBulk: 'true',
+        refNo: 'BULK-OUTWARD',
+        partyName: 'Multiple Customers',
+        qty: totalQty,
+        breakdown: breakdown,
+        refId: eligibleOrders.map(r => r.id).join(',')
       }
     });
   }
