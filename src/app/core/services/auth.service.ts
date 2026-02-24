@@ -1,4 +1,5 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../enviornments/environment';
 import { LoginDto } from '../models/user.model';
@@ -9,6 +10,7 @@ import { ApiService } from '../../shared/api.service';
   providedIn: 'root'
 })
 export class AuthService {
+  private http = inject(HttpClient);
   private api = inject(ApiService);
   private router = inject(Router);
 
@@ -17,9 +19,11 @@ export class AuthService {
   // 🔐 LOGIN
   login(data: LoginDto): Observable<any> {
     const payload = {
-      dto: data
+      Dto: data
     };
-    return this.api.post<any>('login', payload, this.baseUrl).pipe(
+    const url = `${this.baseUrl}/login`;
+    console.log('[AuthService] Login attempt to:', url);
+    return this.http.post<any>(url, payload).pipe(
       tap(res => this.storeTokens(res))
     );
   }

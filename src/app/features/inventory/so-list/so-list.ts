@@ -211,26 +211,28 @@ export class SoList implements OnInit {
               const credit = Math.abs(runningDue);
               if (credit >= item.grandTotal - 0.01) {
                 item.paymentStatus = 'Paid';
+                item.pendingAmount = 0;
                 runningDue += item.grandTotal;
               } else {
                 item.paymentStatus = 'Partial';
+                item.pendingAmount = item.grandTotal - credit;
                 runningDue = 0;
               }
             } else if (runningDue > 0.01) {
               // Case: Customer has DEBT (Positive balance)
               if (runningDue >= item.grandTotal - 0.01) {
                 item.paymentStatus = 'Unpaid';
+                item.pendingAmount = item.grandTotal;
                 runningDue -= item.grandTotal;
               } else {
                 item.paymentStatus = 'Partial';
+                item.pendingAmount = runningDue;
                 runningDue = 0;
               }
             } else {
               // Case: Balance is 0
-              // Default to Paid (assuming old invoices were cleared).
-              // For a brand new 'Ghost Order', it will show Paid until ledger updates,
-              // but this is safer than marking all old orders as Unpaid.
               item.paymentStatus = 'Paid';
+              item.pendingAmount = 0;
             }
           });
         });
@@ -437,10 +439,16 @@ export class SoList implements OnInit {
 
   collectPayment(row: any) {
     if (!row.customerId) return;
+
+    // Suggest the actual pending amount if available (Partial/Unpaid), otherwise default to Grand Total
+    const suggestAmount = (row.paymentStatus === 'Partial' || row.paymentStatus === 'Unpaid')
+      ? (row.pendingAmount || row.grandTotal)
+      : row.grandTotal;
+
     this.router.navigate(['/app/finance/customers/receipt'], {
       queryParams: {
         customerId: row.customerId,
-        amount: row.grandTotal, // We suggest the full order amount, Receipt Entry will fetch current balance
+        amount: suggestAmount,
         invoiceNo: row.soNumber
       }
     });
