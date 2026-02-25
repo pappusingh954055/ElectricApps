@@ -71,6 +71,7 @@ export class PoList implements OnInit {
   pendingApprovalCount: number = 0;
   pendingInwardCount: number = 0;
   overdueInwardCount: number = 0;
+  partiallyReceivedCount: number = 0;
 
   constructor(
     private poService: InventoryService,
@@ -101,6 +102,8 @@ export class PoList implements OnInit {
         console.log('[PoList] Highlighting PO ID:', this.highlightedPoId);
       }
     });
+
+    // Stats will be loaded via loadData to stay in sync with filters
 
     // Safety timeout - force stop loader after 10 seconds
     setTimeout(() => {
@@ -168,18 +171,51 @@ export class PoList implements OnInit {
         width: 140,
         isFilterable: true,
         cell: (row: any) => {
-          const status = row.status;
-          const isFulfillmentPending = (row.totalAccepted || 0) < (row.totalOrdered || 0);
-          const hasReturns = (row.totalReturned || 0) > 0;
+          const status = (row.status || '').toLowerCase();
+          const tOrd = Number(row.totalOrdered || 0);
+          const tAcc = Number(row.totalAccepted || 0);
+          const tRej = Number(row.totalRejected || 0);
+          const tRet = Number(row.totalReturned || 0);
+          const tRec = Number(row.totalReceived || 0);
 
-          if (status === 'Received' && (isFulfillmentPending || hasReturns)) {
-            const days = row.daysSinceUpdate || 0;
-            if (days > 7) {
-              return `<span class="overdue-text">Partially Received<br><small>(${days} days overdue)</small></span>`;
-            }
-            return `<span class="pending-text">Partially Received<br><small>(${days} days pending)</small></span>`;
+          // Core status flags
+          const fulfillmentCompleted = tAcc >= tOrd; // Everything ordered is now accepted
+          const itemsAtGate = Math.max(tRec, tAcc + tRej) >= tOrd; // Everything ordered has reached the warehouse
+          const hasPendingReturns = tRej > tRet;
+          const isFulfillmentPending = (tAcc + tRej) < tOrd;
+          const remainsToReceive = !itemsAtGate;
+
+          // If fulfillment is complete, force "Received" (Clean GREEN status)
+          if (fulfillmentCompleted && (status === 'received' || status === 'partially received' || status === 'approved')) {
+            return 'Received';
           }
-          return status;
+
+          const isFinished = fulfillmentCompleted && !hasPendingReturns && !remainsToReceive;
+          if (isFinished) return row.status;
+
+          const needsAction = isFulfillmentPending || hasPendingReturns || remainsToReceive;
+
+          if ((status === 'received' || status === 'partially received' || status === 'approved') && needsAction) {
+            const days = row.daysSinceUpdate || 0;
+            let prefix = 'Partially Received';
+
+            if (remainsToReceive) {
+              const pending = tOrd - Math.max(tRec, tAcc + tRej);
+              prefix = `Partial (${pending} due)`;
+            }
+            else if (hasPendingReturns && fulfillmentCompleted) {
+              prefix = `Fulfilled (${tRej - tRet} return baki)`;
+            }
+            else if (isFulfillmentPending) {
+              prefix = `At Gate (${tOrd - tAcc} to GRN)`;
+            }
+
+            if (days > 7) {
+              return `<span class="overdue-text">${prefix}<br><small>(${days} days overdue)</small></span>`;
+            }
+            return `<span class="pending-text">${prefix}<br><small>(${days} days pending)</small></span>`;
+          }
+          return row.status;
         }
       }
     ];
@@ -242,97 +278,63 @@ export class PoList implements OnInit {
     this.isLoading = true;
     this.cdr.detectChanges();
 
-    // Mapping column filters if any
-    const columnFilters = state && state.filters ? state.filters : [];
-
     const requestPayload = {
       pageIndex: state.pageIndex ?? 0,
       pageSize: state.pageSize ?? 10,
       sortField: state.sortField ?? 'CreatedDate',
       sortOrder: state.sortOrder ?? 'desc',
-      filter: state.globalSearch || '', // Grid ke Search input se aa raha hai
+      filter: state.globalSearch || '',
       fromDate: state.fromDate ? this.datePipe.transform(state.fromDate, 'yyyy-MM-dd') : null,
       toDate: state.toDate ? this.datePipe.transform(state.toDate, 'yyyy-MM-dd') : null,
-      filters: columnFilters
     };
+
+    // Load totals for stats across all pages
+    this.loadTotalStats(requestPayload);
 
     this.poService.getPagedOrders(requestPayload).subscribe({
       next: (res) => {
         console.log('API PO List Response:', res);
-        const items = (res.data || []).map((item: any) => {
-          // Force UTC-to-Local conversion by ensuring 'Z' is present
-          // This fixes the 5.5 hour lag you are seeing (18:04 vs 23:34)
+        const dataRows = res.data || [];
+        const items = dataRows.map((item: any) => {
+          // Force UTC-to-Local conversion
           ['poDate', 'expectedDeliveryDate', 'CreatedAt', 'createdAt', 'CreatedDate', 'createdDate'].forEach(key => {
             if (item[key] && typeof item[key] === 'string' && !item[key].includes('Z') && !item[key].includes('+')) {
               item[key] = item[key] + 'Z';
             }
           });
-          return item;
-        });
 
-        // Aggregating Stats (Reset & Re-calculate)
-        this.totalPurchaseAmount = 0;
-        this.pendingReceiveCount = 0;
-        this.pendingApprovalCount = 0;
-        this.pendingInwardCount = 0;
-        this.overdueInwardCount = 0;
-
-        items.forEach((item: any) => {
-          const status = item.status?.toLowerCase();
-
-          // 1. Calculate summary stats for the parent row (To drive action icons and counts)
+          // 1. Calculate summary stats (Prioritize existing header fields if items are missing)
           const poItems = item.items || [];
-          item.totalOrdered = poItems.reduce((sum: number, i: any) => sum + (Number(i.qty) || 0), 0);
-          item.totalAccepted = poItems.reduce((sum: number, i: any) => sum + (Number(i.acceptedQty) || 0), 0);
-          item.totalRejected = poItems.reduce((sum: number, i: any) => sum + (Number(i.rejectedQty) || 0), 0);
-          item.totalReturned = poItems.reduce((sum: number, i: any) => sum + (Number(i.returnQty || i.returnedQty || 0) || 0), 0);
-          item.totalPending = poItems.reduce((sum: number, i: any) => sum + (Number(i.pendingQty) || 0), 0);
-
-          // 2. Aggregate Stats
-          if (status === 'approved' || status === 'received' || status === 'partially received') {
-            this.totalPurchaseAmount += item.grandTotal || 0;
+          if (poItems.length > 0) {
+            item.totalOrdered = poItems.reduce((sum: number, i: any) => sum + (Number(i.qty || i.orderedQty || 0) || 0), 0);
+            item.totalReceived = poItems.reduce((sum: number, i: any) => sum + (Number(i.receivedQty || 0)), 0);
+            item.totalAccepted = poItems.reduce((sum: number, i: any) => sum + (Number(i.acceptedQty || 0)), 0);
+            item.totalRejected = poItems.reduce((sum: number, i: any) => sum + (Number(i.rejectedQty || 0)), 0);
+            item.totalReturned = poItems.reduce((sum: number, i: any) => sum + (Number(i.returnQty || i.returnedQty || 0) || 0), 0);
+            item.totalPending = Math.max(0, item.totalOrdered - item.totalAccepted);
+          } else {
+            // Fallback to Header fields from API (Extensive naming support for both camelCase and PascalCase)
+            item.totalOrdered = Number(item.totalOrdered || item.TotalOrdered || item.totalOrderedQty || item.OrderedQty || item.orderedQty || item.totalQty || 0);
+            item.totalReceived = Number(item.totalReceived || item.TotalReceived || item.totalReceivedQty || item.ReceivedQty || item.receivedQty || 0);
+            item.totalAccepted = Number(item.totalAccepted || item.TotalAccepted || item.totalAcceptedQty || item.AcceptedQty || item.acceptedQty || 0);
+            item.totalRejected = Number(item.totalRejected || item.TotalRejected || item.totalRejectedQty || item.RejectedQty || item.rejectedQty || 0);
+            item.totalReturned = Number(item.totalReturned || item.TotalReturned || item.totalReturnedQty || item.ReturnedQty || item.returnedQty || item.totalReturnQty || item.returnQty || 0);
+            item.totalPending = Math.max(0, item.totalOrdered - item.totalAccepted);
           }
 
-          // Case: Even if status is 'Received', if Accepted < Ordered, it means something was rejected/lost and needs replacement.
-          const needsReplacement = (item.totalAccepted || 0) < (item.totalOrdered || 0);
+          // Calculate aging for overdue display in grid status column
+          const lastActionDate = new Date(item.updatedDate || item.poDate);
+          const today = new Date();
+          const diffDays = Math.ceil(Math.abs(today.getTime() - lastActionDate.getTime()) / (1000 * 60 * 60 * 24));
+          item.daysSinceUpdate = diffDays;
 
-          if (status === 'approved' || status === 'partially received' || (status === 'received' && (needsReplacement || (item.totalPending || 0) > 0))) {
-            this.pendingReceiveCount++;
-          }
-
-          // Pending Inward:
-          // 'Partially Received' = kuch items baki hain → directly count karo
-          // 'Received' but needsReplacement = rejected/shortage items hain → count karo
-          if (status === 'partially received' || (status === 'received' && needsReplacement)) {
-            this.pendingInwardCount++;
-
-            // Calculate aging for overdue badge
-            const lastActionDate = new Date(item.updatedDate || item.poDate);
-            const today = new Date();
-            const diffTime = Math.abs(today.getTime() - lastActionDate.getTime());
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            item.daysSinceUpdate = diffDays;
-
-            if (diffDays > 7) {
-              this.overdueInwardCount++;
-            }
-          }
-
-          if (status === 'submitted') {
-            this.pendingApprovalCount++;
-          }
-
-          // Debugging log to verify rejections/shortage
-          if (item.totalRejected > 0 || needsReplacement) {
-            console.log(`[PoList] PO ${item.poNumber} needs attention: Rejected=${item.totalRejected}, Shortage=${item.totalOrdered - item.totalAccepted}`);
-          }
+          return item;
         });
 
         this.dataSource.data = items;
         this.totalRecords = res.totalRecords || 0;
         this.isLoading = false;
 
-        // Pehli baar load hone ke baad global loader OFF
         if (this.isFirstLoad) {
           this.isFirstLoad = false;
           this.isDashboardLoading = false;
@@ -343,8 +345,6 @@ export class PoList implements OnInit {
       error: (err) => {
         console.error('API Error:', err);
         this.isLoading = false;
-
-        // Pehli baar error pe bhi global loader OFF
         if (this.isFirstLoad) {
           this.isFirstLoad = false;
           this.isDashboardLoading = false;
@@ -352,6 +352,93 @@ export class PoList implements OnInit {
         }
         this.cdr.detectChanges();
       }
+    });
+  }
+
+  private loadTotalStats(state: any) {
+    // We call the same paged API but with a very large pageSize to get everything for stats
+    const statsPayload = {
+      ...state,
+      pageIndex: 0,
+      pageSize: 2000 // Large enough to cover all records across all pages
+    };
+
+    this.poService.getPagedOrders(statsPayload).subscribe({
+      next: (res: any) => {
+        const allPos = res.data || [];
+
+        // Reset global counts
+        this.pendingReceiveCount = 0;
+        this.pendingApprovalCount = 0;
+        this.pendingInwardCount = 0;
+        this.overdueInwardCount = 0;
+        this.partiallyReceivedCount = 0;
+        this.totalPurchaseAmount = 0;
+
+        allPos.forEach((item: any) => {
+          // Normalize status
+          const status = (item.status || '').toLowerCase();
+
+          // Helper flags for consistency with grid logic
+          const poItems = item.items || [];
+          let tOrd, tRec, tAcc, tRej, tRet, tPen;
+
+          if (poItems.length > 0) {
+            tOrd = poItems.reduce((sum: number, i: any) => sum + (Number(i.qty || i.orderedQty || 0) || 0), 0);
+            tRec = poItems.reduce((sum: number, i: any) => sum + (Number(i.receivedQty || 0)), 0);
+            tAcc = poItems.reduce((sum: number, i: any) => sum + (Number(i.acceptedQty || 0)), 0);
+            tRej = poItems.reduce((sum: number, i: any) => sum + (Number(i.rejectedQty || 0)), 0);
+            tRet = poItems.reduce((sum: number, i: any) => sum + (Number(i.returnQty || i.returnedQty || 0) || 0), 0);
+            tPen = Math.max(0, tOrd - tAcc);
+          } else {
+            tOrd = Number(item.totalOrdered || item.TotalOrdered || item.totalOrderedQty || item.OrderedQty || item.orderedQty || item.totalQty || 0);
+            tRec = Number(item.totalReceived || item.TotalReceived || item.totalReceivedQty || item.ReceivedQty || item.receivedQty || 0);
+            tAcc = Number(item.totalAccepted || item.TotalAccepted || item.totalAcceptedQty || item.AcceptedQty || item.acceptedQty || 0);
+            tRej = Number(item.totalRejected || item.TotalRejected || item.totalRejectedQty || item.RejectedQty || item.rejectedQty || 0);
+            tRet = Number(item.totalReturned || item.TotalReturned || item.totalReturnedQty || item.ReturnedQty || item.returnedQty || item.totalReturnQty || item.returnQty || 0);
+            tPen = Math.max(0, tOrd - tAcc);
+          }
+
+          const fulfillmentCompleted = tAcc >= tOrd;
+          const itemsAtGate = Math.max(tRec, tAcc + tRej) >= tOrd;
+          const hasPendingReturns = tRej > tRet;
+          const isFulfillmentPending = (tAcc + tRej) < tOrd;
+          const remainsToReceive = !itemsAtGate;
+          const needsAction = isFulfillmentPending || hasPendingReturns || remainsToReceive;
+
+          // 1. Pending Inwards
+          if ((status === 'received' || status === 'partially received') && remainsToReceive) {
+            this.pendingInwardCount++;
+            const rawDate = item.updatedDate || item.poDate;
+            const lastActionDate = new Date(rawDate);
+            const today = new Date();
+            const diffDays = Math.ceil(Math.abs(today.getTime() - lastActionDate.getTime()) / (1000 * 60 * 60 * 24));
+            if (diffDays > 7) this.overdueInwardCount++;
+          }
+
+          // 2. Partially Received Card
+          if ((status === 'partially received' || status === 'received') && needsAction) {
+            this.partiallyReceivedCount++;
+          }
+
+          // 3. Awaiting Receiving
+          if (status === 'approved' || ((status === 'received' || status === 'partially received') && (remainsToReceive || tPen > 0))) {
+            this.pendingReceiveCount++;
+          }
+
+          // 4. Awaiting Approval
+          if (status === 'submitted') {
+            this.pendingApprovalCount++;
+          }
+
+          // 5. Total Purchase Amount (Finalized/Active orders)
+          if (status === 'approved' || status === 'received' || status === 'partially received') {
+            this.totalPurchaseAmount += (item.grandTotal || 0);
+          }
+        });
+        this.cdr.detectChanges();
+      },
+      error: (err) => console.error('Stats Load Error:', err)
     });
   }
 

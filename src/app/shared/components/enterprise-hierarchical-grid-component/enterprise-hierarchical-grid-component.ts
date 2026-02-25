@@ -68,8 +68,14 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   sortChildDir: boolean = true;
   currentChildSortField: string = '';
 
-  selection = new SelectionModel<any>(true, []);
-  childSelection = new SelectionModel<any>(true, []);
+  selection = new SelectionModel<any>(true, [], true, (a, b) => {
+    if (a && b && a.id && b.id) return a.id === b.id;
+    return a === b;
+  });
+  childSelection = new SelectionModel<any>(true, [], true, (a, b) => {
+    if (a && b && a.id && b.id) return a.id === b.id;
+    return a === b;
+  });
 
   globalSearchQuery: string = '';
   expandedElement: any | null = null;
@@ -79,12 +85,9 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   fromDate: string = '';
   toDate: string = '';
 
-
-
   constructor(private cdr: ChangeDetectorRef, private router: Router) { }
 
   ngOnInit() {
-
     this.columns.forEach(col => {
       if (col.visible === undefined) col.visible = true;
     });
@@ -116,84 +119,69 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
     this.cdr.detectChanges();
   }
   onColumnToggle() {
-    this.cdr.detectChanges(); // UI refresh karne ke liye
-    // Agar aap grid state save karna chahte hain toh yahan emit bhi kar sakte hain
+    this.cdr.detectChanges();
   }
   get displayedColumns(): string[] {
     const dynamicCols = this.columns.filter(c => c.visible !== false).map(c => c.field);
-    // Added 'actions' to ensure the column is rendered by the grid
     return ['select', ...dynamicCols, 'actions'];
   }
-
-  // --- Checkbox Helpers ---
-  // isAllSelected(): boolean {
-  //   const numSelected = this.selection.selected.length;
-  //   const numRows = this.dataSource.data.length;
-  //   return numSelected === numRows && numRows > 0;
-  // }
-
-  // masterToggle(): void {
-  //   this.isAllSelected() ? this.selection.clear() : this.dataSource.data.forEach((row: any) => this.selection.select(row));
-  //   this.emitSelection();
-  // }
 
   isRowSelectable(row: any): boolean {
     const data = this.dataSource.data || [];
     const selected = this.selection.selected;
-
-    // Helpers (Case-Insensitive)
     const s = String(row.status || '').toLowerCase();
 
-    // Explicitly disable Approved status as requested
-    if (s === 'approved') return false;
-
-    const isPending = (r: any) => {
+    // Helpers to identify row categories
+    const isPendingInward = (r: any) => {
       const rs = String(r.status || '').toLowerCase();
-      // Only Partially Received is now considered for 'Pending Inward' selection
-      return (rs === 'partially received' || rs === 'received') &&
-        (Number(r.totalAccepted || 0) < Number(r.totalOrdered || 0));
+      const hasShortage = Number(r.totalAccepted || 0) < Number(r.totalOrdered || 0);
+      return (rs === 'approved' || rs === 'partially received' || rs === 'received') && hasShortage;
     };
 
-    const rowIsPending = isPending(row);
-    const rowIsPartiallyReceived = s === 'partially received';
+    const rowIsPending = isPendingInward(row);
     const isDraft = s === 'draft' || s === 'rejected';
     const isSubmitted = s === 'submitted';
 
-    // --- Dynamic Exclusion Logic (Prevent Mixing Incompatible Statuses) ---
+    // --- Dynamic Exclusion Logic (Prevent Mixing Incompatible Groups) ---
     if (selected.length > 0) {
-      // 1. Agar Partially Received selected hai -> sirf doosre Partially Received selectable
-      if (this.anySelectedIsPartiallyReceived) {
-        return rowIsPartiallyReceived;
+      // Group 1: Inwarding (Approved with shortage, Partially Received)
+      if (this.anySelectedHasPendingInward) {
+        return rowIsPending;
       }
-      // Agar row Partially Received hai lekin selected kuch aur hai -> disable it
-      if (rowIsPartiallyReceived) return false;
+      // Group 2: Draft/Rejected (For Delete/Submit)
+      if (this.allSelectedAreDraft) {
+        return isDraft;
+      }
+      // Group 3: Submitted (For Approve/Reject)
+      if (this.allSelectedAreSubmitted) {
+        return isSubmitted;
+      }
 
-      // 2. Draft vs Submitted consistency
-      if (this.allSelectedAreDraft && !isDraft) return false;
-      if (this.allSelectedAreSubmitted && !isSubmitted) return false;
+      // If row fits another group while some group is already selected, block it
+      if (rowIsPending || isDraft || isSubmitted) return false;
     }
 
-    // Role-based defaults
+    // --- Role-based entry points for starting a selection ---
+    // Anyone can start selecting rows that need Inwarding
     if (rowIsPending) return true;
 
     if (this.userRole === 'Super Admin') return true;
 
     if (this.userRole === 'Manager') {
       const submittedCount = data.filter(r => String(r.status || '').toLowerCase() === 'submitted').length;
-      return isSubmitted && submittedCount > 1;
+      return isSubmitted && submittedCount >= 1;
     }
 
     if (this.userRole === 'Warehouse') {
-      // Approved is disabled above, so Warehouse can't select Approved rows for bulk
-      return false;
+      return false; // Only POs needing inward (checked above) are selectable for Warehouse
     }
 
-    // Default: User -> Draft rows
+    // Default: User -> Draft/Rejected rows
     const draftCount = data.filter(r => {
       const rs = String(r.status || '').toLowerCase();
       return rs === 'draft' || rs === 'rejected';
     }).length;
-    return isDraft && draftCount > 1;
+    return isDraft && draftCount >= 1;
   }
 
   onParentCheck(row: any) {
@@ -203,13 +191,11 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
     }
   }
 
-  /** Returns true when ANY selected row is Partially Received */
   get anySelectedIsPartiallyReceived(): boolean {
     if (this.selection.selected.length === 0) return false;
     return this.selection.selected.some(row => String(row.status || '').toLowerCase() === 'partially received');
   }
 
-  /** Returns true when ANY selected row is Approved with pending inward qty */
   get anySelectedIsApprovedPending(): boolean {
     if (this.selection.selected.length === 0) return false;
     return this.selection.selected.some(row => {
@@ -218,23 +204,19 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
     });
   }
 
-  /** Returns true when ANY selected row is a valid pending inward row */
   get anySelectedHasPendingInward(): boolean {
     return this.anySelectedIsPartiallyReceived || this.anySelectedIsApprovedPending;
   }
 
-  /** @deprecated use anySelectedHasPendingInward */
   get allSelectedHaveBlueTruck(): boolean {
     return this.anySelectedHasPendingInward;
   }
 
-  /** Returns true when ALL selected rows are in Submitted status */
   get allSelectedAreSubmitted(): boolean {
     if (this.selection.selected.length === 0) return false;
     return this.selection.selected.every(row => String(row.status || '').toLowerCase() === 'submitted');
   }
 
-  /** Returns true when ALL selected rows are in Draft (or Rejected) status */
   get allSelectedAreDraft(): boolean {
     if (this.selection.selected.length === 0) return false;
     return this.selection.selected.every(row => {
@@ -244,30 +226,22 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   }
 
   isAllSelected(): boolean {
-    const numSelected = this.selection.selected.length;
-
-    // Filter rows based on role logic
-    const selectableRows = this.dataSource.data.filter(row => this.isRowSelectable(row)).length;
-
-    return numSelected === selectableRows && selectableRows > 0;
+    const data = this.dataSource.data || [];
+    const selectableRows = data.filter(row => this.isRowSelectable(row));
+    if (selectableRows.length === 0) return false;
+    return selectableRows.every(row => this.selection.isSelected(row));
   }
 
   masterToggle() {
-    if (this.isAllSelected()) {
-      this.selection.clear();
-    } else {
-      // 1. Pehle pura selection clear karein safety ke liye
-      this.selection.clear();
-      this.childSelection.clear();
+    const data = this.dataSource.data || [];
+    const selectableRows = data.filter(row => this.isRowSelectable(row));
 
-      // 2. Selectable rows filter karein aur unko select karein.
-      // NOTE: isRowSelectable internally state handle karta hai,
-      // isliye loop ke dauran incompatible rows apne aap disable hoti jayengi.
-      this.dataSource.data.forEach(row => {
-        if (this.isRowSelectable(row)) {
-          this.selection.select(row);
-        }
-      });
+    if (this.isAllSelected()) {
+      // Unselect only the ones on current page
+      selectableRows.forEach(row => this.selection.deselect(row));
+    } else {
+      // Select all selectable on current page
+      selectableRows.forEach(row => this.selection.select(row));
     }
     this.emitSelection();
   }
@@ -336,8 +310,6 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   applyFilter() { this.currentPage = 0; this.triggerDataLoad(); }
 
   triggerDataLoad() {
-    this.selection.clear();
-    this.childSelection.clear();
     const state =
     {
       pageIndex: this.currentPage,

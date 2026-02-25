@@ -10,9 +10,16 @@ export interface BulkGrnRequest {
 export interface BulkGrnItem {
     poId: number;
     productId: string;
+    orderedQty: number;
     receivedQty: number;
+    pendingQty: number;
     rejectedQty: number;
+    acceptedQty: number;
     unitRate: number;
+    discountPercent: number;
+    gstPercent: number;
+    taxAmount: number;
+    totalAmount: number;
     warehouseId?: string | null;
     rackId?: string | null;
 }

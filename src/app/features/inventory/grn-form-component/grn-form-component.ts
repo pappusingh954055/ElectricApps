@@ -10,6 +10,7 @@ import { GrnSuccessDialogComponent } from '../grn-success-dialog/grn-success-dia
 import { FinanceService } from '../../finance/service/finance.service';
 import { LocationService } from '../../master/locations/services/locations.service';
 import { Warehouse, Rack } from '../../master/locations/models/locations.model';
+import { LoadingService } from '../../../core/services/loading.service';
 
 @Component({
   selector: 'app-grn-form-component',
@@ -29,6 +30,7 @@ export class GrnFormComponent implements OnInit {
   private dialog = inject(MatDialog);
   private financeService = inject(FinanceService);
   private locationService = inject(LocationService);
+  private loadingService = inject(LoadingService);
 
   warehouses: Warehouse[] = [];
   racks: Rack[] = [];
@@ -303,46 +305,75 @@ export class GrnFormComponent implements OnInit {
   performGRNSave() {
     const currentUserId = localStorage.getItem('email') || 'Admin';
 
-    // BULK FLOW: If poId contains multiple IDs
+    // BULK FLOW WORKAROUND: Simulate bulk by sending multiple single saves
+    // This ensures PO headers and statuses are updated correctly by the proven 'Save' endpoint
     if (this.poId && this.poId.includes(',')) {
       const ids = this.poId.split(',').map(id => Number(id.trim())).filter(id => id > 0);
       const formValue = this.grnForm.getRawValue();
 
-      const bulkRequest = {
-        purchaseOrderIds: ids,
-        createdBy: currentUserId,
-        receivedDate: formValue.receivedDate,
-        gatePassNo: formValue.gatePassNo,
-        remarks: formValue.remarks,
-        items: this.items.map(i => ({
-          poId: i.poId, // Backend DTO expected POId
-          productId: i.productId,
-          receivedQty: i.receivedQty,
-          rejectedQty: i.rejectedQty,
-          unitRate: i.unitRate,
-          warehouseId: i.warehouseId,
-          rackId: i.rackId
-        }))
-      };
+      // Group items by their parent PO ID
+      const itemsByPo = new Map<number, any[]>();
+      this.items.forEach(item => {
+        const pId = Number(item.poId || ids[0]);
+        if (!itemsByPo.has(pId)) itemsByPo.set(pId, []);
+        itemsByPo.get(pId)?.push(item);
+      });
 
-      this.inventoryService.createBulkGrn(bulkRequest).subscribe({
-        next: (response: any) => {
-          this.dialog.open(StatusDialogComponent, {
-            width: '350px',
-            data: {
-              title: 'Bulk Success',
-              message: `${ids.length} GRNs processed successfully from the Bulk Gate Pass!`,
-              status: 'success',
-              isSuccess: true
+      this.loadingService.setLoading(true);
+      let completedCount = 0;
+      const totalToProcess = itemsByPo.size;
+
+      itemsByPo.forEach((poItems, pId) => {
+        const firstItem = poItems[0];
+        const grnData = {
+          poHeaderId: pId,
+          supplierId: firstItem.supplierId || firstItem.SupplierId || 0,
+          gatePassNo: formValue.gatePassNo,
+          receivedDate: formValue.receivedDate,
+          remarks: formValue.remarks,
+          status: 'Received',
+          createdBy: currentUserId,
+          items: poItems.map(i => ({
+            productId: i.productId,
+            orderedQty: Number(i.orderedQty),
+            receivedQty: Number(i.receivedQty),
+            pendingQty: Number(i.pendingQty),
+            rejectedQty: Number(i.rejectedQty),
+            acceptedQty: Number(i.acceptedQty),
+            unitRate: Number(i.unitRate),
+            discountPercent: Number(i.discountPercent),
+            gstPercent: Number(i.gstPercent),
+            taxAmount: Number(i.taxAmount),
+            totalAmount: Number(i.total),
+            warehouseId: i.warehouseId,
+            rackId: i.rackId
+          }))
+        };
+
+        this.inventoryService.saveGRN({ data: grnData }).subscribe({
+          next: () => {
+            completedCount++;
+            if (completedCount === totalToProcess) {
+              this.loadingService.setLoading(false);
+              this.dialog.open(StatusDialogComponent, {
+                width: '350px',
+                data: {
+                  title: 'Success',
+                  message: `All ${totalToProcess} POs processed and counters updated correctly!`,
+                  status: 'success',
+                  isSuccess: true
+                }
+              }).afterClosed().subscribe(() => {
+                this.router.navigate(['/app/inventory/grn-list']);
+              });
             }
-          }).afterClosed().subscribe(() => {
-            this.router.navigate(['/app/inventory/grn-list']);
-          });
-        },
-        error: (err) => {
-          console.error('Error saving Bulk GRN:', err);
-          this.showValidationError('Bulk processing failed. Please check if all POs are Approved.');
-        }
+          },
+          error: (err) => {
+            this.loadingService.setLoading(false);
+            console.error(`Error saving PO ${pId}:`, err);
+            this.showValidationError(`Failed to process PO ${pId}. Please check data.`);
+          }
+        });
       });
       return;
     }

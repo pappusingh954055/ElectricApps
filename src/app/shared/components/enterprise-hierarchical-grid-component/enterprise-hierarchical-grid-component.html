@@ -203,9 +203,9 @@
           <mat-icon>local_shipping</mat-icon>
         </button>
         
-        <!-- Blue Truck: Inward Replacement (Priority: Always show if inwarding is baki) -->
+        <!-- Blue Truck: Inward Replacement (Priority: Show if anything is still missing from the warehouse) -->
         <button mat-icon-button color="primary" 
-                *ngIf="(row.totalAccepted || 0) < (row.totalOrdered || 0)"
+                *ngIf="((row.totalReceived || 0) < (row.totalOrdered || 0)) && (( (row.totalAccepted || 0) + (row.totalRejected || 0) ) < (row.totalOrdered || 0))"
                 (click)="$event.stopPropagation(); handleAction('CREATE_GRN', row)" 
                 matTooltip="Inward Replacement/Pending Items">
           <mat-icon>local_shipping</mat-icon>
