@@ -8,10 +8,12 @@ import { LoadingService } from '../../../../core/services/loading.service';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 
+import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
+
 @Component({
     selector: 'app-warehouse-form',
     standalone: true,
-    imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink],
+    imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink, SummaryStatsComponent],
     templateUrl: './warehouse-form.html',
     styleUrl: './warehouse-form.scss',
 })
@@ -20,6 +22,7 @@ export class WarehouseForm implements OnInit {
     isEditMode = false;
     warehouseId: string | null = null;
     isLoading = false;
+    summaryStats: SummaryStat[] = [];
 
     constructor(
         private fb: FormBuilder,
@@ -32,6 +35,7 @@ export class WarehouseForm implements OnInit {
         this.warehouseForm = this.fb.group({
             id: [null],
             name: ['', [Validators.required, Validators.maxLength(100)]],
+            city: ['', [Validators.maxLength(100)]],
             description: ['', [Validators.maxLength(500)]],
             isActive: [true]
         });
@@ -42,7 +46,17 @@ export class WarehouseForm implements OnInit {
         if (this.warehouseId) {
             this.isEditMode = true;
             this.loadWarehouseData(this.warehouseId);
+        } else {
+            this.loadStatsOnly();
         }
+    }
+
+    loadStatsOnly() {
+        this.locationService.getWarehouses().subscribe({
+            next: (warehouses) => {
+                this.updateStats(warehouses);
+            }
+        });
     }
 
     loadWarehouseData(id: string) {
@@ -54,6 +68,7 @@ export class WarehouseForm implements OnInit {
                 if (warehouse) {
                     this.warehouseForm.patchValue(warehouse);
                 }
+                this.updateStats(warehouses);
                 this.isLoading = false;
                 this.loadingService.setLoading(false);
             },
@@ -62,6 +77,18 @@ export class WarehouseForm implements OnInit {
                 this.loadingService.setLoading(false);
             }
         });
+    }
+
+    private updateStats(warehouses: any[]): void {
+        const total = warehouses.length;
+        const active = warehouses.filter(u => u.isActive).length;
+        const inactive = total - active;
+
+        this.summaryStats = [
+            { label: 'Total Warehouses', value: total, icon: 'warehouse', type: 'info' },
+            { label: 'Active', value: active, icon: 'check_circle', type: 'success' },
+            { label: 'Inactive', value: inactive, icon: 'block', type: 'warning' }
+        ];
     }
 
     onSubmit() {

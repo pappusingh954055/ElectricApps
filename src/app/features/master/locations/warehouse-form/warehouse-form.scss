@@ -1,13 +1,35 @@
 .form-container {
-padding: 24px;
+  padding: 24px;
 }
+
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.page-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
 .form-card {
-padding: 24px;
+  padding: 24px;
 }
 .form-grid {
-display: grid;
-grid-template-columns: 1fr;
-gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.full-width {
+  grid-column: 1 / -1;
 }
 .form-actions {
 margin-top: 24px;

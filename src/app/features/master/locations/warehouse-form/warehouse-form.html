@@ -1,10 +1,12 @@
 <div class="form-container">
-    <div fxLayout="row" fxLayoutAlign="start center" fxLayoutGap="12px" style="margin-bottom: 24px;">
+    <div class="form-header">
       <button mat-icon-button routerLink="/app/master/warehouses">
         <mat-icon>arrow_back</mat-icon>
       </button>
       <h1 class="page-title">{{ isEditMode ? 'Edit' : 'Add New' }} Warehouse</h1>
     </div>
+
+    <app-summary-stats [stats]="summaryStats" [isLoading]="isLoading"></app-summary-stats>
   
     <mat-card class="form-card">
       <form [formGroup]="warehouseForm" (ngSubmit)="onSubmit()">
@@ -16,13 +18,18 @@
               Warehouse name is required
             </mat-error>
           </mat-form-field>
-  
+
           <mat-form-field appearance="outline">
+            <mat-label>City</mat-label>
+            <input matInput formControlName="city" placeholder="Enter city (e.g. Delhi, Mumbai)">
+          </mat-form-field>
+  
+          <mat-form-field appearance="outline" class="full-width">
             <mat-label>Description</mat-label>
             <textarea matInput formControlName="description" placeholder="Short description about the location" rows="3"></textarea>
           </mat-form-field>
   
-          <div class="status-toggle">
+          <div class="status-toggle full-width">
             <mat-slide-toggle formControlName="isActive" color="primary">
               Active Status
             </mat-slide-toggle>

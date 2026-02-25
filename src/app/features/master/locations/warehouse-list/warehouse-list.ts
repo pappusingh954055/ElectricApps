@@ -22,7 +22,7 @@ import { StatusDialogComponent } from '../../../../shared/components/status-dial
     styleUrl: './warehouse-list.scss',
 })
 export class WarehouseList implements OnInit {
-    displayedColumns: string[] = ['index', 'name', 'description', 'status', 'actions'];
+    displayedColumns: string[] = ['index', 'name', 'city', 'description', 'status', 'actions'];
     dataSource = new MatTableDataSource<Warehouse>();
     isLoading = true;
     summaryStats: SummaryStat[] = [];

@@ -175,24 +175,30 @@
         <input matInput type="number" formControlName="minStock" placeholder="Alert level">
       </mat-form-field>
 
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Default Warehouse</mat-label>
+      <mat-form-field appearance="outline">
+        <mat-label>Default Warehouse *</mat-label>
         <mat-select formControlName="defaultWarehouseId" (selectionChange)="onWarehouseChange($event.value)">
-          <mat-option [value]="null">No Default</mat-option>
+          <mat-option [value]="null">-- Select Warehouse --</mat-option>
           <mat-option *ngFor="let w of warehouses" [value]="w.id">
             {{ w.name }}
           </mat-option>
         </mat-select>
+        <mat-error *ngIf="productsForm.get('defaultWarehouseId')?.hasError('required')">
+          Warehouse is required
+        </mat-error>
       </mat-form-field>
 
-      <mat-form-field appearance="outline" subscriptSizing="dynamic">
-        <mat-label>Default Rack</mat-label>
+      <mat-form-field appearance="outline">
+        <mat-label>Default Rack *</mat-label>
         <mat-select formControlName="defaultRackId">
-          <mat-option [value]="null">No Default</mat-option>
+          <mat-option [value]="null">-- Select Rack --</mat-option>
           <mat-option *ngFor="let r of filteredRacks" [value]="r.id">
             {{ r.name }}
           </mat-option>
         </mat-select>
+        <mat-error *ngIf="productsForm.get('defaultRackId')?.hasError('required')">
+          Rack is required
+        </mat-error>
       </mat-form-field>
 
       <div class="toggle-group d-flex gap-3 align-items-center">

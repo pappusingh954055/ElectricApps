@@ -410,8 +410,8 @@ export class ProductForm implements OnInit, OnDestroy {
       saleRate: [0, [Validators.min(0)]],
       productType: [null, [Validators.required]],
       damagedStock: [0],
-      defaultWarehouseId: [null],
-      defaultRackId: [null]
+      defaultWarehouseId: [null, [Validators.required]],
+      defaultRackId: [null, [Validators.required]]
     });
   }
 
