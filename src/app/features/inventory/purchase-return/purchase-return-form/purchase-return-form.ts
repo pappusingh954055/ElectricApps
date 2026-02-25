@@ -341,13 +341,19 @@ export class PurchaseReturnForm implements OnInit {
       return;
     }
 
+    const hasMixed = this.hasMixedTypes();
+    const title = hasMixed ? '⚠️ Mixed Items Warning' : 'Confirm Purchase Return';
+    const message = hasMixed
+      ? 'You have selected both REJECTED items and NORMAL stock. This is unusual. Are you sure you want to return both together?'
+      : 'Are you sure you want to save this Purchase Return? This will generate a Debit Note.';
+
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
-      width: '400px',
+      width: '450px',
       data: {
-        title: 'Confirm Purchase Return',
-        message: 'Are you sure you want to save this Purchase Return? This will generate a Debit Note.',
-        confirmText: 'Yes, Save',
-        confirmColor: 'primary'
+        title: title,
+        message: message,
+        confirmText: 'Yes, Save Both',
+        confirmColor: hasMixed ? 'warn' : 'primary'
       }
     });
 
@@ -608,6 +614,11 @@ export class PurchaseReturnForm implements OnInit {
     }
 
     this.cdr.detectChanges();
+  }
+
+  hasMixedTypes(): boolean {
+    const types = new Set(this.items.controls.map(c => c.get('itemType')?.value));
+    return types.has('Rejected') && types.has('Received');
   }
 }
 

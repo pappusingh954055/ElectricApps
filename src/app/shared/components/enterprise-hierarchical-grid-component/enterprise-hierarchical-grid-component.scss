@@ -804,6 +804,22 @@ th.child-th {
   }
 }
 
+.highlighted-row {
+  background-color: #fff9c4 !important; /* Soft Yellow */
+  border-left: 5px solid #fbc02d !important; /* Amber border */
+  animation: highlightPulse 2s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    background-color: #fff59d !important;
+  }
+}
+
+@keyframes highlightPulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 192, 45, 0.4); }
+  50% { transform: scale(1.005); box-shadow: 0 0 20px 0 rgba(251, 192, 45, 0.2); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 192, 45, 0); }
+}
+
 
 /* Action column container optimization */
 div[style*="display: flex"] {

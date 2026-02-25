@@ -130,6 +130,13 @@
            <span class="material-icons text-primary">inventory_2</span>
            <h6 class="items-title">Return Items</h6>
         </div>
+        
+        <!-- Mixed Items Warning Banner -->
+        <div class="mixed-types-warning" *ngIf="hasMixedTypes()">
+          <mat-icon>warning</mat-icon>
+          <span>Mixed Selection: You're returning both <strong>Rejected</strong> and <strong>Normal</strong> stock.</span>
+        </div>
+
         <span class="items-badge">
           {{items.length}} Items Found
         </span>

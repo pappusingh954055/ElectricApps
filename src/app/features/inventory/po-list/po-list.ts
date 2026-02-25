@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
@@ -7,7 +8,6 @@ import { MatTableDataSource } from '@angular/material/table';
 import { GridColumn } from '../../../shared/models/grid-column.model';
 import { InventoryService } from '../service/inventory.service';
 import { POService } from '../service/po.service';
-import { Router } from '@angular/router';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationService } from '../../shared/notification.service';
@@ -49,6 +49,9 @@ export class PoList implements OnInit {
 
   private currentGridState: any = {};
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  public highlightedPoId: any = null;
 
   selection = new SelectionModel<any>(true, []);
   selectedParentRows: any[] = [];
@@ -90,6 +93,14 @@ export class PoList implements OnInit {
     this.isFirstLoad = true;
     this.loadingService.setLoading(true);
     this.cdr.detectChanges();
+
+    // Check for highlighted PO from query params
+    this.route.queryParams.subscribe(params => {
+      if (params['poId']) {
+        this.highlightedPoId = Number(params['poId']) || params['poId'];
+        console.log('[PoList] Highlighting PO ID:', this.highlightedPoId);
+      }
+    });
 
     // Safety timeout - force stop loader after 10 seconds
     setTimeout(() => {

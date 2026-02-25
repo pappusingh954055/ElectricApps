@@ -22,6 +22,7 @@ export interface GRNItem {
   receivedQty: number;
   pendingQty: number;
   rejectedQty: number;
+  returnedQty?: number; // Track if already returned
   unitRate: number;
 }
 
@@ -29,6 +30,7 @@ export interface GRNListRow {
   id: number;
   grnNo: string;
   refPO: string;
+  poId?: number; // Linked PO ID
   supplierName: string;
   supplierId: number;  // For payment navigation
   receivedDate: string | Date;
@@ -337,5 +339,17 @@ export class GrnListComponent implements OnInit, AfterViewInit {
       console.error('❌ Supplier ID not found for GRN:', grn);
       alert(`Supplier ID missing for GRN: ${grn.grnNo}. Cannot make payment.`);
     }
+  }
+
+  processRejectionReturn(row: any) {
+    // Redirection to PO list so user can see "Red Truck" and process return
+    // Passing the poId if available to filter or highlight
+    const poId = row.poId || row.purchaseOrderId;
+    this.router.navigate(['/app/inventory/polist'], {
+      queryParams: {
+        poId: poId,
+        action: 'return'
+      }
+    });
   }
 }

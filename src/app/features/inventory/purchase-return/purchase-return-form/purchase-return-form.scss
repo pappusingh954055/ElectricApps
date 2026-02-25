@@ -368,6 +368,35 @@ $border-color: #e2e8f0;
     font-size: 0.875rem;
     font-weight: 500;
   }
+
+  .mixed-types-warning {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    color: #92400e;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    animation: fadeIn 0.3s ease;
+
+    mat-icon {
+      color: #d97706;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+
+    strong {
+      text-decoration: underline;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 // Custom Form Fields

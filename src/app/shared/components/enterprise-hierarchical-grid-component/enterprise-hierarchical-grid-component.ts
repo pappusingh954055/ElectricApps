@@ -55,6 +55,8 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
   @Output() bulkDeleteParentOrders = new EventEmitter<any[]>();
   @Output() actionClicked = new EventEmitter<{ action: string, row: any }>();
 
+  @Input() highlightedId: any = null;
+
   @Input() userRole: string = ''; // Parent se role lene ke liye
 
 

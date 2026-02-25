@@ -349,7 +349,10 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="master-row" (click)="toggleRow(row)"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" 
+            class="master-row" 
+            [class.highlighted-row]="row.id === highlightedId"
+            (click)="toggleRow(row)"></tr>
         <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
       </table>
     </div>

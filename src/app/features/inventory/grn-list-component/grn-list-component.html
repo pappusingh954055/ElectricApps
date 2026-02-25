@@ -186,6 +186,7 @@
                                                 <th class="text-center">Ordered Qty</th> <th class="text-center">Received Qty</th>
                                                 <th class="text-center">Pending Qty</th> <th class="text-center">Rejected Qty</th>
                                                 <th class="text-right">Rate</th>
+                                                <th class="text-center">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -195,6 +196,15 @@
                                                 <td class="text-center" [class.text-success]="item.pendingQty === 0">{{item.pendingQty}}</td> 
                                                 <td class="text-center" [class.text-danger]="item.rejectedQty > 0">{{item.rejectedQty}}</td>
                                                 <td class="text-right">{{item.unitRate | currency:'INR'}}</td>
+                                                <td class="text-center">
+                                                    <!-- Process Return Button: Show only if there are rejected items -->
+                                                    <button mat-icon-button color="warn" 
+                                                            *ngIf="item.rejectedQty > 0"
+                                                            (click)="$event.stopPropagation(); processRejectionReturn(row)"
+                                                            matTooltip="Process Outward Return for Rejected Items">
+                                                        <mat-icon class="return-truck-icon">local_shipping</mat-icon>
+                                                    </button>
+                                                </td>
                                             </tr>
                                         </tbody>
                                         <tfoot class="inner-table-footer">

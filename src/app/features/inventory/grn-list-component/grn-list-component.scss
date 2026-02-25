@@ -376,6 +376,17 @@
       border-bottom: none;
     }
   }
+
+  .return-truck-icon {
+    font-size: 20px !important;
+    width: 20px !important;
+    height: 20px !important;
+    transition: transform 0.2s ease;
+    
+    &:hover {
+      transform: scale(1.2);
+    }
+  }
 }
 
 /* Paginator [cite: 2026-01-22] */
