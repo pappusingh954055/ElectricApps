@@ -8,11 +8,13 @@ import { Warehouse, Rack } from '../models/locations.model';
 import { LoadingService } from '../../../../core/services/loading.service';
 import { MatDialog } from '@angular/material/dialog';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
+import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
 
 @Component({
     selector: 'app-rack-form',
     standalone: true,
-    imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink],
+    imports: [CommonModule, MaterialModule, ReactiveFormsModule, RouterLink,
+        SummaryStatsComponent],
     templateUrl: './rack-form.html',
     styleUrl: './rack-form.scss',
 })
@@ -22,6 +24,7 @@ export class RackForm implements OnInit {
     rackId: string | null = null;
     isLoading = false;
     warehouses: Warehouse[] = [];
+    summaryStats: SummaryStat[] = [];
 
     constructor(
         private fb: FormBuilder,
@@ -46,7 +49,17 @@ export class RackForm implements OnInit {
         if (this.rackId) {
             this.isEditMode = true;
             this.loadRackData(this.rackId);
+        } else {
+            this.loadStatsOnly();
         }
+    }
+
+    loadStatsOnly() {
+        this.locationService.getRacks().subscribe({
+            next: (racks) => {
+                this.updateStats(racks);
+            }
+        });
     }
 
     loadWarehouses() {
@@ -61,10 +74,12 @@ export class RackForm implements OnInit {
         this.loadingService.setLoading(true);
         this.locationService.getRacks().subscribe({
             next: (racks) => {
-                const rack = racks.find(r => r.id === id);
+                // Case-insensitive ID matching to be safe
+                const rack = racks.find(r => r.id.toLowerCase() === id.toLowerCase());
                 if (rack) {
                     this.rackForm.patchValue(rack);
                 }
+                this.updateStats(racks);
                 this.isLoading = false;
                 this.loadingService.setLoading(false);
             },
@@ -75,6 +90,18 @@ export class RackForm implements OnInit {
         });
     }
 
+    private updateStats(racks: Rack[]): void {
+        const total = racks.length;
+        const active = racks.filter(u => u.isActive).length;
+        const inactive = total - active;
+
+        this.summaryStats = [
+            { label: 'Total Racks', value: total, icon: 'view_module', type: 'info' },
+            { label: 'Active', value: active, icon: 'check_circle', type: 'success' },
+            { label: 'Inactive', value: inactive, icon: 'block', type: 'warning' }
+        ];
+    }
+
     onSubmit() {
         if (this.rackForm.invalid) {
             return;
@@ -83,12 +110,15 @@ export class RackForm implements OnInit {
         this.isLoading = true;
         this.loadingService.setLoading(true);
 
-        const payload = this.rackForm.value;
+        const payload = { ...this.rackForm.value };
 
-        if (this.isEditMode) {
-            // Update logic can be added later if needed
-            this.isLoading = false;
-            this.loadingService.setLoading(false);
+        if (this.isEditMode && this.rackId) {
+            // Ensure ID is explicitly set in payload for backend validation
+            payload.id = this.rackId;
+            this.locationService.updateRack(this.rackId, payload).subscribe({
+                next: () => this.handleSuccess('Rack updated successfully'),
+                error: (err) => this.handleError(err)
+            });
         } else {
             this.locationService.createRack(payload).subscribe({
                 next: () => this.handleSuccess('Rack created successfully'),
@@ -126,3 +156,4 @@ export class RackForm implements OnInit {
         });
     }
 }
+

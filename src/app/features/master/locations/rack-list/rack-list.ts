@@ -25,6 +25,8 @@ export class RackList implements OnInit {
     displayedColumns: string[] = ['index', 'warehouse', 'name', 'description', 'status', 'actions'];
     dataSource = new MatTableDataSource<Rack>();
     isLoading = true;
+    isDashboardLoading = true;
+    private isFirstLoad = true;
     summaryStats: SummaryStat[] = [];
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -40,12 +42,27 @@ export class RackList implements OnInit {
     ) { }
 
     ngOnInit(): void {
+        this.isDashboardLoading = true;
+        this.isFirstLoad = true;
+        this.loadingService.setLoading(true);
+        this.cdr.detectChanges();
+
         this.loadRacks();
+
+        // Safety timeout - force stop loader after 10 seconds
+        setTimeout(() => {
+            if (this.isDashboardLoading) {
+                console.warn('[RackList] Force stopping loader after 10s timeout');
+                this.isDashboardLoading = false;
+                this.isFirstLoad = false;
+                this.loadingService.setLoading(false);
+                this.cdr.detectChanges();
+            }
+        }, 10000);
     }
 
     loadRacks() {
         this.isLoading = true;
-        this.loadingService.setLoading(true);
         this.locationService.getRacks().subscribe({
             next: (data) => {
                 this.dataSource.data = data || [];
@@ -53,12 +70,21 @@ export class RackList implements OnInit {
                 this.dataSource.sort = this.sort;
                 this.updateStats();
                 this.isLoading = false;
-                this.loadingService.setLoading(false);
+
+                if (this.isFirstLoad) {
+                    this.isFirstLoad = false;
+                    this.isDashboardLoading = false;
+                    this.loadingService.setLoading(false);
+                }
                 this.cdr.detectChanges();
             },
             error: () => {
                 this.isLoading = false;
-                this.loadingService.setLoading(false);
+                if (this.isFirstLoad) {
+                    this.isFirstLoad = false;
+                    this.isDashboardLoading = false;
+                    this.loadingService.setLoading(false);
+                }
                 this.cdr.detectChanges();
             }
         });
@@ -86,6 +112,54 @@ export class RackList implements OnInit {
     }
 
     deleteRack(rack: Rack) {
-        // Delete logic can be added later
+        const dialogRef = this.dialog.open(StatusDialogComponent, {
+            width: '400px',
+            data: {
+                isSuccess: false,
+                title: 'Delete Rack',
+                message: `Are you sure you want to delete ${rack.name}?`,
+                status: 'warning',
+                showCancel: true,
+                confirmText: 'Delete',
+                cancelText: 'Cancel'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.isLoading = true;
+                this.loadingService.setLoading(true);
+                this.locationService.deleteRack(rack.id).subscribe({
+                    next: () => {
+                        this.isLoading = false;
+                        this.loadingService.setLoading(false);
+                        this.dialog.open(StatusDialogComponent, {
+                            width: '400px',
+                            data: {
+                                isSuccess: true,
+                                status: 'success',
+                                title: 'Deleted',
+                                message: 'Rack deleted successfully'
+                            }
+                        });
+                        this.loadRacks();
+                    },
+                    error: (err) => {
+                        this.isLoading = false;
+                        this.loadingService.setLoading(false);
+                        this.dialog.open(StatusDialogComponent, {
+                            width: '400px',
+                            data: {
+                                isSuccess: false,
+                                status: 'error',
+                                title: 'Error',
+                                message: err.error?.message || 'Failed to delete rack'
+                            }
+                        });
+                        this.cdr.detectChanges();
+                    }
+                });
+            }
+        });
     }
 }

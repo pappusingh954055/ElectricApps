@@ -32,4 +32,12 @@ export class LocationService {
     createRack(payload: any): Observable<any> {
         return this.api.post('racks', payload);
     }
+
+    updateRack(id: string, payload: any): Observable<any> {
+        return this.api.put(`racks/${id}`, payload);
+    }
+
+    deleteRack(id: string): Observable<any> {
+        return this.api.delete(`racks/${id}`);
+    }
 }

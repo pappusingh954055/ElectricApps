@@ -63,8 +63,6 @@
           <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
         </table>
   
-        <mat-progress-bar mode="indeterminate" *ngIf="isLoading"></mat-progress-bar>
-        
         <mat-paginator [pageSizeOptions]="[10, 25, 50]" aria-label="Select page"></mat-paginator>
       </div>
     </mat-card>
