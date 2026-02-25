@@ -276,7 +276,7 @@ export class GatePassListComponent implements OnInit {
         // Default to India (91) if 10 digits
         const phoneWithCountry = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
 
-        const companyName = this.companyProfile?.name || this.companyProfile?.tagName;
+        const companyName = this.companyProfile?.name || this.companyProfile?.tagline || 'Reyakat Electrics';
         const companyPhone = this.companyProfile?.primaryPhone || '';
 
         // Use dynamic template if available, else fallback to default
@@ -288,13 +288,14 @@ export class GatePassListComponent implements OnInit {
                 .replace(/\[Vehicle No\]/g, row.vehicleNo)
                 .replace(/\[Pass No\]/g, row.passNo);
         } else {
-            message = `Hello ${row.driverName || 'Driver'}, this is ${companyName}. Please share your LIVE LOCATION for Truck ${row.vehicleNo} (Gate Pass: ${row.passNo}). Shukriya! \uD83D\uDE4F`;
+            message = `Hello ${row.driverName || 'Driver'}, this is ${companyName}. Please share your LIVE LOCATION for Truck ${row.vehicleNo} (Gate Pass: ${row.passNo}). Shukriya! 🙏`;
             if (companyPhone) {
                 message += ` Contact: ${companyPhone}`;
             }
         }
 
-        const url = `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(message)}`;
+        console.log('Sending WhatsApp Message:', message);
+        const url = `whatsapp://send?phone=${phoneWithCountry}&text=${encodeURIComponent(message)}`;
 
         window.open(url, '_blank');
     }
