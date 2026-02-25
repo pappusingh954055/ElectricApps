@@ -37,28 +37,28 @@
 
       <!-- Contextual Action Buttons (Show only when more than one record is selected) -->
       <div class="contextual-buttons-group" *ngIf="selection.selected.length > 1">
-        <button mat-raised-button color="warn" *ngIf="userRole !== 'Manager' && userRole !== 'Warehouse'" (click)="onBulkDeleteClick()" class="bulk-action-btn">
+        <button mat-raised-button color="warn" *ngIf="userRole !== 'Manager' && userRole !== 'Warehouse' || userRole === 'Super Admin'" (click)="onBulkDeleteClick()" class="bulk-action-btn">
           <mat-icon>delete_sweep</mat-icon> Bulk Delete
         </button>
 
-        <button mat-raised-button  *ngIf="userRole === 'User'" (click)="onBulkApproveClick()" class="bulk-action-btn glass-btn success-btn">
+        <button mat-raised-button  *ngIf="userRole === 'User' || userRole === 'Super Admin'" (click)="onBulkApproveClick()" class="bulk-action-btn glass-btn success-btn">
           <mat-icon>done_all</mat-icon> Submit Approval
         </button>
 
-        <button mat-raised-button color="primary" *ngIf="userRole === 'Manager'" (click)="onBulkDraftApprovedClick()" class="bulk-action-btn success-btn">
+        <button mat-raised-button color="primary" *ngIf="userRole === 'Manager' || userRole === 'Super Admin'" (click)="onBulkDraftApprovedClick()" class="bulk-action-btn success-btn">
           <mat-icon>verified</mat-icon> Massive Approve
         </button>
 
-        <button mat-raised-button color="warn" *ngIf="userRole === 'Manager'" (click)="onBulkPORejectedClick()" class="bulk-action-btn">
+        <button mat-raised-button color="warn" *ngIf="userRole === 'Manager' || userRole === 'Super Admin'" (click)="onBulkPORejectedClick()" class="bulk-action-btn">
           <mat-icon>cancel</mat-icon> Mass Reject
         </button>
 
-        <button mat-raised-button color="accent" *ngIf="userRole === 'Warehouse'" (click)="onBulkCreateGrnClick()" class="bulk-action-btn success-btn">
+        <button mat-raised-button color="accent" *ngIf="userRole === 'Warehouse' || userRole === 'Super Admin'" (click)="onBulkCreateGrnClick()" class="bulk-action-btn success-btn">
           <mat-icon>inventory</mat-icon> Bulk Receive
         </button>
       </div>
       
-      <button mat-raised-button color="primary" *ngIf="userRole !== 'Manager' && userRole !== 'Warehouse'" (click)="onAddNewClick()" class="main-add-btn">
+      <button mat-raised-button color="primary" *ngIf="userRole !== 'Manager' && userRole !== 'Warehouse' || userRole === 'Super Admin'" (click)="onAddNewClick()" class="main-add-btn">
         <mat-icon>add</mat-icon>
         {{ addNewLabel }}
       </button>
@@ -138,7 +138,7 @@
    <td mat-cell *matCellDef="let row">
     <div class="po-actions-wrapper">
 
-     <ng-container *ngIf="(row.status === 'Draft' || row.status === 'Rejected') && userRole === 'User'">
+     <ng-container *ngIf="(row.status === 'Draft' || row.status === 'Rejected') && (userRole === 'User' || userRole === 'Super Admin')">
       <button mat-icon-button color="primary" 
               (click)="$event.stopPropagation(); handleAction('EDIT', row)" 
               matTooltip="Edit PO">
@@ -159,7 +159,7 @@
       </button>
   </ng-container>
 
-      <ng-container *ngIf="row.status === 'Submitted' && userRole === 'Manager'">
+      <ng-container *ngIf="row.status === 'Submitted' && (userRole === 'Manager' || userRole === 'Super Admin')">
         <button mat-icon-button color="primary" (click)="$event.stopPropagation(); handleAction('APPROVE', row)" matTooltip="Approve PO">
           <mat-icon>check_circle</mat-icon>
         </button>
@@ -168,7 +168,7 @@
         </button>
       </ng-container>
 
-      <ng-container *ngIf="row.status === 'Approved' && userRole === 'Warehouse'">
+      <ng-container *ngIf="row.status === 'Approved' && (userRole === 'Warehouse' || userRole === 'Super Admin')">
         <button mat-icon-button color="accent" (click)="$event.stopPropagation(); handleAction('CREATE_GRN', row)" matTooltip="Create GRN">
           <mat-icon>local_shipping</mat-icon>
         </button>
@@ -300,7 +300,7 @@
                         <td>
                           <div *ngIf="!childSelection.hasValue()"
                             style="display: flex; gap: 4px; justify-content: center;">
-                            @if (element.status === 'Draft' && userRole === 'User') {
+                            @if (element.status === 'Draft' && (userRole === 'User' || userRole === 'Super Admin')) {
                             <button mat-icon-button (click)="onEditChild(element, childRow)" color="primary"
                               title="Edit Item">
                               <mat-icon style="font-size: 18px;">edit</mat-icon>

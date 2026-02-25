@@ -57,7 +57,7 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
 
   @Input() highlightedId: any = null;
 
-  @Input() userRole: string = ''; // Parent se role lene ke liye
+  @Input() userRole: any = ''; // Parent se role lene ke liye
 
 
 
@@ -139,6 +139,10 @@ export class EnterpriseHierarchicalGridComponent implements OnInit, AfterViewIni
 
   isRowSelectable(row: any): boolean {
     const data = this.dataSource.data || [];
+
+    if (this.userRole === 'Super Admin') {
+      return true;
+    }
 
     if (this.userRole === 'Manager') {
       const submittedCount = data.filter(r => r.status === 'Submitted').length;

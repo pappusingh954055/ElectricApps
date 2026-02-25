@@ -300,21 +300,21 @@ export class PoList implements OnInit {
             this.pendingReceiveCount++;
           }
 
-          // Pending Inward: Partially Received POs that need replacement inward (have returned/rejected items)
+          // Pending Inward:
+          // 'Partially Received' = kuch items baki hain → directly count karo
+          // 'Received' but needsReplacement = rejected/shortage items hain → count karo
           if (status === 'partially received' || (status === 'received' && needsReplacement)) {
-            if ((item.totalReturned || 0) > 0 || (item.totalRejected || 0) > 0 || needsReplacement) {
-              this.pendingInwardCount++;
+            this.pendingInwardCount++;
 
-              // Calculate aging
-              const lastActionDate = new Date(item.updatedDate || item.poDate);
-              const today = new Date();
-              const diffTime = Math.abs(today.getTime() - lastActionDate.getTime());
-              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-              item.daysSinceUpdate = diffDays;
+            // Calculate aging for overdue badge
+            const lastActionDate = new Date(item.updatedDate || item.poDate);
+            const today = new Date();
+            const diffTime = Math.abs(today.getTime() - lastActionDate.getTime());
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            item.daysSinceUpdate = diffDays;
 
-              if (diffDays > 7) {
-                this.overdueInwardCount++;
-              }
+            if (diffDays > 7) {
+              this.overdueInwardCount++;
             }
           }
 
