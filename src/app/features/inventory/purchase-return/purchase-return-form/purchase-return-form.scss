@@ -477,6 +477,16 @@ table.clean-table {
     }
   }
 
+  .location-badge {
+    background-color: #eff6ff;
+    color: #3b82f6;
+    border: 1px solid #bfdbfe;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+  }
+
   .stock-badge {
     display: inline-flex;
     flex-direction: column;

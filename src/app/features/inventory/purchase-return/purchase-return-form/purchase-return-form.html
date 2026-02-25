@@ -104,7 +104,8 @@
                                  (Received: {{item.availableQty}} | Rate: {{item.rate | currency:'INR'}} | 
                                  <span [class.stock-danger]="item.currentStock < 0" [class.stock-success]="item.currentStock >= 0">
                                    Stock: {{item.currentStock}}
-                                 </span>)
+                                 </span> | 
+                                 Loc: {{item.warehouseName}}/{{item.rackName}})
                                </small>
                             </span>
                          </mat-checkbox>
@@ -148,6 +149,10 @@
                 </span>
                 <span class="type-badge ms-2 stock-info-badge" [ngClass]="element.value.currentStock < 0 ? 'badge-danger' : 'badge-success'">
                    Stock: {{element.value.currentStock}}
+                </span>
+                <span class="type-badge ms-2 location-badge">
+                  <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle; margin-right: 2px;">location_on</mat-icon>
+                  {{element.value.warehouseName}} / {{element.value.rackName}}
                 </span>
               </div>
             </td>
