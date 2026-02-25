@@ -124,7 +124,6 @@
               <mat-checkbox (click)="$event.stopPropagation()"
                             (change)="$event ? selection.toggle(row) : null"
                             [checked]="selection.isSelected(row)"
-                            [disabled]="row.gatePassNo"
                             color="primary">
               </mat-checkbox>
             </td>

@@ -78,6 +78,15 @@ export class PurchaseReturnList implements OnInit {
     return this.selection.selected.reduce((sum, item) => sum + (Number(item.totalQty) || Number(item.qty) || Number(item.quantity) || Number(item.returnQty) || Number(item.returnQuantity) || 0), 0);
   }
 
+  // Un-dispatched selected rows (جن کا gate pass نہیں ہے)
+  get pendingOutwardSelected(): boolean {
+    return this.selection.selected.some(r => !r.gatePassNo);
+  }
+
+  get pendingOutwardSelectedCount(): number {
+    return this.selection.selected.filter(r => !r.gatePassNo).length;
+  }
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
@@ -276,25 +285,35 @@ export class PurchaseReturnList implements OnInit {
   // Bulk Logic [cite: 2026-02-21]
   isAllSelected() {
     const numSelected = this.selection.selected.length;
-    const selectableRows = this.dataSource.data.filter(row => !row.gatePassNo);
-    const numRows = selectableRows.length;
+    const numRows = this.dataSource.data.length;
     return numSelected > 0 && numSelected === numRows;
   }
 
   masterToggle() {
     this.isAllSelected() ?
       this.selection.clear() :
-      this.dataSource.data.forEach(row => {
-        if (!row.gatePassNo) {
-          this.selection.select(row);
-        }
-      });
+      this.dataSource.data.forEach(row => this.selection.select(row));
   }
 
   createBulkOutwardGatePass() {
     if (this.selection.selected.length < 2) return;
 
-    const selectedCount = this.selection.selected.length;
+    // Sirf un-dispatched rows process karein
+    const pendingRows = this.selection.selected.filter(r => !r.gatePassNo);
+
+    if (pendingRows.length === 0) {
+      this.dialog.open(ConfirmDialogComponent, {
+        data: {
+          title: 'Already Dispatched',
+          message: 'All selected returns already have a Gate Pass. Please select returns that are pending outward dispatch.',
+          confirmText: 'OK',
+          cancelText: ''
+        }
+      });
+      return;
+    }
+
+    const selectedCount = pendingRows.length;
     const dialogRef = this.dialog.open(ConfirmDialogComponent, {
       data: {
         title: 'Confirm Bulk Outward',
@@ -306,7 +325,7 @@ export class PurchaseReturnList implements OnInit {
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         this.loadingService.setLoading(true);
-        const selectedItems = this.selection.selected;
+        const selectedItems = pendingRows; // sirf un-dispatched rows
         const ids = selectedItems.map(item => item.purchaseReturnHeaderId || item.id);
 
         // 1. Bulk Outward Status Update call [cite: 2026-02-21]

@@ -21,7 +21,8 @@ import { environment } from '../../../../enviornments/environment';
 @Component({
   selector: 'app-purchase-return-form',
   standalone: true,
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule, LocationTrackerDialogComponent],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule,
+    LocationTrackerDialogComponent],
   providers: [DatePipe, CurrencyPipe],
   templateUrl: './purchase-return-form.html',
   styleUrl: './purchase-return-form.scss',
@@ -407,7 +408,7 @@ export class PurchaseReturnForm implements OnInit {
       data: {
         title: title,
         message: message,
-        confirmText: 'Yes, Save Both',
+        confirmText: 'Yes, Save Return',
         confirmColor: hasMixed ? 'warn' : 'primary'
       }
     });
@@ -459,16 +460,16 @@ export class PurchaseReturnForm implements OnInit {
       disableClose: true,
       data: {
         isSuccess: true,
-        title: 'Return Saved!',
-        message: `Purchase Return ${res.returnNumber} successfully created.`,
+        title: 'Purchase Return Saved!',
+        message: `Purchase Return ${res.returnNumber} created successfully. Stock & Ledger updated.\n\nOutward Gate Pass can be generated from the Purchase Return dashboard.`,
         actions: [
-          { label: 'Continue to Gate Pass', role: 'ok' }
+          { label: 'Go to Purchase Returns', role: 'ok' }
         ]
       }
     });
 
     dialogRef.afterClosed().subscribe(() => {
-      this.navigateToGatePass(returnNo, returnId, supplierName, totalQty);
+      this.router.navigate(['/app/inventory/purchase-return']);
     });
   }
 
