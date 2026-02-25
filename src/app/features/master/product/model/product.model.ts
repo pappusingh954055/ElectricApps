@@ -1,8 +1,9 @@
 export interface Product {
-  id?: number;
+  id?: any;
   categoryId: number;
   subcategoryId: number;
   productName: string;
+  name?: string;
   sku?: string;
   brand?: string;
   unit: 'KG' | 'PCS' | 'BOX' | 'NOS';
@@ -11,10 +12,16 @@ export interface Product {
   basePurchasePrice: number;
   mrp?: number;
   rate: number;
-  currentStock: number
+  saleRate?: number;
+  price?: number;
+  currentStock: number;
+  availableStock?: number;
 
   // 📈 Inventory & Tax
   defaultGst: number;
+  gstPercent?: number;
+  discount?: number;
+  discountPercent?: number;
   hsnCode?: string;
   minStock: number;
   trackInventory: boolean;
@@ -22,15 +29,19 @@ export interface Product {
   productType: string;
   damagedStock: number;
   description?: string;
+  defaultRackName?: string;
+  rackName?: string;
 
   createdAt?: Date;
   updatedAt?: Date;
   createdBy?: string;
+  updatedby?: string;
+  createdby?: string;
 }
 
 export interface LowStockProductDto {
   // Guid ke liye string use hota hai
-  id: string; 
+  id: string;
 
   // UI Table ke columns
   categoryName: string;
@@ -42,7 +53,7 @@ export interface LowStockProductDto {
   // Stock logic
   currentStock: number;
   minStock: number;
-  
+
   // Extra fields for PO
   basePurchasePrice: number;
 }

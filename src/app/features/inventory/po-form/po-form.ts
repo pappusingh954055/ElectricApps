@@ -16,6 +16,7 @@ import { DateHelper } from '../../../shared/models/date-helper';
 import { NotificationService } from '../../shared/notification.service';
 import { ProductSelectionDialogComponent } from '../../../shared/components/product-selection-dialog/product-selection-dialog';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
+import { BarcodeReaderHelper } from '../../../shared/barcode-reader-helper/barcode-reader-helper.service';
 
 import { trigger, transition, style, animate } from '@angular/animations';
 
@@ -82,6 +83,7 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   private destroy$ = new Subject<void>();
   private route = inject(ActivatedRoute);
   private notification = inject(NotificationService);
+  private barcodeHelper = inject(BarcodeReaderHelper);
 
   isPriceListAutoSelected = false;
   filteredProducts: Observable<any[]>[] = [];
@@ -97,6 +99,8 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
   totalTaxAmount = 0;
   subTotal = 0;
   totalQty = 0;
+  isScanning = false;
+  lastScannedCode = '';
   poForm!: FormGroup;
   poId!: any;
   currentStatus = '';
@@ -138,6 +142,56 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
       this.loadNextPoNumber();
       this.addRow();
     }
+
+    this.initBarcodeListener();
+  }
+
+  private initBarcodeListener() {
+    this.barcodeHelper.onScan().pipe(takeUntil(this.destroy$)).subscribe(code => {
+      console.log('📦 Barcode Scanned:', code);
+      this.isScanning = true;
+      this.lastScannedCode = code;
+      this.handleBarcodeScan(code);
+
+      // Reset scanning state after a short delay
+      setTimeout(() => {
+        this.isScanning = false;
+        this.cdr.detectChanges();
+      }, 1500);
+    });
+  }
+
+  private handleBarcodeScan(sku: string) {
+    // 1. Check if product already exists in the current list by SKU
+    const existingIndex = this.items.controls.findIndex(ctrl => ctrl.get('sku')?.value === sku);
+
+    if (existingIndex > -1) {
+      // Product exists, increment quantity
+      const qtyCtrl = this.items.at(existingIndex).get('qty');
+      qtyCtrl?.setValue(Number(qtyCtrl.value) + 1);
+      this.updateTotal(existingIndex);
+      this.notification.showStatus(true, `Quantity updated for SKU: ${sku}`);
+      return;
+    }
+
+    // 2. If not found, search product by SKU in database
+    this.isLoading = true;
+    this.productService.searchProducts(sku).pipe(
+      finalize(() => this.isLoading = false)
+    ).subscribe(products => {
+      // Find exact SKU match if multiple returned
+      const match = products.find(p => p.sku === sku);
+      if (match) {
+        // If first row is empty and not touched, replace it
+        if (this.items.length === 1 && !this.items.at(0).get('productId')?.value) {
+          this.items.removeAt(0);
+        }
+        this.addProductToForm(match);
+        this.notification.showStatus(true, `Product added: ${match.productName}`);
+      } else {
+        this.notification.showStatus(false, `Product with SKU ${sku} not found.`);
+      }
+    });
   }
 
   openBulkAddDialog() {

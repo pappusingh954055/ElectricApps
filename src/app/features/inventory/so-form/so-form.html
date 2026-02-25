@@ -64,6 +64,15 @@
               <mat-icon style="vertical-align: middle; font-size: 18px; width: 18px; height: 18px;">check_circle</mat-icon>
               {{items.length}} Item(s) added successfully
             </span>
+
+            <!-- Improved Barcode Indicator -->
+            <div class="barcode-status ms-auto" [class.scanning]="isScanning">
+              <mat-icon>{{ isScanning ? 'sync' : 'scanner' }}</mat-icon>
+              <div class="text-container">
+                <span class="status-label">Scanner Active</span>
+                <small class="last-scanned" *ngIf="lastScannedCode">Last: {{ lastScannedCode }}</small>
+              </div>
+            </div>
           </div>
         </div>
 

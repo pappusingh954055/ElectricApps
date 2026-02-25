@@ -12,12 +12,12 @@
       <form [formGroup]="loginForm" (ngSubmit)="Login()" *ngIf="!changePasswordMode && !forgotPasswordMode && !resetPasswordMode">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Email</mat-label>
-          <input matInput formControlName="Email" type="email" name="username" autocomplete="username" #emailInputField>
+          <input matInput formControlName="Email" type="email" name="username" autocomplete="username" #emailInputField (input)="0">
         </mat-form-field>
 
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Password</mat-label>
-          <input matInput type="password" formControlName="Password">
+          <input matInput type="password" formControlName="Password" (input)="0">
         </mat-form-field>
 
         <div class="form-options">
@@ -41,7 +41,7 @@
       <form [formGroup]="forgotPasswordForm" (ngSubmit)="onForgotPassword()" *ngIf="forgotPasswordMode">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Email</mat-label>
-          <input matInput formControlName="Email" placeholder="Enter your registered email">
+          <input matInput formControlName="Email" placeholder="Enter your registered email" (input)="0">
         </mat-form-field>
 
         <button mat-flat-button color="primary" class="login-btn" [disabled]="loading || forgotPasswordForm.invalid">
@@ -66,12 +66,12 @@
 
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Reset Token</mat-label>
-          <input matInput formControlName="ResetToken" placeholder="Paste token here">
+          <input matInput formControlName="ResetToken" placeholder="Paste token here" (input)="0">
         </mat-form-field>
 
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>New Password</mat-label>
-          <input matInput type="password" formControlName="NewPassword">
+          <input matInput type="password" formControlName="NewPassword" (input)="0">
         </mat-form-field>
 
         <button mat-flat-button color="primary" class="login-btn" [disabled]="loading || resetPasswordForm.invalid">
@@ -91,17 +91,17 @@
       <form [formGroup]="changePasswordForm" (ngSubmit)="ChangePassword()" *ngIf="changePasswordMode">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Email</mat-label>
-          <input matInput formControlName="Email">
+          <input matInput formControlName="Email" (input)="0">
         </mat-form-field>
 
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Old Password</mat-label>
-          <input matInput type="password" formControlName="OldPassword">
+          <input matInput type="password" formControlName="OldPassword" (input)="0">
         </mat-form-field>
 
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>New Password</mat-label>
-          <input matInput type="password" formControlName="NewPassword">
+          <input matInput type="password" formControlName="NewPassword" (input)="0">
         </mat-form-field>
 
         <button mat-flat-button color="primary" class="login-btn" [disabled]="loading || changePasswordForm.invalid">

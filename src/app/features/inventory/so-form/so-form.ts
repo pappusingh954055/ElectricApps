@@ -18,6 +18,7 @@ import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialo
 import { trigger, transition, style, animate } from '@angular/animations';
 import { FinanceService } from '../../finance/service/finance.service';
 import { SoSuccessDialogComponent } from '../so-success-dialog/so-success-dialog.component';
+import { BarcodeReaderHelper } from '../../../shared/barcode-reader-helper/barcode-reader-helper.service';
 
 @Component({
   selector: 'app-so-form',
@@ -80,12 +81,15 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
   private financeService = inject(FinanceService);
   private destroy$ = new Subject<void>();
   private router = inject(Router);
+  private barcodeHelper = inject(BarcodeReaderHelper);
 
   soForm!: FormGroup;
   isLoading = false;
   filteredProducts: Observable<any[]>[] = [];
   filteredUnits: Observable<any[]>[] = [];
   isProductLoading: boolean[] = [];
+  isScanning = false;
+  lastScannedCode = '';
 
   subTotal = 0;
   totalTax = 0;
@@ -100,6 +104,75 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
     this.loadCustomers();
     this.loadUnits();
     this.addRow();
+    this.initBarcodeListener();
+  }
+
+  private initBarcodeListener() {
+    this.barcodeHelper.onScan().pipe(takeUntil(this.destroy$)).subscribe(code => {
+      console.log('📦 Barcode Scanned (SO):', code);
+      this.isScanning = true;
+      this.lastScannedCode = code;
+      this.handleBarcodeScan(code);
+
+      // Reset scanning state after a short delay
+      setTimeout(() => {
+        this.isScanning = false;
+        this.cdr.detectChanges();
+      }, 1500);
+    });
+  }
+
+  private handleBarcodeScan(sku: string) {
+    // 1. Check if product already exists in the current list by SKU
+    // Note: Sale Order row doesn't store SKU explicitly in the form, 
+    // but the productSearch value contains the full product object after selection.
+    const existingIndex = this.items.controls.findIndex(ctrl => {
+      const p = ctrl.get('productSearch')?.value;
+      return p && p.sku === sku;
+    });
+
+    if (existingIndex > -1) {
+      // Product exists, increment quantity
+      const qtyCtrl = this.items.at(existingIndex).get('qty');
+      qtyCtrl?.setValue(Number(qtyCtrl.value) + 1);
+      this.updateTotal(existingIndex);
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // 2. If not found, search product by SKU in database
+    this.isLoading = true;
+    this.productService.searchProducts(sku).pipe(
+      finalize(() => this.isLoading = false)
+    ).subscribe(products => {
+      const match = products.find(p => p.sku === sku);
+      if (match) {
+        // If first row is empty and not touched, replace it
+        if (this.items.length === 1 && !this.items.at(0).get('productId')?.value) {
+          this.items.removeAt(0);
+        }
+
+        const row = this.fb.group({
+          productSearch: [match, Validators.required],
+          productId: [match.id, Validators.required],
+          qty: [1, [Validators.required, Validators.min(1)]],
+          unit: [match.unit || 'PCS'],
+          rate: [match.rate || match.saleRate || 0, [Validators.required, Validators.min(0.01)]],
+          discountPercent: [match.discount || match.discountPercent || 0],
+          gstPercent: [match.defaultGst || match.gstPercent || 0],
+          taxAmount: [0],
+          total: [{ value: 0, disabled: true }],
+          availableStock: [match.currentStock || 0],
+          rackName: [match.defaultRackName || '']
+        });
+
+        this.items.push(row);
+        const index = this.items.length - 1;
+        this.setupFilter(index);
+        this.updateTotal(index);
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   ngOnDestroy(): void {

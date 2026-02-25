@@ -115,6 +115,15 @@
     color: white;
     transition: all 0.3s ease;
     box-shadow: 0 4px 12px rgba(14, 136, 218, 0.3);
+    cursor: pointer;
+
+    &:disabled {
+      background-color: #cbd5e0 !important;
+      color: #718096 !important;
+      cursor: not-allowed !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
 
     &:hover:not(:disabled) {
       background-color: #064e7d;
