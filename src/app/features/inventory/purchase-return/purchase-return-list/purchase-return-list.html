@@ -2,10 +2,20 @@
   <div class="header-actions">
     <h1 class="page-title m-0">Purchase Return (Debit Note)</h1>
     <div class="d-flex gap-2">
+      <!-- Single Row Outward Gate Pass -->
+      <button mat-raised-button 
+        class="bulk-action-btn" 
+        (click)="createOutwardGatePass(selection.selected[0])" 
+        *ngIf="selection.selected.length === 1 && !selection.selected[0]?.gatePassNo">
+        <mat-icon>local_shipping</mat-icon>
+        Create Outward Pass
+      </button>
+
+      <!-- Bulk Outward Gate Pass (2+ un-dispatched selected) -->
       <button mat-raised-button 
         class="bulk-action-btn" 
         (click)="createBulkOutwardGatePass()" 
-        *ngIf="selection.selected.length > 1">
+        *ngIf="selection.selected.length > 1 && pendingOutwardSelected">
         <mat-icon>merge_type</mat-icon>
         Bulk Outward ({{selection.selected.length}})
       </button>

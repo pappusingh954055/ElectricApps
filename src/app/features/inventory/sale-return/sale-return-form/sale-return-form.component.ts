@@ -392,16 +392,18 @@ export class SaleReturnFormComponent implements OnInit {
             width: '450px',
             data: {
                 isSuccess: !isFail,
-                title: 'Return Saved!',
-                message: isFail ? 'Return Saved, but Ledger failed.' : 'Sale Return saved and Ledger updated successfully!',
+                title: 'Sale Return Saved!',
+                message: isFail
+                    ? 'Return Saved, but Ledger update failed. Please check manually.'
+                    : 'Sale Return saved successfully. Stock Re-filled & Ledger updated.\n\nInward Gate Pass can be generated from the Sale Returns dashboard.',
                 actions: [
-                    { label: 'Continue to Gate Pass', role: 'ok' }
+                    { label: 'Go to Sale Returns', role: 'ok' }
                 ]
             }
         });
 
         dialogRef.afterClosed().subscribe(() => {
-            this.navigateToGatePass(returnNo, returnId);
+            this.router.navigate(['/app/inventory/sale-return']);
         });
     }
 

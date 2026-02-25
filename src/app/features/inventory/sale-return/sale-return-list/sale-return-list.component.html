@@ -75,12 +75,22 @@
             <mat-datepicker #picker2></mat-datepicker>
         </mat-form-field>
         <div class="d-flex gap-2">
+      <!-- Single Row Inward Gate Pass -->
+      <button mat-raised-button 
+        class="bulk-action-btn" 
+        (click)="createInwardGatePass(selection.selected[0])" 
+        *ngIf="selection.selected.length === 1 && !selection.selected[0]?.gatePassNo">
+        <mat-icon>move_to_inbox</mat-icon>
+        Create Inward Pass
+      </button>
+
+      <!-- Bulk Inward Gate Pass (2+ un-inwarded selected) -->
       <button mat-raised-button 
         class="bulk-action-btn" 
         (click)="createBulkInwardGatePass()" 
-        *ngIf="selection.selected.length > 1">
+        *ngIf="selection.selected.length > 1 && pendingInwardSelected">
         <mat-icon>merge_type</mat-icon>
-        Bulk Inward ({{selection.selected.length}})
+        Bulk Inward ({{pendingInwardSelectedCount}})
       </button>
       <button mat-raised-button 
 class="export-action-btn" (click)="exportToExcel()" [disabled]="isExportLoading || isTableLoading || dataSource.data.length === 0">
@@ -122,7 +132,6 @@ class="export-action-btn" (click)="exportToExcel()" [disabled]="isExportLoading 
                         <mat-checkbox (click)="$event.stopPropagation()"
                                      (change)="$event ? selection.toggle(row) : null"
                                      [checked]="selection.isSelected(row)"
-                                     [disabled]="row.gatePassNo"
                                      color="primary">
                         </mat-checkbox>
                     </td>

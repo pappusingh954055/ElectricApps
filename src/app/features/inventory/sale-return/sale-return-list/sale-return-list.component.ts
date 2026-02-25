@@ -77,6 +77,14 @@ export class SaleReturnListComponent implements OnInit {
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
 
+    get pendingInwardSelected(): boolean {
+        return this.selection.selected.some(r => !r.gatePassNo);
+    }
+
+    get pendingInwardSelectedCount(): number {
+        return this.selection.selected.filter(r => !r.gatePassNo).length;
+    }
+
     ngOnInit(): void {
         // Global loader ON
         this.isDashboardLoading = true;
@@ -280,25 +288,35 @@ export class SaleReturnListComponent implements OnInit {
     // Bulk Logic [cite: 2026-02-21]
     isAllSelected() {
         const numSelected = this.selection.selected.length;
-        const selectableRows = this.dataSource.data.filter(row => !row.gatePassNo);
-        const numRows = selectableRows.length;
+        const numRows = this.dataSource.data.length;
         return numSelected > 0 && numSelected === numRows;
     }
 
     masterToggle() {
         this.isAllSelected() ?
             this.selection.clear() :
-            this.dataSource.data.forEach(row => {
-                if (!row.gatePassNo) {
-                    this.selection.select(row);
-                }
-            });
+            this.dataSource.data.forEach(row => this.selection.select(row));
     }
 
     createBulkInwardGatePass() {
         if (this.selection.selected.length < 2) return;
 
-        const selectedCount = this.selection.selected.length;
+        // Sirf un-inwarded rows process karein
+        const pendingRows = this.selection.selected.filter(r => !r.gatePassNo);
+
+        if (pendingRows.length === 0) {
+            this.dialog.open(ConfirmDialogComponent, {
+                data: {
+                    title: 'Already Inwarded',
+                    message: 'All selected returns already have an Inward Gate Pass. Please select returns that are pending inward.',
+                    confirmText: 'OK',
+                    cancelText: ''
+                }
+            });
+            return;
+        }
+
+        const selectedCount = pendingRows.length;
         const dialogRef = this.dialog.open(ConfirmDialogComponent, {
             data: {
                 title: 'Confirm Bulk Inward',
@@ -310,7 +328,7 @@ export class SaleReturnListComponent implements OnInit {
         dialogRef.afterClosed().subscribe(result => {
             if (result) {
                 this.loadingService.setLoading(true);
-                const selectedItems = this.selection.selected;
+                const selectedItems = pendingRows; // sirf un-inwarded rows
                 const ids = selectedItems.map(item => item.saleReturnHeaderId || item.id);
 
                 // 1. Bulk Inward Status Update call [cite: 2026-02-21]
