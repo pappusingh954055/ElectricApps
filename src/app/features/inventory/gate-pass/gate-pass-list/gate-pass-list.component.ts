@@ -13,6 +13,7 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { FormsModule } from '@angular/forms';
 import { GatePassPrintDialogComponent } from '../gate-pass-print-dialog/gate-pass-print-dialog.component';
+import { CompanyService } from '../../../company/services/company.service';
 
 @Component({
     selector: 'app-gate-pass-list',
@@ -34,8 +35,10 @@ export class GatePassListComponent implements OnInit {
     private loadingService = inject(LoadingService);
     private dialog = inject(MatDialog);
     private notification = inject(NotificationService);
+    private companyService = inject(CompanyService);
 
     dataSource = new MatTableDataSource<any>([]);
+    companyProfile: any = null;
     displayedColumns: string[] = ['passNo', 'passType', 'gateEntryTime', 'partyName', 'referenceNo', 'vehicleNo', 'totalQty', 'status', 'actions'];
 
     totalRecords = 0;
@@ -60,6 +63,17 @@ export class GatePassListComponent implements OnInit {
 
     ngOnInit() {
         this.loadData();
+        this.loadCompanyProfile();
+    }
+
+    loadCompanyProfile() {
+        this.companyService.getCompanyProfile().subscribe({
+            next: (profile: any) => {
+                this.companyProfile = profile;
+                this.cdr.detectChanges();
+            },
+            error: (err: any) => console.error('Error fetching company profile:', err)
+        });
     }
 
     loadData() {
@@ -249,5 +263,30 @@ export class GatePassListComponent implements OnInit {
             if (item.passType === 'Inward') this.totalInward++;
             else if (item.passType === 'Outward') this.totalOutward++;
         });
+    }
+
+    onTrackWhatsApp(row: any) {
+        if (!row.driverPhone) {
+            this.notification.showStatus(false, 'Driver phone number not available');
+            return;
+        }
+
+        // Clean phone number (remove non-digits)
+        const cleanPhone = row.driverPhone.replace(/\D/g, '');
+        // Default to India (91) if 10 digits
+        const phoneWithCountry = cleanPhone.length === 10 ? '91' + cleanPhone : cleanPhone;
+
+        const companyName = this.companyProfile?.name || 'Reyakat Electrics';
+        const companyPhone = this.companyProfile?.primaryPhone || '';
+
+        let message = `Hello ${row.driverName || 'Driver'}, this is ${companyName}. Please share your LIVE LOCATION for Truck ${row.vehicleNo} (Gate Pass: ${row.passNo}).`;
+
+        if (companyPhone) {
+            message += ` You can also contact us at ${companyPhone}.`;
+        }
+
+        const url = `https://wa.me/${phoneWithCountry}?text=${encodeURIComponent(message)}`;
+
+        window.open(url, '_blank');
     }
 }
