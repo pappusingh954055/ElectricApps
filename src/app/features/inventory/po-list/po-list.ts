@@ -801,8 +801,10 @@ export class PoList implements OnInit {
 
   // 4. Common Update Method with Status Dialog
   private updateStatus(id: number, status: string, successMessage: string) {
+    console.log(`🚀 Updating PO ID: ${id} to Status: ${status}`);
     this.poService.updatePOStatus(id, status).subscribe({
       next: (response) => {
+        console.log(`✅ Status Update Success for ID ${id}:`, response);
         this.isLoading = false;
         this.cdr.detectChanges();
         // SUCCESS logic: isSuccess ko true bhejna hai [cite: 2026-01-22]
@@ -818,7 +820,7 @@ export class PoList implements OnInit {
         this.loadData(this.currentGridState);
       },
       error: (err) => {
-        console.error('API Error:', err);
+        console.error(`❌ Status Update Error for ID ${id}:`, err);
         // ERROR logic: isSuccess ko false bhejna hai [cite: 2026-01-22]
         this.dialog.open(StatusDialogComponent, {
           width: '350px',
@@ -918,9 +920,11 @@ export class PoList implements OnInit {
         this.isLoading = true;
         this.cdr.detectChanges();
         const ids = validRows.map((row: any) => row.id);
+        console.log('🚀 Bulk Approving PO IDs:', ids);
 
         this.poActionService.bulkDraftApprove(ids).subscribe({
-          next: () => {
+          next: (res) => {
+            console.log('✅ Bulk Approve Success Response:', res);
             this.isLoading = false;
             this.notification.showStatus(true, 'Selected POs Approved successfully.');
             if (this.grid && this.grid.selection) {
@@ -929,7 +933,7 @@ export class PoList implements OnInit {
             this.loadData(this.currentGridState);
           },
           error: (err) => {
-            console.error(err);
+            console.error('❌ Bulk Approve Error:', err);
             this.isLoading = false;
             this.notification.showStatus(false, 'Failed to Approve POs.');
             this.cdr.detectChanges();
