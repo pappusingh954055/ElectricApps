@@ -342,13 +342,10 @@ export class GrnListComponent implements OnInit, AfterViewInit {
   }
 
   processRejectionReturn(row: any) {
-    // Redirection to PO list so user can see "Red Truck" and process return
-    // Passing the poId if available to filter or highlight
-    const poId = row.poId || row.purchaseOrderId;
-    this.router.navigate(['/app/inventory/polist'], {
+    // Navigate to Purchase Return Form with supplier pre-selected
+    this.router.navigate(['/app/inventory/purchase-return/add'], {
       queryParams: {
-        poId: poId,
-        action: 'return'
+        supplierId: row.supplierId
       }
     });
   }

@@ -209,7 +209,7 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
         if (item.history && Array.isArray(item.history)) {
           item.history.forEach((h: any) => {
             if (h.receivedDate && typeof h.receivedDate === 'string' && !h.receivedDate.includes('Z') && !h.receivedDate.includes('+')) {
-              h.receivedDate = h.receivedDate + 'Z';
+              h.receivedDate = h.receivedDate + '+05:30';
             }
           });
         }

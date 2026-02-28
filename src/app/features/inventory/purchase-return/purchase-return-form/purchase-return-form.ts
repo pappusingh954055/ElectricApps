@@ -206,7 +206,7 @@ export class PurchaseReturnForm implements OnInit {
 
       // UTC to Local Conversion: Append 'Z' if missing to force UTC interpretation
       if (typeof rDate === 'string' && !rDate.includes('Z') && !rDate.includes('+')) {
-        rDate = rDate.replace(' ', 'T') + 'Z';
+        rDate = rDate.replace(' ', 'T') + '+05:30';
       }
 
       if (!groups[ref]) {
