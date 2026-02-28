@@ -297,10 +297,10 @@ export class PoList implements OnInit {
         console.log('API PO List Response:', res);
         const dataRows = res.data || [];
         const items = dataRows.map((item: any) => {
-          // Force UTC-to-Local conversion
+          // Force UTC-to-Local conversion (Normalized to IST)
           ['poDate', 'expectedDeliveryDate', 'CreatedAt', 'createdAt', 'CreatedDate', 'createdDate'].forEach(key => {
             if (item[key] && typeof item[key] === 'string' && !item[key].includes('Z') && !item[key].includes('+')) {
-              item[key] = item[key] + 'Z';
+              item[key] = item[key] + '+05:30';
             }
           });
 

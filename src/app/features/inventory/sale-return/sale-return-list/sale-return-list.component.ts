@@ -191,8 +191,8 @@ export class SaleReturnListComponent implements OnInit {
                 // 🚛 Match Returns with Gate Passes & Fix Timezone
                 const processedItems = returnData.items.map((item: any) => {
                     // Fix Date to UTC if it doesn't have timezone info
-                    if (item.returnDate && !item.returnDate.includes('Z')) {
-                        item.returnDate = item.returnDate + 'Z';
+                    if (item.returnDate && !item.returnDate.includes('Z') && !item.returnDate.includes('+')) {
+                        item.returnDate = item.returnDate + '+05:30';
                     }
 
                     // Match by RefNo (ReturnNumber) - Support bulk (comma)

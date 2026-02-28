@@ -191,7 +191,13 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
             next: (res: any) => {
                 this.isLoading = false;
                 if (res && res.items) {
-                    this.dataSource.data = res.items.items || [];
+                    const items = (res.items.items || []).map((item: any) => {
+                        if (item.dueDate && typeof item.dueDate === 'string' && !item.dueDate.includes('Z') && !item.dueDate.includes('+')) {
+                            item.dueDate += '+05:30';
+                        }
+                        return item;
+                    });
+                    this.dataSource.data = items;
                     this.totalCount = res.items.totalCount || 0;
                     this.totalOutstandingAmount = res.totalOutstandingAmount || 0;
 

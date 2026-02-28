@@ -1,7 +1,7 @@
 import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection, LOCALE_ID } from '@angular/core';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideRouter } from '@angular/router';
-import { registerLocaleData } from '@angular/common';
+import { registerLocaleData, DATE_PIPE_DEFAULT_OPTIONS } from '@angular/common';
 import localeIn from '@angular/common/locales/en-IN';
 
 import { routes } from './app.routes';
@@ -23,6 +23,7 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor])
     ),
     provideCharts(withDefaultRegisterables()),
-    { provide: LOCALE_ID, useValue: 'en-IN' }
+    { provide: LOCALE_ID, useValue: 'en-IN' },
+    { provide: DATE_PIPE_DEFAULT_OPTIONS, useValue: { timezone: '+0530' } }
   ]
 };

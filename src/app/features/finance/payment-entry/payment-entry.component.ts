@@ -265,8 +265,8 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
           this.currentBalance = balance;
           this.balanceType = balance > 0 ? 'Payable' : (balance < 0 ? 'Advance' : 'Clear');
           const items = (result.ledger.items || []).map((item: any) => {
-            if (item.transactionDate && typeof item.transactionDate === 'string' && !item.transactionDate.includes('Z')) {
-              item.transactionDate += 'Z';
+            if (item.transactionDate && typeof item.transactionDate === 'string' && !item.transactionDate.includes('Z') && !item.transactionDate.includes('+')) {
+              item.transactionDate += '+05:30';
             }
             return item;
           });

@@ -199,8 +199,8 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
                     this.ledgerData = data;
                     if (data && data.ledger) {
                         const items = (data.ledger.items || []).map((item: any) => {
-                            if (item.transactionDate && typeof item.transactionDate === 'string' && !item.transactionDate.includes('Z')) {
-                                item.transactionDate += 'Z';
+                            if (item.transactionDate && typeof item.transactionDate === 'string' && !item.transactionDate.includes('Z') && !item.transactionDate.includes('+')) {
+                                item.transactionDate += '+05:30';
                             }
                             return item;
                         });

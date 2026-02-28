@@ -90,7 +90,7 @@
               <td>{{item.productName}}</td>
               <td>{{item.sku}}</td>
               <td class="text-right">{{item.orderedQty}}</td>
-              <td class="text-right">{{item.receivedQty}}</td>
+              <td class="text-right">{{item.receivedQty - (item.rejectedQty || 0)}}</td>
               <td class="text-right">{{item.unitRate | currency:'INR'}}</td>
               <td class="text-right">{{item.discountPercent || 0}}%</td>
               <td class="text-right">{{item.gstPercentage}}%</td>

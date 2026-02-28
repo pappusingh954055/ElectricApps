@@ -236,9 +236,9 @@ export class GrnListComponent implements OnInit, AfterViewInit {
           });
 
           return items.map((item: any): GRNListRow => {
-            // Normalize Date to UTC if it doesn't have timezone
-            if (item.receivedDate && typeof item.receivedDate === 'string' && !item.receivedDate.includes('Z')) {
-              item.receivedDate += 'Z';
+            // Normalize Date to IST if it doesn't have timezone
+            if (item.receivedDate && typeof item.receivedDate === 'string' && !item.receivedDate.includes('Z') && !item.receivedDate.includes('+')) {
+              item.receivedDate += '+05:30';
             }
             return {
               ...item,
@@ -278,7 +278,7 @@ export class GrnListComponent implements OnInit, AfterViewInit {
 
   calculateTotalReceived(row: any): number {
     const items = (row as GRNListRow).items || [];
-    return items.reduce((sum, item) => sum + (Number(item.receivedQty) || 0), 0);
+    return items.reduce((sum, item) => sum + ((Number(item.receivedQty) || 0) - (Number(item.rejectedQty) || 0)), 0);
   }
 
   // Navigation Logic
