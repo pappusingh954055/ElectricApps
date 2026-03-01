@@ -107,6 +107,10 @@ export class FinanceService {
         );
     }
 
+    getReceiptsReport(request: any): Observable<any> {
+        return this.http.post<any>(`${this.customerApi}/receipts-report`, request);
+    }
+
     // P&L Methods
     getProfitAndLossReport(filters: any): Observable<any> {
         // We aggregate data from Suppliers (Payments), Customers (Income/Receipts), and Inventory (General Expenses)

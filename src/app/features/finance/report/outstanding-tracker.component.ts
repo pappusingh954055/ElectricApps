@@ -13,6 +13,7 @@ import { LoadingService } from '../../../core/services/loading.service';
 import { customerService } from '../../master/customer-component/customer.service';
 import { Observable, map, startWith } from 'rxjs';
 import { BulkReceiptEntryComponent } from '../bulk-receipt-entry/bulk-receipt-entry.component';
+import { ReceiptReportComponent } from './receipt-report.component';
 
 export interface OutstandingData {
     customerId: number;
@@ -241,6 +242,19 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
     viewLedger(customerId: number) {
         this.router.navigate(['/app/finance/customers/ledger'], {
             queryParams: { customerId: customerId }
+        });
+    }
+
+    viewReceiptHistory(customerId?: number) {
+        const id = customerId || (this.searchControl.value as any)?.id;
+
+        this.dialog.open(ReceiptReportComponent, {
+            width: '90vw',
+            maxWidth: '1200px',
+            maxHeight: '90vh',
+            data: { customerId: id },
+            disableClose: true,
+            panelClass: 'professional-dialog'
         });
     }
 

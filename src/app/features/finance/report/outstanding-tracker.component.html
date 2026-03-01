@@ -51,6 +51,9 @@
                         <button mat-stroked-button color="primary" class="bulk-btn" (click)="goToBulkEntry()" [disabled]="totalCount <= 1">
                             <mat-icon>playlist_add</mat-icon> Bulk Entry
                         </button>
+                        <button mat-stroked-button color="accent" class="history-btn" (click)="viewReceiptHistory()">
+                            <mat-icon>history</mat-icon> View Receipt History
+                        </button>
                         <mat-form-field appearance="outline" class="search-field">
                             <mat-label>Search Customer</mat-label>
                             <input type="text" 
