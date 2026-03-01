@@ -103,10 +103,10 @@ body {
   scrollbar-color: #bbb transparent; /* Firefox thumb/track color */
 }
 
-/* WebKit: Hide vertical, show horizontal */
+/* WebKit: Show vertical, hide horizontal */
 *::-webkit-scrollbar {
-  width: 0px;      /* Vertical hidden independently */
-  height: 8px;     /* Horizontal visible */
+  width: 8px;      /* Vertical visible independently */
+  height: 0px;     /* Horizontal hidden */
 }
 
 /* Track (Background) */
@@ -127,15 +127,15 @@ body {
   background-color: #999;
 }
 
-/* Ensure horizontal bar has dimension */
+/* Ensure horizontal bar is strictly hidden */
 *::-webkit-scrollbar-horizontal {
-  height: 8px;
+  height: 0px;
+  display: none;
 }
 
-/* Ensure vertical bar is strictly hidden */
+/* Ensure vertical bar has dimension */
 *::-webkit-scrollbar-vertical {
-  width: 0px;
-  display: none;
+  width: 8px;
 }
 
 /* Specific fix for Material Drawer to hide vertical scrollbar but allow scrolling */
@@ -493,4 +493,84 @@ $my-palettes: (
   .mdc-snackbar__surface {
      box-shadow: 0 4px 6px rgba(0,0,0,0.2);
   }
+}
+
+/* =====================================================
+   15. GLOBAL DATATABLE STANDARDIZATION
+===================================================== */
+
+/* Force standardization on all Material MDC Tables */
+.mat-mdc-table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+
+  /* Header Cell Styles */
+  .mat-mdc-header-cell {
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+    font-size: 11.5px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    padding: 8px 16px !important; /* Reduced from 12px */
+    border-bottom: 2px solid #e2e8f0 !important;
+    white-space: nowrap !important; /* Strictly no-wrap */
+    line-height: 32px !important;
+  }
+
+  /* Body Cell Styles */
+  .mat-mdc-cell {
+    font-size: 13px !important; /* Standard readable size */
+    color: #1e293b !important;
+    padding: 6px 16px !important; /* Reduced from 10px */
+    border-bottom: 1px solid #f1f5f9 !important;
+    white-space: nowrap !important; /* Strictly no-wrap */
+    line-height: normal !important;
+  }
+
+  /* Row Styles (Exclude detail/expanded rows) */
+  .mat-mdc-row:not(.detail-row):not(.expanded-row):not(.detail-panel *) {
+    height: 44px !important;
+    transition: background-color 0.2s ease !important;
+
+    &:hover {
+      background-color: #f8fafc !important;
+    }
+  }
+
+  /* Force collapsed height for detail rows globally if used */
+  .mat-mdc-row.detail-row {
+    height: 0 !important;
+    min-height: 0 !important;
+  }
+
+  .mat-mdc-row.detail-row .mat-mdc-cell {
+    padding: 0 !important;
+    border-bottom: none !important;
+    height: 0 !important;
+  }
+
+  /* Utility font weights */
+  .bold-text, .fw-bold {
+    font-weight: 600 !important;
+  }
+
+  /* Status Badges within Tables should be standard */
+  .status-badge {
+    padding: 2px 10px !important;
+    border-radius: 999px !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    display: inline-block !important;
+    white-space: nowrap !important;
+  }
+}
+
+/* Ensure ONLY vertical scroll works (Hide horizontal as per user request) */
+.table-responsive, .table-container {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch !important;
 }

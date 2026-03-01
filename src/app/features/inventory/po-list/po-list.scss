@@ -277,15 +277,11 @@ app-enterprise-hierarchical-grid {
     background: #ffffff !important;
   }
 
-  /* Header aur Cell ki alignment aur padding match karein */
+  /* Standardized table cells from styles.scss */
   th.mat-header-cell,
   td.mat-cell {
-    padding: 0 10px !important;
-    white-space: nowrap;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    box-sizing: border-box !important;
-    vertical-align: middle !important;
+    /* Inherits: font-size 13px, white-space nowrap, etc. */
+    line-height: normal !important;
   }
 
   /* Right alignment force karein numbers ke liye */

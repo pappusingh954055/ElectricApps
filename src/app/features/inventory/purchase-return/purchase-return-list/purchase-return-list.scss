@@ -290,7 +290,7 @@
 
   .table-responsive {
     flex: 1;
-    overflow-x: auto;
+    overflow-x: hidden;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     @media (min-width: 769px) {
@@ -320,51 +320,34 @@
     }
 
     th.mat-header-cell {
+      /* Shared header styles in styles.scss */
       position: sticky;
       top: 0;
       z-index: 100;
-      background-color: #f1f3f4 !important;
-      color: #37474f;
-      font-weight: 600;
-      font-size: 11px;
-      letter-spacing: 0.05em;
-      text-transform: uppercase;
-      padding: 4px 8px;
-      border-bottom: 2px solid #cfd8dc;
-      white-space: nowrap;
     }
 
     td.mat-cell {
-      padding: 2px 8px;
-      font-size: 11.5px;
-      color: #263238;
-      border-bottom: 1px solid #eceff1;
+      /* Now inherits from styles.scss */
 
       &.mat-column-returnNumber {
-        min-width: 130px;
-        white-space: nowrap;
+        min-width: 150px;
+        white-space: nowrap !important;
       }
       &.mat-column-gatePassNo {
-        min-width: 110px;
+        min-width: 130px;
       }
       &.mat-column-supplierName {
-        min-width: 140px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        min-width: 180px;
+        white-space: nowrap !important;
       }
       &.mat-column-totalAmount {
-        min-width: 80px;
-        white-space: nowrap;
+        min-width: 100px;
       }
       &.mat-column-actions {
-        width: 70px;
-        min-width: 70px;
-        white-space: nowrap !important;
+        width: 100px;
+        min-width: 100px;
         text-align: right;
       }
-      
-      white-space: nowrap;
     }
 
     tr.hover-row {

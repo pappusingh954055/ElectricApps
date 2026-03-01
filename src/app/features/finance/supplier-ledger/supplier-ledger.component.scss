@@ -207,16 +207,12 @@
             width: 100%;
 
             th.mat-header-cell {
-                font-weight: 600;
-                color: #424242;
-                background-color: #f5f5f5;
-                white-space: nowrap;
-                padding: 12px 16px;
+                /* Inherits from styles.scss */
+                line-height: normal !important;
             }
 
             td.mat-cell {
-                padding: 12px 16px;
-                white-space: nowrap;
+                /* Inherits from styles.scss */
 
                 &.amount-cell {
                     font-family: 'Roboto Mono', monospace;

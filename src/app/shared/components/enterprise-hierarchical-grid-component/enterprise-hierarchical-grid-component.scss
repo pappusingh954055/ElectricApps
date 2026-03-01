@@ -341,7 +341,7 @@ th.child-th {
 /* --- UPDATED: Expand animation section (Slower & Smoother) --- */
 .detail-row {
   height: 0 !important;
-  display: table-row !important;
+  display: table-row; /* Removed !important to allow [style.display] hiding */
 }
 
 .detail-panel {
