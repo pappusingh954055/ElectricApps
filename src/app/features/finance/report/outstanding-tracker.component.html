@@ -182,6 +182,12 @@
                             <button mat-icon-button color="accent" matTooltip="View Ledger" (click)="viewLedger(row.customerId)">
                                 <mat-icon>visibility</mat-icon>
                             </button>
+                            <button mat-icon-button class="sms-btn" matTooltip="Send Dues SMS" (click)="sendSms(row, false)">
+                                <mat-icon>message</mat-icon>
+                            </button>
+                            <button mat-icon-button class="whatsapp-btn" matTooltip="Send Dues WhatsApp" (click)="sendSms(row, true)">
+                                <mat-icon>chat</mat-icon>
+                            </button>
                         </td>
                     </ng-container>
 

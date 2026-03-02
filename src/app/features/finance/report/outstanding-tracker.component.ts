@@ -267,6 +267,60 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
         });
     }
 
+    sendSms(customer: any, isWhatsApp: boolean = false) {
+        const smsData = {
+            customerId: customer.customerId,
+            customerName: customer.customerName,
+            phoneNumber: customer.phone,
+            pendingAmount: customer.pendingAmount,
+            dueDate: customer.dueDate,
+            isWhatsApp: isWhatsApp
+        };
+
+        if (!smsData.phoneNumber) {
+            this.dialog.open(StatusDialogComponent, {
+                data: {
+                    title: 'Error',
+                    message: 'Customer does not have a phone number configured.',
+                    status: 'error'
+                }
+            });
+            return;
+        }
+
+        this.financeService.sendDuesSms(smsData).subscribe({
+            next: (res: any) => {
+                if (res.success) {
+                    this.dialog.open(StatusDialogComponent, {
+                        data: {
+                            title: 'Success',
+                            message: `SMS sent successfully to ${customer.customerName}`,
+                            status: 'success'
+                        }
+                    });
+                } else {
+                    this.dialog.open(StatusDialogComponent, {
+                        data: {
+                            title: 'Failed',
+                            message: 'Failed to send SMS. Please check Twilio configuration.',
+                            status: 'error'
+                        }
+                    });
+                }
+            },
+            error: (err) => {
+                console.error('Error sending SMS:', err);
+                this.dialog.open(StatusDialogComponent, {
+                    data: {
+                        title: 'Error',
+                        message: 'An error occurred while sending SMS.',
+                        status: 'error'
+                    }
+                });
+            }
+        });
+    }
+
     applyFilter(event: Event) {
         const filterValue = (event.target as HTMLInputElement).value;
         this.applyFilterValue(filterValue);

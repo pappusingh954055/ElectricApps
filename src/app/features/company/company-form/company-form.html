@@ -171,11 +171,95 @@
             <textarea
               matInput
               formControlName="driverWhatsAppMessage"
-              rows="4"
+              rows="3"
               placeholder="Hello [Driver], this is [Company Name]. Please share your LIVE LOCATION for Truck [Vehicle No]..."
             ></textarea>
             <mat-icon matSuffix>add_location_alt</mat-icon>
             <mat-hint>Ye message Gate Pass list se location mangte waqt use hoga.</mat-hint>
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Section: Purchase Order Creation Message -->
+      <mat-card class="section-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar color="primary">shopping_cart</mat-icon>
+          <mat-card-title>PO Creation Message Template</mat-card-title>
+          <mat-card-subtitle>Naya Purchase Order banne par bheja jane wala message</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-4">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>PO Creation Message</mat-label>
+            <textarea
+              matInput
+              formControlName="purchaseOrderCreationMessage"
+              rows="3"
+              placeholder="Namaste [SupplierName], [Company Name] ne aapke liye naya Purchase Order [PO-Number] create kiya hai..."
+            ></textarea>
+            <mat-icon matSuffix>add_shopping_cart</mat-icon>
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Section: Purchase Order Status Update Message -->
+      <mat-card class="section-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar color="primary">fact_check</mat-icon>
+          <mat-card-title>PO Status Update Message Template</mat-card-title>
+          <mat-card-subtitle>PO Approve ya Receive hone par bheja jane wala message</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-4">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>PO Status Update Message</mat-label>
+            <textarea
+              matInput
+              formControlName="purchaseOrderStatusUpdateMessage"
+              rows="3"
+              placeholder="Namaste [SupplierName], aapka Purchase Order [PO-Number] ab approve/receive ho chuka hai..."
+            ></textarea>
+            <mat-icon matSuffix>rule</mat-icon>
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Section: Sale Order Creation Message -->
+      <mat-card class="section-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar color="primary">add_task</mat-icon>
+          <mat-card-title>SO Creation Message Template</mat-card-title>
+          <mat-card-subtitle>Naya Sale Order banne par bheja jane wala message</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-4">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>SO Creation Message</mat-label>
+            <textarea
+              matInput
+              formControlName="saleOrderCreationMessage"
+              rows="3"
+              placeholder="Namaste [CustomerName], aapka Sale Order [SO-Number] (Rs. [Amount]) create ho gaya hai..."
+            ></textarea>
+            <mat-icon matSuffix>receipt</mat-icon>
+          </mat-form-field>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Section: Sale Order Confirmation Message -->
+      <mat-card class="section-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar color="primary">verified</mat-icon>
+          <mat-card-title>SO Confirmation Message Template</mat-card-title>
+          <mat-card-subtitle>Sale Order Confirm hone par bheja jane wala message</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content class="pt-4">
+          <mat-form-field appearance="outline" class="w-full">
+            <mat-label>SO Confirmation Message</mat-label>
+            <textarea
+              matInput
+              formControlName="saleOrderConfirmationMessage"
+              rows="3"
+              placeholder="Mubarik ho [CustomerName]! Aapka Order [SO-Number] (Rs. [Amount]) confirm ho gaya hai..."
+            ></textarea>
+            <mat-icon matSuffix>check_circle</mat-icon>
           </mat-form-field>
         </mat-card-content>
       </mat-card>

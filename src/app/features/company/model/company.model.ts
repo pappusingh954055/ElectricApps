@@ -14,6 +14,10 @@ export interface CompanyProfileDto {
     website: string;
     message: string | null; // WhatsApp/SMS reminder message
     driverWhatsAppMessage: string | null; // Custom message for driver tracking
+    purchaseOrderCreationMessage: string | null;
+    purchaseOrderStatusUpdateMessage: string | null;
+    saleOrderCreationMessage: string | null;
+    saleOrderConfirmationMessage: string | null;
     smtpEmail: string | null;
     smtpPassword: string | null;
     smtpHost: string | null;
@@ -77,6 +81,10 @@ export interface UpsertCompanyRequest {
     website: string;
     message: string | null; // WhatsApp/SMS reminder message
     driverWhatsAppMessage: string | null; // Custom message for driver tracking
+    purchaseOrderCreationMessage: string | null;
+    purchaseOrderStatusUpdateMessage: string | null;
+    saleOrderCreationMessage: string | null;
+    saleOrderConfirmationMessage: string | null;
     smtpEmail: string | null;
     smtpPassword: string | null;
     smtpHost: string | null;
