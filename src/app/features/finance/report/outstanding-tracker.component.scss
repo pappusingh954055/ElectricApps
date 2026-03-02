@@ -309,6 +309,53 @@
     }
 }
 
+// WhatsApp icon button fix
+.whatsapp-btn {
+    width: 30px !important;
+    height: 30px !important;
+    line-height: 30px !important;
+    padding: 0 !important;
+    svg {
+        display: block;
+        width: 18px !important;
+        height: 18px !important;
+        overflow: visible;
+        margin: auto;
+    }
+}
+
+// All action icon buttons small and compact
+::ng-deep td.mat-column-actions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+    padding: 0 8px !important;
+    .mat-mdc-icon-button {
+        width: 30px !important;
+        height: 30px !important;
+        padding: 0 !important;
+        line-height: 30px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        .mat-icon {
+            font-size: 18px !important;
+            width: 18px !important;
+            height: 18px !important;
+            line-height: 18px !important;
+        }
+    }
+}
+
+// Make actions column fit all 4 buttons
+::ng-deep .mat-column-actions {
+    min-width: 160px !important;
+    width: 160px !important;
+    text-align: center;
+    white-space: nowrap;
+}
+
 .empty-cell {
     text-align: center;
 }

@@ -128,9 +128,17 @@ export class ReceiptEntryComponent implements OnInit {
   }
 
   loadCustomerBalance(customerId: number) {
-    this.financeService.getCustomerLedger(customerId).subscribe(data => {
-      if (data && data.ledger && data.ledger.length > 0) {
-        this.currentBalance = data.ledger[0].balance;
+    const request = {
+      customerId: customerId,
+      pageNumber: 1,
+      pageSize: 1,
+      sortBy: 'TransactionDate',
+      sortOrder: 'desc'
+    };
+    this.financeService.getCustomerLedger(request).subscribe(data => {
+      // Correct response format: data.currentBalance holds the customer's total outstanding balance
+      if (data && data.currentBalance !== undefined && data.currentBalance !== null) {
+        this.currentBalance = data.currentBalance;
       } else {
         this.currentBalance = 0;
       }

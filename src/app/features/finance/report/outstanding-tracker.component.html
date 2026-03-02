@@ -79,7 +79,8 @@
 
         <mat-card-content>
             <div class="table-container">
-                <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)">
+                <div style="overflow-x: auto; width: 100%;">
+                <table mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" style="min-width: 900px;">
 
                     <!-- ID Column -->
                     <ng-container matColumnDef="customerId">
@@ -207,6 +208,7 @@
                         </td>
                     </tr>
                 </table>
+                </div><!-- end overflow-x wrapper -->
             </div>
             <mat-paginator [length]="totalCount" 
                            [pageSize]="pageSize" 
