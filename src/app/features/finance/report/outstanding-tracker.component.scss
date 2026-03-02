@@ -259,15 +259,27 @@
                     font-weight: 500;
                     
                     &.overdue {
-                        background-color: #ffebee;
-                        color: #c62828;
-                        border: 1px solid #ffcdd2;
+                        background-color: #fee2e2;
+                        color: #dc2626;
+                        border: 1px solid #fecaca;
                     }
                     
                     &.pending {
-                        background-color: #fff3e0;
-                        color: #ef6c00;
-                        border: 1px solid #ffe0b2;
+                        background-color: #fef3c7;
+                        color: #d97706;
+                        border: 1px solid #fde68a;
+                    }
+
+                    &.active {
+                        background-color: #e0f2fe;
+                        color: #0284c7;
+                        border: 1px solid #bae6fd;
+                    }
+
+                    &.completed {
+                        background-color: #dcfce7;
+                        color: #16a34a;
+                        border: 1px solid #bbf7d0;
                     }
                 }
             }

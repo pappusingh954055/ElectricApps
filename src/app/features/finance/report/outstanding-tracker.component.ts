@@ -194,7 +194,7 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
                 if (res && res.items) {
                     const items = (res.items.items || []).map((item: any) => {
                         if (item.dueDate && typeof item.dueDate === 'string' && !item.dueDate.includes('Z') && !item.dueDate.includes('+')) {
-                            item.dueDate += '+05:30';
+                            item.dueDate += 'Z';
                         }
                         return item;
                     });
@@ -267,14 +267,14 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
         });
     }
 
-    sendSms(customer: any, isWhatsApp: boolean = false) {
+    sendSms(customer: any) {
         const smsData = {
             customerId: customer.customerId,
             customerName: customer.customerName,
             phoneNumber: customer.phone,
             pendingAmount: customer.pendingAmount,
             dueDate: customer.dueDate,
-            isWhatsApp: isWhatsApp
+            isWhatsApp: false
         };
 
         if (!smsData.phoneNumber) {
@@ -319,6 +319,24 @@ export class OutstandingTrackerComponent implements AfterViewInit, OnInit {
                 });
             }
         });
+    }
+
+    sendWhatsApp(customer: any) {
+        if (!customer.phone) {
+            this.dialog.open(StatusDialogComponent, {
+                data: {
+                    title: 'Error',
+                    message: 'Customer does not have a phone number configured.',
+                    status: 'error'
+                }
+            });
+            return;
+        }
+
+        const phone = customer.phone.startsWith('+') ? customer.phone : `+91${customer.phone}`;
+        const message = `Namaste ${customer.customerName}, aapka pending dues amount Rs. ${customer.pendingAmount.toFixed(2)} hai. Kripya jald se jald clear karein. Shubh ho!`;
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+        window.open(url, '_blank');
     }
 
     applyFilter(event: Event) {
