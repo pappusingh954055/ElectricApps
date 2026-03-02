@@ -11,9 +11,9 @@
     </div>
   </div>
 
-  <mat-card class="compact-card mat-elevation-z2">
+  <mat-card class="compact-card mat-elevation-z2" [formGroup]="grnForm">
     <mat-card-content>
-      <form [formGroup]="grnForm" class="header-grid">
+      <div class="header-grid">
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>GRN Number</mat-label>
           <input matInput formControlName="grnNumber" readonly>
@@ -40,7 +40,7 @@
           <mat-label>Gate Pass No</mat-label>
           <input matInput formControlName="gatePassNo" readonly placeholder="N/A">
         </mat-form-field>
-      </form>
+      </div>
 
       <mat-divider class="section-divider"></mat-divider>
 
@@ -80,6 +80,7 @@
                 <mat-form-field appearance="outline" class="dense-input narrow" subscriptSizing="dynamic">
                   <input matInput type="number" 
                          [(ngModel)]="item.receivedQty" 
+                         [ngModelOptions]="{standalone: true}"
                          (ngModelChange)="onQtyChange(item)"
                          [max]="item.pendingQty"
                          [disabled]="isViewMode"
@@ -90,6 +91,7 @@
                 <mat-form-field appearance="outline" class="dense-input narrow" subscriptSizing="dynamic">
                   <input matInput type="number" 
                          [(ngModel)]="item.rejectedQty" 
+                         [ngModelOptions]="{standalone: true}"
                          (ngModelChange)="onQtyChange(item)"
                          [disabled]="isViewMode"
                          min="0">
@@ -99,7 +101,10 @@
               
               <td class="text-center">
                 <mat-form-field appearance="outline" class="dense-input wide" subscriptSizing="dynamic">
-                  <mat-select [(ngModel)]="item.warehouseId" (selectionChange)="onWarehouseChange(item)" [disabled]="isViewMode" placeholder="Warehouse">
+                  <mat-select [(ngModel)]="item.warehouseId" 
+                             [ngModelOptions]="{standalone: true}"
+                             (selectionChange)="onWarehouseChange(item)" 
+                             [disabled]="isViewMode" placeholder="Warehouse">
                     <mat-option [value]="null">Select</mat-option>
                     <mat-option *ngFor="let w of warehouses" [value]="w.id">{{w.name}}</mat-option>
                   </mat-select>
@@ -108,7 +113,9 @@
 
               <td class="text-center">
                 <mat-form-field appearance="outline" class="dense-input wide" subscriptSizing="dynamic">
-                  <mat-select [(ngModel)]="item.rackId" [disabled]="isViewMode" placeholder="Rack">
+                  <mat-select [(ngModel)]="item.rackId" 
+                             [ngModelOptions]="{standalone: true}"
+                             [disabled]="isViewMode" placeholder="Rack">
                     <mat-option [value]="null">Select</mat-option>
                     <mat-option *ngFor="let r of filteredRacksMap[item.productId]" [value]="r.id">{{r.name}}</mat-option>
                   </mat-select>
@@ -125,7 +132,7 @@
         </table>
       </div>
 
-      <div class="form-footer" [formGroup]="grnForm">
+      <div class="form-footer">
         <mat-form-field appearance="outline" class="remarks-field">
           <mat-label>Remarks / Notes</mat-label>
           <textarea matInput rows="2" formControlName="remarks"></textarea>

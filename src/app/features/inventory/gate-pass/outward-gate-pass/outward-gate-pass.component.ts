@@ -49,9 +49,12 @@ export class OutwardGatePassComponent implements OnInit {
     availablePRs: any[] = [];
     vehicleTypes = ['Truck', 'Tempo', 'LCV', 'Bike', 'Other'];
 
+    constructor() {
+        this.initForm();
+    }
+
     ngOnInit() {
         this.loadingService.setLoading(false);
-        this.initForm();
         this.loadPendingSOs();
         this.loadPendingPRs();
 
@@ -78,48 +81,52 @@ export class OutwardGatePassComponent implements OnInit {
     }
 
     private handleSORedirection(params: any) {
-        this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.SaleOrder, { emitEvent: false });
-        this.gatePassForm.get('referenceType')?.disable({ emitEvent: false });
+        setTimeout(() => {
+            this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.SaleOrder, { emitEvent: false });
+            this.gatePassForm.get('referenceType')?.disable({ emitEvent: false });
 
-        const refNo = params['refNo'] || '';
-        const partyName = params['partyName'] || '';
-        const qty = params['qty'] || 0;
-        const refId = params['refId'] || '';
+            const refNo = params['refNo'] || '';
+            const partyName = params['partyName'] || '';
+            const qty = params['qty'] || 0;
+            const refId = params['refId'] || '';
 
-        this.bulkBreakdown = params['breakdown'] || '';
-        const isBulk = params['isBulk'] === 'true';
+            this.bulkBreakdown = params['breakdown'] || '';
+            const isBulk = params['isBulk'] === 'true';
 
-        this.gatePassForm.patchValue({
-            referenceId: refId || '',
-            referenceNo: refNo,
-            partyName: partyName,
-            totalQty: qty,
-            remarks: isBulk ? 'BULK-OUTWARD DISPATCH' : ''
-        });
-        this.cdr.detectChanges();
+            this.gatePassForm.patchValue({
+                referenceId: refId || '',
+                referenceNo: refNo,
+                partyName: partyName,
+                totalQty: qty,
+                remarks: isBulk ? 'BULK-OUTWARD DISPATCH' : ''
+            });
+            this.cdr.detectChanges();
+        }, 0);
     }
 
     private handlePurchaseReturnRedirection(params: any) {
-        // 1. Set Type explicitly
-        this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.PurchaseReturn, { emitEvent: false });
-        this.gatePassForm.get('referenceType')?.disable({ emitEvent: false });
+        setTimeout(() => {
+            // 1. Set Type explicitly
+            this.gatePassForm.get('referenceType')?.setValue(GatePassReferenceType.PurchaseReturn, { emitEvent: false });
+            this.gatePassForm.get('referenceType')?.disable({ emitEvent: false });
 
-        // 2. Extract Values safely
-        const refNo = params['refNo'] || '';
-        const partyName = params['partyName'] || '';
-        const qty = params['qty'] || 0;
-        const refId = params['refId'] || '';
+            // 2. Extract Values safely
+            const refNo = params['refNo'] || '';
+            const partyName = params['partyName'] || '';
+            const qty = params['qty'] || 0;
+            const refId = params['refId'] || '';
 
-        // 3. Patch Values
-        this.gatePassForm.patchValue({
-            referenceId: refId || '',
-            referenceNo: refNo,
-            partyName: partyName,
-            totalQty: qty,
-            remarks: params['isBulk'] === 'true' ? 'BULK-OUTWARD DISPATCH' : ''
-        });
+            // 3. Patch Values
+            this.gatePassForm.patchValue({
+                referenceId: refId || '',
+                referenceNo: refNo,
+                partyName: partyName,
+                totalQty: qty,
+                remarks: params['isBulk'] === 'true' ? 'BULK-OUTWARD DISPATCH' : ''
+            });
 
-        this.cdr.detectChanges();
+            this.cdr.detectChanges();
+        }, 0);
     }
 
     initForm() {

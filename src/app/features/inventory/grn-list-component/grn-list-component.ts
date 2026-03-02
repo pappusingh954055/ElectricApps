@@ -181,15 +181,19 @@ export class GrnListComponent implements OnInit, AfterViewInit {
           if (!result || !result.grnData) return [];
 
           const data = result.grnData;
-          const pendingDues = result.pendingDues;
+          const pendingDues = result.pendingDues || [];
 
-          this.resultsLength = data.totalCount;
+          // Case-insensitive mapping for backend response [Items vs items, TotalCount vs totalCount]
+          const rawItems = data.items || data.Items || [];
+          this.resultsLength = data.totalCount ?? data.TotalCount ?? 0;
+
+          if (!Array.isArray(rawItems)) return [];
 
           // 🧠 SMART FIFO LOGIC for Payment Status:
           // We apply the supplier's total debt to bills starting from the NEWEST towards the OLDEST.
           // Any bill not covered by the current "Total Due" is considered PAID.
 
-          const items = data.items.map((item: any) => {
+          const items = rawItems.map((item: any) => {
             if (item.receivedDate && typeof item.receivedDate === 'string' && !item.receivedDate.includes('Z') && !item.receivedDate.includes('+')) {
               // Ensure we only append Z to ISO-like strings YYYY-MM-DD...
               if (/^\d{4}-\d{2}-\d{2}/.test(item.receivedDate)) {
@@ -245,10 +249,11 @@ export class GrnListComponent implements OnInit, AfterViewInit {
           });
 
           return items.map((item: any): GRNListRow => {
+            const grnItems = item.items || item.Items || [];
             return {
               ...item,
-              items: item.items || [],
-              totalRejected: item.items?.reduce((acc: number, curr: any) => acc + (curr.rejectedQty || 0), 0) || 0
+              items: grnItems,
+              totalRejected: Array.isArray(grnItems) ? grnItems.reduce((acc: number, curr: any) => acc + (curr.rejectedQty || curr.RejectedQty || 0), 0) : 0
             };
           });
         })

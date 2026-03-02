@@ -59,9 +59,12 @@ export class InwardGatePassComponent implements OnInit {
 
     vehicleTypes = ['Truck', 'Tempo', 'LCV', 'Other'];
 
+    constructor() {
+        this.initForm();
+    }
+
     ngOnInit() {
         this.loadingService.setLoading(false);
-        this.initForm();
         this.loadPendingData();
 
         this.gatePassForm.get('referenceType')?.valueChanges.subscribe(val => {
@@ -134,43 +137,45 @@ export class InwardGatePassComponent implements OnInit {
     }
 
     private handlePORedirection(params: any) {
-        this.isExternalRef = true;
-        this.referenceLabel = 'Link With PO No';
-        const refNo = params['refNo'];
-        const refId = params['refId'];
-        const isBulk = params['isBulk'] === 'true';
-        this.isReplacement = params['isReplacement'] === 'true';
+        setTimeout(() => {
+            this.isExternalRef = true;
+            this.referenceLabel = 'Link With PO No';
+            const refNo = params['refNo'];
+            const refId = params['refId'];
+            const isBulk = params['isBulk'] === 'true';
+            this.isReplacement = params['isReplacement'] === 'true';
 
-        if (!refId || !refNo) return;
+            if (!refId || !refNo) return;
 
-        // --- CHECK FOR DUPLICATE GATE PASS ---
-        this.loadingService.setLoading(true);
-        this.gatePassService.checkDuplicateGatePass(refNo, 'Inward').subscribe({
-            next: (dupRes) => {
-                if (dupRes.isDuplicate && !this.isEditMode) {
-                    this.loadingService.setLoading(false);
-                    this.dialog.open(StatusDialogComponent, {
-                        width: '450px',
-                        data: {
-                            title: 'Duplicate Gate Pass Found',
-                            message: `An Inward Gate Pass (${dupRes.passNo}) already exists for ${refNo}. \n\nYou cannot create another gate pass for the same PO until the previous one is completed (GRN created). \n\nPlease use the existing gate pass to create the GRN.`,
-                            status: 'warning',
-                            isSuccess: false
-                        }
-                    }).afterClosed().subscribe(() => {
-                        this.router.navigate(['/app/inventory/gate-pass']);
-                    });
-                    return;
+            // --- CHECK FOR DUPLICATE GATE PASS ---
+            this.loadingService.setLoading(true);
+            this.gatePassService.checkDuplicateGatePass(refNo, 'Inward').subscribe({
+                next: (dupRes) => {
+                    if (dupRes.isDuplicate && !this.isEditMode) {
+                        this.loadingService.setLoading(false);
+                        this.dialog.open(StatusDialogComponent, {
+                            width: '450px',
+                            data: {
+                                title: 'Duplicate Gate Pass Found',
+                                message: `An Inward Gate Pass (${dupRes.passNo}) already exists for ${refNo}. \n\nYou cannot create another gate pass for the same PO until the previous one is completed (GRN created). \n\nPlease use the existing gate pass to create the GRN.`,
+                                status: 'warning',
+                                isSuccess: false
+                            }
+                        }).afterClosed().subscribe(() => {
+                            this.router.navigate(['/app/inventory/gate-pass']);
+                        });
+                        return;
+                    }
+
+                    // Continue with normal flow if not duplicate
+                    this.continuePORedirection(params, refNo, refId, isBulk);
+                },
+                error: (err) => {
+                    console.error('Error checking duplicate GP:', err);
+                    this.continuePORedirection(params, refNo, refId, isBulk); // Proceed anyway if check fails
                 }
-
-                // Continue with normal flow if not duplicate
-                this.continuePORedirection(params, refNo, refId, isBulk);
-            },
-            error: (err) => {
-                console.error('Error checking duplicate GP:', err);
-                this.continuePORedirection(params, refNo, refId, isBulk); // Proceed anyway if check fails
-            }
-        });
+            });
+        }, 0);
     }
 
     private continuePORedirection(params: any, refNo: string, refId: any, isBulk: boolean) {

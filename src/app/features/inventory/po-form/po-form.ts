@@ -653,19 +653,25 @@ export class PoForm implements OnInit, OnDestroy, AfterViewInit {
           }))
         };
 
-        console.log('🚀 Saving PO Payload:', payload);
+        console.log('🚀 Final PO Payload for backend:', payload);
         const request$ = this.isEditMode ? this.poService.update(this.poId, payload) : this.inventoryService.savePoDraft(payload);
+
         request$.subscribe({
           next: (res) => {
-            console.log('✅ PO Save Success Response:', res);
+            console.log('✅ PO Save Success. Backend Response:', res);
             this.isLoading = false;
             this.notification.showStatus(true, `PO ${this.isEditMode ? 'Updated' : 'Saved'} Successfully`);
             this.router.navigate(['/app/inventory/polist']);
           },
           error: (err) => {
-            console.error('❌ PO Save Error:', err);
+            console.group('❌ PO Save Failed');
+            console.error('Error Object:', err);
+            console.error('Status:', err.status);
+            console.error('Server Message:', err.error?.message || err.message);
+            console.groupEnd();
+
             this.isLoading = false;
-            this.notification.showStatus(false, `Error ${this.isEditMode ? 'updating' : 'saving'} PO.`);
+            this.notification.showStatus(false, `Error ${this.isEditMode ? 'updating' : 'saving'} PO. Check console for details.`);
           }
         });
       }

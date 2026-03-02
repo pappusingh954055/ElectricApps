@@ -132,7 +132,6 @@ export class GrnFormComponent implements OnInit {
         console.log('pendingqtycheck:', res);
 
         // Capture supplier details for payment navigation
-        // Testing both camelCase and PascalCase to be safe
         this.supplierId = res.supplierId || res.SupplierId || 0;
         this.supplierName = res.supplierName || res.SupplierName || '';
 
@@ -169,26 +168,18 @@ export class GrnFormComponent implements OnInit {
       const ordered = Number(item.orderedQty || item.OrderedQty || 0);
       const acceptedSoFar = Number(item.acceptedQty || item.AcceptedQty || 0);
 
-      // LOGIC FIX: If backend says 0 pending but total accepted < ordered, 
-      // it means some quantity was rejected/returned and needs replacement inwarding.
       let pending = Number(item.pendingQty || item.PendingQty || 0);
       if (pending === 0 && acceptedSoFar < ordered) {
         pending = ordered - acceptedSoFar;
       }
 
-      // BACKEND NOW HANDLES THIS: Logic is moved to repository for multi-item accuracy
-
       const rate = Number(item.unitRate || item.unitPrice || item.UnitPrice || 0);
-
-      // LOGIC: Naya GRN banate waqt default receivedQty backend se aayi hui value honi chahiye
       const received = this.isViewMode
         ? Number(item.receivedQty || item.ReceivedQty || 0)
-        : Number(item.receivedQty || 0); // Backend suggests 0 for items not in GP
+        : Number(item.receivedQty || 0);
 
-      const rejected = 0; // Fresh receive mein 0 reject maan ke chalte hain
-
+      const rejected = 0;
       const accepted = received - rejected;
-
       const discPer = Number(item.discountPercent || item.DiscountPercent || 0);
       const gstPer = Number(item.gstPercent || item.GstPercent || 0);
 
@@ -217,7 +208,6 @@ export class GrnFormComponent implements OnInit {
       };
     });
 
-    // Initialize filtered racks for each item
     this.items.forEach(item => {
       if (item.warehouseId) {
         this.onWarehouseChange(item);
@@ -236,7 +226,6 @@ export class GrnFormComponent implements OnInit {
     const rejectedQty = Number(item.rejectedQty || 0);
     const unitRate = Number(item.unitRate || 0);
 
-    // VALIDATION: Pending se zyada received nahi ho sakta
     if (enteredQty > pendingQty) {
       item.receivedQty = pendingQty;
       this.showValidationError(`Received quantity cannot exceed the pending quantity (${pendingQty}).`);
@@ -253,7 +242,6 @@ export class GrnFormComponent implements OnInit {
 
     item.acceptedQty = Math.max(0, enteredQty - rejectedQty);
 
-    // Financial Calculations
     const discPer = Number(item.discountPercent || 0);
     const gstPer = Number(item.gstPercent || 0);
 
@@ -282,7 +270,6 @@ export class GrnFormComponent implements OnInit {
   saveGRN() {
     if (this.grnForm.invalid || this.items.length === 0 || this.isViewMode) return;
 
-    // Show confirmation dialog first
     const confirmDialog = this.dialog.open(StatusDialogComponent, {
       width: '400px',
       data: {
@@ -295,9 +282,7 @@ export class GrnFormComponent implements OnInit {
     });
 
     confirmDialog.afterClosed().subscribe(confirmed => {
-      if (!confirmed) return; // User cancelled
-
-      // User confirmed, proceed with save
+      if (!confirmed) return;
       this.performGRNSave();
     });
   }
@@ -305,13 +290,10 @@ export class GrnFormComponent implements OnInit {
   performGRNSave() {
     const currentUserId = localStorage.getItem('email') || 'Admin';
 
-    // BULK FLOW WORKAROUND: Simulate bulk by sending multiple single saves
-    // This ensures PO headers and statuses are updated correctly by the proven 'Save' endpoint
     if (this.poId && this.poId.includes(',')) {
       const ids = this.poId.split(',').map(id => Number(id.trim())).filter(id => id > 0);
       const formValue = this.grnForm.getRawValue();
 
-      // Group items by their parent PO ID
       const itemsByPo = new Map<number, any[]>();
       this.items.forEach(item => {
         const pId = Number(item.poId || ids[0]);
@@ -378,12 +360,10 @@ export class GrnFormComponent implements OnInit {
       return;
     }
 
-    // SINGLE PO FLOW (Existing)
-
     const grnData = {
       poHeaderId: Number(this.poId),
       supplierId: this.supplierId,
-      gatePassNo: this.grnForm.getRawValue().gatePassNo, // Linking the Gate Pass
+      gatePassNo: this.grnForm.getRawValue().gatePassNo,
       receivedDate: this.grnForm.getRawValue().receivedDate,
       remarks: this.grnForm.value.remarks,
       totalAmount: this.calculateGrandTotal(),
@@ -406,11 +386,12 @@ export class GrnFormComponent implements OnInit {
       }))
     };
 
+    console.log('🚀 Saving GRN Payload:', grnData);
     this.inventoryService.saveGRN({ data: grnData }).subscribe({
       next: (response: any) => {
+        console.log('✅ GRN Save Success:', response);
         const grnNumber = response?.grnNumber || 'AUTO-GEN';
 
-        // Show success dialog with payment option
         const dialogRef = this.dialog.open(GrnSuccessDialogComponent, {
           width: '500px',
           disableClose: true,
@@ -430,18 +411,22 @@ export class GrnFormComponent implements OnInit {
               supplierId: this.supplierId
             });
           } else {
-            // Navigate to GRN List
             this.router.navigate(['/app/inventory/grn-list']);
           }
         });
       },
       error: (err) => {
-        console.error('Error saving GRN:', err);
+        console.group('❌ GRN Save Failure');
+        console.error('Error Details:', err);
+        console.error('Status:', err.status);
+        console.error('Message:', err.error?.message || err.message);
+        console.groupEnd();
+
         this.dialog.open(StatusDialogComponent, {
           width: '350px',
           data: {
             title: 'Error',
-            message: 'Failed to save GRN. Please try again.',
+            message: 'Failed to save GRN. Please check console for technical details.',
             status: 'error',
             isSuccess: false
           }
@@ -454,13 +439,12 @@ export class GrnFormComponent implements OnInit {
     console.log('🚀 Initiating Direct Payment with data:', data);
 
     if (!data.supplierId || data.supplierId <= 0) {
-      console.error('❌ Cannot perform direct payment: Supplier ID is invalid:', data.supplierId);
       this.dialog.open(StatusDialogComponent, {
         width: '400px',
         data: {
           isSuccess: false,
           title: 'Payment Error',
-          message: `Cannot process payment. Supplier ID is missing or invalid (${data.supplierId}). Please try Recording Payment from the GRN list.`,
+          message: `Cannot process payment. Supplier ID is missing or invalid.`,
           status: 'error'
         }
       });
@@ -476,7 +460,6 @@ export class GrnFormComponent implements OnInit {
       discountAmount: 0,
       netAmount: Number(data.grandTotal),
       paymentMode: 'Cash',
-      // Adding a unique suffix to avoid "Duplicate Reference" error if user re-tries
       referenceNumber: `${data.grnNumber}-${new Date().getTime().toString().slice(-4)}`,
       paymentDate: new Date().toISOString(),
       remarks: `Direct Payment for GRN: ${data.grnNumber}`,
@@ -485,27 +468,27 @@ export class GrnFormComponent implements OnInit {
 
     console.log('💰 Sending Payment Payload:', paymentPayload);
 
-    // Add a small delay to ensure Purchase transaction is fully committed
     setTimeout(() => {
       this.financeService.recordSupplierPayment(paymentPayload).subscribe({
         next: () => {
           console.log('✅ Direct Payment Successful');
-          this.dialog.open(StatusDialogComponent, {
+          const statusDialog = this.dialog.open(StatusDialogComponent, {
             width: '350px',
             data: {
               isSuccess: true,
               title: 'Payment Successful',
-              message: `Direct payment of ₹${data.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })} recorded for GRN ${data.grnNumber}.`,
+              message: `Direct payment recorded for GRN ${data.grnNumber}.`,
               status: 'success'
             }
           });
-          this.router.navigate(['/app/inventory/grn-list']);
+
+          statusDialog.afterClosed().subscribe(() => {
+            this.router.navigate(['/app/inventory/grn-list']);
+          });
         },
         error: (err) => {
-          console.group('❌ Direct Payment Error Details');
-          console.error('Raw Error Object:', err);
-          const serverMsg = err.error?.message || err.message || 'Unknown server error';
-          console.error('Server Message:', serverMsg);
+          console.group('❌ Direct Payment Error');
+          console.error(err);
           console.groupEnd();
 
           this.dialog.open(StatusDialogComponent, {
@@ -513,7 +496,7 @@ export class GrnFormComponent implements OnInit {
             data: {
               isSuccess: false,
               title: 'Payment Failed',
-              message: `GRN saved but direct payment failed.\n\nReason: ${serverMsg}\n\nYou can record it manually from the GRN list.`,
+              message: `GRN saved but direct payment failed.`,
               status: 'error'
             }
           });
