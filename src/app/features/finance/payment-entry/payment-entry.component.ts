@@ -43,6 +43,7 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
   isDuplicateRef: boolean = false;
   isCheckingRef: boolean = false;
   isSaving: boolean = false;
+  isSupplierPreSelected: boolean = false;
   private refChangeSubject = new Subject<string>();
   private routeSub!: Subscription;
 
@@ -161,6 +162,10 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
 
   private handleQueryParams(supplierId: any, amount: any, grnNumber: any) {
     this.preselectSupplier(Number(supplierId));
+
+    // Lock supplier field when pre-selected from URL
+    this.isSupplierPreSelected = true;
+    this.supplierControl.disable();
 
     if (amount) {
       this.payment.amount = Number(amount);
@@ -586,7 +591,9 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
       remarks: '',
       createdBy: 'Admin'
     };
+    this.isSupplierPreSelected = false;
     this.supplierControl.setValue('');
+    this.supplierControl.enable();
     this.currentBalance = null;
     this.balanceType = '';
     this.recentTransactions = [];

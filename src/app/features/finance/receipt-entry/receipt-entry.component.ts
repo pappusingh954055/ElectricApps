@@ -28,6 +28,7 @@ export class ReceiptEntryComponent implements OnInit {
   isDashboardLoading: boolean = true;
   private isFirstLoad: boolean = true;
   currentBalance: number | null = null;
+  isCustomerPreSelected: boolean = false;
   private loadingService = inject(LoadingService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -64,7 +65,7 @@ export class ReceiptEntryComponent implements OnInit {
       }),
     );
 
-    // Check for query params (e.g. from Sales List)
+    // Check for query params (e.g. from Sales List / Outstanding Tracker)
     this.route.queryParams.subscribe(params => {
       if (params['customerId']) {
         this.receipt.customerId = Number(params['customerId']);
@@ -73,6 +74,10 @@ export class ReceiptEntryComponent implements OnInit {
           this.receipt.referenceNumber = params['invoiceNo'];
           this.receipt.remarks = `Receipt for Invoice: ${params['invoiceNo']}`;
         }
+
+        // Lock customer field when pre-selected from URL
+        this.isCustomerPreSelected = true;
+        this.customerControl.disable();
 
         if (this.customers.length > 0) {
           this.preselectCustomer(this.receipt.customerId);
@@ -379,7 +384,9 @@ export class ReceiptEntryComponent implements OnInit {
       remarks: '',
       createdBy: 'Admin'
     };
+    this.isCustomerPreSelected = false;
     this.customerControl.setValue('');
+    this.customerControl.enable();
     this.currentBalance = null;
   }
 }
