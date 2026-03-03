@@ -211,8 +211,15 @@ export class ReceiptReportComponent implements OnInit, AfterViewInit {
         ).subscribe({
             next: (response: any) => {
                 const items = (response.items || []).map((item: any) => {
-                    if (item.receiptDate && typeof item.receiptDate === 'string' && !item.receiptDate.includes('Z') && !item.receiptDate.includes('+')) {
-                        item.receiptDate += '+05:30';
+                    if (item.receiptDate && typeof item.receiptDate === 'string') {
+                        const d = item.receiptDate;
+                        // Server UTC time bina timezone ke bhejta hai
+                        // 'Z' append karo taaki Angular isse UTC maane aur
+                        // 'Asia/Kolkata' timezone me +05:30 jodke sahi IST time dikhaye
+                        const hasTimezone = /[Zz]$/.test(d) || /[+-]\d{2}:\d{2}$/.test(d);
+                        if (!hasTimezone) {
+                            item.receiptDate = d + 'Z';
+                        }
                     }
                     return item;
                 });
@@ -233,7 +240,8 @@ export class ReceiptReportComponent implements OnInit, AfterViewInit {
     printReceipt(receipt: any) {
         const dateStr = new Date(receipt.receiptDate).toLocaleString('en-IN', {
             day: '2-digit', month: 'short', year: 'numeric',
-            hour: '2-digit', minute: '2-digit', hour12: true
+            hour: '2-digit', minute: '2-digit', hour12: true,
+            timeZone: 'Asia/Kolkata'
         });
         const amountStr = receipt.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 });
 

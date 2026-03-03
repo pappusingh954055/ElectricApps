@@ -199,8 +199,15 @@ export class CustomerLedgerComponent implements OnInit, AfterViewInit {
                     this.ledgerData = data;
                     if (data && data.ledger) {
                         const items = (data.ledger.items || []).map((item: any) => {
-                            if (item.transactionDate && typeof item.transactionDate === 'string' && !item.transactionDate.includes('Z') && !item.transactionDate.includes('+')) {
-                                item.transactionDate += '+05:30';
+                            if (item.transactionDate && typeof item.transactionDate === 'string') {
+                                const d = item.transactionDate;
+                                // Server UTC time bina timezone ke bhejta hai (e.g. "2026-03-03T03:05:00")
+                                // 'Z' append karo taaki Angular isse UTC maane aur
+                                // 'Asia/Kolkata' timezone me +05:30 jodke sahi IST time dikhaye
+                                const hasTimezone = /[Zz]$/.test(d) || /[+-]\d{2}:\d{2}$/.test(d);
+                                if (!hasTimezone) {
+                                    item.transactionDate = d + 'Z';
+                                }
                             }
                             return item;
                         });

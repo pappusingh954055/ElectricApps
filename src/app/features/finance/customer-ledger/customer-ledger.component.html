@@ -89,7 +89,7 @@
                         <!-- Date Column -->
                         <ng-container matColumnDef="transactionDate">
                             <th mat-header-cell *matHeaderCellDef mat-sort-header> Date </th>
-                            <td mat-cell *matCellDef="let row"> {{row.transactionDate | date:'dd-MMM-yy, hh:mm a'}} </td>
+                            <td mat-cell *matCellDef="let row"> {{row.transactionDate | date:'dd-MMM-yy, hh:mm a':'Asia/Kolkata'}} </td>
                         </ng-container>
 
                         <!-- Type Column -->
