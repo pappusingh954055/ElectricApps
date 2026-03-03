@@ -28,4 +28,15 @@ export class GatePassService {
     checkDuplicateGatePass(referenceNo: string, passType: string): Observable<any> {
         return this.api.get(`GatePass/CheckDuplicate?referenceNo=${referenceNo}&passType=${passType}`);
     }
+
+    getVehicleSuggestions(search: string): Observable<VehicleSuggestion[]> {
+        return this.api.get<VehicleSuggestion[]>(`GatePass/VehicleSuggestions?search=${encodeURIComponent(search)}`);
+    }
+}
+
+export interface VehicleSuggestion {
+    vehicleNo: string;
+    driverName: string;
+    driverPhone: string;
+    transporterName: string;
 }

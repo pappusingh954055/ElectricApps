@@ -64,11 +64,35 @@
                 <!-- Section 2: Physical Vehicle Details -->
                 <div class="section-title">2. Physical Vehicle Details (Mandatory at Gate)</div>
                 <div class="row">
-                    <mat-form-field appearance="outline">
-                        <mat-label>Vehicle No</mat-label>
-                        <input matInput formControlName="vehicleNo" placeholder="BR-05-JK-9988" required>
-                        <mat-error *ngIf="gatePassForm.get('vehicleNo')?.hasError('pattern')">Invalid Format</mat-error>
-                    </mat-form-field>
+                    <!-- Vehicle No with Autocomplete -->
+                    <div class="vehicle-autocomplete-wrapper">
+                        <mat-form-field appearance="outline" style="width:100%">
+                            <mat-label>Vehicle No</mat-label>
+                            <input matInput formControlName="vehicleNo"
+                                   placeholder="BR-05-JK-9988"
+                                   required
+                                   autocomplete="off"
+                                   (input)="onVehicleSearch($event)"
+                                   (blur)="vehicleSuggestions = []">
+                            <mat-error *ngIf="gatePassForm.get('vehicleNo')?.hasError('pattern')">Invalid Format</mat-error>
+                        </mat-form-field>
+                        <!-- Autocomplete Dropdown -->
+                        <div class="vehicle-suggestions" *ngIf="vehicleSuggestions.length > 0">
+                            <div class="vehicle-suggestion-item"
+                                 *ngFor="let s of vehicleSuggestions"
+                                 (mousedown)="onVehicleSelected(s)">
+                                <mat-icon class="suggestion-icon">local_shipping</mat-icon>
+                                <div class="suggestion-text">
+                                    <span class="veh-no">{{ s.vehicleNo }}</span>
+                                    <span class="driver-info" *ngIf="s.driverName">
+                                        <mat-icon style="font-size:12px;height:12px;width:12px;">person</mat-icon>
+                                        {{ s.driverName }}
+                                        <span *ngIf="s.driverPhone"> · {{ s.driverPhone }}</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <mat-form-field appearance="outline">
                         <mat-label>Driver Name</mat-label>
@@ -80,6 +104,7 @@
                         <input matInput formControlName="driverPhone" placeholder="887766XXXX">
                     </mat-form-field>
                 </div>
+
 
                 <div class="row">
                     <div class="radio-label">Vehicle Type:</div>

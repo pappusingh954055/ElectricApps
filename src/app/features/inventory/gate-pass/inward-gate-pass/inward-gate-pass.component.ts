@@ -1,9 +1,9 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
-import { GatePassService } from '../services/gate-pass.service';
+import { GatePassService, VehicleSuggestion } from '../services/gate-pass.service';
 import { LoadingService } from '../../../../core/services/loading.service';
 import { StatusDialogComponent } from '../../../../shared/components/status-dialog-component/status-dialog-component';
 import { MatDialog } from '@angular/material/dialog';
@@ -13,6 +13,8 @@ import { POService } from '../../service/po.service';
 import { SaleReturnService } from '../../sale-return/services/sale-return.service';
 import { PurchaseReturnService } from '../../purchase-return/services/purchase-return.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 @Component({
     selector: 'app-inward-gate-pass',
@@ -21,7 +23,7 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
     templateUrl: './inward-gate-pass.component.html',
     styleUrls: ['./inward-gate-pass.component.scss']
 })
-export class InwardGatePassComponent implements OnInit {
+export class InwardGatePassComponent implements OnInit, OnDestroy {
     fb = inject(FormBuilder);
     gatePassService = inject(GatePassService);
     dialog = inject(MatDialog);
@@ -59,6 +61,11 @@ export class InwardGatePassComponent implements OnInit {
 
     vehicleTypes = ['Truck', 'Tempo', 'LCV', 'Other'];
 
+    // Vehicle Autocomplete
+    vehicleSuggestions: VehicleSuggestion[] = [];
+    private vehicleSearchSubject = new Subject<string>();
+    private vehicleSearchSub?: Subscription;
+
     constructor() {
         this.initForm();
     }
@@ -66,6 +73,7 @@ export class InwardGatePassComponent implements OnInit {
     ngOnInit() {
         this.loadingService.setLoading(false);
         this.loadPendingData();
+        this.setupVehicleAutocomplete();
 
         this.gatePassForm.get('referenceType')?.valueChanges.subscribe(val => {
             if (!this.isExternalRef) {
@@ -387,7 +395,40 @@ export class InwardGatePassComponent implements OnInit {
         }
     }
 
+    private setupVehicleAutocomplete() {
+        this.vehicleSearchSub = this.vehicleSearchSubject.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            switchMap(term => this.gatePassService.getVehicleSuggestions(term))
+        ).subscribe({
+            next: (results) => {
+                this.vehicleSuggestions = results;
+                this.cdr.detectChanges();
+            },
+            error: () => { this.vehicleSuggestions = []; }
+        });
+    }
+
+    onVehicleSearch(event: Event) {
+        const value = (event.target as HTMLInputElement).value;
+        this.vehicleSearchSubject.next(value);
+    }
+
+    onVehicleSelected(suggestion: VehicleSuggestion) {
+        this.gatePassForm.patchValue({
+            vehicleNo: suggestion.vehicleNo,
+            driverName: suggestion.driverName,
+            driverPhone: suggestion.driverPhone
+        });
+        this.vehicleSuggestions = [];
+    }
+
+    ngOnDestroy() {
+        this.vehicleSearchSub?.unsubscribe();
+    }
+
     resetForm() {
+        this.vehicleSuggestions = [];
         this.initForm();
     }
 

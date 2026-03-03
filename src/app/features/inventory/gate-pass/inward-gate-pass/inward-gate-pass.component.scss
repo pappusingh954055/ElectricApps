@@ -140,3 +140,70 @@ mat-card-actions {
         margin-left: 10px;
     }
 }
+
+// ---- Vehicle Autocomplete ----
+.vehicle-autocomplete-wrapper {
+    position: relative;
+    flex: 1;
+    min-width: 250px;
+}
+
+.vehicle-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: #fff;
+    border: 1px solid #c8e6c9;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+    max-height: 240px;
+    overflow-y: auto;
+    margin-top: -16px;
+}
+
+.vehicle-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: #f1f8f1;
+    }
+
+    &:not(:last-child) {
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .suggestion-icon {
+        color: #2e7d32;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .suggestion-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .veh-no {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1a1a1a;
+            letter-spacing: 0.5px;
+        }
+
+        .driver-info {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.78rem;
+            color: #666;
+        }
+    }
+}
+

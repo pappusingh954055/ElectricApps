@@ -56,13 +56,37 @@
                 <!-- Section 2: Transport & Driver Info -->
                 <div class="section-title">2. Transport & Driver Info</div>
                 <div class="row">
-                    <mat-form-field appearance="outline">
-                        <mat-label>Vehicle No</mat-label>
-                        <input matInput formControlName="vehicleNo" placeholder="DL-01-AB-1234" required>
-                        <mat-hint>Format: AA-00-AA-0000</mat-hint>
-                        <mat-error *ngIf="gatePassForm.get('vehicleNo')?.hasError('pattern')">Invalid Format (Ex: MH-12-AB-1234)</mat-error>
-                        <mat-error *ngIf="gatePassForm.get('vehicleNo')?.hasError('required')">Vehicle No is required</mat-error>
-                    </mat-form-field>
+                    <!-- Vehicle No with Autocomplete -->
+                    <div class="vehicle-autocomplete-wrapper">
+                        <mat-form-field appearance="outline" style="width:100%">
+                            <mat-label>Vehicle No</mat-label>
+                            <input matInput formControlName="vehicleNo"
+                                   placeholder="DL-01-AB-1234"
+                                   required
+                                   autocomplete="off"
+                                   (input)="onVehicleSearch($event)"
+                                   (blur)="vehicleSuggestions = []">
+                            <mat-hint>Format: AA-00-AA-0000</mat-hint>
+                            <mat-error *ngIf="gatePassForm.get('vehicleNo')?.hasError('pattern')">Invalid Format (Ex: MH-12-AB-1234)</mat-error>
+                            <mat-error *ngIf="gatePassForm.get('vehicleNo')?.hasError('required')">Vehicle No is required</mat-error>
+                        </mat-form-field>
+                        <!-- Autocomplete Dropdown -->
+                        <div class="vehicle-suggestions" *ngIf="vehicleSuggestions.length > 0">
+                            <div class="vehicle-suggestion-item"
+                                 *ngFor="let s of vehicleSuggestions"
+                                 (mousedown)="onVehicleSelected(s)">
+                                <mat-icon class="suggestion-icon">local_shipping</mat-icon>
+                                <div class="suggestion-text">
+                                    <span class="veh-no">{{ s.vehicleNo }}</span>
+                                    <span class="driver-info" *ngIf="s.driverName">
+                                        <mat-icon style="font-size:12px;height:12px;width:12px;">person</mat-icon>
+                                        {{ s.driverName }}
+                                        <span *ngIf="s.driverPhone"> · {{ s.driverPhone }}</span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                     <mat-form-field appearance="outline">
                         <mat-label>Vehicle Type</mat-label>
@@ -90,6 +114,7 @@
                         <input matInput formControlName="transporterName" placeholder="e.g. V-Trans, SafeExpress">
                     </mat-form-field>
                 </div>
+
                 
                 <!-- Section 3: Details & Confirmation -->
                 <div class="section-title">3. Consignment Details</div>
