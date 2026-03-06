@@ -6,6 +6,7 @@ import { ThemeService } from './core/services/theme.service';
 import { OverlayContainer } from '@angular/cdk/overlay';
 import { LoadingService } from './core/services/loading.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { DialogPersistenceService } from './shared/services/dialog-persistence.service';
 
 @Component({
   selector: 'app-root',
@@ -20,6 +21,7 @@ export class App implements OnInit {
   private overlayContainer = inject(OverlayContainer);
   private loadingService = inject(LoadingService);
   private cdr = inject(ChangeDetectorRef);
+  private dialogPersistence = inject(DialogPersistenceService);
 
   isGlobalLoading = false;
 
@@ -30,7 +32,10 @@ export class App implements OnInit {
 
     this.loadingService.loading$.subscribe(isLoading => {
       this.isGlobalLoading = isLoading;
-      this.cdr.detectChanges(); // Ensure the loader shows/hides immediately even if outside zone
+      this.cdr.detectChanges();
     });
+
+    // Page refresh ke baad pending dialog restore karo
+    this.dialogPersistence.checkAndRestore();
   }
 }

@@ -65,7 +65,7 @@
                                 <mat-option value="Bank">
                                     <mat-icon>account_balance</mat-icon> Bank Transfer
                                 </mat-option>
-                                <mat-option value="Check">
+                                <mat-option value="Cheque">
                                     <mat-icon>padding</mat-icon> Check
                                 </mat-option>
                                 <mat-option value="UPI">
@@ -77,11 +77,14 @@
 
                     <div class="col-4">
                         <mat-form-field appearance="outline">
-                            <mat-label>Reference / Cheque No.</mat-label>
+                            <mat-label>
+                                Reference / Cheque No.
+                                <span *ngIf="isReferenceRequired" style="color: #f44336;"> *</span>
+                            </mat-label>
                             <input matInput type="text" 
                                    [(ngModel)]="payment.referenceNumber" 
                                    name="ref" 
-                                   placeholder="e.g. TXN-8842"
+                                   [placeholder]="referencePlaceholder"
                                    (keyup)="onRefChange($event)"
                                    (change)="onRefChange($event)">
                             <mat-icon matSuffix *ngIf="!isCheckingRef">receipt_long</mat-icon>
@@ -89,6 +92,10 @@
                             <mat-hint *ngIf="isDuplicateRef" class="text-danger">
                                 <mat-icon style="font-size: 14px; height: 14px; width: 14px; vertical-align: middle;">error</mat-icon>
                                 <strong>Duplicate!</strong> Already exists in system.
+                            </mat-hint>
+                            <mat-hint *ngIf="isReferenceRequired && !payment.referenceNumber && !isDuplicateRef" class="text-warn">
+                                <mat-icon style="font-size: 14px; height: 14px; width: 14px; vertical-align: middle;">warning</mat-icon>
+                                {{referenceHint}} is required for {{payment.paymentMode}} payments.
                             </mat-hint>
                         </mat-form-field>
                     </div>
@@ -118,10 +125,10 @@
                 <button mat-raised-button type="button" (click)="resetForm()" [disabled]="isSaving">
                     Reset Form
                 </button>
-                <button *ngIf="canAdd" mat-raised-button color="primary" type="submit" [disabled]="!payment.supplierId || !payment.amount || isDuplicateRef || isCheckingRef || isSaving">
+                <button *ngIf="canAdd" mat-raised-button color="primary" type="submit" [disabled]="!payment.supplierId || !payment.amount || isDuplicateRef || isCheckingRef || isSaving || (isReferenceRequired && !payment.referenceNumber)">
                     <mat-icon *ngIf="!isSaving">save</mat-icon>
                     <mat-spinner diameter="20" *ngIf="isSaving"></mat-spinner>
-                    {{ isSaving ? 'Recording...' : (isDuplicateRef ? 'Invalid Reference' : 'Record Payment') }}
+                    {{ isSaving ? 'Recording...' : (isDuplicateRef ? 'Invalid Reference' : (isReferenceRequired && !payment.referenceNumber ? 'Reference Required' : 'Record Payment')) }}
                 </button>
             </mat-card-actions>
         </form>

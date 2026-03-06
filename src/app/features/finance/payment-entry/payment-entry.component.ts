@@ -329,6 +329,29 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
     }
   }
 
+  // Reference field — mandatory for Bank, UPI, Cheque
+  get isReferenceRequired(): boolean {
+    return ['Bank', 'UPI', 'Cheque'].includes(this.payment.paymentMode);
+  }
+
+  get referencePlaceholder(): string {
+    switch (this.payment.paymentMode) {
+      case 'Bank': return 'e.g. NEFT/IMPS/RTGS Transaction ID';
+      case 'UPI': return 'e.g. UPI Transaction ID';
+      case 'Cheque': return 'e.g. Cheque Number';
+      default: return 'e.g. TXN-8842 (Optional)';
+    }
+  }
+
+  get referenceHint(): string {
+    switch (this.payment.paymentMode) {
+      case 'Bank': return 'Transaction ID (NEFT/IMPS/RTGS)';
+      case 'UPI': return 'UPI Transaction ID';
+      case 'Cheque': return 'Cheque Number';
+      default: return 'Reference';
+    }
+  }
+
   printReceipt() {
     window.print();
   }
@@ -385,6 +408,7 @@ export class PaymentEntryComponent implements OnInit, OnDestroy {
 
     const confirmDialog = this.dialog.open(StatusDialogComponent, {
       width: '450px',
+      disableClose: true,
       data: {
         title: dialogTitle,
         message: dialogMessage,

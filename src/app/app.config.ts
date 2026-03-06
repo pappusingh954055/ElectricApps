@@ -11,6 +11,7 @@ import { DatePipe } from '@angular/common';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { authInterceptor } from './core/auth.interceptors';
 import { PermissionService } from './core/services/permission.service';
+import { MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
 
 registerLocaleData(localeIn);
 
@@ -25,6 +26,8 @@ export const appConfig: ApplicationConfig = {
     provideCharts(withDefaultRegisterables()),
     { provide: LOCALE_ID, useValue: 'en-IN' },
     { provide: DATE_PIPE_DEFAULT_OPTIONS, useValue: { timezone: '+0530' } },
+    // Global: Koi bhi dialog outside click pe close nahi hoga
+    { provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: { disableClose: true } },
     {
       // Pre-load menu permissions BEFORE app renders any component.
       // This fixes the race condition where ngOnInit runs before async menu API returns.

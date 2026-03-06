@@ -21,9 +21,8 @@
 
         <mat-form-field appearance="outline" subscriptSizing="dynamic">
           <mat-label>Received Date</mat-label>
-          <input matInput [matDatepicker]="picker" formControlName="receivedDate">
-          <mat-datepicker-toggle matSuffix [for]="picker" [disabled]="isViewMode"></mat-datepicker-toggle>
-          <mat-datepicker #picker></mat-datepicker>
+          <input matInput formControlName="receivedDate" readonly>
+          <mat-icon matSuffix>event</mat-icon>
         </mat-form-field>
 
         <mat-form-field appearance="outline" subscriptSizing="dynamic">

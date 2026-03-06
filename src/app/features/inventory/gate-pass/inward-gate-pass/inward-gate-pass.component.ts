@@ -15,6 +15,7 @@ import { PurchaseReturnService } from '../../purchase-return/services/purchase-r
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog-component/confirm-dialog-component';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { DialogPersistenceService } from '../../../../shared/services/dialog-persistence.service';
 
 @Component({
     selector: 'app-inward-gate-pass',
@@ -35,6 +36,7 @@ export class InwardGatePassComponent implements OnInit, OnDestroy {
     loadingService = inject(LoadingService);
     prService = inject(PurchaseReturnService);
     cdr = inject(ChangeDetectorRef);
+    persistentDialog = inject(DialogPersistenceService);
 
     gatePassForm!: FormGroup;
     isSaving = false;
@@ -497,13 +499,11 @@ export class InwardGatePassComponent implements OnInit, OnDestroy {
                 const generatedPassNo = res.passNo || res.PassNo || res.data?.passNo || res.data?.PassNo || '';
                 const message = this.isEditMode ? 'Gate Pass updated successfully!' : `Inward Gate Pass Generated! Pass No: ${generatedPassNo || 'GP-IN-2026-XXXX'}`;
 
-                this.dialog.open(StatusDialogComponent, {
-                    data: {
-                        title: 'Success',
-                        message: message,
-                        status: 'success',
-                        isSuccess: true
-                    }
+                this.persistentDialog.openPersistent({
+                    title: 'Success',
+                    message: message,
+                    status: 'success',
+                    isSuccess: true
                 }).afterClosed().subscribe(() => {
                     // Purchase Order flow: After Gate Pass, go to GRN
                     if (!this.isEditMode && formValue.referenceType === GatePassReferenceType.PurchaseOrder) {
