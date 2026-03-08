@@ -21,6 +21,17 @@
       </div>
     </div>
 
+    <!-- 72h Policy Alert Banner -->
+    <div class="policy-alert-banner" *ngIf="isPolicyViolated">
+      <div class="alert-content">
+        <mat-icon>warning_amber</mat-icon>
+        <div class="text-group">
+          <strong>72-Hour Return Policy Window</strong>
+          <span>Items from GRNs received more than 3 days ago are blocked for return as per company policy.</span>
+        </div>
+      </div>
+    </div>
+
     <!-- Return Details Card -->
     <mat-card class="professional-card form-section">
       <div class="card-header">
@@ -94,26 +105,28 @@
                       </div>
                    </div>
                    
-                   <div class="grn-content" *ngIf="expandedGrn === group.grnRef">
-                      <div class="stock-item-row" *ngFor="let item of group.items" [class.item-rejected]="item.isRejected">
-                         <mat-checkbox [(ngModel)]="item.selected" [ngModelOptions]="{standalone: true}" 
-                                       (change)="onItemToggle(item)" color="primary">
-                            <span class="item-details-inline">
-                               <strong class="item-name">{{item.productName}}</strong> 
-                               <small class="item-avail text-secondary"> 
-                                 (Received: {{item.availableQty}} | Rate: {{item.rate | currency:'INR'}} | 
-                                 <span [class.stock-danger]="item.currentStock < 0" [class.stock-success]="item.currentStock >= 0">
-                                   Stock: {{item.currentStock}}
-                                 </span> | 
-                                 <span class="location-badge live" (click)="$event.stopPropagation(); viewLiveLocation(item)" style="padding: 2px 4px; font-size: 11px;">
-                                   <mat-icon style="font-size: 11px; width: 11px; height: 11px; vertical-align: middle;">location_on</mat-icon>
-                                   {{item.warehouseName}}/{{item.rackName}}
-                                 </span>)
-                               </small>
-                            </span>
-                         </mat-checkbox>
-                      </div>
-                   </div>
+                      <div class="grn-content" *ngIf="expandedGrn === group.grnRef">
+                        <div class="stock-item-row" *ngFor="let item of group.items" 
+                             [class.item-rejected]="item.isRejected"
+                             [class.return-closed]="!item.isReturnable">
+                           <mat-checkbox [(ngModel)]="item.selected" [ngModelOptions]="{standalone: true}" 
+                                         [disabled]="!item.isReturnable"
+                                         (change)="onItemToggle(item)" color="primary">
+                              <span class="item-details-inline">
+                                 <strong class="item-name">{{item.productName}}</strong> 
+                                 <small class="item-avail text-secondary"> 
+                                   (Rec: {{item.availableQty}} | Rate: {{item.rate | currency:'INR'}} | 
+                                   <span [class.stock-danger]="item.currentStock < 0" [class.stock-success]="item.currentStock >= 0">
+                                     Stock: {{item.currentStock}}
+                                   </span> | 
+                                   <span class="policy-badge-mini" [ngClass]="item.isReturnable ? 'active' : 'expired'">
+                                      {{ item.isReturnable ? formatRemainingTime(item.remainingHours) + ' left' : 'Over 3 Days' }}
+                                   </span>)
+                                 </small>
+                              </span>
+                           </mat-checkbox>
+                        </div>
+                     </div>
                 </div>
              </div>
 

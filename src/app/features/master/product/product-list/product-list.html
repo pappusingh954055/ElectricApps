@@ -21,6 +21,11 @@
         <mat-icon>delete_sweep</mat-icon>
         Delete Selected ({{selectedRows.length}})
       </button>
+      <button mat-raised-button color="accent" class="sync-action-btn" (click)="syncAllStock()" [disabled]="loading">
+        <mat-icon>sync</mat-icon>
+        Sync All Stock
+      </button>
+
       <button mat-raised-button class="main-add-btn" *ngIf="canAdd" routerLink="/app/master/products/add" [disabled]="loading">
         <mat-icon>add</mat-icon>
         New Product

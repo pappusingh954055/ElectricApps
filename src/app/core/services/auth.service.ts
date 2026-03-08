@@ -136,5 +136,9 @@ export class AuthService {
   getUserName(): string {
     return localStorage.getItem('userName') || localStorage.getItem('email') || 'Unknown';
   }
+
+  getUserEmail(): string {
+    return localStorage.getItem('email') || 'system@decode.com';
+  }
 }
 

@@ -415,15 +415,33 @@ $border-color: #e2e8f0;
 
 // Table Styling
 .table-container {
-  overflow-x: auto;
-  max-height: 500px; // Limit height for sticky header behavior
+  overflow-x: auto !important;
   overflow-y: auto;
-  border-radius: 8px; // Smooth corners
+  max-height: 500px;
+  border-radius: 8px;
+  display: block; // Required for overflow to work
+
+  // Visible horizontal scrollbar
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 8px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+    border-radius: 4px;
+  }
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+  }
+
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #f1f5f9;
 }
 
 table.clean-table {
   width: 100%;
-  border-collapse: separate; 
+  min-width: 900px; // Force horizontal scroll when viewport is narrow
+  border-collapse: separate;
   border-spacing: 0;
 
   th.mat-header-cell {
@@ -658,7 +676,7 @@ table.clean-table {
   }
 }
 
-// Media Query
+// // Media Query
 @media (max-width: 768px) {
   .page-header {
     flex-direction: column;
@@ -673,5 +691,78 @@ table.clean-table {
   .input-grid {
     flex-direction: column;
     gap: 16px;
+  }
+}
+
+/* 72h Policy Styles */
+.policy-alert-banner {
+  background: #fff8f1;
+  border: 1px solid #ffdec0;
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(245, 124, 0, 0.05);
+
+  .alert-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    mat-icon {
+      color: #f59e0b;
+      font-size: 28px;
+      width: 28px;
+      height: 28px;
+    }
+
+    .text-group {
+      display: flex;
+      flex-direction: column;
+      
+      strong {
+        color: #92400e;
+        font-size: 15px;
+      }
+
+      span {
+        color: #b45309;
+        font-size: 13px;
+        font-weight: 500;
+      }
+    }
+  }
+}
+
+.policy-badge-mini {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  margin-left: 4px;
+
+  &.active {
+    background-color: #ecfdf5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+  }
+
+  &.expired {
+    background-color: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+  }
+}
+
+.return-closed {
+  opacity: 0.7;
+  filter: grayscale(0.5);
+  background-color: #f1f5f9;
+  cursor: not-allowed;
+
+  .item-name {
+    color: #94a3b8 !important;
+    text-decoration: line-through;
   }
 }

@@ -225,7 +225,7 @@ export class ProductForm implements OnInit, OnDestroy {
               });
 
               if (res.defaultWarehouseId) {
-                this.onWarehouseChange(res.defaultWarehouseId);
+                this.onWarehouseChange(res.defaultWarehouseId, false);
               }
 
               // Sync Autocomplete text
@@ -417,8 +417,14 @@ export class ProductForm implements OnInit, OnDestroy {
 
   loadInitialLookups() {
     this.unitService.getAll().subscribe(data => this.units = data || []);
-    this.locationService.getWarehouses().subscribe(data => this.warehouses = data.filter(w => w.isActive));
-    this.locationService.getRacks().subscribe(data => this.racks = data.filter(r => r.isActive));
+    this.locationService.getWarehouses().pipe(takeUntil(this.destroy$)).subscribe(data => this.warehouses = data.filter(w => w.isActive));
+    this.locationService.getRacks().pipe(takeUntil(this.destroy$)).subscribe(data => {
+      this.racks = data.filter(r => r.isActive);
+      const warehouseId = this.productsForm.get('defaultWarehouseId')?.value;
+      if (warehouseId) {
+        this.onWarehouseChange(warehouseId, false);
+      }
+    });
 
     this.productLukupService.getLookups().pipe(takeUntil(this.destroy$)).subscribe({
       next: (res: any) => {
@@ -432,13 +438,23 @@ export class ProductForm implements OnInit, OnDestroy {
     });
   }
 
-  onWarehouseChange(warehouseId: string) {
-    this.filteredRacks = this.racks.filter(r => r.warehouseId === warehouseId);
-    // If current selected rack is not in the new filtered list, clear it
-    const currentRackId = this.productsForm.get('defaultRackId')?.value;
-    if (currentRackId && !this.filteredRacks.some(r => r.id === currentRackId)) {
-      this.productsForm.get('defaultRackId')?.setValue(null);
+  onWarehouseChange(warehouseId: string, clearSelection: boolean = true) {
+    if (!warehouseId) {
+      this.filteredRacks = [];
+      if (clearSelection) this.productsForm.get('defaultRackId')?.setValue(null);
+      return;
     }
+
+    this.filteredRacks = this.racks.filter(r => r.warehouseId === warehouseId);
+    
+    if (clearSelection) {
+      // If current selected rack is not in the new filtered list, clear it
+      const currentRackId = this.productsForm.get('defaultRackId')?.value;
+      if (currentRackId && !this.filteredRacks.some(r => r.id === currentRackId)) {
+        this.productsForm.get('defaultRackId')?.setValue(null);
+      }
+    }
+    this.cdr.detectChanges();
   }
 
   onCategoryChange(categoryId: number): void {

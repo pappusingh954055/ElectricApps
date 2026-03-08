@@ -1,0 +1,144 @@
+<div class="content-container">
+  <div class="header-section">
+    <div class="title-group">
+      <mat-icon class="title-icon">bolt</mat-icon>
+      <h1>Quick Purchase</h1>
+      <p class="subtitle">Direct inward entry without Approval/Gatepass flow</p>
+    </div>
+    <div class="actions">
+      <button mat-flat-button color="primary" class="save-btn" (click)="save()" [disabled]="purchaseForm.invalid || isSaving">
+        <mat-icon *ngIf="!isSaving">save</mat-icon>
+        <mat-spinner diameter="20" *ngIf="isSaving"></mat-spinner>
+        <span>Save & Update Stock</span>
+      </button>
+      <button mat-stroked-button (click)="router.navigate(['/app/inventory/polist'])" [disabled]="isSaving">
+        <mat-icon>close</mat-icon>
+        <span>Cancel</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="form-card mat-elevation-z1">
+    <form [formGroup]="purchaseForm">
+      <div class="row">
+        <div class="col-6">
+          <div class="supplier-row">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Supplier Name*</mat-label>
+              <mat-select formControlName="supplierId" (selectionChange)="onSupplierSelect($event)">
+                <mat-option *ngFor="let s of suppliers" [value]="s.id">{{ s.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button mat-icon-button color="primary" type="button" (click)="openSupplierModal()" matTooltip="Add New Supplier" class="add-supplier-btn">
+              <mat-icon>person_add</mat-icon>
+            </button>
+          </div>
+        </div>
+        <div class="col-3">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Purchase Date</mat-label>
+            <input matInput [matDatepicker]="picker" formControlName="date">
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-12">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Remarks / Notes</mat-label>
+            <textarea matInput formControlName="remarks" rows="2" placeholder="e.g. Received via Tempo UP80-XXXX"></textarea>
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div class="items-section">
+        <div class="section-title">
+          <span>Items to Buy (Purchase Details)</span>
+          <button mat-flat-button color="primary" (click)="openProductDialog()">
+            <mat-icon>search</mat-icon> Search & Add Products
+          </button>
+        </div>
+
+        <div class="items-grid" formArrayName="items">
+          <div class="item-header">
+            <div class="col-product">Product Description*</div>
+            <div class="col-qty">Quantity</div>
+            <div class="col-unit">Unit</div>
+            <div class="col-rate">Rate (₹)</div>
+            <div class="col-disc">Disc %</div>
+            <div class="col-gst">GST %</div>
+            <div class="col-total">Total (₹)</div>
+            <div class="col-action"></div>
+          </div>
+
+          <div class="item-row" *ngFor="let item of items.controls; let i = index" [formGroupName]="i">
+            <div class="col-product">
+              <mat-form-field appearance="outline" dense class="product-info-field">
+                <input matInput formControlName="productName" readonly placeholder="Selected Product">
+                <mat-hint class="product-hints" *ngIf="item.get('productId')?.value">
+                   Stock: <span class="stock">{{item.get('availableStock')?.value}} {{item.get('unit')?.value}}</span>
+                   &nbsp;| 🏭 <span class="wh-hint">{{getWarehouseName(item.get('warehouseId')?.value)}}</span>
+                   / <span class="rack-hint">{{getRackName(i, item.get('rackId')?.value)}}</span>
+                </mat-hint>
+              </mat-form-field>
+            </div>
+            <div class="col-qty">
+              <mat-form-field appearance="outline" dense>
+                <input matInput type="number" formControlName="qty">
+              </mat-form-field>
+            </div>
+            <div class="col-unit">
+              <mat-form-field appearance="outline" dense>
+                <input type="text" matInput formControlName="unit" readonly>
+              </mat-form-field>
+            </div>
+            <div class="col-rate">
+              <mat-form-field appearance="outline" dense>
+                <input matInput type="number" formControlName="rate" readonly>
+              </mat-form-field>
+            </div>
+            <div class="col-disc">
+              <mat-form-field appearance="outline" dense>
+                <input matInput type="number" formControlName="discountPercent">
+              </mat-form-field>
+            </div>
+            <div class="col-gst">
+              <mat-form-field appearance="outline" dense>
+                <mat-select formControlName="gstPercent">
+                  <mat-option [value]="0">0%</mat-option>
+                  <mat-option [value]="5">5%</mat-option>
+                  <mat-option [value]="12">12%</mat-option>
+                  <mat-option [value]="18">18%</mat-option>
+                  <mat-option [value]="28">28%</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-total">
+              <div class="total-badge">{{ item.get('total')?.value | currency:'INR':'symbol':'1.2-2' }}</div>
+            </div>
+            <div class="col-action">
+              <button mat-icon-button color="warn" (click)="removeItem(i)" matTooltip="Remove Item" type="button">
+                <mat-icon>delete_outline</mat-icon>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-section">
+          <div class="summary-box">
+            <div class="summary-row">
+              <span class="label">Net Total:</span>
+              <span class="value">{{ grandTotal | currency:'INR':'symbol':'1.2-2' }}</span>
+            </div>
+            <div class="summary-row grand-total">
+              <span class="label">Grand Total:</span>
+              <span class="value">{{ grandTotal | currency:'INR':'symbol':'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { SaleReturnService } from '../services/sale-return.service';
@@ -32,8 +32,10 @@ export class SaleReturnListComponent implements OnInit {
     private cdr = inject(ChangeDetectorRef);
     private dialog = inject(MatDialog);
     private permissionService = inject(PermissionService);
+    private route = inject(ActivatedRoute);
 
     canAdd: boolean = true;
+    isQuick: boolean = false;
 
     dataSource = new MatTableDataSource<any>();
     selection = new SelectionModel<any>(true, []);
@@ -90,6 +92,7 @@ export class SaleReturnListComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.isQuick = (this.route as any).snapshot.data['isQuick'] || false;
         this.canAdd = this.permissionService.hasPermission('CanAdd');
 
         // Global loader ON
@@ -186,7 +189,8 @@ export class SaleReturnListComponent implements OnInit {
                 this.sortOrder,
                 this.fromDate || undefined,
                 this.toDate || undefined,
-                this.activeStatus
+                this.activeStatus,
+                this.isQuick
             ),
             gatePasses: this.gatePassService.getGatePassesPaged({ pageSize: 150, sortField: 'CreatedAt', sortOrder: 'desc' }).pipe(catchError(() => of({ data: [] })))
         }).subscribe({
@@ -276,7 +280,8 @@ export class SaleReturnListComponent implements OnInit {
     }
 
     navigateToCreate() {
-        this.router.navigate(['/app/inventory/sale-return/add']);
+        const target = this.isQuick ? '/app/quick-inventory/so-return/add' : '/app/inventory/sale-return/add';
+        this.router.navigate([target]);
     }
 
     createInwardGatePass(row: any) {

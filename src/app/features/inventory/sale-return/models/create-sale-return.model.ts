@@ -6,6 +6,8 @@ export interface SaleReturnItem {
     totalAmount?: number;   // Backend property name
     reason?: string;
     itemCondition?: string;
+    warehouseId?: number;
+    rackId?: number;
 }
 
 export interface CreateSaleReturnDto {
@@ -16,4 +18,5 @@ export interface CreateSaleReturnDto {
     modifiedBy?: string;
     createdBy?: string;
     items?: SaleReturnItem[];
+    isQuick?: boolean;
 }

@@ -55,6 +55,11 @@ export const routes: Routes = [
         loadChildren: () => import('./routes/admin.routes').then(m => m.ADMIN_ROUTES)
       },
       {
+        path: 'quick-inventory',
+        data: { breadcrumb: 'Quick Inventory' },
+        loadChildren: () => import('./routes/quick-inventory.routes').then(m => m.QUICK_INVENTORY_ROUTES)
+      },
+      {
         path: 'finance',
         data: { breadcrumb: 'Finance' },
         loadChildren: () => import('./routes/finance.routes').then(m => m.FINANCE_ROUTES)

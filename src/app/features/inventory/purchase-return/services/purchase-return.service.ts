@@ -36,7 +36,8 @@ export class PurchaseReturnService {
         toDate?: string,
         sortField: string = 'ReturnDate',
         sortOrder: string = 'desc',
-        status: string = ''
+        status: string = '',
+        isQuick: boolean = false
     ): Observable<any> {
         const request: any = {
             filter: search,
@@ -44,7 +45,8 @@ export class PurchaseReturnService {
             pageSize,
             sortField,
             sortOrder,
-            status
+            status,
+            isQuick
         };
 
         if (fromDate) request.fromDate = fromDate;

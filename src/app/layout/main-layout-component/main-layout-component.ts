@@ -18,6 +18,7 @@ import { MatTreeNestedDataSource } from '@angular/material/tree';
 import { LoadingService } from '../../core/services/loading.service';
 import { CompanyService } from '../../features/company/services/company.service';
 import { environment } from '../../enviornments/environment';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-main-layout-component',
@@ -96,7 +97,7 @@ export class MainLayoutComponent implements OnInit {
     this.userEmail = localStorage.getItem('email');
 
     // Subscribe to Menu Service
-    this.menuService.getMenu().subscribe(menus => {
+    this.menuService.getMenu().subscribe((menus: MenuItem[]) => {
       this.dataSource.data = menus;
     });
 

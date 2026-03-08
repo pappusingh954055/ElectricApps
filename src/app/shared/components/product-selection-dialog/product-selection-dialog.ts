@@ -73,7 +73,7 @@ import { LoadingService } from '../../../core/services/loading.service';
           </ng-container>
 
           <ng-container matColumnDef="sku">
-            <th mat-header-cell *matHeaderCellDef> SKU </th>
+            <th mat-header-cell *matHeaderCellDef class="sku-header"> SKU </th>
             <td mat-cell *matCellDef="let row" class="sku-cell"> {{row.sku}} </td>
           </ng-container>
 
@@ -83,22 +83,22 @@ import { LoadingService } from '../../../core/services/loading.service';
           </ng-container>
 
           <ng-container matColumnDef="unit">
-            <th mat-header-cell *matHeaderCellDef> Unit </th>
-            <td mat-cell *matCellDef="let row"> 
+            <th mat-header-cell *matHeaderCellDef class="unit-header"> Unit </th>
+            <td mat-cell *matCellDef="let row" class="unit-cell"> 
                <span class="unit-badge text-secondary">{{row.unit || 'PCS'}}</span>
             </td>
           </ng-container>
 
           <ng-container matColumnDef="category">
-            <th mat-header-cell *matHeaderCellDef> Category </th>
+            <th mat-header-cell *matHeaderCellDef class="cat-header"> Category </th>
             <td mat-cell *matCellDef="let row" class="cat-cell"> 
                <span class="category-badge">{{row.categoryName}}</span>
             </td>
           </ng-container>
           
           <ng-container matColumnDef="location">
-            <th mat-header-cell *matHeaderCellDef> Location (Rack) </th>
-            <td mat-cell *matCellDef="let row"> 
+            <th mat-header-cell *matHeaderCellDef class="location-header"> Location (Rack) </th>
+            <td mat-cell *matCellDef="let row" class="location-cell"> 
                <div class="location-info">
                  <span class="warehouse-text">{{row.defaultWarehouseName || 'N/A'}}</span>
                  <span class="rack-badge" *ngIf="row.defaultRackName">{{row.defaultRackName}}</span>
@@ -447,6 +447,97 @@ import { LoadingService } from '../../../core/services/loading.service';
     }
 
     ::ng-deep .mat-mdc-dialog-container { padding: 0 !important; border-radius: 12px !important; }
+
+    /* 📱 Mobile Responsiveness optimized for smaller screens (iPhone SE etc) */
+    @media (max-width: 768px) {
+      .dialog-container {
+        max-height: 100vh; 
+        height: 100vh; /* Force full height on mobile */
+        border-radius: 0; /* Full screen look */
+        min-height: 0;
+      }
+
+      .search-bar {
+        padding: 8px 12px;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 6px !important;
+
+        .search-field, .category-field {
+          width: 100% !important;
+          margin: 0 !important;
+          ::ng-deep .mat-mdc-text-field-wrapper {
+            height: 40px !important;
+          }
+        }
+
+        .bulk-select-btn {
+          width: 100% !important;
+          margin: 0 !important;
+          height: 36px !important;
+          font-size: 12px !important;
+        }
+      }
+
+      .dialog-header {
+        padding: 10px 16px;
+        .title { font-size: 1rem; }
+      }
+
+      .table-container {
+        min-height: 150px; /* Allow more space for footer */
+      }
+
+      .product-table {
+        th, td {
+          padding: 6px !important;
+          font-size: 12px !important;
+        }
+        .sku-header, .sku-cell,
+        .cat-header, .cat-cell,
+        .location-header, .location-cell,
+        .unit-header, .unit-cell {
+          display: none !important;
+        }
+      }
+
+      .dialog-footer {
+        flex-direction: column !important;
+        gap: 8px !important;
+        padding: 12px 16px 20px 16px !important; /* Extra bottom padding for mobile safe area */
+        background: #ffffff;
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+        
+        .selection-info {
+          width: 100%;
+          justify-content: center;
+          margin-bottom: 4px;
+          .count { font-size: 1rem; }
+        }
+
+        .action-buttons {
+          width: 100%;
+          display: flex !important;
+          flex-direction: row-reverse !important; /* Save on right, Cancel on left */
+          gap: 10px !important;
+          
+          button {
+            flex: 1;
+            font-size: 11px !important;
+            padding: 0 8px !important;
+            height: 44px !important; /* Tappable size */
+            white-space: nowrap;
+            
+            mat-icon {
+              font-size: 18px;
+              width: 18px;
+              height: 18px;
+              margin-right: 4px;
+            }
+          }
+        }
+      }
+    }
   `]
 })
 export class ProductSelectionDialogComponent implements OnInit, OnDestroy {

@@ -13,6 +13,7 @@ import { FinanceService } from '../../finance/service/finance.service';
 import { startWith, switchMap, map, catchError, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { PoSelectionDialog } from '../po-selection-dialog/po-selection-dialog';
 import { MatDialog } from '@angular/material/dialog';
+import { ActivatedRoute } from '@angular/router';
 import { GrnPrintDialogComponent } from '../grn-print-dialog/grn-print-dialog.component';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { PermissionService } from '../../../core/services/permission.service';
@@ -98,8 +99,13 @@ export class GrnListComponent implements OnInit, AfterViewInit {
   ) { }
 
   canAdd: boolean = true;
+  isQuick: boolean = false;
+  private route = inject(ActivatedRoute);
 
   ngOnInit(): void {
+    // Read isQuick from route data [cite: 2026-03-07]
+    this.isQuick = (this.route as any).snapshot.data['isQuick'] || false;
+
     this.canAdd = this.permissionService.hasPermission('CanAdd');
 
     this.searchControl.disable({ emitEvent: false });
@@ -157,7 +163,8 @@ export class GrnListComponent implements OnInit, AfterViewInit {
               this.sort.direction,
               this.paginator.pageIndex,
               this.paginator.pageSize,
-              this.searchControl.value || ''
+              this.searchControl.value || '',
+              this.isQuick
             ),
             pendingDues: this.financeService.getPendingDues().pipe(catchError(() => of([])))
           }).pipe(

@@ -281,4 +281,40 @@ export class ProductList implements OnInit {
   onSelectionChange(rows: any[]) {
     this.selectedRows = rows;
   }
+
+  /**
+   * 🔄 Re-calculate all product stock from transactions
+   */
+  syncAllStock() {
+    this.dialog.open(ConfirmDialogComponent, {
+      width: '420px',
+      data: {
+        title: 'Sync All Stock',
+        message: 'This will re-calculate current stock for all products based on all historical transactions. Continue?',
+        confirmText: 'Yes, Sync Now'
+      }
+    }).afterClosed().subscribe(confirm => {
+      if (!confirm) return;
+
+      this.loading = true;
+      this.cdr.detectChanges();
+
+      this.service.syncStock().subscribe({
+        next: (res: any) => {
+          this.loading = false;
+          this.dialog.open(StatusDialogComponent, {
+            data: { isSuccess: true, message: res.message || 'Stock synchronized successfully!' }
+          });
+          this.reloadGrid(); // Refresh the list to show new counts
+        },
+        error: (err: any) => {
+          this.loading = false;
+          this.dialog.open(StatusDialogComponent, {
+            data: { isSuccess: false, message: err?.error?.message || 'Sync failed. Please try again later.' }
+          });
+          this.cdr.detectChanges();
+        }
+      });
+    });
+  }
 }

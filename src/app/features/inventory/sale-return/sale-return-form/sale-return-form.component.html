@@ -29,6 +29,17 @@
 
     <app-summary-stats [stats]="summaryStats" [isLoading]="isLoading"></app-summary-stats>
 
+    <!-- 72h Policy Alert Banner -->
+    <div class="policy-alert-banner" *ngIf="isPolicyViolated">
+        <div class="alert-content">
+            <mat-icon>warning_amber</mat-icon>
+            <div class="text-group">
+                <strong>72-Hour Return Policy Warning</strong>
+                <span>Items older than 3 days cannot be returned as per company policy.</span>
+            </div>
+        </div>
+    </div>
+
     <form [formGroup]="returnForm" (ngSubmit)="onSubmit()" id="saleReturnForm">
         <mat-card>
             <mat-card-content>
@@ -88,7 +99,20 @@
 
                     <ng-container matColumnDef="productName">
                         <th mat-header-cell *matHeaderCellDef> Product </th>
-                        <td mat-cell *matCellDef="let element"> {{element.get('productName').value}} </td>
+                        <td mat-cell *matCellDef="let element"> 
+                            <div class="p-name">{{element.get('productName').value}}</div>
+                        </td>
+                    </ng-container>
+
+                    <!-- Policy Status Column -->
+                    <ng-container matColumnDef="policyStatus">
+                        <th mat-header-cell *matHeaderCellDef> Return Policy </th>
+                        <td mat-cell *matCellDef="let element">
+                            <div class="policy-badge" [ngClass]="element.get('isReturnable').value ? 'active' : 'expired'">
+                                <mat-icon>{{element.get('isReturnable').value ? 'timer' : 'block'}}</mat-icon>
+                                <span>{{ element.get('isReturnable').value ? formatRemainingTime(element.get('remainingHours').value) + ' left' : 'Window Closed' }}</span>
+                            </div>
+                        </td>
                     </ng-container>
 
                     <ng-container matColumnDef="quantity">
@@ -109,6 +133,28 @@
                                     <mat-option value="Good">Good (Restock)</mat-option>
                                     <mat-option value="Damaged">Damaged</mat-option>
                                     <mat-option value="Scrapped">Scrapped</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="warehouse">
+                        <th mat-header-cell *matHeaderCellDef> Warehouse </th>
+                        <td mat-cell *matCellDef="let element" [formGroup]="element">
+                            <mat-form-field appearance="outline" class="condition-input" subscriptSizing="dynamic">
+                                <mat-select formControlName="warehouseId" (selectionChange)="onWarehouseChange($event.value, element)">
+                                    <mat-option *ngFor="let w of warehouses" [value]="w.id">{{w.name}}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="rack">
+                        <th mat-header-cell *matHeaderCellDef> Rack </th>
+                        <td mat-cell *matCellDef="let element" [formGroup]="element">
+                            <mat-form-field appearance="outline" class="condition-input" subscriptSizing="dynamic">
+                                <mat-select formControlName="rackId">
+                                    <mat-option *ngFor="let r of racks" [value]="r.id">{{r.name}}</mat-option>
                                 </mat-select>
                             </mat-form-field>
                         </td>

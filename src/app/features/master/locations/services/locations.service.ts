@@ -40,4 +40,8 @@ export class LocationService {
     deleteRack(id: string): Observable<any> {
         return this.api.delete(`racks/${id}`);
     }
+
+    getRacksByWarehouse(warehouseId: string | number): Observable<Rack[]> {
+        return this.api.get<Rack[]>(`racks/warehouse/${warehouseId}`);
+    }
 }

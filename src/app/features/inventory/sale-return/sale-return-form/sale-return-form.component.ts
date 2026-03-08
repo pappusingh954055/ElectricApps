@@ -14,6 +14,7 @@ import { NotificationService } from '../../../shared/notification.service';
 import { FinanceService } from '../../../finance/service/finance.service';
 import { LoadingService } from '../../../../core/services/loading.service';
 import { CompanyService } from '../../../company/services/company.service';
+import { LocationService } from '../../../master/locations/services/locations.service';
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { SummaryStat, SummaryStatsComponent } from '../../../../shared/components/summary-stats-component/summary-stats-component';
 
@@ -42,6 +43,7 @@ export class SaleReturnFormComponent implements OnInit {
     private companyService = inject(CompanyService);
     private datePipe = inject(DatePipe);
     private currencyPipe = inject(CurrencyPipe);
+    private locationService = inject(LocationService);
 
     customers: any[] = [];
     saleOrders: any[] = [];
@@ -52,11 +54,16 @@ export class SaleReturnFormComponent implements OnInit {
     isLoadingCustomers = false;
     isLoadingSaleOrders = false;
     noItemsFound = false;
+    isPolicyViolated = false;
     summaryStats: SummaryStat[] = [];
     minDate: Date = new Date();
+    isQuick: boolean = false;
+
+    warehouses: any[] = [];
+    racks: any[] = [];
 
     itemsDataSource = new MatTableDataSource<AbstractControl>();
-    displayedColumns: string[] = ['productName', 'quantity', 'rate', 'itemCondition', 'reason', 'returnQty', 'discount', 'tax', 'total'];
+    displayedColumns: string[] = ['productName', 'policyStatus', 'quantity', 'rate', 'itemCondition', 'warehouse', 'rack', 'reason', 'returnQty', 'discount', 'tax', 'total'];
 
     constructor() {
         this.returnForm = this.fb.group({
@@ -69,7 +76,9 @@ export class SaleReturnFormComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.isQuick = (this.route as any).snapshot.data['isQuick'] || false;
         this.loadCustomersLookup();
+        this.loadLocations();
         this.updateSummaryStats();
         this.route.params.subscribe(params => {
             if (params['id']) {
@@ -121,23 +130,30 @@ export class SaleReturnFormComponent implements OnInit {
     onSOChange(soId: number) {
         this.clearItems();
         this.noItemsFound = false;
+        this.isPolicyViolated = false;
         if (soId) {
             this.isLoading = true;
             this.saleOrderService.getSaleOrderItems(soId).subscribe({
                 next: (items) => {
                     this.noItemsFound = items.length === 0;
+                    this.isPolicyViolated = items.some(i => !i.isReturnable);
+
                     items.forEach(item => {
                         const itemGroup = this.fb.group({
                             productId: [item.productId],
                             productName: [item.productName],
                             quantity: [item.soldQty || item.quantity],
                             rate: [item.rate || item.unitPrice || 0],
-                            discountPercent: [item.discountPercent || 0], // Capture Discount
+                            discountPercent: [item.discountPercent || 0],
                             itemCondition: ['Good', Validators.required],
                             reason: [''],
-                            returnQty: [0, [Validators.required, Validators.min(0), Validators.max(item.soldQty || item.quantity)]],
+                            returnQty: [{ value: 0, disabled: !item.isReturnable }, [Validators.required, Validators.min(0), Validators.max(item.soldQty || item.quantity)]],
                             taxRate: [item.taxPercentage || item.taxRate || 0],
-                            amount: [0]
+                            amount: [0],
+                            warehouseId: [{ value: item.defaultWarehouseId || null, disabled: true }],
+                            rackId: [{ value: item.defaultRackId || null, disabled: true }],
+                            isReturnable: [item.isReturnable],
+                            remainingHours: [item.returnWindowRemainingHours]
                         });
 
                         this.calculateRowTotal(itemGroup);
@@ -158,6 +174,29 @@ export class SaleReturnFormComponent implements OnInit {
                     this.isLoading = false;
                     this.cdr.detectChanges();
                 }
+            });
+        }
+    }
+
+    loadLocations() {
+        this.locationService.getWarehouses().subscribe(res => {
+            this.warehouses = res;
+            this.cdr.detectChanges();
+        });
+        this.locationService.getRacks().subscribe(res => {
+            this.racks = res;
+            this.cdr.detectChanges();
+        });
+    }
+
+    onWarehouseChange(wId: number, element: AbstractControl) {
+        element.get('rackId')?.setValue(null);
+        if (wId) {
+            this.locationService.getRacksByWarehouse(wId).subscribe(racks => {
+                // We'll store racks in a local map to avoid cross-row conflicts if needed, 
+                // but for now, we'll just use the globally fetched ones which is simpler for Quick mode
+                this.racks = racks;
+                this.cdr.detectChanges();
             });
         }
     }
@@ -185,7 +224,9 @@ export class SaleReturnFormComponent implements OnInit {
                 reason: [''],
                 returnQty: [0, [Validators.required, Validators.min(0), Validators.max(item.quantity)]],
                 taxRate: [item.taxPercentage || item.taxRate || 0],
-                amount: [0]
+                amount: [0],
+                warehouseId: [{ value: item.warehouseId || null, disabled: true }],
+                rackId: [{ value: item.rackId || null, disabled: true }]
             });
 
             itemGroup.get('returnQty')?.valueChanges.subscribe(() => {
@@ -300,7 +341,7 @@ export class SaleReturnFormComponent implements OnInit {
         }
 
         const userId = localStorage.getItem('email') || 'admin@admin.com';
-        const rawValue = this.returnForm.value;
+        const rawValue = this.returnForm.getRawValue();
 
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -349,7 +390,8 @@ export class SaleReturnFormComponent implements OnInit {
             customerId: Number(rawValue.customerId),
             remarks: rawValue.remarks,
             createdBy: userId, // Audit fields ke liye email pass ho raha hai
-            items: mappedItems
+            items: mappedItems,
+            isQuick: this.isQuick
         };
 
         this.isLoading = true;
@@ -403,7 +445,8 @@ export class SaleReturnFormComponent implements OnInit {
         });
 
         dialogRef.afterClosed().subscribe(() => {
-            this.router.navigate(['/app/inventory/sale-return']);
+            const target = this.isQuick ? '/app/quick-inventory/so-return' : '/app/inventory/sale-return';
+            this.router.navigate([target]);
         });
     }
 
@@ -585,6 +628,13 @@ export class SaleReturnFormComponent implements OnInit {
             this.cdr.detectChanges();
             this.notification.showStatus(true, 'PDF Exported Successfully (Mock)');
         }, 1000);
+    }
+
+    formatRemainingTime(hours: number): string {
+        if (hours <= 0) return 'Expired';
+        const h = Math.floor(hours);
+        const m = Math.round((hours - h) * 60);
+        return `${h}h ${m}m`;
     }
 
     goBack() {

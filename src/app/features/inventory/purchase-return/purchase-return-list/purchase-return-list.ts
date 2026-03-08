@@ -3,7 +3,7 @@ import { ChangeDetectorRef, Component, inject, OnInit, ViewChild } from '@angula
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { SelectionModel } from '@angular/cdk/collections';
 import { MaterialModule } from '../../../../shared/material/material/material-module';
 import { PurchaseReturnService } from '../services/purchase-return.service';
@@ -39,8 +39,10 @@ export class PurchaseReturnList implements OnInit {
   private datePipe = inject(DatePipe);
   private currencyPipe = inject(CurrencyPipe);
   private permissionService = inject(PermissionService);
+  private route = inject(ActivatedRoute);
 
   canAdd: boolean = true;
+  isQuick: boolean = false;
 
   companyInfo: CompanyProfileDto | null = null;
 
@@ -110,6 +112,7 @@ export class PurchaseReturnList implements OnInit {
   }
 
   ngOnInit(): void {
+    this.isQuick = (this.route as any).snapshot.data['isQuick'] || false;
     this.canAdd = this.permissionService.hasPermission('CanAdd');
 
     // Global loader ON - same as dashboard pattern
@@ -169,7 +172,8 @@ export class PurchaseReturnList implements OnInit {
         end,
         sortField,
         sortOrder,
-        this.activeStatus
+        this.activeStatus,
+        this.isQuick
       ),
       summary: this.prService.getSummary(),
       gatePasses: this.gatePassService.getGatePassesPaged({ pageSize: 150, sortField: 'CreatedAt', sortOrder: 'desc' }).pipe(catchError(() => of({ data: [] })))
@@ -272,7 +276,8 @@ export class PurchaseReturnList implements OnInit {
   }
 
   navigateToCreate() {
-    this.router.navigate(['/app/inventory/purchase-return/add']);
+    const target = this.isQuick ? '/app/quick-inventory/po-return/add' : '/app/inventory/purchase-return/add';
+    this.router.navigate([target]);
   }
 
   createOutwardGatePass(row: any) {

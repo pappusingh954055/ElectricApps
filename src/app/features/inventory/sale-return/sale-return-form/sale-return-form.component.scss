@@ -257,15 +257,41 @@ form#saleReturnForm {
 
     .table-container {
         flex: 1;
+        width: 100%;
+        overflow-x: auto !important; // Explicitly force horizontal scroll
         overflow-y: auto;
         min-height: 0;
+        display: block; // Force block for proper overflow behavior
         
-        // Hide Scrollbar visual as requested but keep functionality
+        // Premium scrollbar styling (Highly Visible)
         &::-webkit-scrollbar {
-            display: none;
+            width: 8px;
+            height: 10px; // Slightly thicker for horizontal
+            display: block;
         }
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
+        
+        &::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+            background: #94a3b8; // Darker thumb for visibility
+            border-radius: 4px;
+            border: 2px solid #f1f5f9;
+            
+            &:hover {
+                background: #64748b;
+            }
+        }
+
+        -ms-overflow-style: auto;
+        scrollbar-width: thin;
+        scrollbar-color: #94a3b8 #f1f5f9;
+    }
+
+    table {
+        min-width: 1200px !important; // Increased to ensure scroll triggers
     }
 
     .condition-input {
@@ -455,4 +481,78 @@ input[type=number] {
         line-height: 1.5;
         color: #94a3b8;
     }
+}
+
+/* 72h Policy Styles */
+.policy-alert-banner {
+    background: #fff8f1;
+    border: 1px solid #ffdec0;
+    border-radius: 12px;
+    padding: 14px 20px;
+    margin-bottom: 4px;
+    box-shadow: 0 2px 8px rgba(245, 124, 0, 0.05);
+
+    .alert-content {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        mat-icon {
+            color: #f59e0b;
+            font-size: 28px;
+            width: 28px;
+            height: 28px;
+        }
+
+        .text-group {
+            display: flex;
+            flex-direction: column;
+            
+            strong {
+                color: #92400e;
+                font-size: 15px;
+            }
+
+            span {
+                color: #b45309;
+                font-size: 13px;
+                font-weight: 500;
+            }
+        }
+    }
+}
+
+.policy-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+
+    mat-icon {
+        font-size: 14px;
+        width: 14px;
+        height: 14px;
+    }
+
+    &.active {
+        background-color: #ecfdf5;
+        color: #059669;
+        border: 1px solid #a7f3d0;
+    }
+
+    &.expired {
+        background-color: #fef2f2;
+        color: #dc2626;
+        border: 1px solid #fecaca;
+    }
+}
+
+.p-name {
+    font-weight: 600;
+    color: #1e293b;
 }

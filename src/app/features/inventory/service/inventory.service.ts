@@ -145,14 +145,16 @@ export class InventoryService {
         sortOrder: string = '',
         pageIndex: number = 0,
         pageSize: number = 10,
-        search: string = ''
+        search: string = '',
+        isQuick: boolean = false
     ): Observable<any> {
         const request = {
             sortField,
             sortOrder,
             pageIndex,
             pageSize,
-            search
+            search,
+            isQuick
         };
 
         return this.api.get(`grn/grn-list?${this.api.toQueryString(request)}`);
@@ -185,5 +187,21 @@ export class InventoryService {
    */
     createBulkGrn(data: BulkGrnRequest): Observable<any> {
         return this.api.post('GRN/bulk-create', data);
+    }
+
+    quickPurchase(payload: any): Observable<any> {
+        return this.api.post('QuickTransaction/quick-purchase', payload);
+    }
+
+    quickSale(payload: any): Observable<any> {
+        return this.api.post('QuickTransaction/quick-sale', payload);
+    }
+
+    getSuppliers(): Observable<any[]> {
+        return this.api.get<any[]>('suppliers/dropdown');
+    }
+
+    getCustomers(): Observable<any[]> {
+        return this.api.get<any[]>('customers/dropdown');
     }
 }

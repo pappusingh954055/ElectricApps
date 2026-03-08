@@ -78,5 +78,12 @@ export class ProductService {
         }
         return this.api.get<{ exists: boolean, message: string }>(url);
     }
+
+    /**
+     * 🔄 Trigger Stock Synchronization across all products
+     */
+    syncStock(): Observable<any> {
+        return this.api.post('stock/sync', {});
+    }
 }
 

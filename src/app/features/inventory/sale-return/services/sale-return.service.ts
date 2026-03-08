@@ -19,7 +19,8 @@ export class SaleReturnService {
         sortOrder: string = 'desc',
         fromDate?: Date,
         toDate?: Date,
-        status: string = ''
+        status: string = '',
+        isQuick: boolean = false
     ): Observable<SaleReturnPagedResponse> {
         const request: any = {
             search,
@@ -27,7 +28,8 @@ export class SaleReturnService {
             pageIndex,
             pageSize,
             sortField,
-            sortOrder
+            sortOrder,
+            isQuick
         };
 
         if (fromDate) request.fromDate = fromDate.toISOString();

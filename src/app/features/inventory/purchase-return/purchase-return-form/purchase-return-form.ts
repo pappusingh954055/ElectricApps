@@ -21,7 +21,7 @@ import { environment } from '../../../../enviornments/environment';
 @Component({
   selector: 'app-purchase-return-form',
   standalone: true,
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule, 
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule,
     LocationTrackerDialogComponent],
   providers: [DatePipe, CurrencyPipe],
   templateUrl: './purchase-return-form.html',
@@ -33,6 +33,8 @@ export class PurchaseReturnForm implements OnInit {
   displayedColumns: string[] = ['product', 'rejectedQty', 'returnQty', 'rate', 'discount', 'gst', 'taxAmount', 'total', 'actions'];
   tableDataSource: any[] = [];
   minDate: Date = new Date();
+  isQuick: boolean = false;
+  isPolicyViolated: boolean = false;
 
   viewLiveLocation(item: any) {
     if (!item) return;
@@ -73,6 +75,7 @@ export class PurchaseReturnForm implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.isQuick = (this.route as any).snapshot.data['isQuick'] || false;
     this.initForm();
     this.GetSuppliersForPurchaseReturnAndAutoSelect();
   }
@@ -177,8 +180,9 @@ export class PurchaseReturnForm implements OnInit {
           itemType: 'Received'
         }));
 
-        // Combine both into one list for the accordion
-        this.receivedStockItems = [...rejected, ...received];
+        const combined = [...rejected, ...received];
+        this.receivedStockItems = combined;
+        this.isPolicyViolated = combined.some(i => !i.isReturnable && !i.IsReturnable);
 
         this.groupStockByGrn();
         this.isLoadingStock = false;
@@ -229,6 +233,8 @@ export class PurchaseReturnForm implements OnInit {
       item.receivedDate = rDate;
       item.warehouseName = item.warehouseName ?? item.WarehouseName ?? 'N/A';
       item.rackName = item.rackName ?? item.RackName ?? 'N/A';
+      item.isReturnable = item.isReturnable ?? item.IsReturnable ?? true;
+      item.remainingHours = item.returnWindowRemainingHours ?? item.ReturnWindowRemainingHours ?? 0;
 
       item.selected = this.isItemInGrid(item);
       groups[ref].items.push(item);
@@ -292,6 +298,13 @@ export class PurchaseReturnForm implements OnInit {
   }
 
   onItemToggle(item: any) {
+    if (!item.isReturnable) {
+        item.selected = false;
+        this.openDialog(false, `Return Not Allowed: GRN (${item.grnRef}) was received more than 3 days ago. Returns are only accepted within 72 hours of receipt.`);
+        this.cdr.detectChanges();
+        return;
+    }
+
     if (item.selected) {
       // Add to grid using its specific type (Rejected/Received)
       const isDuplicate = this.addReturnItem(item, item.itemType);
@@ -345,7 +358,9 @@ export class PurchaseReturnForm implements OnInit {
       taxAmount: [0],
       total: [0],
       limit: [Math.min(maxQty, physicalStock)],
-      itemType: [type]
+      itemType: [type],
+      warehouseId: [item.warehouseId || item.WarehouseId || null],
+      rackId: [item.rackId || item.RackId || null]
     });
 
     this.items.push(group);
@@ -429,9 +444,13 @@ export class PurchaseReturnForm implements OnInit {
             gstPercent: item.gstPercent,
             taxAmount: item.taxAmount,
             totalAmount: item.total,
-            itemType: item.itemType // Dynamic tracking: Rejected or Received
+            itemType: item.itemType, // Dynamic tracking: Rejected or Received
+            isQuick: this.isQuick,
+            warehouseId: item.warehouseId,
+            rackId: item.rackId
           }))
         };
+        (payload as any).isQuick = this.isQuick;
 
         // Use the correctly stored name or fallback
         const supplierName = this.selectedSupplierName && this.selectedSupplierName.trim() !== ''
@@ -469,7 +488,8 @@ export class PurchaseReturnForm implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe(() => {
-      this.router.navigate(['/app/inventory/purchase-return']);
+      const target = this.isQuick ? '/app/quick-inventory/po-return' : '/app/inventory/purchase-return';
+      this.router.navigate([target]);
     });
   }
 
@@ -675,6 +695,13 @@ export class PurchaseReturnForm implements OnInit {
   hasMixedTypes(): boolean {
     const types = new Set(this.items.controls.map(c => c.get('itemType')?.value));
     return types.has('Rejected') && types.has('Received');
+  }
+
+  formatRemainingTime(hours: number): string {
+    if (hours <= 0) return 'Expired';
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    return `${h}h ${m}m`;
   }
 }
 
