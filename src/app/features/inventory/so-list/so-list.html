@@ -33,7 +33,7 @@
   </div>
 
   <div class="header-actions">
-    <h1 class="page-title">Sale Order Management</h1>
+    <h3 class="page-title">Sale Order Management</h3>
     <div class="d-flex gap-2">
       <button mat-raised-button color="warn" class="export-action-btn" 
               (click)="selection.hasValue() ? DownloadMultipleOrders(getSelectedIds()) : exportOrders()" 
@@ -52,6 +52,9 @@
       <button mat-raised-button color="primary" class="main-add-btn" *ngIf="canAdd && !selection.hasValue()" (click)="createNewOrder()" [disabled]="isLoading">
         <mat-icon>add</mat-icon> New Sale Order
       </button>
+      <!-- <button mat-flat-button class="quick-sale-btn" style="background-color: #3f51b5; color: white;" *ngIf="canAdd && !selection.hasValue()" (click)="router.navigate(['/app/quick-inventory/sale/list'])" [disabled]="isLoading">
+        <mat-icon>flash_on</mat-icon> Quick Sale List
+      </button> -->
     </div>
   </div>
 

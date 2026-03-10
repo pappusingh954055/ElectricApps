@@ -5,14 +5,48 @@ export const QUICK_INVENTORY_ROUTES: Routes = [
     {
         path: 'purchase',
         canActivate: [PermissionGuard],
-        data: { breadcrumb: 'Quick Purchase', module: 'Inventory', action: 'Add' },
-        loadComponent: () => import('../features/inventory/quick-purchase/quick-purchase.component').then(m => m.QuickPurchaseComponent)
+        data: { breadcrumb: 'Quick Purchase' },
+        children: [
+            { path: '', redirectTo: 'list', pathMatch: 'full' },
+            {
+                path: 'list',
+                data: { breadcrumb: 'List' },
+                loadComponent: () => import('../features/inventory/quick-purchase/quick-purchase-list/quick-purchase-list.component').then(m => m.QuickPurchaseListComponent)
+            },
+            {
+                path: 'add',
+                data: { breadcrumb: 'Add New' },
+                loadComponent: () => import('../features/inventory/quick-purchase/quick-purchase.component').then(m => m.QuickPurchaseComponent)
+            },
+            {
+                path: 'edit/:id',
+                data: { breadcrumb: 'Edit' },
+                loadComponent: () => import('../features/inventory/quick-purchase/quick-purchase.component').then(m => m.QuickPurchaseComponent)
+            }
+        ]
     },
     {
         path: 'sale',
         canActivate: [PermissionGuard],
-        data: { breadcrumb: 'Quick Sale', module: 'Inventory', action: 'Add' },
-        loadComponent: () => import('../features/inventory/quick-sale/quick-sale.component').then(m => m.QuickSaleComponent)
+        data: { breadcrumb: 'Quick Sale' },
+        children: [
+            { path: '', redirectTo: 'list', pathMatch: 'full' },
+            {
+                path: 'list',
+                data: { breadcrumb: 'List' },
+                loadComponent: () => import('../features/inventory/quick-sale/quick-sale-list/quick-sale-list.component').then(m => m.QuickSaleListComponent)
+            },
+            {
+                path: 'add',
+                data: { breadcrumb: 'Add New', module: 'Inventory', action: 'Add' },
+                loadComponent: () => import('../features/inventory/quick-sale/quick-sale.component').then(m => m.QuickSaleComponent)
+            },
+            {
+                path: 'edit/:id',
+                data: { breadcrumb: 'Edit', isEdit: true },
+                loadComponent: () => import('../features/inventory/quick-sale/quick-sale.component').then(m => m.QuickSaleComponent)
+            }
+        ]
     },
     {
         path: 'grn-list',

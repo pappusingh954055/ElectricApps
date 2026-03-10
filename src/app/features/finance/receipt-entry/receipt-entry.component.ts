@@ -201,8 +201,9 @@ export class ReceiptEntryComponent implements OnInit {
         this.isLoading = true;
         this.cdr.detectChanges();
         let ref = this.receipt.referenceNumber || '';
-        // If it looks like a standard SO/GRN reference (Prefix-Year-Number), add a unique suffix
-        if ((ref.startsWith('SO-') || ref.startsWith('GRN-')) && ref.split('-').length < 4) {
+        // 🎯 Avoid Duplicate Reference Error: For SO/GRN references (commonly used for partial payments),
+        // we always append a short unique suffix to satisfy the database uniqueness constraint.
+        if (ref.startsWith('SO-') || ref.startsWith('GRN-')) {
           ref = `${ref}-${new Date().getTime().toString().slice(-4)}`;
         }
 

@@ -50,7 +50,7 @@ export class PoList implements OnInit {
   public itemColumns: GridColumn[] = [];
 
   private currentGridState: any = {};
-  private router = inject(Router);
+  public router = inject(Router);
   private route = inject(ActivatedRoute);
 
   public highlightedPoId: any = null;

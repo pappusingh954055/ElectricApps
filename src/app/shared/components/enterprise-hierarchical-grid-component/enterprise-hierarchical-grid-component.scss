@@ -250,7 +250,8 @@ table {
 .header-label-group {
   display: flex;
   align-items: center;
-  flex: 1;
+  flex: 0 1 auto;   // shrink/grow tofit content, no forced expansion
+  min-width: 0;
   cursor: pointer;
   user-select: none;
   overflow: hidden;
@@ -356,6 +357,14 @@ th.child-th {
   padding: 8px 10px;
   position: relative;
   border-bottom: 2px solid #e5e7eb;
+  vertical-align: middle;
+
+  // First column (checkbox)
+  &:first-child {
+    text-align: left;
+    width: 50px;
+    padding-left: 15px !important;
+  }
 }
 
 /* Fix for Hover in Child Rows */
@@ -376,6 +385,14 @@ th.child-th {
   text-overflow: ellipsis;
   color: #475569;
   font-size: 13px;
+
+  // Checkbox column — center it
+  &:first-child {
+    text-align: left;
+    vertical-align: middle;
+    padding-left: 15px !important;
+    width: 50px;
+  }
 }
 
 /* --- UPDATED: Expand animation section (Slower & Smoother) --- */
@@ -1250,4 +1267,44 @@ div[style*="display: flex"] {
   background: #fffbeb; /* Light Amber */
   color: #d97706;      /* Dark Amber */
   border: 1px solid #f59e0b33;
+}
+/* Payment Status Badges */
+.payment-badge {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  display: inline-block;
+  line-height: 1.4;
+  min-width: 80px;
+  text-align: center;
+}
+
+.payment-paid {
+  background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+  color: #155724;
+  border: 1px solid #b1dfbb;
+  box-shadow: 0 1px 3px rgba(21, 87, 36, 0.1);
+}
+
+.payment-partial {
+  background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+  color: #856404;
+  border: 1px solid #fdd177;
+  box-shadow: 0 1px 3px rgba(133, 100, 4, 0.1);
+}
+
+.payment-unpaid {
+  background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+  color: #721c24;
+  border: 1px solid #f1b0b7;
+  box-shadow: 0 1px 3px rgba(114, 28, 36, 0.1);
+}
+
+/* Custom Icon Colors (Shared from so-list) */
+button[color="success"] {
+  color: #2e7d32 !important;
+  &:hover { background-color: #e8f5e9 !important; }
 }

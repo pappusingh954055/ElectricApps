@@ -53,6 +53,23 @@ export class InventoryService {
         return this.api.post<any>('PurchaseOrders/get-paged-orders', request);
     }
 
+    // Quick Purchase list ke liye - always filters IsQuick=true
+    getQuickPagedOrders(request: any): Observable<any> {
+        return this.api.post<any>('PurchaseOrders/get-paged-orders', { ...request, isQuick: true });
+    }
+
+    getQuickPagedSales(page: number, size: number, sort: string, order: string, search: string): Observable<any> {
+        const request = {
+            pageNumber: page,
+            pageSize: size,
+            sortBy: sort,
+            sortOrder: order,
+            searchTerm: search,
+            isQuick: true
+        };
+        return this.api.get<any>(`saleorder?${this.api.toQueryString(request)}`);
+    }
+
 
 
     /**
@@ -62,6 +79,10 @@ export class InventoryService {
      */
     deletePurchaseOrder(poId: number): Observable<any> {
         return this.api.delete(`PurchaseOrders/${poId}`);
+    }
+
+    deleteSaleOrder(soId: number): Observable<any> {
+        return this.api.delete(`saleorder/${soId}`);
     }
 
 
@@ -203,5 +224,9 @@ export class InventoryService {
 
     getCustomers(): Observable<any[]> {
         return this.api.get<any[]>('customers/dropdown');
+    }
+
+    getProductById(id: string): Observable<any> {
+        return this.api.get<any>(`products/${id}`);
     }
 }

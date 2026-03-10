@@ -39,7 +39,7 @@ export class SoList implements OnInit {
   private isFirstLoad: boolean = true;
 
   private cdr = inject(ChangeDetectorRef);
-  private router = inject(Router);
+  public router = inject(Router);
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;

@@ -1,0 +1,97 @@
+<div class="header-actions">
+  <h3 class="page-title">Quick Sale Dashboard</h3>
+  <!-- <div class="d-flex gap-2">
+    <button mat-stroked-button color="primary" (click)="router.navigate(['/app/inventory/solist'])">
+      <mat-icon>arrow_back</mat-icon> Standard Sale Order List
+    </button>
+  </div> -->
+</div>
+
+<div class="stats-grid" *ngIf="!isDashboardLoading">
+  <!-- Total Sales Amount -->
+  <mat-card class="stat-card total">
+      <mat-card-content>
+          <div class="stat-icon"><mat-icon>trending_up</mat-icon></div>
+          <div class="stat-info">
+              <span class="label">Total Quick Sales</span>
+              <span class="value">₹{{totalSalesAmount | number:'1.2-2'}}</span>
+          </div>
+      </mat-card-content>
+  </mat-card>
+
+  <!-- Today's Count -->
+  <mat-card class="stat-card inward">
+      <mat-card-content>
+          <div class="stat-icon"><mat-icon>today</mat-icon></div>
+          <div class="stat-info">
+              <span class="label">Today's Sales</span>
+              <span class="value">{{todayCount}}</span>
+          </div>
+      </mat-card-content>
+  </mat-card>
+
+  <!-- Month Count -->
+  <mat-card class="stat-card overdue">
+      <mat-card-content>
+          <div class="stat-icon"><mat-icon>calendar_month</mat-icon></div>
+          <div class="stat-info">
+              <span class="label">This Month</span>
+              <span class="value">{{monthCount}}</span>
+          </div>
+      </mat-card-content>
+  </mat-card>
+
+  <!-- Total Records -->
+  <mat-card class="stat-card inward">
+      <mat-card-content>
+          <div class="stat-icon"><mat-icon>receipt_long</mat-icon></div>
+          <div class="stat-info">
+              <span class="label">Total Records</span>
+              <span class="value">{{totalRecords}}</span>
+          </div>
+      </mat-card-content>
+  </mat-card>
+
+  <!-- Unpaid/Partial -->
+  <mat-card class="stat-card overdue">
+      <mat-card-content>
+          <div class="stat-icon"><mat-icon>pending_actions</mat-icon></div>
+          <div class="stat-info">
+              <span class="label">Unpaid/Partial</span>
+              <span class="value">{{unpaidOrdersCount}}</span>
+          </div>
+      </mat-card-content>
+  </mat-card>
+</div>
+
+<div class="list-container" [class.disabled-content]="isDashboardLoading">
+  <div class="page-container">
+
+    <div class="loading-shade" *ngIf="isLoading && !isDashboardLoading">
+      <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
+    </div>
+
+    <app-enterprise-hierarchical-grid
+      [addNewLabel]="'New Sale'"
+      [addNewRoute]="'/app/quick-inventory/sale/add'"
+      [columns]="soColumns"
+      [childColumns]="itemColumns"
+      [dataSource]="dataSource"
+      [totalRecords]="totalRecords"
+      [pageSize]="pageSize"
+      [isLoading]="isLoading"
+      [childDataField]="'items'"
+      [userRole]="userRole"
+      [highlightedId]="highlightedSoId"
+      [canAdd]="canAdd"
+      [canEdit]="canEdit"
+      [canDelete]="canDelete"
+      [showSimpleActions]="true"
+      (onGridStateChange)="onGridStateChange($event)"
+      (deleteRecord)="onDeleteSingleRecord($event)"
+      (selectionChanged)="onGridSelectionChange($event)"
+      (actionClicked)="handleGridAction($event)">
+    </app-enterprise-hierarchical-grid>
+
+  </div>
+</div>

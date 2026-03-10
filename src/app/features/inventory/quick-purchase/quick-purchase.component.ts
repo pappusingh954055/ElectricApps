@@ -1,10 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../shared/material/material/material-module';
 import { InventoryService } from '../service/inventory.service';
 import { NotificationService } from '../../shared/notification.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Observable, debounceTime, distinctUntilChanged, switchMap, of, catchError, map, startWith } from 'rxjs';
 import { AuthService } from '../../../core/services/auth.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -14,6 +14,9 @@ import { SupplierModalComponent } from '../supplier-modal/supplier-modal';
 import { SupplierService } from '../service/supplier.service';
 import { UnitService } from '../../master/units/services/units.service';
 import { LocationService } from '../../master/locations/services/locations.service';
+import { DateHelper } from '../../../shared/models/date-helper';
+import { POService } from '../service/po.service';
+
 
 @Component({
     selector: 'app-quick-purchase',
@@ -33,16 +36,24 @@ export class QuickPurchaseComponent implements OnInit {
     private supplierService = inject(SupplierService);
     private unitService = inject(UnitService);
     private locationService = inject(LocationService);
+    private poService = inject(POService);
+    private route = inject(ActivatedRoute);
 
     purchaseForm!: FormGroup;
     suppliers: any[] = [];
     units: any[] = [];
     warehouses: any[] = [];
     racksByItem: any[][] = []; // Racks list for each item row
+    priceLists: any[] = [];
     filteredUnits: Observable<any[]>[] = [];
     filteredSuppliers: any[] = [];
     isLoading = false;
     isSaving = false;
+    isLoadingPriceLists = false;
+    isPriceListAutoSelected = false;
+    isEditMode = false;
+    poId: any = null;
+    currentStatus = '';
 
     constructor() {
         this.initForm();
@@ -52,6 +63,16 @@ export class QuickPurchaseComponent implements OnInit {
         this.loadSuppliers();
         this.loadUnits();
         this.loadWarehouses();
+        this.bindDropdownPriceList();
+
+        const id = this.route.snapshot.paramMap.get('id');
+        if (id && id !== '0') {
+            this.poId = id;
+            this.isEditMode = true;
+            this.loadPODetails(id);
+        } else {
+            this.loadNextPoNumber();
+        }
     }
 
     loadWarehouses() {
@@ -81,13 +102,72 @@ export class QuickPurchaseComponent implements OnInit {
         this.purchaseForm = this.fb.group({
             supplierId: [null, Validators.required],
             supplierName: ['', Validators.required],
+            priceListId: [null, Validators.required],
             remarks: [''],
             date: [new Date()],
+            expectedDeliveryDate: [new Date(), Validators.required],
+            poNumber: [{ value: '', disabled: true }],
             items: this.fb.array([], Validators.required)
         });
 
         // Add initial item
         // this.addItem();
+    }
+
+    loadPODetails(id: any) {
+        this.isLoading = true;
+        this.poService.getById(id).subscribe({
+            next: (res: any) => {
+                this.currentStatus = res.status;
+                this.purchaseForm.patchValue({
+                    supplierId: res.supplierId,
+                    priceListId: res.priceListId,
+                    poNumber: res.poNumber,
+                    date: DateHelper.toDateObject(res.poDate),
+                    expectedDeliveryDate: DateHelper.toDateObject(res.expectedDeliveryDate),
+                    remarks: res.remarks || ''
+                });
+                this.items.clear();
+                if (res.items) {
+                    res.items.forEach((item: any) => this.addEditRow(item));
+                }
+                this.isLoading = false;
+                this.onSupplierChange(res.supplierId);
+                this.cdr.detectChanges();
+            },
+            error: () => {
+                this.isLoading = false;
+                this.notification.showStatus(false, 'Failed to load order details');
+            }
+        });
+    }
+
+    addEditRow(item: any): void {
+        const row = this.fb.group({
+            productId: [item.productId, Validators.required],
+            productName: [item.productName, Validators.required],
+            availableStock: [item.currentStock || 0],
+            rackName: [item.rackName || 'NA'],
+            warehouseId: [item.warehouseId || null],
+            rackId: [item.rackId || null],
+            qty: [item.qty, [Validators.required, Validators.min(0.01)]],
+            unit: [{ value: item.unit || 'PCS', disabled: true }],
+            rate: [item.rate, [Validators.required, Validators.min(0)]],
+            discountPercent: [item.discountPercent || 0],
+            gstPercent: [item.gstPercent || 0],
+            total: [{ value: item.total, disabled: true }],
+            id: [item.id || 0]
+        });
+        const index = this.items.length;
+        this.items.push(row);
+        this.setupItemCalculations(index);
+        this.calculateItemTotal(index);
+
+        if (row.get('warehouseId')?.value) {
+            this.locationService.getRacksByWarehouse(row.get('warehouseId')?.value).subscribe(racks => {
+                this.racksByItem[index] = racks;
+            });
+        }
     }
 
     openProductDialog() {
@@ -138,6 +218,21 @@ export class QuickPurchaseComponent implements OnInit {
             gstPercent: [product.gstPercent || 18],
             total: [{ value: 0, disabled: true }]
         });
+
+        const priceListId = this.purchaseForm.get('priceListId')?.value;
+        if (product.id && priceListId) {
+            this.inventoryService.getProductRate(product.id, priceListId).subscribe({
+                next: (res: any) => {
+                    if (res) {
+                        itemForm.patchValue({
+                            rate: res.recommendedRate || res.rate,
+                            discountPercent: res.discount || res.discountPercent || 0
+                        });
+                    }
+                    this.calculateItemTotal(this.items.length - 1);
+                }
+            });
+        }
 
         const index = this.items.length;
         this.items.push(itemForm);
@@ -239,10 +334,59 @@ export class QuickPurchaseComponent implements OnInit {
         }, 0);
     }
 
+    loadNextPoNumber() {
+        this.inventoryService.getNextPoNumber().subscribe(res => {
+            this.purchaseForm.patchValue({ poNumber: res.poNumber });
+        });
+    }
+
+    bindDropdownPriceList() {
+        this.isLoadingPriceLists = true;
+        this.inventoryService.getPriceListsForDropdown().subscribe({
+            next: (data) => {
+                this.priceLists = data || [];
+                this.isLoadingPriceLists = false;
+            },
+            error: () => this.isLoadingPriceLists = false
+        });
+    }
+
+    onSupplierChange(supplierId: number): void {
+        if (!supplierId) return;
+        this.supplierService.getSupplierById(supplierId).subscribe((res: any) => {
+            const pListId = res.defaultpricelistId || res.defaultPriceListId || res.priceListId;
+            if (pListId) {
+                this.purchaseForm.get('priceListId')?.setValue(pListId);
+                this.isPriceListAutoSelected = true;
+                this.refreshAllItemRates(pListId);
+            } else {
+                this.isPriceListAutoSelected = false;
+            }
+        });
+    }
+
+    refreshAllItemRates(priceListId: string) {
+        this.items.controls.forEach((control, index) => {
+            const prodId = control.get('productId')?.value;
+            if (prodId && priceListId) {
+                this.inventoryService.getProductRate(prodId, priceListId).subscribe({
+                    next: (res: any) => {
+                        if (res) {
+                            control.patchValue({
+                                rate: res.recommendedRate || res.rate,
+                                discountPercent: res.discount || res.discountPercent || 0
+                            });
+                        }
+                        this.calculateItemTotal(index);
+                    }
+                });
+            }
+        });
+    }
+
     loadSuppliers(selectId?: number) {
         this.supplierService.getSuppliers().subscribe({
             next: (res) => {
-                console.log('Suppliers loaded:', res);
                 this.suppliers = res;
                 this.filteredSuppliers = res;
                 if (selectId) {
@@ -250,10 +394,10 @@ export class QuickPurchaseComponent implements OnInit {
                     const supplier = this.suppliers.find(s => s.id === selectId);
                     if (supplier) {
                         this.purchaseForm.patchValue({ supplierName: supplier.name });
+                        this.onSupplierChange(selectId);
                     }
                 }
-            },
-            error: (err) => console.error('Error loading suppliers:', err)
+            }
         });
     }
 
@@ -277,11 +421,12 @@ export class QuickPurchaseComponent implements OnInit {
         const supplier = this.suppliers.find(s => s.id === event.value);
         if (supplier) {
             this.purchaseForm.patchValue({ supplierName: supplier.name });
+            this.onSupplierChange(event.value);
         }
     }
 
     save() {
-        if (!this.permissionService.hasPermission('CanAdd')) {
+        if (!this.permissionService.hasPermission(this.isEditMode ? 'CanEdit' : 'CanAdd')) {
             this.notification.showStatus(false, 'You do not have permission to perform this action.');
             return;
         }
@@ -292,25 +437,50 @@ export class QuickPurchaseComponent implements OnInit {
         }
 
         this.isSaving = true;
+        const formValue = this.purchaseForm.getRawValue();
         const payload = {
-            ...this.purchaseForm.getRawValue(),
+            id: this.isEditMode ? Number(this.poId) : 0,
+            supplierId: Number(formValue.supplierId),
+            supplierName: this.suppliers.find(s => s.id === Number(formValue.supplierId))?.name || '',
+            priceListId: formValue.priceListId,
+            poDate: DateHelper.toLocalISOString(formValue.date) || '',
+            expectedDeliveryDate: DateHelper.toLocalISOString(formValue.expectedDeliveryDate) || '',
+            poNumber: formValue.poNumber,
+            remarks: formValue.remarks || '',
+            grandTotal: this.grandTotal,
+            subTotal: this.grandTotal, // Simplified for quick
+            totalTax: 0, // Simplified for quick
+            status: 'Draft',
+            isQuick: true,
             createdBy: this.authService.getUserEmail(),
             items: this.items.getRawValue().map((i: any) => ({
-                ...i,
+                id: i.id || 0,
+                productId: i.productId,
+                qty: Number(i.qty),
+                unit: i.unit || 'PCS',
+                rate: Number(i.rate),
+                discountPercent: Number(i.discountPercent),
+                gstPercent: Number(i.gstPercent),
+                taxAmount: 0,
+                total: Number(i.total),
                 warehouseId: i.warehouseId || null,
                 rackId: i.rackId || null
             }))
         };
 
-        this.inventoryService.quickPurchase(payload).subscribe({
+        const request$ = this.isEditMode ? this.poService.update(this.poId, payload) : this.inventoryService.savePoDraft(payload);
+
+        request$.subscribe({
             next: (res) => {
-                this.notification.showStatus(true, `Quick Purchase Successful! PO: ${res.poNumber}, GRN: ${res.grnNumber}`);
-                this.router.navigate(['/app/inventory/polist']);
+                this.notification.showStatus(true, `Quick Purchase Draft ${this.isEditMode ? 'Updated' : 'Saved'}! PO: ${formValue.poNumber}`);
+                this.router.navigate(['/app/quick-inventory/purchase/list']);
             },
             error: (err) => {
-                this.notification.showStatus(false, err.error?.message || 'Failed to save quick purchase.');
+                this.notification.showStatus(false, err.error?.message || 'Failed to save draft.');
                 this.isSaving = false;
             }
         });
     }
+
+    private cdr = inject(ChangeDetectorRef);
 }

@@ -40,6 +40,7 @@ export class GrnFormComponent implements OnInit, OnDestroy {
   countdown: number = 30;
   private countdownInterval: any = null;
   showCountdown: boolean = false;
+  isQuick: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -81,6 +82,8 @@ export class GrnFormComponent implements OnInit, OnDestroy {
         this.resetFormBeforeLoad();
         this.poId = params['poId'].toString();
         this.isFromPopup = true;
+        this.isQuick = params['isQuick'] === 'true' || params['isQuick'] === true;
+
         if (params['poNo']) {
           this.grnForm.patchValue({ poNumber: params['poNo'] });
         }
@@ -222,8 +225,8 @@ export class GrnFormComponent implements OnInit, OnDestroy {
     this.calculateGrandTotal();
     this.cdr.detectChanges();
 
-    // Start auto-save countdown only for gate pass flow (isFromPopup)
-    if (this.isFromPopup && !this.isViewMode) {
+    // Start auto-save countdown only for REAL gate pass flow (isFromPopup AND NOT isQuick)
+    if (this.isFromPopup && !this.isViewMode && !this.isQuick) {
       this.startAutoSaveCountdown();
     }
   }
@@ -388,7 +391,7 @@ export class GrnFormComponent implements OnInit, OnDestroy {
                   isSuccess: true
                 }
               }).afterClosed().subscribe(() => {
-                this.router.navigate(['/app/inventory/grn-list']);
+                this.navigateBack();
               });
             }
           },
@@ -453,7 +456,7 @@ export class GrnFormComponent implements OnInit, OnDestroy {
               supplierId: this.supplierId
             });
           } else {
-            this.router.navigate(['/app/inventory/grn-list']);
+            this.navigateBack();
           }
         });
       },
@@ -490,7 +493,7 @@ export class GrnFormComponent implements OnInit, OnDestroy {
           status: 'error'
         }
       });
-      this.router.navigate(['/app/inventory/grn-list']);
+      this.navigateBack();
       return;
     }
 
@@ -525,7 +528,7 @@ export class GrnFormComponent implements OnInit, OnDestroy {
           });
 
           statusDialog.afterClosed().subscribe(() => {
-            this.router.navigate(['/app/inventory/grn-list']);
+            this.navigateBack();
           });
         },
         error: (err) => {
@@ -540,15 +543,23 @@ export class GrnFormComponent implements OnInit, OnDestroy {
               title: 'Payment Failed',
               message: `GRN saved but direct payment failed.`,
               status: 'error'
-            }
-          });
-          this.router.navigate(['/app/inventory/grn-list']);
-        }
-      });
+          }
+        });
+        this.navigateBack();
+      }
+    });
     }, 800);
   }
 
-  goBack() { this.router.navigate(['/app/inventory/grn-list']); }
+  navigateBack() {
+    if (this.isQuick) {
+      this.router.navigate(['/app/quick-inventory/purchase/list']);
+    } else {
+      this.router.navigate(['/app/inventory/grn-list']);
+    }
+  }
+
+  goBack() { this.navigateBack(); }
   onCancel() {
     this.clearCountdown();
     this.goBack();

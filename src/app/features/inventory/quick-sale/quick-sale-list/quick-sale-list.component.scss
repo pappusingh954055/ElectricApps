@@ -1,0 +1,88 @@
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    border-radius: 12px;
+    transition: transform 0.2s;
+    overflow: hidden;
+
+    &:hover {
+        transform: translateY(-4px);
+    }
+
+    mat-card-content {
+        display: flex;
+        align-items: center;
+        padding: 20px !important;
+    }
+
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 16px;
+        font-size: 24px;
+        
+        mat-icon {
+            font-size: 24px;
+            width: 24px;
+            height: 24px;
+        }
+    }
+
+    .stat-info {
+        display: flex;
+        flex-direction: column;
+
+        .label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+    }
+
+    &.total { background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%); .stat-icon { background: #e0f2fe; color: #0284c7; } }
+    &.inward { background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%); .stat-icon { background: #f0fdf4; color: #16a34a; } }
+    &.overdue { background: linear-gradient(135deg, #ffffff 0%, #fef2f2 100%); .stat-icon { background: #fef2f2; color: #dc2626; } }
+    &.active { background: linear-gradient(135deg, #ffffff 0%, #f5f3ff 100%); .stat-icon { background: #ede9fe; color: #7c3aed; } }
+}
+
+.list-container {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px;
+    min-height: 400px;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+    &.disabled-content {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+}
+
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.7);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

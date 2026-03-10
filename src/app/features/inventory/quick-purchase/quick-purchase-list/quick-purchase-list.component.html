@@ -1,0 +1,87 @@
+<div class="header-actions">
+  <h3 class="page-title">Quick Purchase Dashboard</h3>
+  <!-- <div class="d-flex gap-2">
+    <button mat-stroked-button color="primary" (click)="router.navigate(['/app/inventory/polist'])">
+      <mat-icon>arrow_back</mat-icon> Standard PO List
+    </button>
+  </div> -->
+</div>
+
+<div class="stats-grid" *ngIf="!isDashboardLoading">
+  <!-- Total Purchase Amount -->
+  <mat-card class="stat-card total">
+      <mat-card-content>
+          <div class="stat-icon"><mat-icon>bolt</mat-icon></div>
+          <div class="stat-info">
+              <span class="label">Total Quick Purchase</span>
+              <span class="value">₹{{totalPurchaseAmount | number:'1.2-2'}}</span>
+          </div>
+      </mat-card-content>
+  </mat-card>
+
+  <!-- Today's Count -->
+  <mat-card class="stat-card overdue">
+      <mat-card-content>
+          <div class="stat-icon"><mat-icon>today</mat-icon></div>
+          <div class="stat-info">
+              <span class="label">Today's Purchases</span>
+              <span class="value">{{todayCount}}</span>
+          </div>
+      </mat-card-content>
+  </mat-card>
+
+  <!-- This Month -->
+  <mat-card class="stat-card inward">
+      <mat-card-content>
+          <div class="stat-icon"><mat-icon>calendar_month</mat-icon></div>
+          <div class="stat-info">
+              <span class="label">This Month</span>
+              <span class="value">{{monthCount}}</span>
+          </div>
+      </mat-card-content>
+  </mat-card>
+
+  <!-- Total Records -->
+  <mat-card class="stat-card active">
+      <mat-card-content>
+          <div class="stat-icon"><mat-icon>receipt_long</mat-icon></div>
+          <div class="stat-info">
+              <span class="label">Total Records</span>
+              <span class="value">{{totalRecords}}</span>
+          </div>
+      </mat-card-content>
+  </mat-card>
+</div>
+
+<div class="list-container" [class.disabled-content]="isDashboardLoading">
+  <div class="page-container">
+
+    <div class="loading-shade" *ngIf="isLoading && !isDashboardLoading">
+      <mat-spinner strokeWidth="3" diameter="50"></mat-spinner>
+    </div>
+
+    <app-enterprise-hierarchical-grid
+      [addNewLabel]="'New Purchase'"
+      [addNewRoute]="'/app/quick-inventory/purchase/add'"
+      [columns]="poColumns"
+      [childColumns]="itemColumns"
+      [dataSource]="dataSource"
+      [totalRecords]="totalRecords"
+      [pageSize]="pageSize"
+      [isLoading]="isLoading"
+      [childDataField]="'items'"
+      [userRole]="userRole"
+      [highlightedId]="highlightedPoId"
+      [canAdd]="canAdd"
+      [canEdit]="canEdit"
+      [canDelete]="canDelete"
+      (onGridStateChange)="onGridStateChange($event)"
+      (deleteRecord)="onDeleteSingleRecord($event)"
+      (bulkDeleteChildItems)="onBulkDeleteChildItems($event)"
+      (selectionChanged)="onGridSelectionChange($event)"
+      (bulkDeleteParentOrders)="onBulkDeleteParentOrders($event)"
+      (actionClicked)="handleGridAction($event)">
+    </app-enterprise-hierarchical-grid>
+
+  </div>
+</div>

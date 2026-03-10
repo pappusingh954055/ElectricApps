@@ -12,6 +12,14 @@ import { ProductSelectionDialogComponent } from '../../../shared/components/prod
 import { PermissionService } from '../../../core/services/permission.service';
 import { UnitService } from '../../master/units/services/units.service';
 import { LocationService } from '../../master/locations/services/locations.service';
+import { ActivatedRoute } from '@angular/router';
+import { SaleOrderService } from '../service/saleorder.service';
+import { CustomerComponent } from '../../master/customer-component/customer-component';
+import { customerService } from '../../master/customer-component/customer.service';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog-component/confirm-dialog-component';
+import { StatusDialogComponent } from '../../../shared/components/status-dialog-component/status-dialog-component';
+import { SoSuccessDialogComponent } from '../so-success-dialog/so-success-dialog.component';
+import { FinanceService } from '../../finance/service/finance.service';
 
 @Component({
     selector: 'app-quick-sale',
@@ -30,6 +38,13 @@ export class QuickSaleComponent implements OnInit {
     private permissionService = inject(PermissionService);
     private unitService = inject(UnitService);
     private locationService = inject(LocationService);
+    private route = inject(ActivatedRoute);
+    private soService = inject(SaleOrderService);
+    private customerService = inject(customerService);
+    private financeService = inject(FinanceService);
+
+    saleOrderId: number | null = null;
+    isEdit = false;
 
     saleForm!: FormGroup;
     isSaving = false;
@@ -47,6 +62,66 @@ export class QuickSaleComponent implements OnInit {
         this.loadCustomers();
         this.loadUnits();
         this.loadWarehouses();
+
+        this.route.paramMap.subscribe(params => {
+            const id = params.get('id');
+            if (id) {
+                this.saleOrderId = +id;
+                this.isEdit = true;
+                this.loadSaleOrder(this.saleOrderId);
+            }
+        });
+    }
+
+    loadSaleOrder(id: number) {
+        this.soService.getSaleOrderById(id).subscribe({
+            next: (res) => {
+                this.saleForm.patchValue({
+                    customerId: res.customerId,
+                    customerName: res.customerName,
+                    remarks: res.remarks || '',
+                    date: res.soDate,
+                    expectedDeliveryDate: res.expectedDeliveryDate || res.ExpectedDeliveryDate || null,
+                    status: res.status
+                });
+
+                // Clear existing items
+                while (this.items.length) {
+                    this.items.removeAt(0);
+                }
+
+                // Add items
+                if (res.items && res.items.length > 0) {
+                    res.items.forEach((item: any, idx: number) => {
+                        this.addProductToForm(item);
+                        // Fetch stock for existing items - Use stockResult.data for ApiResponse wrapper
+                        this.inventoryService.getProductById(item.productId || item.id).subscribe((stockResult: any) => {
+                           const currentItem = this.items.at(idx);
+                           // Handle both ApiResponse wrapper and direct DTO, and naming cases
+                           const stock = stockResult?.data?.currentStock ?? 
+                                         stockResult?.currentStock ?? 
+                                         stockResult?.data?.CurrentStock ?? 
+                                         stockResult?.CurrentStock ?? 0;
+                           
+                           if (currentItem) {
+                               currentItem.get('availableStock')?.setValue(stock);
+                               // Trigger calculation again just in case
+                               this.calculateItemTotal(idx);
+                           }
+                        });
+
+                        // Populate racks if warehouseId exists
+                        const whId = item.warehouseId || item.defaultWarehouseId;
+                        if (whId) {
+                            this.locationService.getRacksByWarehouse(whId).subscribe((racks: any[]) => {
+                                this.racksByItem[idx] = racks;
+                            });
+                        }
+                    });
+                }
+            },
+            error: (err) => this.notification.showStatus(false, 'Failed to load sale order.')
+        });
     }
 
     loadWarehouses() {
@@ -78,6 +153,8 @@ export class QuickSaleComponent implements OnInit {
             customerName: ['Cash Customer', Validators.required],
             remarks: [''],
             date: [new Date()],
+            expectedDeliveryDate: [null],
+            status: ['Confirmed'],
             items: this.fb.array([], Validators.required)
         });
 
@@ -119,16 +196,23 @@ export class QuickSaleComponent implements OnInit {
     }
 
     addProductToForm(product: any) {
+        // If product.productId exists, it's an existing sale item from database.
+        // If not, it's a new product selection from search/master list (where product.id is the master Guid).
+        const isExistingItem = !!product.productId;
+        const lineItemId = isExistingItem ? (product.id || 0) : 0;
+        const productId = isExistingItem ? product.productId : product.id;
+
         const itemForm = this.fb.group({
-            productId: [product.id, Validators.required],
+            id: [lineItemId],
+            productId: [productId, Validators.required],
             productName: [product.productName || product.name, Validators.required],
             availableStock: [product.currentStock || 0],
             rackName: [product.rackName || 'NA'],
-            warehouseId: [product.defaultWarehouseId || null],
-            rackId: [product.defaultRackId || null],
-            qty: [1, [Validators.required, Validators.min(0.01)]],
+            warehouseId: [product.warehouseId || product.defaultWarehouseId || null],
+            rackId: [product.rackId || product.defaultRackId || null],
+            qty: [product.qty || 1, [Validators.required, Validators.min(0.01)]],
             unit: [{ value: product.unit || 'PCS', disabled: true }],
-            rate: [product.saleRate || product.saleRate || product.rate || product.Rate || product.salePrice || product.price || product.mrp || 0, [Validators.required, Validators.min(0)]],
+            rate: [product.rate || product.Rate || product.saleRate || product.salePrice || product.price || product.mrp || 0, [Validators.required, Validators.min(0)]],
             discountPercent: [0],
             gstPercent: [product.gstPercent || 18],
             total: [{ value: 0, disabled: true }]
@@ -145,8 +229,14 @@ export class QuickSaleComponent implements OnInit {
         return this.saleForm.get('items') as FormArray;
     }
 
+    openAddCustomerDialog() {
+        const dialogRef = this.dialog.open(CustomerComponent, { width: '600px', disableClose: true });
+        dialogRef.afterClosed().subscribe(result => { if (result) this.loadCustomers(); });
+    }
+
     addItem() {
         const itemForm = this.fb.group({
+            id: [0],
             productId: [null, Validators.required],
             productName: ['', Validators.required],
             availableStock: [0],
@@ -242,7 +332,7 @@ export class QuickSaleComponent implements OnInit {
     }
 
     loadCustomers() {
-        this.inventoryService.getCustomers().subscribe(res => {
+        this.customerService.getAllCustomers().subscribe((res: any) => {
             this.customers = res;
             // Pre-select if needed, for now use default 0
         });
@@ -254,14 +344,14 @@ export class QuickSaleComponent implements OnInit {
         } else {
             const cust = this.customers.find(c => c.id === event.value);
             if (cust) {
-                this.saleForm.patchValue({ customerName: cust.name });
+                this.saleForm.patchValue({ customerName: cust.customerName || cust.name });
             }
         }
     }
 
     save() {
-        if (!this.permissionService.hasPermission('CanAdd')) {
-            this.notification.showStatus(false, 'You do not have permission to sell items.');
+        if (!this.permissionService.hasPermission(this.isEdit ? 'CanEdit' : 'CanAdd')) {
+            this.notification.showStatus(false, 'You do not have permission to perform this action.');
             return;
         }
 
@@ -270,32 +360,140 @@ export class QuickSaleComponent implements OnInit {
             return;
         }
 
-        // Secondary validation for stock
-        const stockErrors = this.items.controls.filter(c => c.get('qty')?.value > c.get('availableStock')?.value);
-        if (stockErrors.length > 0) {
-            this.notification.showStatus(false, 'One or more items have insufficient stock!');
-            return;
+        // Secondary validation for stock (Only for Confirmed status)
+        if (this.saleForm.get('status')?.value === 'Confirmed') {
+            const stockErrors = this.items.controls.filter(c => c.get('qty')?.value > (c.get('availableStock')?.value || 0));
+            if (stockErrors.length > 0) {
+                this.notification.showStatus(false, 'One or more items have insufficient stock!');
+                return;
+            }
         }
 
-        this.isSaving = true;
-        const payload = {
-            ...this.saleForm.getRawValue(),
-            createdBy: this.authService.getUserEmail(),
-            items: this.items.getRawValue().map((i: any) => ({
-                ...i,
-                warehouseId: i.warehouseId || null,
-                rackId: i.rackId || null
-            }))
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            width: '400px',
+            data: {
+                title: 'Confirm Save',
+                message: 'Are you sure you want to save this Sale Order?',
+                confirmText: 'Save',
+                confirmColor: 'primary'
+            }
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                this.isSaving = true;
+                const formRaw = this.saleForm.getRawValue();
+                const payload = {
+                    id: this.isEdit ? this.saleOrderId : 0,
+                    customerId: formRaw.customerId,
+                    customerName: formRaw.customerName,
+                    remarks: formRaw.remarks,
+                    status: formRaw.status,
+                    soDate: formRaw.date,
+                    expectedDeliveryDate: formRaw.expectedDeliveryDate,
+                    createdBy: this.authService.getUserEmail(),
+                    items: this.items.getRawValue().map((i: any) => ({
+                        id: i.id || 0,
+                        productId: i.productId,
+                        productName: i.productName,
+                        qty: i.qty,
+                        unit: i.unit,
+                        rate: i.rate,
+                        discountPercent: i.discountPercent,
+                        gstPercent: i.gstPercent,
+                        warehouseId: i.warehouseId || null,
+                        rackId: i.rackId || null
+                    }))
+                };
+
+                this.inventoryService.quickSale(payload).subscribe({
+                    next: (res: any) => {
+                        this.isSaving = false;
+                        const orderNo = res.soNumber || res.SONumber || 'N/A';
+                        const soId = res.id || res.Id;
+
+                        const selectedCust = this.customers.find((c: any) => String(c.id) == String(formRaw.customerId));
+                        const customerName = selectedCust?.customerName || selectedCust?.name || 'Customer';
+
+                        const dialogRef = this.dialog.open(SoSuccessDialogComponent, {
+                            width: '500px',
+                            disableClose: true,
+                            data: {
+                                soNumber: orderNo,
+                                grandTotal: Number(this.grandTotal) || 0,
+                                customerId: formRaw.customerId,
+                                customerName: customerName
+                            }
+                        });
+
+                        dialogRef.afterClosed().subscribe(action => {
+                            if (action === 'make-payment') {
+                                this.performDirectPayment({
+                                    soId: soId,
+                                    soNumber: orderNo,
+                                    grandTotal: Number(this.grandTotal) || 0,
+                                    customerId: formRaw.customerId,
+                                    customerName: customerName
+                                });
+                            } else {
+                                this.router.navigate(['/app/quick-inventory/sale/list']);
+                            }
+                        });
+                    },
+                    error: (err) => {
+                        this.isSaving = false;
+                        this.notification.showStatus(false, err.error?.message || 'Failed to process quick sale.');
+                    }
+                });
+            }
+        });
+    }
+
+    performDirectPayment(data: any) {
+        console.log('🚀 Initiating Direct Receipt with data:', data);
+
+        const receiptPayload = {
+            id: 0,
+            customerId: Number(data.customerId),
+            amount: Number(data.grandTotal),
+            totalAmount: Number(data.grandTotal),
+            discountAmount: 0,
+            netAmount: Number(data.grandTotal),
+            paymentMode: 'Cash',
+            referenceNumber: `${data.soNumber}-${new Date().getTime().toString().slice(-4)}`,
+            paymentDate: new Date().toISOString(),
+            remarks: `Direct Receipt for Quick SO: ${data.soNumber}`,
+            createdBy: localStorage.getItem('email') || 'Admin'
         };
 
-        this.inventoryService.quickSale(payload).subscribe({
-            next: (res) => {
-                this.notification.showStatus(true, `Quick Sale Successful! Order: ${res.soNumber}`);
-                this.router.navigate(['/app/inventory/salelist']);
+        this.financeService.recordCustomerReceipt(receiptPayload).subscribe({
+            next: () => {
+                this.dialog.open(StatusDialogComponent, {
+                    width: '350px',
+                    data: {
+                        isSuccess: true,
+                        title: 'Payment Successful',
+                        message: `Receipt of ₹${data.grandTotal.toLocaleString('en-IN', { minimumFractionDigits: 2 })} recorded.`,
+                        status: 'success'
+                    }
+                });
+                // In Quick Sale, there is no Gate Pass/Dispatch, simply return to the List.
+                this.router.navigate(['/app/quick-inventory/sale/list']);
             },
             error: (err) => {
-                this.notification.showStatus(false, err.error?.message || 'Failed to complete quick sale.');
-                this.isSaving = false;
+                console.error('❌ Direct receipt failed:', err);
+                const serverMsg = err.error?.message || err.message || 'Unknown server error';
+
+                this.dialog.open(StatusDialogComponent, {
+                    width: '400px',
+                    data: {
+                        isSuccess: false,
+                        title: 'Payment Failed',
+                        message: `Sale Order saved but payment failed.\n\nReason: ${serverMsg}`,
+                        status: 'error'
+                    }
+                });
+                this.router.navigate(['/app/quick-inventory/sale/list']);
             }
         });
     }

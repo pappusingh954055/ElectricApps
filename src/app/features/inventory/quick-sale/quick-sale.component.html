@@ -11,7 +11,7 @@
         <mat-spinner diameter="20" *ngIf="isSaving"></mat-spinner>
         <span>Confirm Sale & Deduct Stock</span>
       </button>
-      <button mat-stroked-button (click)="router.navigate(['/app/inventory/salelist'])" [disabled]="isSaving">
+      <button mat-stroked-button (click)="router.navigate(['/app/quick-inventory/sale/list'])" [disabled]="isSaving">
         <mat-icon>close</mat-icon>
         <span>Cancel</span>
       </button>
@@ -21,12 +21,26 @@
   <div class="form-card mat-elevation-z1">
     <form [formGroup]="saleForm">
       <div class="row">
-        <div class="col-6">
+        <div class="col-3">
+          <div class="customer-field-container">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Customer Source*</mat-label>
+              <mat-select formControlName="customerId" (selectionChange)="onCustomerSelect($event)">
+                <mat-option [value]="0">🛍️ Walk-in (Cash Customer)</mat-option>
+                <mat-option *ngFor="let c of customers" [value]="c.id">{{ c.customerName || c.name }}</mat-option>
+              </mat-select>
+            </mat-form-field>
+            <button mat-icon-button type="button" class="add-customer-btn flex-shrink-0" (click)="openAddCustomerDialog()" matTooltip="Add New Customer">
+              <mat-icon color="primary">add_circle</mat-icon>
+            </button>
+          </div>
+        </div>
+        <div class="col-3">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Customer Source*</mat-label>
-            <mat-select formControlName="customerId" (selectionChange)="onCustomerSelect($event)">
-              <mat-option [value]="0">🛍️ Walk-in (Cash Customer)</mat-option>
-              <mat-option *ngFor="let c of customers" [value]="c.id">{{ c.name }}</mat-option>
+            <mat-label>Order Status*</mat-label>
+            <mat-select formControlName="status">
+              <mat-option value="Draft">📝 Draft</mat-option>
+              <mat-option value="Confirmed">✅ Confirmed</mat-option>
             </mat-select>
           </mat-form-field>
         </div>
@@ -36,6 +50,14 @@
             <input matInput [matDatepicker]="picker" formControlName="date">
             <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
             <mat-datepicker #picker></mat-datepicker>
+          </mat-form-field>
+        </div>
+        <div class="col-3">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Exp. Delivery Date</mat-label>
+            <input matInput [matDatepicker]="expPicker" formControlName="expectedDeliveryDate">
+            <mat-datepicker-toggle matIconSuffix [for]="expPicker"></mat-datepicker-toggle>
+            <mat-datepicker #expPicker></mat-datepicker>
           </mat-form-field>
         </div>
       </div>

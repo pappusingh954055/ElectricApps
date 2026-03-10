@@ -83,7 +83,57 @@
     .col-12 { flex: 0 0 100%; }
   }
 
-  .full-width { width: 100%; }
+.full-width { width: 100%; }
+
+  /* Customer Field & Button Wrapper */
+  .customer-field-container {
+    display: flex;
+    align-items: flex-start; /* Align to the top of the input rather than the middle of input + subscript */
+    gap: 8px; /* Material standard gap */
+    width: 100%;
+  
+    mat-form-field {
+      flex: 1;
+    }
+  
+    .add-customer-btn {
+      margin-top: 4px; /* Center with the 56px input field (56-48=8/2=4) */
+      height: 48px !important; /* Match form field height exactly */
+      width: 48px !important;
+      min-width: 48px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 50% !important;
+      background-color: #ffffff !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+      padding: 0 !important;
+      border: 1px solid #e0e0e0 !important;
+      
+      mat-icon {
+        font-size: 26px !important; /* Slightly larger for better visual weight */
+        width: 26px !important;
+        height: 26px !important;
+        color: #10b981 !important; /* Emerald for sales instead of indigo */
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+      }
+  
+      &:hover {
+        background-color: #f8fafc !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15) !important;
+        border-color: #10b981 !important;
+      }
+  
+      &:active {
+        transform: scale(0.95);
+      }
+    }
+  }
 }
 
 .items-section {

@@ -44,7 +44,7 @@
           <input matInput formControlName="poNumber" readonly>
         </mat-form-field>
 
-        <mat-form-field appearance="outline" subscriptSizing="dynamic" *ngIf="isFromPopup">
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" *ngIf="isFromPopup && !isQuick">
           <mat-label>Gate Pass No</mat-label>
           <input matInput formControlName="gatePassNo" readonly placeholder="N/A">
         </mat-form-field>

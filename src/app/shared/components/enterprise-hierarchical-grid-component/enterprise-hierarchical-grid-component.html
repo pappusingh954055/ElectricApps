@@ -120,13 +120,28 @@
             </mat-menu>
           </th>
           <td mat-cell *matCellDef="let row" [style.display]="col.visible === false ? 'none' : 'table-cell'">
-            <ng-container *ngIf="col.field === 'status'; else normalCell">
+            <ng-container *ngIf="col.field === 'paymentStatus'">
+              <span class="payment-badge" [ngClass]="{
+                'payment-paid': row.paymentStatus === 'Paid',
+                'payment-partial': row.paymentStatus === 'Partial',
+                'payment-unpaid': row.paymentStatus === 'Unpaid'
+              }">
+                {{row.paymentStatus || 'Checking...'}}
+              </span>
+            </ng-container>
+
+            <ng-container *ngIf="col.field === 'status'">
               <span class="status-badge" 
                     [ngClass]="getStatusBadgeClass(col.cell ? col.cell(row) : row[col.field])"
                     [innerHTML]="col.cell ? col.cell(row) : row[col.field]">
               </span>
             </ng-container>
-            <ng-template #normalCell>
+
+            <ng-container *ngIf="col.field !== 'paymentStatus' && col.field !== 'status'">
+              <ng-container *ngTemplateOutlet="normalCell; context: { $implicit: row, col: col }"></ng-container>
+            </ng-container>
+
+            <ng-template #normalCell let-row let-col="col">
               {{ col.cell ? col.cell(row) : row[col.field] }}
             </ng-template>
           </td>
@@ -138,32 +153,66 @@
    <td mat-cell *matCellDef="let row">
     <div class="po-actions-wrapper">
 
-     <ng-container *ngIf="(row.status === 'Draft' || row.status === 'Rejected') && (userRole === 'User' || userRole === 'Super Admin')">
-      <!-- Edit button: canEdit permission required -->
-      <button mat-icon-button color="primary" 
-              *ngIf="canEdit"
-              (click)="$event.stopPropagation(); handleAction('EDIT', row)" 
-              matTooltip="Edit PO">
-        <mat-icon>edit</mat-icon>
-      </button>
+      <ng-container *ngIf="showSimpleActions">
+        <!-- New Payment Button (Added for Quick Sale Payment Flow) -->
+        <button mat-icon-button color="success"
+                *ngIf="row.paymentStatus !== 'Paid' && row.status === 'Confirmed'"
+                (click)="$event.stopPropagation(); handleAction('PAYMENT', row)"
+                matTooltip="Collect Payment">
+          <mat-icon>payments</mat-icon>
+        </button>
 
-      <!-- Delete button: canDelete permission required -->
-      <button mat-icon-button color="warn" 
-              *ngIf="canDelete"
-              (click)="$event.stopPropagation(); handleAction('DELETE', row)" 
-              matTooltip="Delete PO">
-        <mat-icon>delete</mat-icon>
-      </button>
+        <!-- New View Receipt Button (Mirroring SO Dashboard) -->
+        <button mat-icon-button 
+                *ngIf="row.paymentStatus !== 'Unpaid' && row.status === 'Confirmed'"
+                (click)="$event.stopPropagation(); handleAction('RECEIPT', row)"
+                matTooltip="View Payment Receipt">
+          <mat-icon style="color: #4caf50;">receipt_long</mat-icon>
+        </button>
 
-      <!-- Submit button: canAdd (create/submit) permission required -->
-      <button mat-icon-button 
-              *ngIf="canAdd"
-              (click)="$event.stopPropagation(); handleAction('SUBMIT', row)" 
-              matTooltip="Draft Submit for Approval"
-              class="btn-submit">
-        <mat-icon>send</mat-icon>
-      </button>
-  </ng-container>
+        <button mat-icon-button color="primary"
+                *ngIf="canEdit"
+                (click)="$event.stopPropagation(); handleAction('EDIT', row)"
+                matTooltip="Edit">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn"
+                *ngIf="canDelete"
+                (click)="$event.stopPropagation(); handleAction('DELETE', row)"
+                matTooltip="Delete">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </ng-container>
+
+     <!-- PO WORKFLOW ACTIONS (Standard Purchase/Sale) -->
+     <ng-container *ngIf="!showSimpleActions">
+
+      <ng-container *ngIf="(row.status === 'Draft' || row.status === 'Rejected') && (userRole === 'User' || userRole === 'Super Admin')">
+       <!-- Edit button: canEdit permission required -->
+       <button mat-icon-button color="primary" 
+               *ngIf="canEdit"
+               (click)="$event.stopPropagation(); handleAction('EDIT', row)" 
+               matTooltip="Edit PO">
+         <mat-icon>edit</mat-icon>
+       </button>
+
+       <!-- Delete button: canDelete permission required -->
+       <button mat-icon-button color="warn" 
+               *ngIf="canDelete"
+               (click)="$event.stopPropagation(); handleAction('DELETE', row)" 
+               matTooltip="Delete PO">
+         <mat-icon>delete</mat-icon>
+       </button>
+
+       <!-- Submit button: canAdd (create/submit) permission required -->
+       <button mat-icon-button 
+               *ngIf="canAdd"
+               (click)="$event.stopPropagation(); handleAction('SUBMIT', row)" 
+               matTooltip="Draft Submit for Approval"
+               class="btn-submit">
+         <mat-icon>send</mat-icon>
+       </button>
+   </ng-container>
 
       <ng-container *ngIf="row.status === 'Submitted' && (userRole === 'Manager' || userRole === 'Super Admin')">
         <button mat-icon-button color="primary" (click)="$event.stopPropagation(); handleAction('APPROVE', row)" matTooltip="Approve PO">
@@ -222,6 +271,8 @@
                   style="color: #4caf50;" matTooltip="Order Completed">verified</mat-icon>
       </ng-container>
 
+     </ng-container><!-- end !showSimpleActions -->
+
     </div>
   </td>
 
@@ -248,7 +299,7 @@
                       <tr class="child-header-row">
                         <th class="child-th" style="width: 50px;">
                           <mat-checkbox (change)="$event ? childMasterToggle(element) : null"
-                            [checked]="isAllChildSelected(element)" [disabled]="element.status !== 'Draft'">
+                            [checked]="isAllChildSelected(element)" [disabled]="showSimpleActions || element.status !== 'Draft'">
                           </mat-checkbox>
                         </th>
                         <th *ngFor="let cCol of childColumns" cdkDrag class="child-th" [style.width.px]="cCol.width">
@@ -282,7 +333,7 @@
                             </div>
                           </mat-menu>
                         </th>
-                        <th class="child-th" style="width: 100px; text-align: center;">Actions</th>
+                        <th class="child-th" style="width: 100px; text-align: center;" *ngIf="!showSimpleActions">Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -290,7 +341,7 @@
                         <td style="text-align: center;">
                           <mat-checkbox (click)="$event.stopPropagation()"
                             (change)="$event ? onChildCheck(childRow) : null"
-                            [checked]="childSelection.isSelected(childRow)" [disabled]="element.status !== 'Draft'">
+                            [checked]="childSelection.isSelected(childRow)" [disabled]="showSimpleActions || element.status !== 'Draft'">
                           </mat-checkbox>
                         </td>
                         <td *ngFor="let cCol of childColumns" [style.text-align]="cCol.align">
@@ -303,7 +354,7 @@
                             {{ cCol.cell ? cCol.cell(childRow) : childRow[cCol.field] }}
                           </span>
                         </td>
-                        <td>
+                        <td *ngIf="!showSimpleActions">
                           <div *ngIf="!childSelection.hasValue()"
                             style="display: flex; gap: 4px; justify-content: center;">
                             @if (element.status === 'Draft' && canEdit && (userRole === 'User' || userRole === 'Super Admin')) {
