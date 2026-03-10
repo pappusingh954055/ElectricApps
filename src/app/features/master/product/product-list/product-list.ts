@@ -74,6 +74,7 @@ export class ProductList implements OnInit {
     { field: 'minStock', header: 'Min Stock', sortable: true, width: 80, visible: true },
     { field: 'currentStock', header: 'Current Stock', sortable: true, width: 80, visible: true },
     { field: 'trackInventory', sortable: true, width: 75, visible: true, header: 'Track Inv', cell: (row: any) => row.trackInventory ? 'Yes' : 'No' },
+    { field: 'isExpiryRequired', sortable: true, width: 75, visible: true, header: 'Expiry', cell: (row: any) => row.isExpiryRequired ? 'Yes' : 'No' },
     {
       field: 'createdAt',
       header: 'Created On',

@@ -55,6 +55,8 @@
             <th class="col-rate text-right">Rate</th>
             <th class="col-disc text-center">Disc</th>
             <th class="col-gst text-center">GST (%)</th>
+            <th class="col-date text-center">Mfg Date</th>
+            <th class="col-date text-center">Exp Date</th>
             <th class="col-total text-right">Total</th>
           </tr>
         </thead>
@@ -69,6 +71,8 @@
             <td class="col-rate text-right">{{(item.rate || item.Rate) | currency:'INR':'symbol':'1.0-2'}}</td>
             <td class="col-disc text-center">{{item.discountPercent || item.DiscountPercent || item.discount || item.Discount || 0}}%</td>
             <td class="col-gst text-center">{{item.gstPercent || item.GSTPercent || item.gst || item.GST || item.tax || item.Tax || 0}}%</td>
+            <td class="col-date text-center text-muted">{{(item.manufacturingDate || item.ManufacturingDate) ? ((item.manufacturingDate || item.ManufacturingDate) | date:'dd/MM/yyyy') : '—'}}</td>
+            <td class="col-date text-center text-muted">{{(item.expiryDate || item.ExpiryDate) ? ((item.expiryDate || item.ExpiryDate) | date:'dd/MM/yyyy') : '—'}}</td>
             <td class="col-total text-right">{{(item.total || item.Total || ((item.qty || item.Qty) * (item.rate || item.Rate))) | currency:'INR':'symbol':'1.0-2'}}</td>
           </tr>
         </tbody>

@@ -21,8 +21,7 @@ import { environment } from '../../../../enviornments/environment';
 @Component({
   selector: 'app-purchase-return-form',
   standalone: true,
-  imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule,
-    LocationTrackerDialogComponent],
+  imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule],
   providers: [DatePipe, CurrencyPipe],
   templateUrl: './purchase-return-form.html',
   styleUrl: './purchase-return-form.scss',
@@ -479,10 +478,11 @@ export class PurchaseReturnForm implements OnInit {
       disableClose: true,
       data: {
         isSuccess: true,
-        title: 'Purchase Return Saved!',
-        message: `Purchase Return ${res.returnNumber} created successfully. Stock & Ledger updated.\n\nOutward Gate Pass can be generated from the Purchase Return dashboard.`,
+        message: this.isQuick 
+            ? `Purchase Return ${res.returnNumber} created successfully. Stock & Ledger updated.`
+            : `Purchase Return ${res.returnNumber} created successfully. Stock & Ledger updated.\n\nOutward Gate Pass can be generated from the Purchase Return dashboard.`,
         actions: [
-          { label: 'Go to Purchase Returns', role: 'ok' }
+          { label: this.isQuick ? 'Go to Quick Returns' : 'Go to Purchase Returns', role: 'ok' }
         ]
       }
     });

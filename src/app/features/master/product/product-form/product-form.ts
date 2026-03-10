@@ -221,7 +221,8 @@ export class ProductForm implements OnInit, OnDestroy {
                 productType: res.productType,
                 damagedStock: res.damagedStock,
                 defaultWarehouseId: res.defaultWarehouseId,
-                defaultRackId: res.defaultRackId
+                defaultRackId: res.defaultRackId,
+                isExpiryRequired: res.isExpiryRequired || false
               });
 
               if (res.defaultWarehouseId) {
@@ -411,7 +412,8 @@ export class ProductForm implements OnInit, OnDestroy {
       productType: [null, [Validators.required]],
       damagedStock: [0],
       defaultWarehouseId: [null, [Validators.required]],
-      defaultRackId: [null, [Validators.required]]
+      defaultRackId: [null, [Validators.required]],
+      isExpiryRequired: [false]
     });
   }
 
@@ -580,7 +582,8 @@ export class ProductForm implements OnInit, OnDestroy {
       productType: formValue.productType ? String(formValue.productType) : '',
       damagedStock: formValue.damagedStock ? Number(formValue.damagedStock) : 0,
       defaultWarehouseId: formValue.defaultWarehouseId,
-      defaultRackId: formValue.defaultRackId
+      defaultRackId: formValue.defaultRackId,
+      isExpiryRequired: Boolean(formValue.isExpiryRequired)
     };
   }
 }

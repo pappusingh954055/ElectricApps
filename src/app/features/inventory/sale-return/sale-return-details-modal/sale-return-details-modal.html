@@ -35,6 +35,8 @@
       <thead>
         <tr>
           <th>Product Name</th>
+          <th style="text-align: center;">Mfg Date</th>
+          <th style="text-align: center;">Exp Date</th>
           <th style="text-align: center;">Qty</th>
           <th style="text-align: right;">Rate</th>
           <th style="text-align: center;">Disc%</th>
@@ -45,6 +47,8 @@
       <tbody>
         <tr *ngFor="let item of data.items">
           <td>{{item.productName}}</td>
+          <td style="text-align: center;">{{ (item.manufacturingDate | date:'dd/MM/yyyy') || '—' }}</td>
+          <td style="text-align: center;">{{ (item.expiryDate | date:'dd/MM/yyyy') || '—' }}</td>
           <td style="text-align: center;">{{item.qty | number:'1.2-2'}}</td>
           <td style="text-align: right;">{{item.rate | currency:'INR':'symbol':'1.2-2'}}</td>
           <td style="text-align: center;">{{item.discountPercent || 0}}%</td>

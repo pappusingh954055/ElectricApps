@@ -195,7 +195,9 @@
   .col-rate { flex: 0.7; min-width: 100px; margin-left: 12px; }
   .col-disc { flex: 0.4; min-width: 70px; margin-left: 12px; }
   .col-gst { flex: 0.6; min-width: 100px; margin-left: 12px; }
-  .col-total { flex: 1; min-width: 140px; text-align: right; }
+  .col-mfg { flex: 0.8; min-width: 125px; margin-left: 12px; }
+  .col-exp { flex: 0.8; min-width: 125px; margin-left: 12px; }
+  .col-total { flex: 1; min-width: 140px; text-align: right; margin-left: 12px; }
   .col-action { flex: 0 0 48px; text-align: center; }
 
   mat-form-field[dense] {
@@ -349,7 +351,7 @@
     overflow-x: auto;
     
     .item-header, .item-row {
-      min-width: 800px;
+      min-width: 1050px;
     }
   }
 

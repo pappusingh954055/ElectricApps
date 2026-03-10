@@ -115,6 +115,10 @@ export class PurchaseReturnList implements OnInit {
     this.isQuick = (this.route as any).snapshot.data['isQuick'] || false;
     this.canAdd = this.permissionService.hasPermission('CanAdd');
 
+    if (this.isQuick) {
+      this.displayedColumns = this.displayedColumns.filter(c => c !== 'gatePassNo');
+    }
+
     // Global loader ON - same as dashboard pattern
     this.isDashboardLoading = true;
     this.isFirstLoad = true;

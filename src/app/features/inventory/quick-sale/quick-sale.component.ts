@@ -215,7 +215,10 @@ export class QuickSaleComponent implements OnInit {
             rate: [product.rate || product.Rate || product.saleRate || product.salePrice || product.price || product.mrp || 0, [Validators.required, Validators.min(0)]],
             discountPercent: [0],
             gstPercent: [product.gstPercent || 18],
-            total: [{ value: 0, disabled: true }]
+            total: [{ value: 0, disabled: true }],
+            isExpiryRequired: [product.isExpiryRequired || false],
+            manufacturingDate: [product.manufacturingDate || null],
+            expiryDate: [product.expiryDate || null]
         });
 
         const index = this.items.length;
@@ -248,7 +251,10 @@ export class QuickSaleComponent implements OnInit {
             rate: [0, [Validators.required, Validators.min(0)]],
             discountPercent: [0],
             gstPercent: [18],
-            total: [{ value: 0, disabled: true }]
+            total: [{ value: 0, disabled: true }],
+            isExpiryRequired: [false],
+            manufacturingDate: [null],
+            expiryDate: [null]
         });
 
         const index = this.items.length;
@@ -402,7 +408,9 @@ export class QuickSaleComponent implements OnInit {
                         discountPercent: i.discountPercent,
                         gstPercent: i.gstPercent,
                         warehouseId: i.warehouseId || null,
-                        rackId: i.rackId || null
+                        rackId: i.rackId || null,
+                        manufacturingDate: i.manufacturingDate || null,
+                        expiryDate: i.expiryDate || null
                     }))
                 };
 

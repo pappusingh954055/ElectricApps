@@ -65,6 +65,8 @@
               <th class="text-center" style="width: 45px;">Accpt. Qty</th>
               <th class="text-center" style="width: 130px;">Warehouse</th>
               <th class="text-center" style="width: 120px;">Rack</th>
+              <th class="text-center" style="width: 110px;">Mfg Date</th>
+              <th class="text-center" style="width: 110px;">Exp Date</th>
               <th class="text-right" style="width: 75px;">Unit Rate</th>
               <th class="text-center" style="width: 45px;">DISC %</th>
               <th class="text-center" style="width: 45px;">GST %</th>
@@ -127,6 +129,24 @@
                     <mat-option [value]="null">Select</mat-option>
                     <mat-option *ngFor="let r of filteredRacksMap[item.productId]" [value]="r.id">{{r.name}}</mat-option>
                   </mat-select>
+                </mat-form-field>
+              </td>
+
+              <td class="text-center">
+                <mat-form-field appearance="outline" class="dense-input" subscriptSizing="dynamic">
+                  <input matInput type="date" 
+                         [(ngModel)]="item.manufacturingDate" 
+                         [ngModelOptions]="{standalone: true}"
+                         [disabled]="isViewMode || !item.isExpiryRequired">
+                </mat-form-field>
+              </td>
+
+              <td class="text-center">
+                <mat-form-field appearance="outline" class="dense-input" subscriptSizing="dynamic">
+                  <input matInput type="date" 
+                         [(ngModel)]="item.expiryDate" 
+                         [ngModelOptions]="{standalone: true}"
+                         [disabled]="isViewMode || !item.isExpiryRequired">
                 </mat-form-field>
               </td>
 

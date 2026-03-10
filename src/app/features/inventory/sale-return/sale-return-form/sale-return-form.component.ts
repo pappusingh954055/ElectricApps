@@ -63,7 +63,7 @@ export class SaleReturnFormComponent implements OnInit {
     racks: any[] = [];
 
     itemsDataSource = new MatTableDataSource<AbstractControl>();
-    displayedColumns: string[] = ['productName', 'policyStatus', 'quantity', 'rate', 'itemCondition', 'warehouse', 'rack', 'reason', 'returnQty', 'discount', 'tax', 'total'];
+    displayedColumns: string[] = ['productName', 'policyStatus', 'mfgDate', 'expDate', 'quantity', 'rate', 'itemCondition', 'warehouse', 'rack', 'reason', 'returnQty', 'discount', 'tax', 'total'];
 
     constructor() {
         this.returnForm = this.fb.group({
@@ -153,7 +153,9 @@ export class SaleReturnFormComponent implements OnInit {
                             warehouseId: [{ value: item.defaultWarehouseId || null, disabled: true }],
                             rackId: [{ value: item.defaultRackId || null, disabled: true }],
                             isReturnable: [item.isReturnable],
-                            remainingHours: [item.returnWindowRemainingHours]
+                            remainingHours: [item.returnWindowRemainingHours],
+                            manufacturingDate: [item.manufacturingDate],
+                            expiryDate: [item.expiryDate]
                         });
 
                         this.calculateRowTotal(itemGroup);
@@ -226,7 +228,9 @@ export class SaleReturnFormComponent implements OnInit {
                 taxRate: [item.taxPercentage || item.taxRate || 0],
                 amount: [0],
                 warehouseId: [{ value: item.warehouseId || null, disabled: true }],
-                rackId: [{ value: item.rackId || null, disabled: true }]
+                rackId: [{ value: item.rackId || null, disabled: true }],
+                manufacturingDate: [item.manufacturingDate],
+                expiryDate: [item.expiryDate]
             });
 
             itemGroup.get('returnQty')?.valueChanges.subscribe(() => {
@@ -375,7 +379,9 @@ export class SaleReturnFormComponent implements OnInit {
                     taxPercentage: i.taxRate,
                     totalAmount: i.amount,
                     reason: i.reason || 'No Reason',
-                    itemCondition: i.itemCondition || 'Good'
+                    itemCondition: i.itemCondition || 'Good',
+                    manufacturingDate: i.manufacturingDate,
+                    expiryDate: i.expiryDate
                 };
             });
 
@@ -437,9 +443,11 @@ export class SaleReturnFormComponent implements OnInit {
                 title: 'Sale Return Saved!',
                 message: isFail
                     ? 'Return Saved, but Ledger update failed. Please check manually.'
-                    : 'Sale Return saved successfully. Stock Re-filled & Ledger updated.\n\nInward Gate Pass can be generated from the Sale Returns dashboard.',
+                    : this.isQuick
+                        ? 'Sale Return saved successfully. Stock Re-filled & Ledger updated.'
+                        : 'Sale Return saved successfully. Stock Re-filled & Ledger updated.\n\nInward Gate Pass can be generated from the Sale Returns dashboard.',
                 actions: [
-                    { label: 'Go to Sale Returns', role: 'ok' }
+                    { label: this.isQuick ? 'Go to Quick Returns' : 'Go to Sale Returns', role: 'ok' }
                 ]
             }
         });

@@ -212,7 +212,10 @@ export class GrnFormComponent implements OnInit, OnDestroy {
         taxAmount: taxAmt,
         total: taxableAmt + taxAmt,
         warehouseId: item.warehouseId || item.WarehouseId || null,
-        rackId: item.rackId || item.RackId || null
+        rackId: item.rackId || item.RackId || null,
+        isExpiryRequired: !!(item.isExpiryRequired || item.IsExpiryRequired),
+        manufacturingDate: item.manufacturingDate || item.ManufacturingDate || null,
+        expiryDate: item.expiryDate || item.ExpiryDate || null
       };
     });
 
@@ -373,7 +376,9 @@ export class GrnFormComponent implements OnInit, OnDestroy {
             taxAmount: Number(i.taxAmount),
             totalAmount: Number(i.total),
             warehouseId: i.warehouseId,
-            rackId: i.rackId
+            rackId: i.rackId,
+            manufacturingDate: i.manufacturingDate || null,
+            expiryDate: i.expiryDate || null
           }))
         };
 
@@ -427,7 +432,9 @@ export class GrnFormComponent implements OnInit, OnDestroy {
         taxAmount: Number(item.taxAmount),
         totalAmount: Number(item.total),
         warehouseId: item.warehouseId,
-        rackId: item.rackId
+        rackId: item.rackId,
+        manufacturingDate: item.manufacturingDate || null,
+        expiryDate: item.expiryDate || null
       }))
     };
 

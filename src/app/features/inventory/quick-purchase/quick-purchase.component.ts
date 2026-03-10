@@ -156,7 +156,10 @@ export class QuickPurchaseComponent implements OnInit {
             discountPercent: [item.discountPercent || 0],
             gstPercent: [item.gstPercent || 0],
             total: [{ value: item.total, disabled: true }],
-            id: [item.id || 0]
+            id: [item.id || 0],
+            manufacturingDate: [item.manufacturingDate ? DateHelper.toDateObject(item.manufacturingDate) : null],
+            expiryDate: [item.expiryDate ? DateHelper.toDateObject(item.expiryDate) : null],
+            isExpiryRequired: [item.isExpiryRequired || false]
         });
         const index = this.items.length;
         this.items.push(row);
@@ -216,7 +219,10 @@ export class QuickPurchaseComponent implements OnInit {
             rate: [product.basePurchasePrice || product.purchasePrice || product.basePrice || product.rate || 0, [Validators.required, Validators.min(0)]],
             discountPercent: [0],
             gstPercent: [product.gstPercent || 18],
-            total: [{ value: 0, disabled: true }]
+            total: [{ value: 0, disabled: true }],
+            manufacturingDate: [null],
+            expiryDate: [null],
+            isExpiryRequired: [product.isExpiryRequired || false]
         });
 
         const priceListId = this.purchaseForm.get('priceListId')?.value;
@@ -257,7 +263,10 @@ export class QuickPurchaseComponent implements OnInit {
             rate: [0, [Validators.required, Validators.min(0)]],
             discountPercent: [0],
             gstPercent: [18],
-            total: [{ value: 0, disabled: true }]
+            total: [{ value: 0, disabled: true }],
+            manufacturingDate: [null],
+            expiryDate: [null],
+            isExpiryRequired: [false]
         });
 
         const index = this.items.length;
@@ -464,7 +473,9 @@ export class QuickPurchaseComponent implements OnInit {
                 taxAmount: 0,
                 total: Number(i.total),
                 warehouseId: i.warehouseId || null,
-                rackId: i.rackId || null
+                rackId: i.rackId || null,
+                manufacturingDate: i.manufacturingDate ? DateHelper.toLocalISOString(i.manufacturingDate) : null,
+                expiryDate: i.expiryDate ? DateHelper.toLocalISOString(i.expiryDate) : null
             }))
         };
 

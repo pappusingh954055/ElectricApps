@@ -6,7 +6,7 @@
       <button mat-raised-button 
         class="bulk-action-btn" 
         (click)="createOutwardGatePass(selection.selected[0])" 
-        *ngIf="selection.selected.length === 1 && !selection.selected[0]?.gatePassNo">
+        *ngIf="selection.selected.length === 1 && !selection.selected[0]?.gatePassNo && !isQuick">
         <mat-icon>local_shipping</mat-icon>
         Create Outward Pass
       </button>
@@ -15,7 +15,7 @@
       <button mat-raised-button 
         class="bulk-action-btn" 
         (click)="createBulkOutwardGatePass()" 
-        *ngIf="selection.selected.length > 1 && pendingOutwardSelected">
+        *ngIf="selection.selected.length > 1 && pendingOutwardSelected && !isQuick">
         <mat-icon>merge_type</mat-icon>
         Bulk Outward ({{selection.selected.length}})
       </button>
@@ -64,7 +64,7 @@
         </mat-card-content>
     </mat-card>
 
-    <mat-card class="stat-card border-info" (click)="activeStatus = 'Confirmed'; loadReturns()" style="cursor: pointer;">
+    <mat-card class="stat-card border-info" (click)="activeStatus = 'Confirmed'; loadReturns()" style="cursor: pointer;" *ngIf="!isQuick">
         <mat-card-content>
             <div class="stat-icon"><mat-icon>local_shipping</mat-icon></div>
             <div class="stat-info">

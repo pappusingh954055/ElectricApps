@@ -170,6 +170,14 @@ export class QuickSaleListComponent implements OnInit {
         cell: (row: any) => `${row.gstPercent}%`
       },
       {
+        field: 'manufacturingDate', header: 'Mfg Date', width: 110,
+        cell: (row: any) => row.manufacturingDate ? this.datePipe.transform(row.manufacturingDate, 'dd/MM/yyyy') : '—'
+      },
+      {
+        field: 'expiryDate', header: 'Exp Date', width: 110,
+        cell: (row: any) => row.expiryDate ? this.datePipe.transform(row.expiryDate, 'dd/MM/yyyy') : '—'
+      },
+      {
         field: 'total', header: 'Total', width: 110,
         cell: (row: any) => this.currencyPipe.transform(row.total, 'INR', 'symbol', '1.2-2')
       }

@@ -79,14 +79,16 @@ export class SaleOrderDetailDialog implements OnInit {
         <tr>
             <td style="text-align: center;">${index + 1}</td>
             <td>
-              <div>${item.productName}</div>
+              <div>${item.productName || item.ProductName}</div>
               ${item.rackName ? `<small style="color: #666; font-size: 10px;">Location: <b>${item.rackName}</b></small>` : ''}
             </td>
-            <td style="text-align: center;">${item.qty} <small>(${item.unit || 'Nos'})</small></td>
-            <td style="text-align: right;">${this.currencyPipe.transform(item.rate, 'INR')}</td>
-            <td style="text-align: center;">${item.discountPercent || 0}%</td>
-            <td style="text-align: center;">${item.gstPercent || 0}%</td>
-            <td style="text-align: right;">${this.currencyPipe.transform(item.total || (item.qty * item.rate), 'INR')}</td>
+            <td style="text-align: center;">${item.qty || item.Qty} <small>(${item.unit || item.Unit || 'Nos'})</small></td>
+            <td style="text-align: right;">${this.currencyPipe.transform(item.rate || item.Rate, 'INR')}</td>
+            <td style="text-align: center;">${item.discountPercent || item.DiscountPercent || 0}%</td>
+            <td style="text-align: center;">${item.gstPercent || item.GSTPercent || 0}%</td>
+            <td style="text-align: center;">${(item.manufacturingDate || item.ManufacturingDate) ? this.datePipe.transform(item.manufacturingDate || item.ManufacturingDate, 'dd/MM/yyyy') : '—'}</td>
+            <td style="text-align: center;">${(item.expiryDate || item.ExpiryDate) ? this.datePipe.transform(item.expiryDate || item.ExpiryDate, 'dd/MM/yyyy') : '—'}</td>
+            <td style="text-align: right;">${this.currencyPipe.transform(item.total || item.Total || ((item.qty || item.Qty) * (item.rate || item.Rate)), 'INR')}</td>
         </tr>
     `).join('');
 
@@ -165,6 +167,8 @@ export class SaleOrderDetailDialog implements OnInit {
                             <th style="text-align: right;">Rate</th>
                             <th style="text-align: center;">Disc</th>
                             <th style="text-align: center;">GST (%)</th>
+                            <th style="text-align: center;">Mfg Date</th>
+                            <th style="text-align: center;">Exp Date</th>
                             <th style="text-align: right;">Total</th>
                         </tr>
                     </thead>

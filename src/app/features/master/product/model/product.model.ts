@@ -29,6 +29,9 @@ export interface Product {
   productType: string;
   damagedStock: number;
   description?: string;
+  defaultWarehouseId?: string;
+  defaultRackId?: string;
+  isExpiryRequired?: boolean;
   defaultRackName?: string;
   rackName?: string;
 

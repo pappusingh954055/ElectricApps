@@ -144,6 +144,30 @@
               <input matInput type="number" formControlName="gstPercent" (input)="updateTotal(i)" readonly style="color:#888;">
             </mat-form-field>
 
+            <ng-container *ngIf="items.at(i).get('isExpiryRequired')?.value">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="mfg-field">
+                <mat-label>Mfg Date</mat-label>
+                <input matInput type="date" formControlName="manufacturingDate">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="exp-field">
+                <mat-label>Exp Date</mat-label>
+                <input matInput type="date" formControlName="expiryDate">
+                </mat-form-field>
+            </ng-container>
+
+            <ng-container *ngIf="!items.at(i).get('isExpiryRequired')?.value">
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="mfg-field">
+                <mat-label>Mfg Date</mat-label>
+                <input matInput type="text" [disabled]="true" value="N/A">
+                </mat-form-field>
+
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="exp-field">
+                <mat-label>Exp Date</mat-label>
+                <input matInput type="text" [disabled]="true" value="N/A">
+                </mat-form-field>
+            </ng-container>
+
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="tax-field">
               <mat-label>Tax Amt</mat-label>
               <input matInput formControlName="taxAmount" readonly class="bg-light">

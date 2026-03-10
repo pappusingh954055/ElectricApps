@@ -37,7 +37,8 @@
         <div class="stat-item border-info" 
              [ngClass]="{'active-widget': activeStatus === 'Confirmed'}"
              (click)="filterByStatus('Confirmed')"
-             style="cursor: pointer;">
+             style="cursor: pointer;"
+             *ngIf="!isQuick">
             <div class="stat-label">PENDING INWARDS</div>
             <div class="stat-data">
                 <span class="stat-value" [style.color]="summaryData.pendingInwardCount > 0 ? '#f44336' : '#212121'">{{summaryData.pendingInwardCount}}</span>
@@ -79,7 +80,7 @@
       <button mat-raised-button 
         class="bulk-action-btn" 
         (click)="createInwardGatePass(selection.selected[0])" 
-        *ngIf="selection.selected.length === 1 && !selection.selected[0]?.gatePassNo">
+        *ngIf="selection.selected.length === 1 && !selection.selected[0]?.gatePassNo && !isQuick">
         <mat-icon>move_to_inbox</mat-icon>
         Create Inward Pass
       </button>
@@ -88,7 +89,7 @@
       <button mat-raised-button 
         class="bulk-action-btn" 
         (click)="createBulkInwardGatePass()" 
-        *ngIf="selection.selected.length > 1 && pendingInwardSelected">
+        *ngIf="selection.selected.length > 1 && pendingInwardSelected && !isQuick">
         <mat-icon>merge_type</mat-icon>
         Bulk Inward ({{pendingInwardSelectedCount}})
       </button>

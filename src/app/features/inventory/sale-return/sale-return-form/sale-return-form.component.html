@@ -115,6 +115,16 @@
                         </td>
                     </ng-container>
 
+                    <ng-container matColumnDef="mfgDate">
+                        <th mat-header-cell *matHeaderCellDef> Mfg Date </th>
+                        <td mat-cell *matCellDef="let element"> {{element.get('manufacturingDate').value | date:'dd/MM/yyyy'}} </td>
+                    </ng-container>
+
+                    <ng-container matColumnDef="expDate">
+                        <th mat-header-cell *matHeaderCellDef> Exp Date </th>
+                        <td mat-cell *matCellDef="let element"> {{element.get('expiryDate').value | date:'dd/MM/yyyy'}} </td>
+                    </ng-container>
+
                     <ng-container matColumnDef="quantity">
                         <th mat-header-cell *matHeaderCellDef> Sold Qty </th>
                         <td mat-cell *matCellDef="let element"> {{element.get('quantity').value}} </td>

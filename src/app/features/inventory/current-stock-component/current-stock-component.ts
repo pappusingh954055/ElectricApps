@@ -36,7 +36,7 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
   private dialog = inject(MatDialog);
 
   // ✅ Updated: Added warehouse and rack in correct sequence for the table
-  displayedColumns: string[] = ['select', 'productName', 'warehouseName', 'rackName', 'totalReceived', 'totalRejected', 'totalSold', 'availableStock', 'unitRate', 'actions'];
+  displayedColumns: string[] = ['select', 'productName', 'warehouseName', 'rackName', 'manufacturingDate', 'expiryDate', 'totalReceived', 'totalRejected', 'totalSold', 'availableStock', 'unitRate', 'actions'];
   stockDataSource = new MatTableDataSource<any>([]);
 
   selectedProductIds: number[] = [];
@@ -226,6 +226,8 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
           unit: item.unit,
           lastRate: item.lastRate,
           minStockLevel: item.minStockLevel,
+          manufacturingDate: item.manufacturingDate,
+          expiryDate: item.expiryDate,
           history: item.history
         };
       });
@@ -359,5 +361,23 @@ export class CurrentStockComponent implements OnInit, AfterViewInit {
     // Agar backend value 0 hai ya null, toh default 5 pics par alert trigger hoga
     const threshold = element.minStockLevel > 0 ? element.minStockLevel : 5;
     return element.availableStock <= threshold;
+  }
+
+  isExpired(date: any): boolean {
+    if (!date) return false;
+    const expDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return expDate < today;
+  }
+
+  isNearExpiry(date: any): boolean {
+    if (!date) return false;
+    const expDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diffTime = expDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays >= 0 && diffDays <= 30; // 30 days window
   }
 }

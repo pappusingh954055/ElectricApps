@@ -8,6 +8,8 @@ export interface SaleReturnItem {
     itemCondition?: string;
     warehouseId?: number;
     rackId?: number;
+    manufacturingDate?: Date;
+    expiryDate?: Date;
 }
 
 export interface CreateSaleReturnDto {

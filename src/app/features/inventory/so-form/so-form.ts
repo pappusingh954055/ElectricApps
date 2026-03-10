@@ -163,7 +163,10 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
           taxAmount: [0],
           total: [{ value: 0, disabled: true }],
           availableStock: [match.currentStock || 0],
-          rackName: [match.defaultRackName || '']
+          rackName: [match.defaultRackName || ''],
+          isExpiryRequired: [(match as any).isExpiryRequired || false],
+          manufacturingDate: [(match as any).manufacturingDate || null],
+          expiryDate: [(match as any).expiryDate || null]
         });
 
         this.items.push(row);
@@ -228,7 +231,10 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
       taxAmount: [0],
       total: [{ value: 0, disabled: true }],
       availableStock: [0],
-      rackName: [''] // Added Rack Name
+      rackName: [''], // Added Rack Name
+      isExpiryRequired: [false],
+      manufacturingDate: [null],
+      expiryDate: [null]
     });
 
     this.items.push(row);
@@ -260,7 +266,10 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
               taxAmount: [0],
               total: [{ value: 0, disabled: true }],
               availableStock: [product.currentStock || product.availableStock || 0],
-              rackName: [product.defaultRackName || '']
+              rackName: [product.defaultRackName || ''],
+              isExpiryRequired: [product.isExpiryRequired || false],
+              manufacturingDate: [product.manufacturingDate || null],
+              expiryDate: [product.expiryDate || null]
             });
             this.items.push(row);
             const index = this.items.length - 1;
@@ -364,7 +373,10 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
         discountPercent: p.discount || p.discountPercent || 0,
         gstPercent: p.defaultGst || p.gstPercent || 0,
         availableStock: p.currentStock || 0,
-        rackName: p.defaultRackName || ''
+        rackName: p.defaultRackName || '',
+        isExpiryRequired: (p as any).isExpiryRequired || false,
+        manufacturingDate: (p as any).manufacturingDate || null,
+        expiryDate: (p as any).expiryDate || null
       });
       this.updateTotal(index);
     }
@@ -536,7 +548,9 @@ export class SoForm implements OnInit, OnDestroy, AfterViewInit {
               discountPercent: Number(val.discountPercent) || 0,
               gstPercent: Number(val.gstPercent) || 0,
               taxAmount: Number(val.taxAmount) || 0,
-              total: Number(val.total) || 0
+              total: Number(val.total) || 0,
+              manufacturingDate: val.manufacturingDate || null,
+              expiryDate: val.expiryDate || null
             };
           })
         };

@@ -95,6 +95,10 @@ export class SaleReturnListComponent implements OnInit {
         this.isQuick = (this.route as any).snapshot.data['isQuick'] || false;
         this.canAdd = this.permissionService.hasPermission('CanAdd');
 
+        if (this.isQuick) {
+            this.displayedColumns = this.displayedColumns.filter(c => c !== 'gatePassNo');
+        }
+
         // Global loader ON
         this.isDashboardLoading = true;
         this.isFirstLoad = true;

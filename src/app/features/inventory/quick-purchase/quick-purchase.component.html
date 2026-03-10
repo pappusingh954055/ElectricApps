@@ -99,6 +99,8 @@
             <div class="col-rate">Rate (₹)</div>
             <div class="col-disc">Disc %</div>
             <div class="col-gst">GST %</div>
+            <div class="col-mfg">Mfg Date</div>
+            <div class="col-exp">Exp Date</div>
             <div class="col-total">Total (₹)</div>
             <div class="col-action"></div>
           </div>
@@ -143,6 +145,20 @@
                   <mat-option [value]="18">18%</mat-option>
                   <mat-option [value]="28">28%</mat-option>
                 </mat-select>
+              </mat-form-field>
+            </div>
+            <div class="col-mfg">
+              <mat-form-field appearance="outline" dense *ngIf="item.get('isExpiryRequired')?.value">
+                <input matInput [matDatepicker]="mfgPicker" formControlName="manufacturingDate" placeholder="Mfg Date">
+                <mat-datepicker-toggle matIconSuffix [for]="mfgPicker" matTooltip="MFG DATE"></mat-datepicker-toggle>
+                <mat-datepicker #mfgPicker></mat-datepicker>
+              </mat-form-field>
+            </div>
+            <div class="col-exp">
+              <mat-form-field appearance="outline" dense *ngIf="item.get('isExpiryRequired')?.value">
+                <input matInput [matDatepicker]="expPicker" formControlName="expiryDate" placeholder="Exp Date">
+                <mat-datepicker-toggle matIconSuffix [for]="expPicker" matTooltip="EXP DATE"></mat-datepicker-toggle>
+                <mat-datepicker #expPicker></mat-datepicker>
               </mat-form-field>
             </div>
             <div class="col-total">
